@@ -1,2 +1,2 @@
 # Batman
-an data analysis tool
+an data analysis tool.
