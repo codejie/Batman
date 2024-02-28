@@ -1,9 +1,15 @@
-from . import Request, Response
+from pydantic import BaseModel
+from datetime import datetime
+from . import RequestModel, ResponseModel
 
-class LoginRequest(Request):
+class LoginRequest(RequestModel):
     account: int
     passwd: str
 
-class LoginResponse(Response):
-    result: 
-    token: str | None = None
+class LoginResult(BaseModel):
+    token: str
+    expired: datetime | None = None
+
+
+class LoginResponse(ResponseModel):
+    result: LoginResult | None = None
