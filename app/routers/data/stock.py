@@ -20,10 +20,26 @@ async def individual_info(body: model.IndividualInfoRequest = Body()):
 
 @router.post('/history', response_model=model.HistoryResponse, response_model_exclude_unset=True)
 async def history(body: model.HistoryRequest = Body()):
+    """
+    {
+        "symbol": "002236",
+        "start": "2023-01-01",
+        "end": "2024-01-01",
+        "period": "monthly"
+    }
+    """
+    logger.debug(body.period)
     result = lib.get_history(
         symbol=body.symbol,
         start_date=body.start.strftime('%Y%m%d'),
         end_date=body.end.strftime('%Y%m%d'),
-        period=body.peroid or 'daily'
+        # period=("daily" if body.period is None else body.period)
+        period=(body.period or "daily")
         )
-    return model.HistoryResponse(code=0, result=result.to_dict())
+    return model.HistoryResponse(code=0, result=result.to_dict('list'))
+
+@router.post('/spot', response_model=model.SpotResponse, response_model_exclude_unset=True)
+async def spot(body: model.SpotRequest=Body()):
+    result = lib.get_spot(body.symbols)
+    logger.debug(f'\n{result}')
+    return model.SpotResponse(result=result.to_dict('list'))
