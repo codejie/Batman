@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body
 
-from ..models.auth import LoginRequest, LoginResult, LoginResponse
+from .models.auth import LoginRequest, LoginResult, LoginResponse
 
 from .. import logger
 

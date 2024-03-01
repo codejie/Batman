@@ -1,9 +1,9 @@
+import os
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse, FileResponse
 from . import routers, AppException
-
-from .models import ResponseModel
 
 app = FastAPI(title='Batman')
 
@@ -21,6 +21,8 @@ async def app_exception_handler(request: Request, e: AppException):
             }
         ))
 
+# app.mount('/static', StaticFiles(directory='.\\static'))
+
 @app.get('/')
 async def root():
     return {
@@ -28,3 +30,8 @@ async def root():
         'Description': 'I am rich.',
         'Version': '0.0.1'
     }
+
+
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    return FileResponse(os.path.dirname(os.path.realpath(__file__)) + '/favicon.ico')

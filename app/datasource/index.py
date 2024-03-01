@@ -4,10 +4,10 @@
 from pandas import DataFrame
 import akshare
 
-from ... import AppException
+from .. import AppException
 from . import DataSource, DATA_SOURCE_REQUEST_TIMEOUT
 
-from ... import logger
+from .. import logger
 
 DATA_SOURCE = DataSource.AKSHARE
 

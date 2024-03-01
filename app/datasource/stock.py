@@ -7,8 +7,8 @@ from pandas import DataFrame
 from typing import List
 import akshare
 
-from ... import AppException
-from ... import logger
+from .. import AppException
+from .. import logger
 from . import DataSource, DATA_SOURCE_REQUEST_TIMEOUT
 
 

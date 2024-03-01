@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from ..models import ResponseModel
-from ..dependencies import verify_token
+from .models import ResponseModel
+from .dependencies import verify_token
 
 from .. import logger
 router = APIRouter(prefix='/test') #, dependencies=[Depends(verify_token)], tags=['test'])
