@@ -1,4 +1,7 @@
 from . import stock
-# from . import stock
+from . import index
 
-routers = [stock.router]
+routers = [
+    stock.router, 
+    index.router
+]

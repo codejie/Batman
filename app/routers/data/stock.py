@@ -16,7 +16,7 @@ router = APIRouter(prefix='/data/stock', tags=['data', 'stock'], dependencies=[D
 async def individual_info(body: model.IndividualInfoRequest = Body()):
     result = lib.get_individual_info(symbol=body.symbol)
     # logger.debug(result)
-    return model.IndividualInfoResponse(code=0, result=result.to_dict())
+    return model.IndividualInfoResponse(code=0, result=result.to_dict('list'))
 
 @router.post('/history', response_model=model.HistoryResponse, response_model_exclude_unset=True)
 async def history(body: model.HistoryRequest = Body()):
