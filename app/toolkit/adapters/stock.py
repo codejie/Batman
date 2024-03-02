@@ -6,8 +6,12 @@ from pandas import DataFrame
 from ... import AppException
 from ...datasource import DataSource, stock
 
+# StandardTitle = ['Date', 'Time', 'Datetime', 'Symbol', 'Open', 'Close', 'High', 'Low', 'Volume', 'Turnover', 'Volatility', 'Percentage', 'Amount', 'Rate']
+# AKShareTitle = ['日期', '时间', '日期时间', '代码', '开盘', '收盘', '最高', '最低', '成交量', '成交额', '振幅', '涨跌幅', '涨跌额', '换手率']
+
 def history( src: DataFrame | None, ds: DataSource = stock.DATA_SOURCE) -> DataFrame:
     if src is None: return None
+    src.columns.values
     if ds == DataSource.AKSHARE:
         return src.rename(columns={
             '日期': 'Date',
