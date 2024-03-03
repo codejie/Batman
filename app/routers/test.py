@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, Body
-from .models import ResponseModel
 from .dependencies import verify_token
 
 from .. import logger

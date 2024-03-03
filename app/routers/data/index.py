@@ -5,18 +5,18 @@
 from fastapi import APIRouter, Depends, Body
 
 from ..dependencies import verify_token
-from ..models.data import index as model
-from ...datasource import index as ds
+from . import models
+from ...data import index as ds
 
 router = APIRouter(prefix='/data/index', tags=['data', 'index'], dependencies=[Depends(verify_token)])
 
-@router.post('/infos', response_model=model.InfosResponse, response_model_exclude_unset=True)
-async def individual_info(body: model.InfosRequest = Body()):
+@router.post('/infos', response_model=models.InfosResponse, response_model_exclude_unset=True)
+async def individual_info(body: models.InfosRequest = Body()):
     result = ds.get_infos()
-    return model.InfosResponse(code=0, result=result.to_dict('list'))
+    return models.InfosResponse(code=0, result=result.to_dict('list'))
 
-@router.post('/history', response_model=model.HistoryResponse, response_model_exclude_unset=True)
-async def history(body: model.HistoryRequest = Body()):
+@router.post('/history', response_model=models.HistoryResponse, response_model_exclude_unset=True)
+async def history(body: models.HistoryRequest = Body()):
     """
     {
         "symbol": "002236",
@@ -31,4 +31,4 @@ async def history(body: model.HistoryRequest = Body()):
         end_date=body.end.strftime('%Y%m%d'),
         period=(body.period or "daily")
         )
-    return model.HistoryResponse(code=0, result=result.to_dict('list'))
+    return models.HistoryResponse(code=0, result=result.to_dict('list'))

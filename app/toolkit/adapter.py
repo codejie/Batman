@@ -25,3 +25,9 @@ def columns_standard2akshare(cols: DataFrame.columns) -> dict:
         except:
             ret[col] = col
     return ret
+
+def df_akshare2standard(df: DataFrame) -> DataFrame:
+    return df.rename(columns=columns_akshare2standard(df.columns))
+
+def df_standard2akshare(df: DataFrame) -> DataFrame:
+    return df.rename(columns=columns_standard2akshare(df.columns))
