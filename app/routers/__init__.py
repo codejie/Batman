@@ -12,6 +12,6 @@ class ResponseModel(BaseModel):
     message: str | None = None
 
 
-from . import data, auth, test, toolkit
+from . import account, data, test, toolkit
 
-routers = data.routers + [test.router] + [auth.router] + toolkit.routers
+routers = data.routers + [test.router] + [account.router] + toolkit.routers
