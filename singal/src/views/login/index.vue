@@ -139,8 +139,8 @@ export default class extends Vue {
   }
 
   private loginForm = {
-    username: 'admin',
-    password: '111111'
+    username: 'batman',
+    password: '000000'
   }
 
   private loginRules = {
@@ -194,6 +194,8 @@ export default class extends Vue {
     (this.$refs.loginForm as ElForm).validate(async(valid: boolean) => {
       if (valid) {
         this.loading = true
+        // console.log('================')
+        // console.log(process.env.VUE_APP_BASE_API)
         await UserModule.Login(this.loginForm)
         this.$router.push({
           path: this.redirect || '/',

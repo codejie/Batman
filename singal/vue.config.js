@@ -3,16 +3,17 @@ const path = require('path')
 
 // If your port is set to 80,
 // use administrator privileges to execute the command line.
-// For example, on Mac: sudo npm run / sudo yarn
-const devServerPort = 9527 // TODO: get this variable from setting.ts
-const mockServerPort = 8000 // TODO: get this variable from setting.ts
-const name = 'Vue Typescript Admin' // TODO: get this variable from setting.ts
+// For:x example, on Mac: sudo npm run / sudo yarn
+const devServerPort = 9211 // TODO: get this variable from setting.ts
+// const mockServerPort = 9210 // TODO: get this variable from setting.ts
+const name = '' // TODO: get this variable from setting.ts
 
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production' ? '/signal/' : '/',
+  publicPath: process.env.NODE_ENV === 'production' ? '/' : '/signal/',
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: {
+    host: process.env.NODE_ENV === 'development' ? 'localhost' : '0.0.0.0',
     port: devServerPort,
     open: true,
     overlay: {
@@ -20,26 +21,26 @@ module.exports = {
       errors: true
     },
     progress: false,
-    proxy: {
-      // change xxx-api/login => /mock-api/v1/login
-      // detail: https://cli.vuejs.org/config/#devserver-proxy
-      [process.env.VUE_APP_BASE_API]: {
-        target: `http://127.0.0.1:${mockServerPort}`,
-        changeOrigin: true, // needed for virtual hosted sites
-        ws: true, // proxy websockets
-        pathRewrite: {
-          ['^' + process.env.VUE_APP_BASE_API]: ''
-        }
-      }
-    }
+    // proxy: {
+    //   // change xxx-api/login => /mock-api/v1/login
+    //   // detail: https://cli.vuejs.org/config/#devserver-proxy
+    //   [process.env.VUE_APP_BASE_API]: {
+    //     target: `http://127.0.0.1:9210`,
+    //     changeOrigin: true, // needed for virtual hosted sites
+    //     ws: true, // proxy websockets
+    //     pathRewrite: {
+    //       ['^' + process.env.VUE_APP_BASE_API]: ''
+    //     }
+    //   }
+    // }
   },
-  pwa: {
-    name: name,
-    workboxPluginMode: 'InjectManifest',
-    workboxOptions: {
-      swSrc: path.resolve(__dirname, 'src/pwa/service-worker.js')
-    }
-  },
+  // pwa: {
+  //   name: name,
+  //   workboxPluginMode: 'InjectManifest',
+  //   workboxOptions: {
+  //     swSrc: path.resolve(__dirname, 'src/pwa/service-worker.js')
+  //   }
+  // },
   pluginOptions: {
     'style-resources-loader': {
       preProcessor: 'scss',

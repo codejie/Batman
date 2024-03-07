@@ -7,7 +7,7 @@ interface ISettings {
   errorLog: string[] // The env to enable the errorlog component, default 'production' only
   sidebarTextTheme: boolean // If true, will change active text color for sidebar based on theme
   devServerPort: number // Port number for webpack-dev-server
-  mockServerPort: number // Port number for mock server
+  // mockServerPort: number // Port number for mock server
 }
 
 // You can customize below settings :)
@@ -19,8 +19,8 @@ const settings: ISettings = {
   showSidebarLogo: false,
   errorLog: ['sys'],
   sidebarTextTheme: true,
-  devServerPort: 9527,
-  mockServerPort: 8000
+  devServerPort: 9211,
+  // mockServerPort: 9210
 }
 
 export default settings
