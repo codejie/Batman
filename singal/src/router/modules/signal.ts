@@ -14,7 +14,7 @@ const signalRouters: RouteConfig[] = [
       meta: {
         title: 'Data',
         icon: 'component',
-        relos: ['admin', 'signal'],
+        roles: ['admin', 'signal'],
         alwaysShow: true
       },
       children: [
@@ -25,7 +25,7 @@ const signalRouters: RouteConfig[] = [
             meta: {
                 title: 'DataStock',
                 roles: ['admin', 'signal'],
-                affix: true
+                // affix: true
             }
         },
         {
@@ -38,7 +38,92 @@ const signalRouters: RouteConfig[] = [
             }
         }
       ]
-    }
+    },
+    {
+      path: '/filter',
+      component: Layout,
+      redirect: '/filter',
+      meta: {
+        title: 'Filtering',
+        icon: 'tree',
+        roles: ['admin', 'signal'],
+        alwaysShow: true
+      },
+      children: [
+        {
+          path: 'search',
+          component: () => import(/* webpackChunkName: "FilterSearch" */ '@/views/filter/search/index.vue'),
+          name: 'FilterSearch',
+          meta: {
+              title: 'FilterSearch',
+              roles: ['admin', 'signal'],
+              // affix: true
+          }
+        },
+        {
+            path: 'results',
+            component: () => import(/* webpackChunkName: "FilterResults" */ '@/views/filter/results/index.vue'),
+            name: 'FilterResults',
+            meta: {
+                title: 'FilterResults',
+                roles: ['admin', 'signal']
+            }
+        }        
+      ]
+    },
+    {
+      path: '/strategy',
+      component: Layout,
+      redirect: '/strategy',
+      meta: {
+        title: 'Strategy',
+        icon: 'skill',
+        roles: ['admin', 'signal'],
+        alwaysShow: true
+      },
+      children: [
+        {
+          path: 'design',
+          component: () => import(/* webpackChunkName: "StrategyDesign" */ '@/views/strategy/design/index.vue'),
+          name: 'StrategyDesign',
+          meta: {
+              title: 'StrategyDesign',
+              roles: ['admin', 'signal'],
+          }
+        },
+        {
+            path: 'collection',
+            component: () => import(/* webpackChunkName: "StrategyCollection" */ '@/views/strategy/collection/index.vue'),
+            name: 'StrategyCollection',
+            meta: {
+                title: 'StrategyCollection',
+                roles: ['admin', 'signal']
+            }
+        }        
+      ]
+    },
+    {
+      path: 'Watching',
+      component: Layout,
+      redirect: '/watching',
+      meta: {
+        title: 'Watching',
+        icon: 'example',
+        roles: ['admin', 'signal'],
+        alwaysShow: true
+      }
+    },
+    {
+      path: 'Holdings',
+      component: Layout,
+      redirect: '/holdings',
+      meta: {
+        title: 'Holdings',
+        icon: 'star',
+        roles: ['admin', 'signal'],
+        alwaysShow: true
+      }
+    }  
   ]
 
   export default signalRouters

@@ -1,16 +1,14 @@
 <template>
-  <article-detail :is-edit="true" />
+  <div style="padding:30px;">
+    <h1>Strategy Collection</h1>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import ArticleDetail from './components/ArticleDetail.vue'
 
 @Component({
-  name: 'EditArticle',
-  components: {
-    ArticleDetail
-  }
+  name: 'DataIndex'
 })
 export default class extends Vue {}
 </script>

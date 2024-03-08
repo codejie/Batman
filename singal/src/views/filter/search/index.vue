@@ -1,9 +1,6 @@
 <template>
   <div style="padding:30px;">
-    <el-alert
-      :closable="false"
-      title="menu 2"
-    />
+    <h1>Filtering Searching</h1>
   </div>
 </template>
 
@@ -11,7 +8,7 @@
 import { Component, Vue } from 'vue-property-decorator'
 
 @Component({
-  name: 'Menu2'
+  name: 'DataIndex'
 })
 export default class extends Vue {}
 </script>
