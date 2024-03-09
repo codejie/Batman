@@ -8,18 +8,27 @@
 
 <script lang="ts">
 import * as echarts from 'echarts'
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop, Watch } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import ResizeMixin from './mixins/resize'
+
+
+export interface ChartData {
+  xData: string[],
+  priceData: number[],
+  volumeData: number[]
+}
 
 @Component({
   name: 'MixedChart'
 })
+
 export default class extends mixins(ResizeMixin) {
   @Prop({ default: 'chart' }) private className!: string
   @Prop({ default: 'chart' }) private id!: string
   @Prop({ default: '200px' }) private width!: string
   @Prop({ default: '200px' }) private height!: string
+  @Prop({ default: () => { return {xData: [], priceData: [], volumeData: []} } }) private chartData!: ChartData 
 
   mounted() {
     this.$nextTick(() => {
@@ -35,19 +44,22 @@ export default class extends mixins(ResizeMixin) {
     this.chart = null
   }
 
+  @Watch('chartData')
+  private onMyDataChange(value: ChartData) {
+    if (!this.chart) {
+      return
+    }
+    this.chart.dispose()
+    this.chart = null
+    this.initChart()
+  }
+
   private initChart() {
     this.chart = echarts.init(document.getElementById(this.id) as HTMLDivElement)
-    const xData = (function() {
-      const data = []
-      for (let i = 1; i < 13; i++) {
-        data.push(i + 'month')
-      }
-      return data
-    }())
     this.chart.setOption({
       backgroundColor: '#344b58',
       title: {
-        text: 'statistics',
+        text: '历史数据',
         top: '20',
         textStyle: {
           color: '#fff',
@@ -77,7 +89,7 @@ export default class extends mixins(ResizeMixin) {
         textStyle: {
           color: '#90979c'
         },
-        data: ['female', 'male', 'average']
+        data: ['Price', 'Volume']
       },
       xAxis: [{
         type: 'category',
@@ -99,7 +111,7 @@ export default class extends mixins(ResizeMixin) {
           interval: 0
 
         },
-        data: xData
+        data: this.chartData.xData
       }],
       yAxis: [{
         type: 'value',
@@ -146,7 +158,7 @@ export default class extends mixins(ResizeMixin) {
         end: 35
       }],
       series: [{
-        name: 'female',
+        name: 'Volume',
         type: 'bar',
         stack: 'total',
         barMaxWidth: 35,
@@ -164,53 +176,10 @@ export default class extends mixins(ResizeMixin) {
             }
           }
         },
-        data: [
-          709,
-          1917,
-          2455,
-          2610,
-          1719,
-          1433,
-          1544,
-          3285,
-          5208,
-          3372,
-          2484,
-          4078
-        ]
+        data: this.chartData.volumeData
       },
-
       {
-        name: 'male',
-        type: 'bar',
-        stack: 'total',
-        itemStyle: {
-          color: 'rgba(0,191,183,1)',
-          barBorderRadius: 0,
-          label: {
-            show: true,
-            position: 'top',
-            formatter(p: any) {
-              return p.value > 0 ? p.value : ''
-            }
-          }
-        },
-        data: [
-          327,
-          1776,
-          507,
-          1200,
-          800,
-          482,
-          204,
-          1390,
-          1001,
-          951,
-          381,
-          220
-        ]
-      }, {
-        name: 'average',
+        name: 'Price',
         type: 'line',
         stack: 'total',
         symbolSize: 10,
@@ -226,20 +195,7 @@ export default class extends mixins(ResizeMixin) {
             }
           }
         },
-        data: [
-          1036,
-          3693,
-          2962,
-          3810,
-          2519,
-          1915,
-          1748,
-          4675,
-          6209,
-          4323,
-          2865,
-          4298
-        ]
+        data: this.chartData.priceData 
       }
       ]
     })
