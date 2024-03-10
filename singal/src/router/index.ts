@@ -122,14 +122,14 @@ export const asyncRoutes: RouteConfig[] = [
     },
     children: [
         {
-          path: process.env.NODE_ENV === 'production' ? 'http://8.137.83.17:9211/docs' : 'http://localhost:8000/docs',
+          path: process.env.NODE_ENV === 'production' ? 'http://8.137.83.17:9210/docs' : 'http://localhost:8000/docs',
           meta: {
             title: 'Docs',
             roles: ['admin', 'signal']
           }
         },
         {
-          path: process.env.NODE_ENV === 'production' ? 'http://8.137.83.17:9211/redoc' : 'http://localhost:8000/redoc',
+          path: process.env.NODE_ENV === 'production' ? 'http://8.137.83.17:9210/redoc' : 'http://localhost:8000/redoc',
           meta: {
             title: 'Redoc',
             roles: ['admin', 'signal']
