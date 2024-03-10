@@ -13,6 +13,11 @@ export default {
     Holdings: '持仓',
 
     dashboard: '首页',
+
+    APIS: 'APIS',
+    Docs: 'Docs',
+    Redoc: 'Redoc',
+    
     // documentation: '文档',
     // guide: '引导页',
     // permission: '权限测试页',

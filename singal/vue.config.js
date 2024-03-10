@@ -9,7 +9,7 @@ const devServerPort = 9211 // TODO: get this variable from setting.ts
 const name = '' // TODO: get this variable from setting.ts
 
 module.exports = {
-  publicPath: process.env.NODE_ENV === 'production' ? '/' : '/signal/',
+  publicPath: process.env.NODE_ENV === 'production' ? '/' : '/',
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: {

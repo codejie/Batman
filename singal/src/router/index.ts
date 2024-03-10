@@ -75,7 +75,7 @@ export const constantRoutes: RouteConfig[] = [
     redirect: '/dashboard',
     children: [
       {
-        path: 'dashboard',
+        path: '/dashboard',
         component: () => import(/* webpackChunkName: "dashboard" */ '@/views/dashboard/index.vue'),
         name: 'Dashboard',
         meta: {
@@ -93,7 +93,7 @@ export const constantRoutes: RouteConfig[] = [
     meta: { hidden: true },
     children: [
       {
-        path: 'index',
+        path: '/index',
         component: () => import(/* webpackChunkName: "profile" */ '@/views/profile/index.vue'),
         name: 'Profile',
         meta: {
@@ -113,6 +113,30 @@ export const constantRoutes: RouteConfig[] = [
 
 export const asyncRoutes: RouteConfig[] = [
   ...signalRouters,
+  {
+    path: '/batman-apis',
+    component: Layout,
+    meta: {
+      title: 'APIS',
+      icon: 'link',
+    },
+    children: [
+        {
+          path: process.env.NODE_ENV === 'production' ? 'http://8.137.83.17:9211/docs' : 'http://localhost:8000/docs',
+          meta: {
+            title: 'Docs',
+            roles: ['admin', 'signal']
+          }
+        },
+        {
+          path: process.env.NODE_ENV === 'production' ? 'http://8.137.83.17:9211/redoc' : 'http://localhost:8000/redoc',
+          meta: {
+            title: 'Redoc',
+            roles: ['admin', 'signal']
+          }
+        }
+    ]
+  },
   {
     path: '*',
     redirect: '/404',

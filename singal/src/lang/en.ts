@@ -13,6 +13,11 @@ export default {
     Holdings: 'Holdings',
     
     dashboard: 'Dashboard',
+    
+    APIS: 'APIS',
+    Docs: 'Docs',
+    Redoc: 'Redoc',
+
     // documentation: 'Documentation',
     // guide: 'Guide',
     // permission: 'Permission',

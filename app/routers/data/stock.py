@@ -4,12 +4,15 @@
 
 from fastapi import APIRouter, Depends, Body
 from typing import Dict, List
+import pandas
 from pydantic.fields import Field
+from pydantic import BaseModel
 import datetime
 
 from ..dependencies import verify_token
 from .. import RequestModel, ResponseModel
 from ...data import stock as ds
+from ...toolkit import ta
 
 from ... import logger
 
@@ -80,3 +83,35 @@ async def spot(body: SpotRequest=Body()):
     result = ds.get_spot(body.symbols)
     logger.debug(f'\n{result}')
     return SpotResponse(result=result.to_dict('list'))
+
+"""
+股票历史数据MA接口
+"""
+class MAParameter(BaseModel):
+    columns: List[str] | None = Field(default=None, description='需要处理的数据集合列名')
+    periods: List[int] | None = Field(default=[5], description='MA分析周期，支持多个周期')
+    types: List[str] | None = Field(default=['SMA'], description='MA类型：SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/MAMA/T3')
+                                    
+class HistoryMARequest(RequestModel):
+    history_param: HistoryRequest
+    ma_param: MAParameter
+
+class HistoryMAResponse(ResponseModel):
+    result: Dict | None = Field(default=None, description='结果集合，包括历史数据列以及MA结果列，其列名格式为：{col}_{type}{period}')
+
+@router.post('/history_ma', response_model=HistoryMAResponse, response_model_exclude_unset=True)
+async def history_ma(body: HistoryMARequest=Body()):
+    df = ds.get_history(
+            symbol=body.history_param.symbol,
+            start_date=body.history_param.start.strftime('%Y%m%d'),
+            end_date=body.history_param.end.strftime('%Y%m%d'),
+            period=(body.history_param.period or "daily"),
+            adjust=(body.history_param.adjust or "")
+    )
+    result = pandas.concat([df, ta.MA(
+        df=df,
+        columns=body.ma_param.columns,
+        periods=body.ma_param.periods,
+        types=body.ma_param.types)], axis=1)
+    return HistoryMAResponse(result=result.to_dict('list'))
+

@@ -19,7 +19,7 @@ const signalRouters: RouteConfig[] = [
       },
       children: [
         {
-            path: 'stock',
+            path: '/stock',
             component: () => import(/* webpackChunkName: "DataStock" */ '@/views/data/stock/index.vue'),
             name: 'DataStock',
             meta: {
@@ -29,7 +29,7 @@ const signalRouters: RouteConfig[] = [
             }
         },
         {
-            path: 'index',
+            path: '/index',
             component: () => import(/* webpackChunkName: "DataIndex" */ '@/views/data/index/index.vue'),
             name: 'DataSIndex',
             meta: {
@@ -51,7 +51,7 @@ const signalRouters: RouteConfig[] = [
       },
       children: [
         {
-          path: 'search',
+          path: '/search',
           component: () => import(/* webpackChunkName: "FilterSearch" */ '@/views/filter/search/index.vue'),
           name: 'FilterSearch',
           meta: {
@@ -61,7 +61,7 @@ const signalRouters: RouteConfig[] = [
           }
         },
         {
-            path: 'results',
+            path: '/results',
             component: () => import(/* webpackChunkName: "FilterResults" */ '@/views/filter/results/index.vue'),
             name: 'FilterResults',
             meta: {
@@ -83,7 +83,7 @@ const signalRouters: RouteConfig[] = [
       },
       children: [
         {
-          path: 'design',
+          path: '/design',
           component: () => import(/* webpackChunkName: "StrategyDesign" */ '@/views/strategy/design/index.vue'),
           name: 'StrategyDesign',
           meta: {
@@ -92,7 +92,7 @@ const signalRouters: RouteConfig[] = [
           }
         },
         {
-            path: 'collection',
+            path: '/collection',
             component: () => import(/* webpackChunkName: "StrategyCollection" */ '@/views/strategy/collection/index.vue'),
             name: 'StrategyCollection',
             meta: {
