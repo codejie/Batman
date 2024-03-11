@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, Body
 from ..dependencies import verify_token
 from .. import RequestModel, ResponseModel
 from ...data import index as ds
+from ...toolkit.talib import overlap_studies as ta
 
 router = APIRouter(prefix='/data/index', tags=['data', 'index'], dependencies=[Depends(verify_token)])
 

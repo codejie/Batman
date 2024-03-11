@@ -12,7 +12,7 @@ import datetime
 from ..dependencies import verify_token
 from .. import RequestModel, ResponseModel
 from ...data import stock as ds
-from ...toolkit import ta
+from ...toolkit.talib import overlap_studies as ta
 
 from ... import logger
 

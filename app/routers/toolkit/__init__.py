@@ -1,5 +1,5 @@
-from . import ta
+from .talib import overlap_studies
 
 routers = [
-    ta.router
+    overlap_studies.router
 ]

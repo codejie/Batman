@@ -1,10 +1,11 @@
 import unittest
+
 import sys
 sys.path.append('../')
 
 from app.toolkit import adapter
-from app.toolkit import ta
 from app.data import index
+from app.toolkit.talib import overlap_studies as ta
 
 class TestTA(unittest.TestCase):
     def test_ma(self):
