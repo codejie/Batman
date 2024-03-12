@@ -1,6 +1,6 @@
 """
 Overlap Studies 
-重叠指标
+重叠研究/指标
 """
 
 import talib as ta
@@ -12,7 +12,18 @@ MATypes = ['SMA','EMA','WMA','DEMA','TEMA','TRIMA','KAMA','MAMA','T3']
 """
 MA 移动平均线
 """
-def MA(df: DataFrame, columns: list[str] | None = None, periods: list[int] = [5], types: list[str] = ['SMA']) -> DataFrame:
+def MA(value: Series, period: int = 30, ma_type: str = 'SMA') -> Series:
+    """
+    MA - Moving average
+    real = MA(close, timeperiod=30, matype=0)
+    """
+    try:
+        return Series(name=f'{value.name}_{period}', data=ta.MA(value, period, MATypes.index(ma_type)))
+    except Exception as e:
+        raise AppException(-1, repr(e))
+
+
+def MA_turbo(df: DataFrame, columns: list[str] | None = None, periods: list[int] = [5], types: list[str] = ['SMA']) -> DataFrame:
     """
     MA - Moving average
     real = MA(close, timeperiod=30, matype=0)
@@ -39,7 +50,19 @@ def MA(df: DataFrame, columns: list[str] | None = None, periods: list[int] = [5]
 Bollinger Band
 布林带
 """
-def BBANDS(df: DataFrame, columns: list[str] | None = None, period: int = 5, nbdevup: int = 2, nbdevdn: int = 2, types: list[str] = ['SMA']) -> DataFrame:
+def BBANDS(value: Series, period: int = 5, nbdevup: int = 2, nbdevdn: int = 2, ma_type: str = 'SMA') -> DataFrame:
+    """
+    BBANDS - Bollinger Bands
+    upperband, middleband, lowerband = BBANDS(close, timeperiod=5, nbdevup=2, nbdevdn=2, matype=0)
+    """
+    try:
+        ret = DataFrame()
+        ret[f'{value.name}_upper'], ret[f'{value.value}_middle'], ret[f'{value.value}_lower'] = ta.BBANDS(value, period, nbdevup, nbdevdn, MATypes.index(ma_type))
+        return ret
+    except Exception as e:
+        raise AppException(-1, repr(e))    
+
+def BBANDS_turbo(df: DataFrame, columns: list[str] | None = None, period: int = 5, nbdevup: int = 2, nbdevdn: int = 2, types: list[str] = ['SMA']) -> DataFrame:
     """
     BBANDS - Bollinger Bands
     upperband, middleband, lowerband = BBANDS(close, timeperiod=5, nbdevup=2, nbdevdn=2, matype=0)

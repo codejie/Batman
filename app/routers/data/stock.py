@@ -99,8 +99,8 @@ class HistoryMARequest(RequestModel):
 class HistoryMAResponse(ResponseModel):
     result: Dict | None = Field(default=None, description='结果集合，包括历史数据列以及MA结果列，其列名格式为：{col}_{type}{period}')
 
-@router.post('/history_ma', response_model=HistoryMAResponse, response_model_exclude_unset=True)
-async def history_ma(body: HistoryMARequest=Body()):
+@router.post('/history_ma_turbo', response_model=HistoryMAResponse, response_model_exclude_unset=True)
+async def history_ma_turbo(body: HistoryMARequest=Body()):
     df = ds.get_history(
             symbol=body.history_param.symbol,
             start_date=body.history_param.start.strftime('%Y%m%d'),
@@ -108,7 +108,7 @@ async def history_ma(body: HistoryMARequest=Body()):
             period=(body.history_param.period or "daily"),
             adjust=(body.history_param.adjust or "")
     )
-    result = pandas.concat([df, ta.MA(
+    result = pandas.concat([df, ta.MA_turbo(
         df=df,
         columns=body.ma_param.columns,
         periods=body.ma_param.periods,
