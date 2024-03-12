@@ -1,5 +1,5 @@
 """
-使用TA分析相关API
+Overlap Studies(重叠指标)API
 """
 
 from fastapi import APIRouter, Depends, Body
@@ -7,13 +7,13 @@ from pandas import DataFrame
 from typing import Dict, List
 from pydantic.fields import Field
 
-from .. import RequestModel, ResponseModel
-from ..dependencies import verify_token
-from ...toolkit import adapter, ta
+from ... import RequestModel, ResponseModel
+from ...dependencies import verify_token
+from ...toolkit.talib import overlap_studies as ta
 
-from ... import logger
+from .... import logger
 
-router = APIRouter(prefix='/tool/ta', tags=['toolkit', 'ta'], dependencies=[Depends(verify_token)])
+router = APIRouter(prefix='/tool/ta/overlap', tags=['toolkit', 'talib', 'overlap studies'], dependencies=[Depends(verify_token)])
 
 """
 MA方法接口定义
@@ -49,7 +49,7 @@ class BBANDSResponse(ResponseModel):
     result: Dict | None = Field(default=None, description='结果集合，包括上轨数据{col}_upper、中轨数据{col}_middle、下柜数据{col}_lower')
 
 @router.post('/bbands', response_model=BBANDSResponse, response_model_exclude_unset=True, response_model_exclude_none=True)
-async def ma(body: BBANDSRequest = Body()):
+async def bbands(body: BBANDSRequest = Body()):
     logger.debug(body.ds)
     logger.debug(type(body.ds))
     df = DataFrame().from_dict(body.ds)
