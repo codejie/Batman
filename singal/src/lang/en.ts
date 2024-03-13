@@ -14,6 +14,8 @@ export default {
     
     dashboard: 'Dashboard',
     
+    Demo: 'Demo',
+    LineChartDemo: 'LineChartDemo',
     APIS: 'APIS',
     Docs: 'Docs',
     Redoc: 'Redoc',

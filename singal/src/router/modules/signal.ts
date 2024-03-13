@@ -123,7 +123,29 @@ const signalRouters: RouteConfig[] = [
         roles: ['admin', 'signal'],
         alwaysShow: true
       }
-    }  
+    },
+    {
+      path: '/demo',
+      component: Layout,
+      redirect: '/demo',
+      meta: {
+        title: 'Demo',
+        icon: 'skill',
+        roles: ['admin', 'signal'],
+        alwaysShow: true
+      },
+      children: [
+        {
+          path: '/linechart',
+          component: () => import(/* webpackChunkName: "StrategyDesign" */ '@/views/demo/linechart/index.vue'),
+          name: 'LineChartDemo',
+          meta: {
+              title: 'LineChartDemo',
+              roles: ['admin', 'signal'],
+          }
+        }      
+      ]
+    }
   ]
 
   export default signalRouters

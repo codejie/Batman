@@ -13,7 +13,9 @@ export default {
     Holdings: '持仓',
 
     dashboard: '首页',
-
+    
+    Demo: 'Demo',
+    LineChartDemo: '折线图',
     APIS: 'APIS',
     Docs: 'Docs',
     Redoc: 'Redoc',
