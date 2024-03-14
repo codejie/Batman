@@ -29,11 +29,12 @@ def get_individual_info(symbol: str) -> DataFrame:
     try:
         if DATA_SOURCE == DataSource.AKSHARE:
             return akshare.stock_individual_info_em(symbol=symbol, timeout=DATA_SOURCE_REQUEST_TIMEOUT)
-    except:
-        raise AppException(message='get_individual_info() fail.')
-    raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+        else:
+            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+    except Exception as e:
+        raise AppException(e)
     
-def get_history(symbol: str, start_date: str, end_date: str, period: str = 'daily', adjust: str = '') -> DataFrame:
+def get_history(symbol: str, start_date: str, end_date: str, period: str = 'daily', adjust: str = 'qfq') -> DataFrame:
     """
     获取个股历史数据
     """
@@ -41,9 +42,11 @@ def get_history(symbol: str, start_date: str, end_date: str, period: str = 'dail
         if DATA_SOURCE == DataSource.AKSHARE:
             logger.debug(f'{start_date} - {end_date} - {period} - {adjust} - {symbol}')
             return akshare.stock_zh_a_hist(symbol=symbol, period=period, start_date=start_date, end_date=end_date, adjust=adjust, timeout=DATA_SOURCE_REQUEST_TIMEOUT)
-    except:
-        raise AppException(message='get_history() fail.')
-    raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+        else:
+            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+    except Exception as e:
+        raise AppException(e)
+
 
 def get_spot(symbols: List[str] | None = None) -> DataFrame:
     """
@@ -56,6 +59,7 @@ def get_spot(symbols: List[str] | None = None) -> DataFrame:
                 # logger.debug(symbols)
                 df = df[df['代码'].isin(symbols)]
             return df.head()
+        else:
+            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
     except Exception as e:
         raise AppException(e)
-    raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
