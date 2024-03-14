@@ -2,6 +2,8 @@ export default {
   route: {
     Data: 'Data',
     DataStock: 'Stock Data',
+    DataStockLineChart: 'Stock Data Line Chart',
+    MultiStockLineChart: 'Multi Stock Data Line Chart',
     DataIndex: 'Index Data',
     Filtering: 'Filtering',
     FilterSearch: 'Searching',
