@@ -70,7 +70,7 @@ export default class extends mixins(ResizeMixin) {
   private setOptions(chartData: Object) {
     // let chartProp = (this.chartProp  instanceof Array) ? this.chartProp[0] : this.chartProp
     // let chartProp = this.chartProp.length?this.chartProp[0]:this.chartProp
-    const gridGap = 25, legendGap = 30, legendTop = 0
+    const gridGap = 25, legendGap = 30, legendTop = 0, zoomHeight = 65
     if (this.chart) {
       let chartPropArray : ILineChartProp[] = this.chartProp.length?this.chartProp:[this.chartProp]
       // let chartProp = chartPropArray[0]
@@ -80,17 +80,31 @@ export default class extends mixins(ResizeMixin) {
       let totalYAxisIndex = 0;
 
       // let chartHeight = 100 / chartPropArray.length - 10
-      let totalHeight = (parseInt)(this.height.replaceAll('px', ''))
-      let chartHeight = (parseInt)((totalHeight - legendTop - legendGap * (chartPropArray.length - 1) 
-          - gridGap * chartPropArray.length - 30) / chartPropArray.length)
+      let propHeight = 0, propHeightCount = 0
+      chartPropArray.forEach((chartProp : ILineChartProp, idx)=>{
+        if(chartProp.height){
+          propHeight += chartProp.height;
+          propHeightCount++;
+        }
+      })
+      
+      let chartHeight = 0
+      if(chartPropArray.length>propHeightCount){
+        let totalChartHeight = (parseInt)(this.height.replaceAll('px', ''))
+        totalChartHeight = totalChartHeight - legendTop - legendGap * (chartPropArray.length - 1) 
+            - gridGap * chartPropArray.length - zoomHeight
+        chartHeight = (parseInt)((totalChartHeight - propHeight) / (chartPropArray.length - propHeightCount))
+      }
+      
       let curTop = 0
       chartPropArray.forEach((chartProp : ILineChartProp, idx)=>{
         let legendData : String[] = []
         let curLegendTop = curTop==0?legendTop:(curTop + legendGap)
+        let curChartHeight = chartProp.height?chartProp.height:chartHeight
         grid.push({
           // top: (idx * chartHeight + 5) + '%', 
           top: curLegendTop + gridGap,
-          height: chartHeight
+          height: curChartHeight
         })
         xAxis.push({
           gridIndex: idx,
@@ -159,7 +173,7 @@ export default class extends mixins(ResizeMixin) {
           "top": curLegendTop,
           "data": legendData
         })
-        curTop = curLegendTop + gridGap + chartHeight
+        curTop = curLegendTop + gridGap + curChartHeight
       })
 
       let chartOption = {
@@ -200,7 +214,8 @@ export default class extends mixins(ResizeMixin) {
         dataZoom: [{
           show: true,
           xAxisIndex: xAxisIndex,
-          bottom: 30,
+          // bottom: 30,
+          bottom: 10,
           start: 10,
           end: 80,
           handleIcon: 'path://M306.1,413c0,2.2-1.8,4-4,4h-59.8c-2.2,0-4-1.8-4-4V200.8c0-2.2,1.8-4,4-4h59.8c2.2,0,4,1.8,4,4V413z',
@@ -214,8 +229,9 @@ export default class extends mixins(ResizeMixin) {
           },
           borderColor: '#90979c'
         }, {
-          type: 'inside',
+          type: 'inside',   
           show: true,
+          xAxisIndex: xAxisIndex,   //表示在所有区域中滚动鼠标都可以实现放大/缩小效果
           start: 1,
           end: 35
         }],

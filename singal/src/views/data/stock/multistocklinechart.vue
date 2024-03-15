@@ -40,6 +40,7 @@ export default class extends Vue {
   private chartProp: ILineChartProp[] = [{
       keyProp: '日期',
       lineWidth: 0.5,
+      height: 100,
       props: [
           {
               name: '振幅'
@@ -80,6 +81,7 @@ export default class extends Vue {
     {
       keyProp: '日期',
       lineWidth: 0.5,
+      height: 150,
       props: [
           {
               name: '成交额'
@@ -90,39 +92,6 @@ export default class extends Vue {
           }
       ],
   }]
-  // private chartProp2: ILineChartProp = {
-  //   keyProp: '日期',
-  //   lineWidth: 0.5,
-  //   props: [
-  //       {
-  //           name: '振幅'
-  //       },
-  //       {
-  //           name: '涨跌幅'
-  //       },
-  //       {
-  //           name: '涨跌额',
-  //           yAxisIndex: 1
-  //       },
-  //       {
-  //           name: '换手率'
-  //       }
-  //   ],
-  // }
-
-  // private chartProp3: ILineChartProp = [{
-  //   keyProp: '日期',
-  //   lineWidth: 0.5,
-  //   props: [
-  //       {
-  //           name: '成交额'
-  //       },
-  //       {
-  //           name: '成交量',
-  //           yAxisIndex: 1
-  //       }
-  //   ],
-  // }]
 
   created() {
   }
@@ -138,11 +107,6 @@ export default class extends Vue {
         'adjust': 'hfq'
       })
 
-    console.log('==============click')
-    console.log(data.result)
-    const cdata: ChartData = { xData: data.result['日期'], priceData: data.result['收盘'], volumeData: data.result['成交量'] }
-    console.debug(cdata)
-    // this.chartData = cdata
     this.lineChartData =  data.result
   }
 }
