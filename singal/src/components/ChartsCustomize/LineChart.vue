@@ -66,22 +66,31 @@ export default class extends mixins(ResizeMixin) {
     this.setOptions(chartData)
   }
 
+  
   private setOptions(chartData: Object) {
     // let chartProp = (this.chartProp  instanceof Array) ? this.chartProp[0] : this.chartProp
     // let chartProp = this.chartProp.length?this.chartProp[0]:this.chartProp
-
+    const gridGap = 25, legendGap = 30, legendTop = 0
     if (this.chart) {
       let chartPropArray : ILineChartProp[] = this.chartProp.length?this.chartProp:[this.chartProp]
-      let chartProp = chartPropArray[0]
+      // let chartProp = chartPropArray[0]
       
       let grid : Object[] = [], xAxis : Object[] = [], xAxisIndex : Number[] = [], yAxis : Object[] = []
       let series : Object[] = [] , legend : String[] = []
       let totalYAxisIndex = 0;
-      let chartHeight = 100 / chartPropArray.length - 10
+
+      // let chartHeight = 100 / chartPropArray.length - 10
+      let totalHeight = (parseInt)(this.height.replaceAll('px', ''))
+      let chartHeight = (parseInt)((totalHeight - legendTop - legendGap * (chartPropArray.length - 1) 
+          - gridGap * chartPropArray.length - 30) / chartPropArray.length)
+      let curTop = 0
       chartPropArray.forEach((chartProp : ILineChartProp, idx)=>{
+        let legendData : String[] = []
+        let curLegendTop = curTop==0?legendTop:(curTop + legendGap)
         grid.push({
-          top: (idx * chartHeight + 5) + '%', 
-          height: chartHeight + '%'
+          // top: (idx * chartHeight + 5) + '%', 
+          top: curLegendTop + gridGap,
+          height: chartHeight
         })
         xAxis.push({
           gridIndex: idx,
@@ -119,7 +128,8 @@ export default class extends mixins(ResizeMixin) {
 
         chartProp.props.forEach((prop: ILineChartDataProp, index)=>{
           let label = prop.label?prop.label:prop.name
-          legend.push(label)
+          // legend.push(label)
+          legendData.push(label)
 
           let yAxisIndex = (prop.yAxisIndex?prop.yAxisIndex:0) + ''
           series.push({
@@ -145,6 +155,11 @@ export default class extends mixins(ResizeMixin) {
             animationEasing: 'cubicInOut'
           })
         })
+        legend.push({
+          "top": curLegendTop,
+          "data": legendData
+        })
+        curTop = curLegendTop + gridGap + chartHeight
       })
 
       let chartOption = {
@@ -157,9 +172,10 @@ export default class extends mixins(ResizeMixin) {
         //   }
         // },
         xAxis: xAxis,
-        legend: {
-          data: legend,
-        },
+        // legend: {
+        //   data: legend,
+        // },
+        legend: legend,
         // grid: [{
         //   left: 10,
         //   // right: (yAxisIndex-1) * 40,
