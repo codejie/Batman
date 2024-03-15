@@ -1,32 +1,34 @@
 """
-选股策略一: 连续N天涨幅U%，再连续M天跌幅D%
+选股策略一: 连续N天涨幅[(Close-Open) or (High-Low)]U%，再连续M天跌幅D%
 """
 from . import FinderResult, FinderStrategy
 
 class FS1Result(FinderResult):
     def represent(self, **kwargs) -> str:
-        df = kwargs['df']
         ret = super().represent(**kwargs)
 
-        date = df['日期']
-        close = df['收盘']
-        open = df['开盘']
-        up_count = int(kwargs['up_count'])
-        down_count = int(kwargs['down_count'])
+        date = kwargs['datetime']
+        close = kwargs['close']
+        open = kwargs['open']
+        up_count = kwargs['up_count']
+        down_count = kwargs['down_count']
+        up_rate = kwargs['up_rate']
+        down_rate = kwargs['down_rate']
 
+        ret += (f'\n策略：连续{up_count}天涨幅' + '{:.2}%'.format(up_rate * 100) + f'，再连续{down_count}天跌幅' + '{:.2}%'.format(down_rate * 100))
         for pos in self.index:
-            ret += f'\n{pos}'
-            print(df[pos-4: pos])
-
-            # for u in range((up_count + down_count), 0, -1):
-            #     print(f'{pos} - {u}')
-            #     ret = ret + f'\t{date[pos - u]}: {close[pos - u]}-{open[pos - u]}({(close[pos - u] - open[pos - u])/open[pos - u] * 100}%)\n'
+            # ret += f'\n{pos-4}-{pos}====\n'
+            ret += '\n'
+            for u in range((up_count + down_count) - 1, -1, -1):
+                # print(f'{pos} - {u}')
+                # ret += f'{pos-u}\n'
+                ret += f'\t{date[pos - u]}: [{close[pos - u]}-{open[pos - u]}]' + ' ({:.2f}%)\n'.format((close[pos - u] - open[pos - u])/open[pos - u] * 100)
         return ret        
 
 
 class FS1Strategy(FinderStrategy):
     def __init__(self):
-        super().__init__('fs1', '连续N天涨幅U%，再连续M天跌幅D%')
+        super().__init__('fs1', '连续N天涨幅[(Close-Open) or (High-Low)]U%，再连续M天跌幅D%')
         self._result = FS1Result()
 
         self.upCount = 0
@@ -38,7 +40,7 @@ class FS1Strategy(FinderStrategy):
         self.up_count = kwargs['up_count']
         self.down_count = kwargs['down_count']
         self.up_rate = kwargs['up_rate']
-        self.down_rate = kwargs['down_count']
+        self.down_rate = kwargs['down_rate']
 
         return super().load(**kwargs)
 
@@ -51,7 +53,7 @@ class FS1Strategy(FinderStrategy):
         if rate >= self.up_rate:
             self.upCount += 1
             self.downCount = 0
-        elif rate <= self.down_count:
+        elif rate <= self.down_rate:
             if self.upCount >= self.up_count:
                 self.downCount += 1
         else:

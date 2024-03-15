@@ -21,11 +21,35 @@ def set_source(src: DataSource) -> None:
     """
     DATA_SOURCE_STOCK = src
 
+def get_a_code(market: str | None = None) -> DataFrame:
+    """
+    获取A股股票列表
+    market:
+        None: all
+        sh: 上交所
+        sz: 深交所
+        bj: 北交所
+    """
+    try:
+        if DATA_SOURCE == DataSource.AKSHARE:
+            if market == 'sh':
+                return akshare.stock_info_sh_name_code(symbol='主板A股')
+            elif market == 'sz':
+                return akshare.stock_info_sz_name_code(symbol='A股列表')
+            elif market == 'bj':
+                return akshare.stock_info_bj_name_code()
+            else:
+                return akshare.stock_info_a_code_name()
+        else:
+            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+    except Exception as e:
+        raise AppException(e)
+
 def get_individual_info(symbol: str) -> DataFrame:
     """
     获取股票个股信息
     """
-    logger.debug(symbol)
+    # logger.debug(symbol)
     try:
         if DATA_SOURCE == DataSource.AKSHARE:
             return akshare.stock_individual_info_em(symbol=symbol, timeout=DATA_SOURCE_REQUEST_TIMEOUT)
