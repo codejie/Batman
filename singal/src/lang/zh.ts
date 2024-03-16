@@ -2,6 +2,8 @@ export default {
   route: {
     Data: '数据',
     DataStock: '股票数据',
+    DataStockLineChart: '股票折线图',
+    MultiStockLineChart: '合并股票折线图',
     DataIndex: '指数数据',
     Filtering: '筛选',
     FilterSearch: '条件检索',
@@ -13,7 +15,9 @@ export default {
     Holdings: '持仓',
 
     dashboard: '首页',
-
+    
+    Demo: 'Demo',
+    LineChartDemo: '折线图',
     APIS: 'APIS',
     Docs: 'Docs',
     Redoc: 'Redoc',

@@ -36,7 +36,27 @@ const signalRouters: RouteConfig[] = [
                 title: 'DataIndex',
                 roles: ['admin', 'signal']
             }
-        }
+        },
+        {
+          path: '/stocklinechart',
+          component: () => import(/* webpackChunkName: "DataStock" */ '@/views/data/stock/stocklinechart.vue'),
+          name: 'DataStockLineChart',
+          meta: {
+              title: 'DataStockLineChart',
+              roles: ['admin', 'signal'],
+              // affix: true
+          }
+        },
+        {
+          path: '/multistocklinechart',
+          component: () => import(/* webpackChunkName: "DataStock" */ '@/views/data/stock/multistocklinechart.vue'),
+          name: 'MultiStockLineChart',
+          meta: {
+              title: 'MultiStockLineChart',
+              roles: ['admin', 'signal'],
+              // affix: true
+          }
+        },
       ]
     },
     {
@@ -123,7 +143,29 @@ const signalRouters: RouteConfig[] = [
         roles: ['admin', 'signal'],
         alwaysShow: true
       }
-    }  
+    },
+    {
+      path: '/demo',
+      component: Layout,
+      redirect: '/demo',
+      meta: {
+        title: 'Demo',
+        icon: 'skill',
+        roles: ['admin', 'signal'],
+        alwaysShow: true
+      },
+      children: [
+        {
+          path: '/linechart',
+          component: () => import(/* webpackChunkName: "StrategyDesign" */ '@/views/demo/linechart/index.vue'),
+          name: 'LineChartDemo',
+          meta: {
+              title: 'LineChartDemo',
+              roles: ['admin', 'signal'],
+          }
+        }      
+      ]
+    }
   ]
 
   export default signalRouters
