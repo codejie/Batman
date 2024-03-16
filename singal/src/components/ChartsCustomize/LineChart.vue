@@ -36,7 +36,7 @@ export interface ILineChartDataProp {
 })
 export default class extends mixins(ResizeMixin) {
   @Prop({ required: true }) private chartData!: Object
-  @Prop({ required: true }) private chartProp: ILineChartProp[]
+  @Prop({ required: true }) private chartProp: ILineChartProp[] = []
   @Prop({ default: 'chart' }) private className!: string
   @Prop({ default: '100%' }) private width!: string
   @Prop({ default: '350px' }) private height!: string
@@ -72,7 +72,7 @@ export default class extends mixins(ResizeMixin) {
     // let chartProp = this.chartProp.length?this.chartProp[0]:this.chartProp
     const gridGap = 25, legendGap = 30, legendTop = 0, zoomHeight = 65
     if (this.chart) {
-      let chartPropArray : ILineChartProp[] = this.chartProp.length?this.chartProp:[this.chartProp]
+      let chartPropArray : ILineChartProp[] = this.chartProp.length ? this.chartProp:[this.chartProp]
       // let chartProp = chartPropArray[0]
       
       let grid : Object[] = [], xAxis : Object[] = [], xAxisIndex : Number[] = [], yAxis : Object[] = []

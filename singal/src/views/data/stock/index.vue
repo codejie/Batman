@@ -47,7 +47,7 @@ export default class extends Vue {
         "start": "2023-01-01",
         "end": "2024-01-01",
         "period": "daily",
-        'adjust': 'hfq'
+        'adjust': 'qfq'
       })
 
     console.log('==============click')

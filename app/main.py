@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
@@ -6,7 +7,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
 from . import routers, AppException
 
-app = FastAPI(title='Batman')
+from . import logger
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info('Service Startup.')
+    yield
+    logger.info('Service Stop.')
+
+app = FastAPI(title='Batman', lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,6 +40,7 @@ async def app_exception_handler(request: Request, e: AppException):
         ))
 
 # app.mount('/static', StaticFiles(directory='.\\static'))
+
 
 @app.get('/')
 async def root():
