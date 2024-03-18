@@ -16,10 +16,10 @@ class TestFinderStrategy(unittest.TestCase):
         self.assertTrue(True)
 
     def call_fs1(self, code: str) -> FS1Result | None:
-        df = stock.get_history(symbol=code, start_date='20240311', end_date='20240315')
+        df = stock.get_history(symbol=code, start_date='20240313', end_date='20240318')
         if df is not None and {'开盘','收盘'}.issubset(df.columns):
             strategy = FS1Strategy()
-            strategy.load(close=df['收盘'], open=df['开盘'], up_count=3, up_rate=0.05, down_count=1, down_rate=-0.03)
+            strategy.load(close=df['收盘'], open=df['开盘'], up_count=3, up_rate=0.08, down_count=1, down_rate=-0.05)
             return strategy.run()
         else:
             return None

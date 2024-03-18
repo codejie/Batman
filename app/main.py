@@ -61,12 +61,12 @@ async def app_exception_handler(request: Request, e: AppException):
 
 # app.mount('/static', StaticFiles(directory='.\\static'))
 
-def myjob():
-    logger.info('==========mmm')
+# def myjob():
+#     logger.info('==========mmm')
 
 @app.get('/')
 async def root():
-    scheduler.add_job(myjob, 'interval', minutes=1)
+    # scheduler.add_job(myjob, 'interval', minutes=1)
     return {
         'App': 'Batman',
         'Description': 'I am rich.',
