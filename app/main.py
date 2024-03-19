@@ -8,22 +8,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
-from . import routers, AppException
+from app import routers, AppException
 
-from . import logger
+from app.scheduler import scheduler
+from app import logger
 
-class SchedulerMiddleware():
-    def __init__(self, app: ASGIApp, scheduler) -> None:
-        self.app = app
-        self.scheduler = scheduler
+# class SchedulerMiddleware():
+#     def __init__(self, app: ASGIApp, scheduler) -> None:
+#         self.app = app
+#         self.scheduler = scheduler
     
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope['type'] == 'lifespan.startup':
-            logger.info('========scheduler startup')
-            await self.scheduler.start_in_backgroup()
-        await self.app(scope, receive, send)
+#     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+#         if scope['type'] == 'lifespan.startup':
+#             logger.info('========scheduler startup')
+#             await self.scheduler.start_in_backgroup()
+#         await self.app(scope, receive, send)
 
-scheduler = BackgroundScheduler()
+# scheduler = BackgroundScheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

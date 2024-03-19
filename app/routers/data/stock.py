@@ -3,14 +3,14 @@
 """
 
 from fastapi import APIRouter, Depends, Body
-from typing import Dict, List
+# from typing import Dict, List
 import pandas
 from pydantic.fields import Field
 from pydantic import BaseModel
 import datetime
 
 from ..dependencies import verify_token
-from .. import RequestModel, ResponseModel
+from ..define import RequestModel, ResponseModel
 from ...data import stock as ds
 from ...toolkit.talib import overlap_studies as ta
 
@@ -25,7 +25,7 @@ class IndividualInfoRequest(RequestModel):
     symbol: str
 
 class IndividualInfoResponse(ResponseModel):
-    result: Dict | None = None
+    result: dict | None = None
 
 
 @router.post('/individual_info', response_model=IndividualInfoResponse, response_model_exclude_unset=True)
@@ -45,7 +45,7 @@ class HistoryRequest(RequestModel):
     adjust: str | None = ""
 
 class HistoryResponse(ResponseModel):
-    result: Dict | None = None
+    result: dict | None = None
     
 @router.post('/history', response_model=HistoryResponse, response_model_exclude_unset=True)
 async def history(body: HistoryRequest = Body()):
@@ -73,10 +73,10 @@ async def history(body: HistoryRequest = Body()):
 股票实时数据接口
 """
 class SpotRequest(RequestModel):
-    symbols: List[str] | None = None
+    symbols: list[str] | None = None
 
 class SpotResponse(ResponseModel):
-    result: Dict | None = None
+    result: dict | None = None
 
 @router.post('/spot', response_model=SpotResponse, response_model_exclude_unset=True)
 async def spot(body: SpotRequest=Body()):
@@ -88,16 +88,16 @@ async def spot(body: SpotRequest=Body()):
 股票历史数据MA接口
 """
 class MAParameter(BaseModel):
-    columns: List[str] | None = Field(default=None, description='需要处理的数据集合列名')
-    periods: List[int] | None = Field(default=[5], description='MA分析周期，支持多个周期')
-    types: List[str] | None = Field(default=['SMA'], description='MA类型：SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/MAMA/T3')
+    columns: list[str] | None = Field(default=None, description='需要处理的数据集合列名')
+    periods: list[int] | None = Field(default=[5], description='MA分析周期，支持多个周期')
+    types: list[str] | None = Field(default=['SMA'], description='MA类型：SMA/EMA/WMA/DEMA/TEMA/TRIMA/KAMA/MAMA/T3')
                                     
 class HistoryMARequest(RequestModel):
     history_param: HistoryRequest
     ma_param: MAParameter
 
 class HistoryMAResponse(ResponseModel):
-    result: Dict | None = Field(default=None, description='结果集合，包括历史数据列以及MA结果列，其列名格式为：{col}_{type}{period}')
+    result: dict | None = Field(default=None, description='结果集合，包括历史数据列以及MA结果列，其列名格式为：{col}_{type}{period}')
 
 @router.post('/history_ma_turbo', response_model=HistoryMAResponse, response_model_exclude_unset=True)
 async def history_ma_turbo(body: HistoryMARequest=Body()):

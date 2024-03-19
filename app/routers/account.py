@@ -6,7 +6,7 @@ from .. import logger
 
 router = APIRouter(prefix='/account', tags=['account'])
 
-from . import RequestModel, ResponseModel
+from .define import RequestModel, ResponseModel
 
 class LoginRequest(RequestModel):
     account: str
