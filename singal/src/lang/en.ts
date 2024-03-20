@@ -8,6 +8,7 @@ export default {
     Filtering: 'Filtering',
     FilterSearch: 'Searching',
     FilterResults: 'Results',
+    StrategyResults: 'StrategyResults',
     Strategy: 'Strategy',
     StrategyDesign: 'Design',
     StrategyCollection: 'Collection',

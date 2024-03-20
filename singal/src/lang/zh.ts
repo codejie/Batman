@@ -8,6 +8,7 @@ export default {
     Filtering: '筛选',
     FilterSearch: '条件检索',
     FilterResults: '备选集合',
+    StrategyResults: '策略筛选',
     Strategy: '策略',
     StrategyDesign: '策略设计',
     StrategyCollection: '策略集合',
