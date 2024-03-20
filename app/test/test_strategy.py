@@ -21,7 +21,7 @@ class TestFinderStrategy(unittest.TestCase):
         df = stock.get_history(symbol=code, start_date='20240313', end_date='20240318')
         if df is not None and {'开盘','收盘'}.issubset(df.columns):
             strategy = FS1Strategy()
-            strategy.load(close=df['收盘'], open=df['开盘'], up_count=3, up_rate=0.06, down_count=1, down_rate=-0.05)
+            strategy.load(close=df['收盘'], open=df['开盘'], up_count=3, up_rate=0.09, down_count=1, down_rate=-0.05)
             return strategy.run()
         else:
             return None

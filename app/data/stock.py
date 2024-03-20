@@ -64,7 +64,7 @@ def get_history(symbol: str, start_date: str, end_date: str, period: str = 'dail
     """
     try:
         if DATA_SOURCE == DataSource.AKSHARE:
-            # logger.debug(f'{start_date} - {end_date} - {period} - {adjust} - {symbol}')
+            logger.debug(f'{start_date} - {end_date} - {period} - {adjust} - {symbol}')
             return akshare.stock_zh_a_hist(symbol=symbol, period=period, start_date=start_date, end_date=end_date, adjust=adjust, timeout=DATA_SOURCE_REQUEST_TIMEOUT)
         else:
             raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')

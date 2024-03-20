@@ -1,20 +1,41 @@
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.base import BaseTrigger
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.combining import AndTrigger
 
-class Scheduler():
+from app import logger
+
+class Scheduler:
     def __init__(self):
-        self.__scheduler = BackgroundScheduler()
+        self._scheduler = BackgroundScheduler()
 
     def start(self):
-        self.__scheduler.start()
+        self._scheduler.start()
 
     def shutdown(self):
-        self.__scheduler.shutdown(True)
+        self._scheduler.shutdown(True)
 
-    def addJob(self, **kwargs):
-        self.__scheduler.add_job()
+    def addJob(self, **kwargs) -> str:
+        # logger.debug(kwargs)
 
-    def removeJob(self, name: str):
-        pass
+        func: callable = kwargs['func']
+        name: str = kwargs['title']
+        # id: str = kwargs['id']
+        mode: str = kwargs['mode']
+        days: str = kwargs['days'] # '0-4' or 'mon,tue,wed,thu,fri'
+        hour: int = kwargs['hour']
+        minute: int = kwargs['minute']
+        args: dict = kwargs['args']
+        trigger: CronTrigger = CronTrigger(day_of_week=days, hour=hour, minute=minute)
+        job = self._scheduler.add_job(func=func, kwargs=args, trigger=trigger, name=name)
+
+        logger.debug(f'schedule job - \n{job}')
+
+        return job.id
+
+    def removeJob(self, id: str):
+        self._scheduler.remove_job(id)
 
 scheduler = Scheduler()
 
