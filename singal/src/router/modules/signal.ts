@@ -88,6 +88,15 @@ const signalRouters: RouteConfig[] = [
                 title: 'FilterResults',
                 roles: ['admin', 'signal']
             }
+        },
+        {
+            path: '/strategyresults',
+            component: () => import(/* webpackChunkName: "FilterResults" */ '@/views/filter/strategyresults/index.vue'),
+            name: 'StrategyResults',
+            meta: {
+                title: 'StrategyResults',
+                roles: ['admin', 'signal']
+            }
         }        
       ]
     },

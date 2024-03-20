@@ -18,17 +18,19 @@ import ResizeMixin from '@/components/Charts/mixins/resize'
 // }
 
 export interface ILineChartProp {
-  keyProp: String
-  lineWidth: Number
+  keyProp: string
+  lineWidth: number
+  height?: number
   props: ILineChartDataProp[]
 }
 
 export interface ILineChartDataProp {
-  name: String
-  label?: String
-  color?: String
-  yAxisIndex?: Number
-  lineType?: String
+  name: string
+  type?: string
+  label?: string
+  color?: string
+  yAxisIndex?: number
+  lineType?: string
 }
 
 @Component({
@@ -36,13 +38,13 @@ export interface ILineChartDataProp {
 })
 export default class extends mixins(ResizeMixin) {
   @Prop({ required: true }) private chartData!: Object
-  @Prop({ required: true }) private chartProp: ILineChartProp[] = []
+  @Prop({ required: true }) private chartProp!: ILineChartProp | ILineChartProp[]
   @Prop({ default: 'chart' }) private className!: string
   @Prop({ default: '100%' }) private width!: string
   @Prop({ default: '350px' }) private height!: string
 
   @Watch('chartData', { deep: true })
-  private onChartDataChange(value: Object) {
+  private onChartDataChange(value: any) {
     // this.setOptions(value)
     this.initChart(value)
   }
@@ -61,29 +63,29 @@ export default class extends mixins(ResizeMixin) {
     this.chart = null
   }
 
-  private initChart(chartData: Object) {
+  private initChart(chartData: any) {
     this.chart = echarts.init(this.$el as HTMLDivElement, 'macarons')
     this.setOptions(chartData)
   }
 
   
-  private setOptions(chartData: Object) {
+  private setOptions(chartData: any) {
     // let chartProp = (this.chartProp  instanceof Array) ? this.chartProp[0] : this.chartProp
     // let chartProp = this.chartProp.length?this.chartProp[0]:this.chartProp
     const gridGap = 25, legendGap = 30, legendTop = 0, zoomHeight = 65
     if (this.chart) {
-      let chartPropArray : ILineChartProp[] = this.chartProp.length ? this.chartProp:[this.chartProp]
+      let chartPropArray : ILineChartProp[] = (this.chartProp instanceof Array)?this.chartProp:[this.chartProp]
       // let chartProp = chartPropArray[0]
       
       let grid : Object[] = [], xAxis : Object[] = [], xAxisIndex : Number[] = [], yAxis : Object[] = []
-      let series : Object[] = [] , legend : String[] = []
+      let series : Object[] = [] , legend : Object[] = []
       let totalYAxisIndex = 0;
 
       // let chartHeight = 100 / chartPropArray.length - 10
       let propHeight = 0, propHeightCount = 0
       chartPropArray.forEach((chartProp : ILineChartProp, idx)=>{
         if(chartProp.height){
-          propHeight += chartProp.height;
+          propHeight = propHeight + chartProp.height;
           propHeightCount++;
         }
       })
@@ -93,7 +95,7 @@ export default class extends mixins(ResizeMixin) {
         let totalChartHeight = (parseInt)(this.height.replaceAll('px', ''))
         totalChartHeight = totalChartHeight - legendTop - legendGap * (chartPropArray.length - 1) 
             - gridGap * chartPropArray.length - zoomHeight
-        chartHeight = (parseInt)((totalChartHeight - propHeight) / (chartPropArray.length - propHeightCount))
+        chartHeight = Math.floor((totalChartHeight - propHeight) / (chartPropArray.length - propHeightCount))
       }
       
       let curTop = 0
@@ -149,7 +151,7 @@ export default class extends mixins(ResizeMixin) {
           series.push({
             name: label,
             xAxisIndex: idx,
-            yAxisIndex: preYAxisCount + yAxisMap.get(yAxisIndex),
+            yAxisIndex: preYAxisCount + yAxisMap.get(yAxisIndex)!,
             symbolSize: chartProp.lineWidth?chartProp.lineWidth*1.4:null,
             color: prop.color,
             itemStyle: {

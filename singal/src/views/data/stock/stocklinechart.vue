@@ -79,7 +79,7 @@ export default class extends Vue {
     ],
   }
 
-  private chartProp3: ILineChartProp = [{
+  private chartProp3: ILineChartProp[] = [{
     keyProp: '日期',
     lineWidth: 0.5,
     props: [
