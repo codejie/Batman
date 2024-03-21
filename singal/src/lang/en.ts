@@ -19,6 +19,7 @@ export default {
     
     Demo: 'Demo',
     LineChartDemo: 'LineChartDemo',
+    KLineChartDemo: 'KLineChartDemo',
     APIS: 'APIS',
     Docs: 'Docs',
     Redoc: 'Redoc',

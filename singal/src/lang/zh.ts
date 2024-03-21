@@ -19,6 +19,7 @@ export default {
     
     Demo: 'Demo',
     LineChartDemo: '折线图',
+    KLineChartDemo: 'K线图',
     APIS: 'APIS',
     Docs: 'Docs',
     Redoc: 'Redoc',
