@@ -29,6 +29,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import { IStrategyData, IStrategyInstanceData, IStrategyArgumentData } from '@/api/def/strategy'
+import { schedule } from '@/api/strategy/finder'
 
 @Component({
   name: 'StrategyInstanceForm'
@@ -67,19 +68,60 @@ export default class extends Vue {
 
   private saveStrategy(){
     let form = this.form
-    if(form.id){
-      alert('修改实例')
-      console.log('修改实例')
-      console.log(form)
-    } else {
-      alert('新增实例')
-      console.log('新增实例')
-      console.log(form)
-    }
-    this.dialogVisible = false
-    if(this.reloadParent){
-      this.reloadParent()
-    }
+
+    schedule({
+      "title": form.title,
+      "trigger": {
+          "mode": "daily",
+          "hour": 21,
+          "minute": 5
+      },
+      "strategy": "fs1",
+      "args": {
+          "symbol": [
+              {
+                  "code": "002236",
+                  "name": "daha"
+              },
+              {
+                  "code": "000802",
+                  "name": "802"
+              },
+              {
+                  "code": "000803",
+                  "name": "803"
+              },
+              {
+                  "code": "000807",
+                  "name": "807"
+              }
+          ],
+          "up_count": 3,
+          "up_rate": 0,
+          "down_count": 1,
+          "down_rate": 0
+      }
+    }).then((resp) => {
+      console.log(resp.data.result)
+      this.dialogVisible = false
+      if(this.reloadParent){
+        this.reloadParent()
+      }
+    })
+
+    // if(form.id){
+    //   alert('修改实例')
+    //   console.log('修改实例')
+    //   console.log(form)
+    // } else {
+    //   alert('新增实例')
+    //   console.log('新增实例')
+    //   console.log(form)
+    // }
+    // this.dialogVisible = false
+    // if(this.reloadParent){
+    //   this.reloadParent()
+    // }
   }
 
 }
