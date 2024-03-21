@@ -18,16 +18,16 @@ import ResizeMixin from '@/components/Charts/mixins/resize'
 // }
 
 export interface ILineChartProp {
-  keyProp: String
-  lineWidth: Number
+  keyProp: string
+  lineWidth: number
   props: ILineChartDataProp[]
 }
 
 export interface ILineChartDataProp {
-  name: String
-  label: String
-  lineColor?: String
-  lineType?: String
+  name: string
+  label: string
+  lineColor?: string
+  lineType?: string
 }
 
 @Component({
@@ -74,11 +74,11 @@ export default class extends mixins(ResizeMixin) {
         var data : Number[] = []
         seriesData.push(data)
       })
-      chartData.forEach((data : Object) =>{
+      chartData.forEach((data : any) =>{
         console.log(data)
         xAxis.push(data[chartProp.keyProp])
         
-        chartProp.props.forEach((prop ,index )=>{
+        chartProp.props.forEach((prop  ,index )=>{
           seriesData[index].push(data[prop.name])
         })
       })

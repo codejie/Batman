@@ -36,7 +36,7 @@ import { getStockHistory } from '@/api/data/stock'
 
 export default class extends Vue {
   private stockSymbol: string = '002236'
-  private lineChartData: Object = {}
+  private lineChartData: Map<string, number[]> = new Map()
   private chartProp: ILineChartProp[] = [{
       keyProp: '日期',
       lineWidth: 0.5,
