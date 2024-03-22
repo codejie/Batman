@@ -79,11 +79,12 @@ export default class extends mixins(ResizeMixin) {
           textStyle: {
             color: '#000'
           },
-          position: function (pos, params, el, elRect, size) {
+          position: function (pos: number[], params?:Object|Object[], el?: any, elRect?: Object, size?: any) {
             const obj = {
               top: 10
             };
             obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+            console.log(obj)
             return obj;
           }
           // extraCssText: 'width: 170px'
