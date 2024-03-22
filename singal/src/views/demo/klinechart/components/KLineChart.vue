@@ -80,7 +80,7 @@ export default class extends mixins(ResizeMixin) {
             color: '#000'
           },
           position: function (pos: number[], params?:Object|Object[], el?: any, elRect?: Object, size?: any) {
-            const obj = {
+            const obj: any = {
               top: 10
             };
             obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
