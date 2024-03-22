@@ -23,7 +23,13 @@
         </el-table-column>
         <el-table-column label="最后执行时间" align="center" prop="lastRunTime" width="165"/>
         <el-table-column label="执行次数" align="center" prop="runTimes" width="60"/>
-        <el-table-column label="计划时间" prop="scheduleTime" min-width="165"/>
+        <el-table-column label="计划时间" prop="scheduleTime" width="115">
+          <template slot-scope="{row}">
+            <el-button v-if="row.trigger" type="text" icon="el-icon-edit" @click="editTrigger(row)">
+              {{modeMap[row.trigger.mode]}}{{row.trigger.hour}}:{{row.trigger.minute}}
+            </el-button>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" align="center" width="60">
           <template slot-scope="{row}">
             <el-button type="text" icon="el-icon-tickets" @click="showResults(row)">查看</el-button>
@@ -41,6 +47,7 @@
       </el-pagination>
     </el-col>
     <strategy-form ref="refForm" :strategy="curStrategy" :reload-parent="loadInstanceList"/>
+    <trigger-form ref="refTriggerForm" :strategy="curStrategy" :reload-parent="loadInstanceList"/>
     <strategy-result ref="refResult" :strategy="curStrategy" :instance="curInstance"/>
   </el-row>
 </template>
@@ -50,13 +57,14 @@ import { Component, Vue } from 'vue-property-decorator'
 import { Pager } from '@/api/pager'
 import { IStrategyData, IStrategyInstanceData } from '@/api/def/strategy'
 import StrategyForm from './form.vue'
+import TriggerForm from './triggerform.vue'
 import StrategyResult from './resultindex.vue'
 import { getInfo } from '@/api/strategy/finder'
 
 @Component({
   name: 'StrategyFilter',
   components: {
-    StrategyForm, StrategyResult
+    StrategyForm, TriggerForm, StrategyResult
   },
   filters: {
     transactionStatusFilter: (status: string) => {
@@ -87,6 +95,8 @@ export default class extends Vue {
     description: ''
   }
   private instanceList: IStrategyInstanceData[] = [] 
+  private modeMap = { daily:'每天' }
+ 
   private curInstance?: IStrategyInstanceData
 
   created() { 
@@ -136,6 +146,11 @@ export default class extends Vue {
         lastRunTime: nowStr,
         runTimes: 27,
         scheduleTime: 'Every Trade Day 20:30',
+        trigger: {
+          mode: 'daily',
+          hour: 23,
+          minute: 30
+        },
         arguments: [
           { name: '上涨天数', unit: '天', value: 123, notes: '最近交易日前的连续上涨天数' },
           { name: '上涨幅度', unit: '%', value: 66, notes: '最近交易日前的每天上涨幅度' },
@@ -157,6 +172,11 @@ export default class extends Vue {
   private createStrategy() {
     let ref:any =this.$refs.refForm
     ref.init()
+  }
+
+  private editTrigger(row: any) {
+    let ref:any =this.$refs.refTriggerForm
+    ref.init(row.id, row.trigger)
   }
 
   private showResults(instance: IStrategyInstanceData){
