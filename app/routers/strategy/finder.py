@@ -57,6 +57,7 @@ async def info(body: InfoRequest=Body()):
 """
 class TriggerRequest(BaseModel):
     mode: str = 'daily' # 'interval', 'period'
+    days: str | None = None
     hour: int | None = None
     minute: int | None = None
     # second: int | None = None
@@ -70,18 +71,21 @@ class ScheduleRequest(RequestModel):
     args: dict | None = None # strategy arguments
 
 class ScheduleResponse(ResponseModel):
-    result: str # job id
+    result: str | None # job id
 
 @router.post('/schedule', response_model=ScheduleResponse, response_model_exclude_none=True)
 async def schedule(body: ScheduleRequest=Body()):
-    func = finderStrategyFuncList.get(body.strategy)['func']
+    strategy = finderStrategyFuncList.get(body.strategy)
+    if strategy is None:
+        return ScheduleResponse(code=-1, result=None)
     result = scheduler.addJob(
-        func=func, 
+        func=strategy['func'], 
         title=body.title,
-        mode='daily',
-        days='0-4',
-        hour=body.trigger.hour,
-        minute=body.trigger.minute,
+        trigger = body.trigger.model_dump(),
+        # mode=body.trigger.mode,
+        # days=body.trigger.days,
+        # hour=body.trigger.hour,
+        # minute=body.trigger.minute,
         args=body.args)
     return ScheduleResponse(result=result)
 

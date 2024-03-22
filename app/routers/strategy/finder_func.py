@@ -9,10 +9,28 @@ from app import AppException, logger
 
 from app.data import stock
 from app.strategy.finder.fs_1 import FS1Result, FS1Strategy
+from app.strategy.finder.t_1 import T1Strategy
 from app.routers import utils
 
 class FinderStrategyResponse(BaseModel):
     updated: str = ''
+
+"""
+TestStrategy
+"""
+class TestStrategy:
+    _name = 'TestStrategy'
+    _desc = 'for test'
+    _strategy = {
+        'name': T1Strategy._name,
+        'desc': T1Strategy._desc,
+        'args': T1Strategy._args
+    }
+
+    @staticmethod
+    def func(**kwargs):
+        logger.debug('TestStrategy:func() called')
+        logger.debug(kwargs)
 
 """
 RapidRaiseFall00FinderStrategy base FS1

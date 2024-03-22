@@ -4,6 +4,8 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.combining import AndTrigger
 
+from datetime import datetime
+
 from app import logger
 
 class Scheduler:
@@ -22,13 +24,18 @@ class Scheduler:
         func: callable = kwargs['func']
         name: str = kwargs['title']
         # id: str = kwargs['id']
-        mode: str = kwargs['mode']
-        days: str = kwargs['days'] # '0-4' or 'mon,tue,wed,thu,fri'
-        hour: int = kwargs['hour']
-        minute: int = kwargs['minute']
+        trigger:dict = kwargs['trigger']
         args: dict = kwargs['args']
-        trigger: CronTrigger = CronTrigger(day_of_week=days, hour=hour, minute=minute)
-        job = self._scheduler.add_job(func=func, kwargs=args, trigger=trigger, name=name)
+
+        mode: str = trigger['mode'] # kwargs['mode']
+        days: str = trigger['days'] # '0-4' or 'mon,tue,wed,thu,fri'
+        hour: int = trigger['hour']
+        minute: int = trigger['minute']
+
+        # trigger: CronTrigger = CronTrigger(day_of_week=days, hour=hour, minute=minute)
+        id = datetime.today().strftime('%Y%m%d%H%M%S%f')
+        args['id'] = id
+        job = self._scheduler.add_job(func=func, kwargs=args, trigger=CronTrigger(day_of_week=days, hour=hour, minute=minute), name=name, id=id)
 
         logger.debug(f'schedule job - \n{job}')
 

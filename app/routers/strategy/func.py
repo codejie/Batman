@@ -4,7 +4,7 @@
 
 from pydantic import BaseModel
 
-from app.routers.strategy.finder_func import RapidRaiseFall00FinderStrategy
+from app.routers.strategy.finder_func import TestStrategy, RapidRaiseFall00FinderStrategy
 
 class StrategyInfo:
     name: str
@@ -21,6 +21,12 @@ class StrategyFuncInfo:
 策略函数列表
 """
 finderStrategyFuncList: dict[str, dict] = {
+    'Test': {
+        'name': TestStrategy._name,
+        'desc': TestStrategy._desc,
+        'func': TestStrategy.func,
+        'strategy': TestStrategy._strategy
+    },
     'RapidRaiseFall00FinderStrategy': {
         'name': RapidRaiseFall00FinderStrategy._name,
         'desc': RapidRaiseFall00FinderStrategy._desc,
