@@ -10,7 +10,7 @@
       <el-card class="box-card">{{curStrategy.description}}</el-card>
     </el-col>
     <el-col :span="20" style="padding: 10px">
-      <el-button @click="createStrategy">创建</el-button>
+      <el-button size="mini" @click="createStrategy">创建</el-button>
       <el-table :border="true" :stripe="true" align="center"
         :data="instanceList"
         style="width: 100%;margin-top: 15px;"

@@ -1,5 +1,5 @@
 <template>
-  <div
+  <div style="border:1px solid #ccc"
     :class="className"
     :style="{height: height, width: width}"
   />
@@ -16,10 +16,11 @@ import ResizeMixin from '@/components/Charts/mixins/resize'
 })
 
 export default class extends mixins(ResizeMixin) {
-  @Prop({ required: true }) private chartData!: (string|number)[][]
+  @Prop({ required: true }) private chartData!: any
   @Prop({ default: '#00da3c' }) private upColor!: string
   @Prop({ default: '#ec0000' }) private downColor!: string
   @Prop({ default: 60 }) private showDays!: number
+  @Prop({  }) private showStart!: string
   @Prop({  }) private selectStart!: string
   @Prop({  }) private selectEnd!: string
   @Prop({ default: 'chart' }) private className!: string
@@ -27,7 +28,7 @@ export default class extends mixins(ResizeMixin) {
   @Prop({ default: '350px' }) private height!: string
 
   @Watch('chartData', { deep: true })
-  private onChartDataChange(value: (string|number)[][]) {
+  private onChartDataChange(value: any) {
     this.setOptions(value)
   }
 
@@ -52,7 +53,7 @@ export default class extends mixins(ResizeMixin) {
     this.setOptions(this.chartData)
   }
 
-  private setOptions(chartData: (string|number)[][]) {
+  private setOptions(chartData: any) {
     if (this.chart) {
       var data = this.splitData(chartData);
       let zoomStart = 0
@@ -281,25 +282,31 @@ export default class extends mixins(ResizeMixin) {
     }
   }
 
-  private splitData(rawData: (string|number)[][]) {
-    let categoryData = [];
-    let values = [];
-    let volumes = [];
-    for (let i = 0; i < rawData.length; i++) {
-      // categoryData.push(rawData[i].splice(0, 1)[0]);
-      // values.push(rawData[i]);
-      // volumes.push([i, rawData[i][4], rawData[i][0] > rawData[i][1] ? 1 : -1]); //索引、总成交额？涨跌
+  private splitData(rawData: any) {
+    let allCategory = rawData['日期'];
+    if(!allCategory){
+      return ({ categoryData: [], values: [], volumes: []})
+    }
+    let openData = rawData['开盘'], closeData = rawData['收盘']
+    let lowestData = rawData['最低'], highestData = rawData['最高']
+    let volumeData = rawData['成交量']
+    let categoryData = [], values = [], volumes = [], prevalues = [];
+    for (let i = 0; i < allCategory.length; i++) {
       //不改变原始数据
-      categoryData.push(rawData[i][0]);
-      let dataValue : (string|number)[] = this.getDataValue(rawData[i]);
-      values.push(dataValue);
-      volumes.push([i, dataValue[4], dataValue[0] > dataValue[1] ? 1 : -1]); //索引、总成交额？涨跌
+      if(!this.showStart || allCategory[i]>=this.showStart){
+        categoryData.push(allCategory[i])
+        values.push([openData[i], closeData[i], lowestData[i], highestData[i], volumeData[i]]);
+        volumes.push([i, volumeData[i], openData[i] > closeData[i] ? 1 : -1]); //索引、总成交额？涨跌
+      } else {
+        prevalues.push(closeData[i]);
+      }
     }
 
     let result = {
       categoryData: categoryData,
       values: values,
-      volumes: volumes
+      volumes: volumes,
+      prevalues: prevalues
     }
     console.log(result)
     return result;
@@ -315,16 +322,19 @@ export default class extends mixins(ResizeMixin) {
 
   private calculateMA(dayCount : number, data : any) {
     var result = [];
+    let preValueCount = data.prevalues.length
     for (var i = 0, len = data.values.length; i < len; i++) {
-      if (i < dayCount) {
+      if (i < dayCount - preValueCount) {
         result.push('-');
         continue;
       }
       var sum = 0;
       for (var j = 0; j < dayCount; j++) {
-        // console.log(data.values[i - j])
-        // console.log(data.values[i - j][1])
-        sum += data.values[i - j][1];
+        if(i - j>=0){
+          sum += data.values[i - j][1];
+        } else {
+          sum += data.prevalues[preValueCount + i - j];
+        }
       }
       result.push(+(sum / dayCount).toFixed(3));
     }
