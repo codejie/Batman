@@ -10,7 +10,7 @@ import datetime
 from fastapi import APIRouter, Depends, Body
 
 from ..dependencies import verify_token
-from .. import RequestModel, ResponseModel
+from ..define import RequestModel, ResponseModel
 from ...data import index as ds
 from ...toolkit.talib import overlap_studies as ta
 

@@ -7,7 +7,7 @@ from pandas import DataFrame
 from typing import Dict, List
 from pydantic.fields import Field
 
-from ... import RequestModel, ResponseModel
+from ...define import RequestModel, ResponseModel
 from ...dependencies import verify_token
 from ...toolkit.talib import overlap_studies as ta
 

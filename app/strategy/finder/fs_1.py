@@ -4,6 +4,9 @@
 from . import FinderResult, FinderStrategy
 
 class FS1Result(FinderResult):
+    _name: str = 'FS1Result'
+    _desc: str = 'FS1Strategy Result'
+
     def represent(self, **kwargs) -> str:
         ret = super().represent(**kwargs)
 
@@ -27,8 +30,42 @@ class FS1Result(FinderResult):
 
 
 class FS1Strategy(FinderStrategy):
+    _name: str = 'FS1Strategy'
+    _desc: str = '连续N天涨幅[(Close-Open) or (High-Low)]U%，再连续M天跌幅D%'
+
+    _args: list = [
+        {
+            'name': 'up_count',
+            'type': 'number',
+            'unit': '天',
+            'desc': '连续上涨天数',
+            'default': 3
+        },
+        {
+            'name': 'up_rate',
+            'type': 'number',
+            'unit': '%',
+            'desc': '每天上涨幅度',
+            'default': 9.0       
+        },
+        {
+            'name': 'down_count',
+            'type': 'number',
+            'unit': '天',
+            'desc': '连续下跌天数',
+            'default': 1
+        },
+        {
+            'name': 'down_rate',
+            'type': 'number',
+            'unit': '%',
+            'desc': '每天下跌幅度',
+            'default': 5.0
+        }
+    ]
+
     def __init__(self):
-        super().__init__('fs1', '连续N天涨幅[(Close-Open) or (High-Low)]U%，再连续M天跌幅D%')
+        super().__init__(self._name, self._desc)
         self._result = FS1Result()
 
         self.upCount = 0
