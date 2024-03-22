@@ -51,6 +51,7 @@ import { Pager } from '@/api/pager'
 import { IStrategyData, IStrategyInstanceData } from '@/api/def/strategy'
 import StrategyForm from './form.vue'
 import StrategyResult from './resultindex.vue'
+import { getInfo } from '@/api/strategy/finder'
 
 @Component({
   name: 'StrategyFilter',
@@ -86,28 +87,36 @@ export default class extends Vue {
     description: ''
   }
   private instanceList: IStrategyInstanceData[] = [] 
-  private curInstance!: IStrategyInstanceData
+  private curInstance?: IStrategyInstanceData
 
   created() { 
     this.loadStrategyList()
   }
 
-  private loadStrategyList(){
-    var strategyList = []
-    for(var i=1; i<=2; i++){
-      strategyList.push({
-        id: i,
-        name: '策略' + i,
-        description: '策略' + i + '是XXXXXX',
-        arguments: [
-          { name: '上涨天数', unit: '天', notes: '最近交易日前的连续上涨天数' },
-          { name: '上涨幅度', unit: '%', notes: '最近交易日前的每天上涨幅度' },
-          { name: '下跌天数', unit: '天', notes: '最近交易日前的连续下跌天数' },
-          { name: '下跌幅度', unit: '%', notes: '最近交易日前的每天下跌幅度' }
-        ]
-      })
+  private async loadStrategyList(){
+    // var strategyList = []
+    const { data } = await getInfo({})
+    console.log(data)
+    for (const info of data.result) {
+      console.log(info)
+      const item: IStrategyData = {
+        id: 0,
+        name: info.name,
+        description: info.desc,
+        arguments: []        
+      }
+      for (const arg of info.strategy.args) {
+        (<any[]>item.arguments).push({
+          name: arg.name,
+          unit: arg.unit,
+          value: arg.default,
+          notes: arg.desc
+        })
+      }
+
+      this.strategyList.push(item)
     }
-    this.strategyList = strategyList
+
     this.curStrategy = this.strategyList[0]
     this.loadInstanceList()
   }
@@ -136,7 +145,7 @@ export default class extends Vue {
       })
     }
     this.instanceList = instanceList
-    this.pager.total = 50
+    this.pager.total = this.instanceList.length
   }
 
   private selectStrategy(strategy: IStrategyData) {

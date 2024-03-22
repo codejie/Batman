@@ -27,8 +27,11 @@ class TestFinderStrategy(unittest.TestCase):
             return None
 
     def test_fs1_with_all(self):
-        codedf = stock.get_a_code(market='sh')
+        codedf = stock.get_a_code()
+        for i, w in codedf.iterrows():
+            print(f'{i}: {w['code']} - {w['name']}')
         # print(codedf)
+        return
         for u in codedf['证券代码']:
             # print(f'================={u}')
             result = self.call_fs1(u)

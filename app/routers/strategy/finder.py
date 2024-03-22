@@ -40,7 +40,7 @@ class InfoResult(BaseModel):
 class InfoResponse(ResponseModel):
     result: list[InfoResult]
 
-@router.post('/info', response_model=InfoResponse, response_model_exclude_unset=True)
+@router.post('/info', response_model=InfoResponse, response_model_exclude_none=True)
 async def info(body: InfoRequest=Body()):
     result: list[InfoResult] = []
     result.append(InfoResult(name='FS1',
@@ -68,7 +68,7 @@ class ScheduleRequest(RequestModel):
 class ScheduleResponse(ResponseModel):
     result: str # job id
 
-@router.post('/schedule', response_model=ScheduleResponse, response_model_exclude_unset=True)
+@router.post('/schedule', response_model=ScheduleResponse, response_model_exclude_none=True)
 async def schedule(body: ScheduleRequest=Body()):
     func = FinderStrategyFunction.get(body.strategy)
     result = scheduler.addJob(
@@ -95,3 +95,7 @@ class ResultResponse(ResponseModel):
 async def result(body: ResultRequest=Body()):
     print(FinderStrategyFunction._fs1Response)
     return ResultResponse(result=FinderStrategyFunction._fs1Response)
+
+"""
+获取策略实例列表
+"""
