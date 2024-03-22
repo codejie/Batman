@@ -11,31 +11,30 @@ from app.data import stock
 from app.strategy.finder.fs_1 import FS1Result, FS1Strategy
 from app.routers import utils
 
-"""
-策略列表
-"""
+class FinderStrategyResponse(BaseModel):
+    updated: str = ''
 
 """
-Strategy Response
+RapidRaiseFall00FinderStrategy base FS1
+全部A股计算Close/Open最近速涨速跌
 """
-class FS1StrategyResponse(BaseModel):
-    updated: str = ''
+class RapidRaiseFall00FinderStrategyResponse(FinderStrategyResponse):
     items: list[dict] = []
 
-class FinderStrategyFunction:
+class RapidRaiseFall00FinderStrategy:
+    _name = 'RapidRaiseFall00FinderStrategy'
+    _desc = '全部A股计算Close/Open最近速涨速跌'
+    _strategy = {
+        'name': FS1Strategy._name,
+        'desc': FS1Strategy._desc,
+        'args': FS1Strategy._args
+    }
 
-    _fs1Response: FS1StrategyResponse = FS1StrategyResponse()
+    _response: RapidRaiseFall00FinderStrategyResponse = RapidRaiseFall00FinderStrategyResponse()
 
     @staticmethod
-    def get(name: str) -> callable:
-        if name == 'fs1':
-            return FinderStrategyFunction.funcFinderFS1
-        else:
-            raise AppException(f'not found strategy - {name}')
-    
-    @staticmethod
-    def funcFinderFS1(**kwargs):
-        logger.info('funcFinderFS1() called.')
+    def func(**kwargs):
+        logger.info('RapidRaiseFall00FinderStrategy:func() called.')
 
         begin = datetime.now()
         symbol = kwargs['symbol']
@@ -49,7 +48,7 @@ class FinderStrategyFunction:
         start = (datetime.today() - timedelta(30)).strftime('%Y%m%d')
         end = datetime.today().strftime('%Y%m%d')
 
-        FinderStrategyFunction._fs1Response.items.clear()
+        RapidRaiseFall00FinderStrategy._response.items.clear()
 
         codes = DataFrame()
         if 'symbol' in kwargs:
@@ -69,13 +68,11 @@ class FinderStrategyFunction:
                 result: FS1Result = strategy.run()
                 print(result)
                 if result.index and len(result.index) > 0:
-                    FinderStrategyFunction._fs1Response.items.append({
+                    RapidRaiseFall00FinderStrategy._response.items.append({
                         'code': r['code'],
                         'name': r['name'],
                         'range': f'{df['日期'].iloc[0]} - {df['日期'].iloc[-1]}',
                         'index': result.index
                     })
                     
-        FinderStrategyFunction._fs1Response.updated = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'
-
-        # print(FinderStrategyFunction._fs1Response)
+        RapidRaiseFall00FinderStrategy._response.updated = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'

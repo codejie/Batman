@@ -10,7 +10,8 @@ from app.routers.dependencies import verify_token
 from app.routers.define import RequestModel, ResponseModel
 
 from app.scheduler import scheduler
-from app.routers.strategy.finder_func import FinderStrategyFunction, FS1StrategyResponse
+from app.routers.strategy.finder_func import FinderStrategyResponse, RapidRaiseFall00FinderStrategy
+from app.routers.strategy.func import finderStrategyFuncList
 
 router = APIRouter(prefix='/strategy/finder', tags=['strategy', 'finder strategy'], dependencies=[Depends(verify_token)])
 
@@ -43,9 +44,12 @@ class InfoResponse(ResponseModel):
 @router.post('/info', response_model=InfoResponse, response_model_exclude_none=True)
 async def info(body: InfoRequest=Body()):
     result: list[InfoResult] = []
-    result.append(InfoResult(name='FS1',
-                             desc='全部A股，以收盘和开盘为策略数据。',
-                             strategy=StrategyInfoResult(name=FS1Strategy._name, desc=FS1Strategy._desc, args=FS1Strategy._args)))
+    if body.name is None:
+        for k, v in finderStrategyFuncList.items():
+            result.append(InfoResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
+    else:
+        v = finderStrategyFuncList[body.name]
+        result.append(InfoResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
     return InfoResponse(result=result)
 
 """
@@ -70,7 +74,7 @@ class ScheduleResponse(ResponseModel):
 
 @router.post('/schedule', response_model=ScheduleResponse, response_model_exclude_none=True)
 async def schedule(body: ScheduleRequest=Body()):
-    func = FinderStrategyFunction.get(body.strategy)
+    func = finderStrategyFuncList.get(body.strategy)['func']
     result = scheduler.addJob(
         func=func, 
         title=body.title,
@@ -89,12 +93,12 @@ class ResultRequest(RequestModel):
     id: str | None = None
 
 class ResultResponse(ResponseModel):
-    result: FS1StrategyResponse
+    result: FinderStrategyResponse
 
 @router.post('/result', response_model=ResultResponse, response_model_exclude_none=True)
 async def result(body: ResultRequest=Body()):
-    print(FinderStrategyFunction._fs1Response)
-    return ResultResponse(result=FinderStrategyFunction._fs1Response)
+    print(RapidRaiseFall00FinderStrategy._response)
+    return ResultResponse(result=RapidRaiseFall00FinderStrategy._response)
 
 """
 获取策略实例列表
