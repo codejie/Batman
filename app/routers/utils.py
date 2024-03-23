@@ -13,3 +13,6 @@ def dateConvert2(date: str) -> str:
     from 'yyyymmdd' to 'yyyy-mm-dd'
     """
     return "{}-{}-{}".format(date[:4],date[4:6],date[6:])
+
+def kwargString(kwargs):
+    return ", ".join(f"{k}={v}" for k, v in kwargs.items())

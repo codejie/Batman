@@ -79,7 +79,7 @@ class FS1Strategy(FinderStrategy):
         self.up_rate = kwargs['up_rate']
         self.down_rate = kwargs['down_rate']
 
-        return super().load(kwargs)
+        return super().load(kwargs=kwargs)
 
     def _update(self) -> bool:
         self._size = len(self.close)

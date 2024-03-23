@@ -5,15 +5,15 @@ Finder Strategy APIs
 from fastapi import APIRouter, Depends, Body
 from pydantic import BaseModel
 
-from app.strategy.finder.fs_1 import FS1Strategy
 from app.routers.dependencies import verify_token
 from app.routers.define import RequestModel, ResponseModel
 
 from app.scheduler import scheduler
-from app.routers.strategy.finder_func import FinderStrategyResponse, RapidRaiseFall00FinderStrategy
-from app.routers.strategy.func import finderStrategyFuncList
+from app.routers.strategy.finder_func_define import getFinderStrategyFunc, validFinderStrategyFunc # finderStrategyFuncList
+from app.routers.strategy.local_cache import getFinderStrategyInstance
 
 router = APIRouter(prefix='/strategy/finder', tags=['strategy', 'finder strategy'], dependencies=[Depends(verify_token)])
+
 
 """
 获取Finder策略列表
@@ -45,10 +45,10 @@ class InfoResponse(ResponseModel):
 async def info(body: InfoRequest=Body()):
     result: list[InfoResult] = []
     if body.name is None:
-        for k, v in finderStrategyFuncList.items():
+        for k, v in getFinderStrategyFunc().items():
             result.append(InfoResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
     else:
-        v = finderStrategyFuncList[body.name]
+        v = getFinderStrategyFunc(body.name)
         result.append(InfoResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
     return InfoResponse(result=result)
 
@@ -75,34 +75,41 @@ class ScheduleResponse(ResponseModel):
 
 @router.post('/schedule', response_model=ScheduleResponse, response_model_exclude_none=True)
 async def schedule(body: ScheduleRequest=Body()):
-    strategy = finderStrategyFuncList.get(body.strategy)
+    strategy = validFinderStrategyFunc(body.strategy, body.args)
     if strategy is None:
-        return ScheduleResponse(code=-1, result=None)
+        return ScheduleResponse(code=-1, result=f'strategy func {body.strategy} not found.')
     result = scheduler.addJob(
-        func=strategy['func'], 
+        strategy = body.strategy,
+        func=strategy['func'],
         title=body.title,
         trigger = body.trigger.model_dump(),
-        # mode=body.trigger.mode,
-        # days=body.trigger.days,
-        # hour=body.trigger.hour,
-        # minute=body.trigger.minute,
         args=body.args)
-    return ScheduleResponse(result=result)
+    return ScheduleResponse(code=(-1 if result is None else 0), result=result)
 
 """
 获取指定策略实例的结果
 """
+# class FinderStrategyResponse(BaseModel):
+#     updated: str = ''
+
 class ResultRequest(RequestModel):
-    title: str | None = None
-    id: str | None = None
+    # title: str | None = None
+    id: str
 
 class ResultResponse(ResponseModel):
-    result: FinderStrategyResponse
+    result: dict | None = None
 
 @router.post('/result', response_model=ResultResponse, response_model_exclude_none=True)
 async def result(body: ResultRequest=Body()):
-    print(RapidRaiseFall00FinderStrategy._response)
-    return ResultResponse(result=RapidRaiseFall00FinderStrategy._response)
+    instance = getFinderStrategyInstance(body.id)
+    if instance is None:
+        return ResultResponse(code=-1, result=None)
+    print(instance)
+    print(instance._response)
+    return ResultResponse(result=instance._response)
+
+    # print(RapidRaiseFall00FinderStrategy._response)
+    # return ResultResponse(result=RapidRaiseFall00FinderStrategy._response)
 
 """
 获取策略实例列表

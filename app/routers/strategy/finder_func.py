@@ -1,9 +1,9 @@
 """
 策略方法定义
 """
-from pydantic import BaseModel
 from datetime import datetime, timedelta
 from pandas import DataFrame
+from pydantic import BaseModel
 
 from app import AppException, logger
 
@@ -11,13 +11,18 @@ from app.data import stock
 from app.strategy.finder.fs_1 import FS1Result, FS1Strategy
 from app.strategy.finder.t_1 import T1Strategy
 from app.routers import utils
-
-class FinderStrategyResponse(BaseModel):
-    updated: str = ''
+from app.routers.strategy.local_cache import setFinderStrategyInstanceResponse
+# from app.routers.strategy.finder_model import FinderStrategyResponse
+# class FinderStrategyResponse(BaseModel):
+#     updated: str = ''
 
 """
 TestStrategy
 """
+# class TestStrategyResponse(FinderStrategyResponse):
+#     id: str
+#     kwargs: str
+
 class TestStrategy:
     _name = 'TestStrategy'
     _desc = 'for test'
@@ -26,18 +31,29 @@ class TestStrategy:
         'desc': T1Strategy._desc,
         'args': T1Strategy._args
     }
+    # _response: TestStrategyResponse | None = None
 
     @staticmethod
     def func(**kwargs):
         logger.debug('TestStrategy:func() called')
         logger.debug(kwargs)
+        id=kwargs['id']
+        response = {
+            'updated': f'{datetime.today().strftime('%Y%m%d')}',
+            'id': id,
+            'kwargs': utils.kwargString(kwargs)
+        }
+        # response = TestStrategyResponse(id=id, kwargs=utils.kwargString(kwargs))
+        # print(response)
+        setFinderStrategyInstanceResponse(id=id, response=response)
+
 
 """
 RapidRaiseFall00FinderStrategy base FS1
 全部A股计算Close/Open最近速涨速跌
 """
-class RapidRaiseFall00FinderStrategyResponse(FinderStrategyResponse):
-    items: list[dict] = []
+# class RapidRaiseFall00FinderStrategyResponse(FinderStrategyResponse):
+#     items: list[dict] = []
 
 class RapidRaiseFall00FinderStrategy:
     _name = 'RapidRaiseFall00FinderStrategy'
@@ -48,14 +64,12 @@ class RapidRaiseFall00FinderStrategy:
         'args': FS1Strategy._args
     }
 
-    _response: RapidRaiseFall00FinderStrategyResponse = RapidRaiseFall00FinderStrategyResponse()
+    # _response: RapidRaiseFall00FinderStrategyResponse = RapidRaiseFall00FinderStrategyResponse()
 
     @staticmethod
     def func(**kwargs):
         logger.info('RapidRaiseFall00FinderStrategy:func() called.')
-
-        begin = datetime.now()
-        symbol = kwargs['symbol']
+        id = kwargs['id']
         # start = utils.dateConvert1(kwargs['start'])
         # end = utils.dateConvert1(kwargs['end'])
         up_count = int(kwargs['up_count'])
@@ -66,8 +80,12 @@ class RapidRaiseFall00FinderStrategy:
         start = (datetime.today() - timedelta(30)).strftime('%Y%m%d')
         end = datetime.today().strftime('%Y%m%d')
 
-        RapidRaiseFall00FinderStrategy._response.items.clear()
+        response:dict = {
+            'items': []
+        }
 
+        # RapidRaiseFall00FinderStrategy._response.items.clear()
+        begin = datetime.now()
         codes = DataFrame()
         if 'symbol' in kwargs:
             codes = codes.from_dict(kwargs['symbol'])
@@ -86,11 +104,14 @@ class RapidRaiseFall00FinderStrategy:
                 result: FS1Result = strategy.run()
                 print(result)
                 if result.index and len(result.index) > 0:
-                    RapidRaiseFall00FinderStrategy._response.items.append({
+                    # RapidRaiseFall00FinderStrategy._response.items.append({
+                    response['items'].append({
                         'code': r['code'],
                         'name': r['name'],
                         'range': f'{df['日期'].iloc[0]} - {df['日期'].iloc[-1]}',
                         'index': result.index
                     })
                     
-        RapidRaiseFall00FinderStrategy._response.updated = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'
+        # RapidRaiseFall00FinderStrategy._response.updated = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'
+        response['updated'] = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'
+        setFinderStrategyInstanceResponse(id=id, response=response)

@@ -3,8 +3,9 @@ from apscheduler.triggers.base import BaseTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.combining import AndTrigger
-
 from datetime import datetime
+
+from app.routers.strategy.local_cache import createFinderStrategyInstance
 
 from app import logger
 
@@ -18,12 +19,12 @@ class Scheduler:
     def shutdown(self):
         self._scheduler.shutdown(True)
 
-    def addJob(self, **kwargs) -> str:
+    def addJob(self, **kwargs) -> str | None:
         # logger.debug(kwargs)
 
+        strategy = kwargs['strategy']
         func: callable = kwargs['func']
         name: str = kwargs['title']
-        # id: str = kwargs['id']
         trigger:dict = kwargs['trigger']
         args: dict = kwargs['args']
 
@@ -36,6 +37,8 @@ class Scheduler:
         id = datetime.today().strftime('%Y%m%d%H%M%S%f')
         args['id'] = id
         job = self._scheduler.add_job(func=func, kwargs=args, trigger=CronTrigger(day_of_week=days, hour=hour, minute=minute), name=name, id=id)
+
+        createFinderStrategyInstance(id, name, strategy)
 
         logger.debug(f'schedule job - \n{job}')
 
