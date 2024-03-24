@@ -10,7 +10,7 @@ from app.routers.define import RequestModel, ResponseModel
 
 from app.scheduler import scheduler
 from app.routers.strategy.finder_func_define import getFinderStrategyFunc, validFinderStrategyFunc # finderStrategyFuncList
-from app.routers.strategy.local_cache import getFinderStrategyInstance
+from app.routers.strategy.local_cache import getFinderStrategyInstance, removeFinderStrategyInstance
 
 router = APIRouter(prefix='/strategy/finder', tags=['strategy', 'finder strategy'], dependencies=[Depends(verify_token)])
 
@@ -89,9 +89,6 @@ async def schedule(body: ScheduleRequest=Body()):
 """
 获取指定策略实例的结果
 """
-# class FinderStrategyResponse(BaseModel):
-#     updated: str = ''
-
 class ResultRequest(RequestModel):
     # title: str | None = None
     id: str
@@ -114,3 +111,56 @@ async def result(body: ResultRequest=Body()):
 """
 获取策略实例列表
 """
+class InstanceRequest(RequestModel):
+    id: str | None = None
+
+class InstanceResult(BaseModel):
+    id: str
+    name: str
+    strategy: str
+    args: dict | None = None
+    response: dict | None = None
+
+class InstanceResponse(ResponseModel):
+    result: list[InstanceResult] | InstanceResult | None = None
+
+@router.post('/instance', response_model=InstanceResponse, response_model_exclude_none=True)
+async def instance(body: InstanceRequest=Body()):
+    if body.id is None:
+        result = []
+        instances = getFinderStrategyInstance()
+        for instance in instances:
+            result.append(InstanceResult(
+                id=instance._id,
+                name=instance._name,
+                strategy=instance._strategy,
+                args=instance._args,
+                response=instance._response
+            ))
+        return InstanceResponse(result=result)
+    else:
+        instance = getFinderStrategyInstance(body.id)
+        if instance is None:
+            return InstanceResponse(result=None)
+        else:
+            return InstanceResponse(result=InstanceResult(
+                id=instance._id,
+                name=instance._name,
+                strategy=instance._strategy,
+                args=instance._args,
+                response=instance._response
+            ))
+        
+"""
+删除策略实例
+"""
+class RemoveRequest(RequestModel):
+    id: str
+
+class RemoveResponse(ResponseModel):
+    pass
+
+@router.post('/remove', response_model=RemoveResponse, response_model_exclude_none=True)
+async def remove(body: RemoveRequest=Body()):
+    removeFinderStrategyInstance(body.id)
+    return RemoveResponse()

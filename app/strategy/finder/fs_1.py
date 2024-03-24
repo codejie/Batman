@@ -60,7 +60,7 @@ class FS1Strategy(FinderStrategy):
             'type': 'number',
             'unit': '%',
             'desc': '每天下跌幅度',
-            'default': 5.0
+            'default': -5.0
         }
     ]
 

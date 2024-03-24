@@ -38,7 +38,7 @@ class Scheduler:
         args['id'] = id
         job = self._scheduler.add_job(func=func, kwargs=args, trigger=CronTrigger(day_of_week=days, hour=hour, minute=minute), name=name, id=id)
 
-        createFinderStrategyInstance(id, name, strategy)
+        createFinderStrategyInstance(id, name, strategy, args)
 
         logger.debug(f'schedule job - \n{job}')
 
