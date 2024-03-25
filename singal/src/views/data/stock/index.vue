@@ -8,61 +8,36 @@
       </label>
       <el-button style="margin-left: 8px;" type="primary" @click="onStockSymbol()">OK</el-button>
     </div>
-    <div class="chart-container">
-      <mixed-chart height="80%" width="100%" :chartData="chartData">
-      </mixed-chart>
-    </div>
+    <stock-detail ref="refDetail" :stockSymbol="stockSymbol"/>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import { ChartData, default as MixedChart } from '@/components/Charts/MixedChart.vue'
-
-import { getStockHistory } from '@/api/data/stock'
+import StockDetail from './components/stockdetail.vue'
 
 @Component({
   name: 'DataStock',
   components: {
-    MixedChart
+    StockDetail
   }
 })
 
 export default class extends Vue {
   private stockSymbol: string = '002236'
-  private chartData: ChartData = {
-    xData: [],
-    priceData: [],
-    volumeData: []
-  }
 
   created() {
   }
 
   private async onStockSymbol() {
+    if(!this.stockSymbol){
+      alert('编号不能为空')
+      return
+    }
 
-    const { data } = await getStockHistory(
-      {
-        "symbol": this.stockSymbol,
-        "start": "2023-01-01",
-        "end": "2024-01-01",
-        "period": "daily",
-        'adjust': 'qfq'
-      })
-
-    console.log('==============click')
-    console.log(data.result)
-    const cdata: ChartData = { xData: data.result['日期'], priceData: data.result['收盘'], volumeData: data.result['成交量'] }
-    console.debug(cdata)
-    this.chartData = cdata
+    let ref:any =this.$refs.refDetail
+    ref.loadStock()
   }
 }
 </script>
 
-<style lang="scss" scoped>
-.chart-container {
-  position: relative;
-  width: 100%;
-  height: calc(100vh - 84px);
-}
-</style>

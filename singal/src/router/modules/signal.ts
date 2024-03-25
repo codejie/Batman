@@ -172,7 +172,16 @@ const signalRouters: RouteConfig[] = [
               title: 'LineChartDemo',
               roles: ['admin', 'signal'],
           }
-        }      
+        },
+        {
+          path: '/klinechart',
+          component: () => import(/* webpackChunkName: "StrategyDesign" */ '@/views/demo/klinechart/index.vue'),
+          name: 'KLineChartDemo',
+          meta: {
+              title: 'KLineChartDemo',
+              roles: ['admin', 'signal'],
+          }
+        }       
       ]
     }
   ]
