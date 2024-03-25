@@ -34,7 +34,7 @@ finderStrategyFuncList: dict[str, dict] = {
 } 
 
 def getFinderStrategyFunc(name: str | None = None) -> dict | list[dict] | None:
-    if str is None:
+    if name is None:
         return finderStrategyFuncList
     else:
         return finderStrategyFuncList[name]

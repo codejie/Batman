@@ -13,3 +13,10 @@ export const schedule = (data: any) =>
         method: 'post',
         data        
     })
+
+export const getInstanceByStategy = (data: any) =>
+    request({
+        url: '/strategy/finder/instance',
+        method: 'post',
+        data
+    })

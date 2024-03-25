@@ -25,7 +25,7 @@ class Scheduler:
         strategy = kwargs['strategy']
         func: callable = kwargs['func']
         name: str = kwargs['title']
-        trigger:dict = kwargs['trigger']
+        trigger: dict = kwargs['trigger']
         args: dict = kwargs['args']
 
         mode: str = trigger['mode'] # kwargs['mode']
@@ -38,7 +38,7 @@ class Scheduler:
         args['id'] = id
         job = self._scheduler.add_job(func=func, kwargs=args, trigger=CronTrigger(day_of_week=days, hour=hour, minute=minute), name=name, id=id)
 
-        createFinderStrategyInstance(id, name, strategy, args)
+        createFinderStrategyInstance(id, name, trigger, strategy, args)
 
         logger.debug(f'schedule job - \n{job}')
 
@@ -46,6 +46,18 @@ class Scheduler:
 
     def removeJob(self, id: str):
         self._scheduler.remove_job(id)
+
+    def rescheduleJob(self, id: str, trigger: dict) -> bool:
+        mode: str = trigger['mode'] # kwargs['mode']
+        days: str = trigger['days'] # '0-4' or 'mon,tue,wed,thu,fri'
+        hour: int = trigger['hour']
+        minute: int = trigger['minute']
+
+        trigger=CronTrigger(day_of_week=days, hour=hour, minute=minute)
+
+        self._scheduler.reschedule_job(job_id=id, trigger=trigger)
+
+        return True
 
 scheduler = Scheduler()
 

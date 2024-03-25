@@ -113,6 +113,7 @@ async def result(body: ResultRequest=Body()):
 """
 class InstanceRequest(RequestModel):
     id: str | None = None
+    strategy: str | None = None
 
 class InstanceResult(BaseModel):
     id: str
@@ -126,30 +127,58 @@ class InstanceResponse(ResponseModel):
 
 @router.post('/instance', response_model=InstanceResponse, response_model_exclude_none=True)
 async def instance(body: InstanceRequest=Body()):
-    if body.id is None:
+    instance = getFinderStrategyInstance(id=body.id, strategy=body.strategy)
+    if instance is None:
+        return InstanceResponse(result=None)
+    
+    if type(instance) == list:
         result = []
-        instances = getFinderStrategyInstance()
-        for instance in instances:
+        for inst in instance:
             result.append(InstanceResult(
-                id=instance._id,
-                name=instance._name,
-                strategy=instance._strategy,
-                args=instance._args,
-                response=instance._response
+                id=inst._id,
+                name=inst._name,
+                trigger=inst._trigger,
+                strategy=inst._strategy,
+                args=inst._args,
+                response=inst._response
             ))
         return InstanceResponse(result=result)
     else:
-        instance = getFinderStrategyInstance(body.id)
-        if instance is None:
-            return InstanceResponse(result=None)
-        else:
-            return InstanceResponse(result=InstanceResult(
-                id=instance._id,
-                name=instance._name,
-                strategy=instance._strategy,
-                args=instance._args,
-                response=instance._response
-            ))
+        return InstanceResponse(result=InstanceResult(
+            id=instance._id,
+            name=instance._name,
+            trigger=instance._trigger,
+            strategy=instance._strategy,
+            args=instance._args,
+            response=instance._response
+        ))
+    
+    # if body.id is None and body.strategy is None:
+    #     result = []
+    #     instances = getFinderStrategyInstance()
+    #     for instance in instances:
+    #         result.append(InstanceResult(
+    #             id=instance._id,
+    #             name=instance._name,
+    #             trigger=instance._trigger,
+    #             strategy=instance._strategy,
+    #             args=instance._args,
+    #             response=instance._response
+    #         ))
+    #     return InstanceResponse(result=result)
+    # else:
+    #     instance = getFinderStrategyInstance(body.id)
+    #     if instance is None:
+    #         return InstanceResponse(result=None)
+    #     else:
+    #         return InstanceResponse(result=InstanceResult(
+    #             id=instance._id,
+    #             name=instance._name,
+    #             trigger=instance._trigger,
+    #             strategy=instance._strategy,
+    #             args=instance._args,
+    #             response=instance._response
+    #         ))
         
 """
 删除策略实例
@@ -164,3 +193,18 @@ class RemoveResponse(ResponseModel):
 async def remove(body: RemoveRequest=Body()):
     removeFinderStrategyInstance(body.id)
     return RemoveResponse()
+
+"""
+更改策略实例执行时间
+"""
+class RescheduleRequest(RequestModel):
+    id: str
+    trigger: TriggerRequest
+
+class RescheduleResponse(ResponseModel):
+    pass
+
+@router.post('/reschedule', response_model=RescheduleResponse, response_model_exclude_none=True)
+async def reschedule(body: RescheduleRequest=Body()):
+    scheduler.rescheduleJob(id=body.id, trigger=body.trigger.model_dump())
+    return RescheduleResponse()

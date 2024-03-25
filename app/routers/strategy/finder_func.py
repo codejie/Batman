@@ -24,7 +24,7 @@ TestStrategy
 #     kwargs: str
 
 class TestStrategy:
-    _name = 'TestStrategy'
+    _name = 'Test'
     _desc = 'for test'
     _strategy = {
         'name': T1Strategy._name,

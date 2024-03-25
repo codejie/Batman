@@ -76,7 +76,7 @@ export default class extends Vue {
           "hour": 21,
           "minute": 5
       },
-      "strategy": "fs1",
+      "strategy": this.strategy.name,
       "args": {
           "symbol": [
               {

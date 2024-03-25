@@ -59,7 +59,8 @@ import { IStrategyData, IStrategyInstanceData } from '@/api/def/strategy'
 import StrategyForm from './form.vue'
 import TriggerForm from './triggerform.vue'
 import StrategyResult from './resultindex.vue'
-import { getInfo } from '@/api/strategy/finder'
+import { getInfo, getInstanceByStategy } from '@/api/strategy/finder'
+import { getInstanceByDom } from 'echarts'
 
 @Component({
   name: 'StrategyFilter',
@@ -131,34 +132,56 @@ export default class extends Vue {
     this.loadInstanceList()
   }
 
-  private loadInstanceList(){
+  private async loadInstanceList(){
     console.log('===========加载实例列表==========')
-    console.log(this.pager)
-    var instanceList = []
-    let now = new Date()
-    let nowStr = now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate()
-        + ' ' + now.getHours() + '-' + now.getMinutes() + '-' + now.getSeconds() 
-    for(var i=1; i<=2; i++){
+
+    const { data } = await getInstanceByStategy({
+      strategy: this.curStrategy.name
+    })
+
+    console.log(data)
+
+    const instanceList = []
+    for (const inst in data.result) {
       instanceList.push({
-        id: i,
-        strategyId: this.curStrategy.id,
-        title: this.curStrategy.name + ' instance' + i,
-        lastRunTime: nowStr,
-        runTimes: 27,
-        scheduleTime: 'Every Trade Day 20:30',
-        trigger: {
-          mode: 'daily',
-          hour: 23,
-          minute: 30
-        },
-        arguments: [
-          { name: '上涨天数', unit: '天', value: 123, notes: '最近交易日前的连续上涨天数' },
-          { name: '上涨幅度', unit: '%', value: 66, notes: '最近交易日前的每天上涨幅度' },
-          { name: '下跌天数', unit: '天', value: 456, notes: '最近交易日前的连续下跌天数' },
-          { name: '下跌幅度', unit: '%', value: 88, notes: '最近交易日前的每天下跌幅度' }
-        ]
+        id: 0,
+        strategyId: (<any>inst).id,
+        title: (<any>inst).name,
+        trigger: (<any>inst).trigger,
+        arguments: (<any>inst).args,
+        lastRunTime: (<any>inst).response ? (<any>inst).response.updated : '<>',
+        runTimes: (<any>inst).response ? (<any>inst).response.runTimes : '<>'
       })
     }
+
+
+    // console.log(this.pager)
+    // var instanceList = []
+    // let now = new Date()
+    // let nowStr = now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate()
+    //     + ' ' + now.getHours() + '-' + now.getMinutes() + '-' + now.getSeconds() 
+    // for(var i=1; i<=2; i++){
+    //   instanceList.push({
+    //     id: i,
+    //     strategyId: this.curStrategy.id,
+    //     title: this.curStrategy.name + ' instance' + i,
+    //     lastRunTime: nowStr,
+    //     runTimes: 27,
+    //     scheduleTime: 'Every Trade Day 20:30',
+    //     trigger: {
+    //       mode: 'daily',
+    //       hour: 23,
+    //       minute: 30
+    //     },
+    //     arguments: [
+    //       { name: '上涨天数', unit: '天', value: 123, notes: '最近交易日前的连续上涨天数' },
+    //       { name: '上涨幅度', unit: '%', value: 66, notes: '最近交易日前的每天上涨幅度' },
+    //       { name: '下跌天数', unit: '天', value: 456, notes: '最近交易日前的连续下跌天数' },
+    //       { name: '下跌幅度', unit: '%', value: 88, notes: '最近交易日前的每天下跌幅度' }
+    //     ]
+    //   })
+    // }
+
     this.instanceList = instanceList
     this.pager.total = this.instanceList.length
   }
