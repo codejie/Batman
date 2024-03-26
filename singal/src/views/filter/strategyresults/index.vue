@@ -28,6 +28,9 @@
             <el-button v-if="row.trigger" type="text" icon="el-icon-edit" @click="editTrigger(row)">
               {{modeMap[row.trigger.mode]}}{{row.trigger.hour}}:{{row.trigger.minute}}
             </el-button>
+            <el-button v-else type="text" icon="el-icon-edit" @click="editTrigger(row)">
+              编辑
+            </el-button>
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center" width="60">
@@ -140,9 +143,10 @@ export default class extends Vue {
     })
 
     console.log(data)
-
-    const instanceList = []
-    for (const inst in data.result) {
+    console.log(data.result)
+    let instanceList: IStrategyInstanceData[] = []
+    
+    for (const inst of data.result) {
       instanceList.push({
         id: 0,
         strategyId: (<any>inst).id,

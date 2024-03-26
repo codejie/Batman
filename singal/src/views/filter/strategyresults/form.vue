@@ -13,7 +13,7 @@
           <el-table-column label="单位" prop="unit" width="80"/>
           <el-table-column label="值" width="120">
             <template slot-scope="{row}">
-              <el-input v-model="row.value" style="width:100%"/>
+              <el-input v-model="row.value" size="mini" style="width:100%"/>
             </template>
           </el-table-column>
           <el-table-column label="说明" prop="notes"/>
@@ -126,3 +126,4 @@ export default class extends Vue {
 
 }
 </script>
+

@@ -43,7 +43,12 @@ export default class extends Vue {
 
   private init(id: number, trigger: any) {
     this.form.id = id
-    this.form.triggerTime = trigger.hour + ':' + trigger.minute
+    if(trigger){
+      this.form.triggerTime = trigger.hour + ':' + trigger.minute
+    } else {
+      this.form.triggerTime = ''
+    }
+    
     this.dialogVisible = true
   }
 
