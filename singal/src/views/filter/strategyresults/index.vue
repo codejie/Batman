@@ -25,17 +25,17 @@
         <el-table-column label="执行次数" align="center" prop="runTimes" width="60"/>
         <el-table-column label="计划时间" prop="scheduleTime" width="115">
           <template slot-scope="{row}">
-            <el-button v-if="row.trigger" type="text" icon="el-icon-edit" @click="editTrigger(row)">
+            <el-button v-if="row.trigger" size="mini" type="text" icon="el-icon-edit" @click="editTrigger(row)">
               {{modeMap[row.trigger.mode]}}{{row.trigger.hour}}:{{row.trigger.minute}}
             </el-button>
-            <el-button v-else type="text" icon="el-icon-edit" @click="editTrigger(row)">
+            <el-button v-else type="text" size="mini" icon="el-icon-edit" @click="editTrigger(row)">
               编辑
             </el-button>
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center" width="60">
           <template slot-scope="{row}">
-            <el-button type="text" icon="el-icon-tickets" @click="showResults(row)">查看</el-button>
+            <el-button type="text" size="mini" icon="el-icon-tickets" @click="showResults(row)">查看</el-button>
             <!-- {{ row.id }}查看 -->
           </template>
         </el-table-column>
@@ -229,5 +229,7 @@ export default class extends Vue {
 .header-center {
   text-align: center;
 }
+
 </style>
+
 

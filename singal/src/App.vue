@@ -20,3 +20,18 @@ import ServiceWorkerUpdatePopup from '@/pwa/components/ServiceWorkerUpdatePopup.
 })
 export default class extends Vue {}
 </script>
+
+<style lang="scss">
+.el-table th{
+  padding: 2px;
+}
+
+.el-table td{
+  padding: 2px;
+}
+
+.el-form-item {
+  margin: 2px;
+
+}
+</style>

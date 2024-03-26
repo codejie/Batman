@@ -4,7 +4,7 @@
       <el-form-item label="策略名称">{{strategy.name}}</el-form-item>
       <el-form-item label="策略说明">{{strategy.description}}</el-form-item>
       <el-form-item label="实例名称">
-        <el-input v-model="form.title" style="width:100%"/>
+        <el-input v-model="form.title" size="mini" style="width:100%"/>
       </el-form-item>
       <el-table :border="1"
           :data="form.arguments"
