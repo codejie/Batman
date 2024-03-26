@@ -16,6 +16,7 @@ export interface IStrategyInstanceData {
   id?: number
   strategyId?: number
   title: string
+  trigger: any,
   lastRunTime?: string
   runTimes?: number
   scheduleTime?: string

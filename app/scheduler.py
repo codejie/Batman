@@ -19,7 +19,7 @@ class Scheduler:
     def shutdown(self):
         self._scheduler.shutdown(True)
 
-    def addJob(self, **kwargs) -> str | None:
+    def addFinderStrategyJob(self, **kwargs) -> str | None:
         # logger.debug(kwargs)
 
         strategy = kwargs['strategy']
@@ -43,6 +43,9 @@ class Scheduler:
         logger.debug(f'schedule job - \n{job}')
 
         return job.id
+
+    def addFetchDataJob(self, **kwargs) -> str:
+        pass
 
     def removeJob(self, id: str):
         self._scheduler.remove_job(id)

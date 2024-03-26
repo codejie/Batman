@@ -11,29 +11,21 @@ from fastapi.responses import JSONResponse, FileResponse
 from app import routers, AppException
 
 from app.scheduler import scheduler
+from app.dbengine import engine, initDb, shutdownDb
 from app import logger
-
-# class SchedulerMiddleware():
-#     def __init__(self, app: ASGIApp, scheduler) -> None:
-#         self.app = app
-#         self.scheduler = scheduler
-    
-#     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-#         if scope['type'] == 'lifespan.startup':
-#             logger.info('========scheduler startup')
-#             await self.scheduler.start_in_backgroup()
-#         await self.app(scope, receive, send)
-
-# scheduler = BackgroundScheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info('Service Startup.')
+    logger.debug('========engine connect')
+    initDb(engine=engine)
     logger.debug('========scheduler startup')
     scheduler.start()
     yield
     scheduler.shutdown()
     logger.debug('========scheduler shutdown.')
+    shutdownDb(engine=engine)
+    logger.debug('========engine shutdown.')
     logger.info('Service Stop.')
 
 app = FastAPI(title='Batman', lifespan=lifespan)
@@ -62,12 +54,8 @@ async def app_exception_handler(request: Request, e: AppException):
 
 # app.mount('/static', StaticFiles(directory='.\\static'))
 
-# def myjob():
-#     logger.info('==========mmm')
-
 @app.get('/')
 async def root():
-    # scheduler.add_job(myjob, 'interval', minutes=1)
     return {
         'App': 'Batman',
         'Description': 'I am rich.',

@@ -78,7 +78,7 @@ async def schedule(body: ScheduleRequest=Body()):
     strategy = validFinderStrategyFunc(body.strategy, body.args)
     if strategy is None:
         return ScheduleResponse(code=-1, result=f'strategy func {body.strategy} not found.')
-    result = scheduler.addJob(
+    result = scheduler.addFinderStrategyJob(
         strategy = body.strategy,
         func=strategy['func'],
         title=body.title,
