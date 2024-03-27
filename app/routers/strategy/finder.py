@@ -9,8 +9,8 @@ from app.routers.dependencies import verify_token
 from app.routers.define import RequestModel, ResponseModel
 
 from app.scheduler import scheduler
-from app.routers.strategy.finder_func_define import getFinderStrategyFunc, validFinderStrategyFunc # finderStrategyFuncList
-from app.routers.strategy.local_cache import getFinderStrategyInstance, removeFinderStrategyInstance
+from app.routers.strategy.finder_func_define import getFinderStrategyFunc, validFinderStrategyFunc
+from app.routers.strategy.local_cache import getFinderStrategyInstance, removeFinderStrategyInstance, createFinderStrategyInstance
 
 router = APIRouter(prefix='/strategy/finder', tags=['strategy', 'finder strategy'], dependencies=[Depends(verify_token)])
 
@@ -84,6 +84,12 @@ async def schedule(body: ScheduleRequest=Body()):
         title=body.title,
         trigger = body.trigger.model_dump(),
         args=body.args)
+    
+    args = body.args
+    args['id'] = result
+
+    createFinderStrategyInstance(result, body.title, body.trigger.model_dump(), body.strategy, args)
+
     return ScheduleResponse(code=(-1 if result is None else 0), result=result)
 
 """
@@ -152,33 +158,6 @@ async def instance(body: InstanceRequest=Body()):
             args=instance._args,
             response=instance._response
         ))
-    
-    # if body.id is None and body.strategy is None:
-    #     result = []
-    #     instances = getFinderStrategyInstance()
-    #     for instance in instances:
-    #         result.append(InstanceResult(
-    #             id=instance._id,
-    #             name=instance._name,
-    #             trigger=instance._trigger,
-    #             strategy=instance._strategy,
-    #             args=instance._args,
-    #             response=instance._response
-    #         ))
-    #     return InstanceResponse(result=result)
-    # else:
-    #     instance = getFinderStrategyInstance(body.id)
-    #     if instance is None:
-    #         return InstanceResponse(result=None)
-    #     else:
-    #         return InstanceResponse(result=InstanceResult(
-    #             id=instance._id,
-    #             name=instance._name,
-    #             trigger=instance._trigger,
-    #             strategy=instance._strategy,
-    #             args=instance._args,
-    #             response=instance._response
-    #         ))
         
 """
 删除策略实例

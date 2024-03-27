@@ -8,6 +8,8 @@ from pandas import DataFrame
 from pydantic import BaseModel, ConfigDict
 from typing import Dict
 
+from app.scheduler import scheduler
+
 class MyType(BaseModel):
     # model_config = ConfigDict(arbitrary_types_allowed=True)
     result: Dict
@@ -31,15 +33,16 @@ def test():
     d = DataFrame(p.to_dict())
     print(d)
     return my
-# {
-#         'abc': 1,
-#         'code': 0,
-#         'result': {
-#             'AB': 1
-#         }
-#     }
 
+def func(**kwargs):
+    logger.debug('===============')
+    logger.debug(f'{kwargs}')
+    print(scheduler.listJobs())
 
-# @router.post('/ta')
-# def ta(body = Body()):
-    
+@router.post('/jobs')
+def jobs():
+    # scheduler.addDelayJob(func=func, seconds=3)
+    # scheduler.addIntervalJob(func=func, interval=100)
+    # scheduler.addIntervalJob(func=func, interval=300)
+    # print(scheduler.listJobs())
+    return scheduler.listJobs()
