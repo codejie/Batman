@@ -5,8 +5,6 @@ from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.combining import AndTrigger
 from datetime import datetime, timedelta
 
-# from app.routers.strategy.local_cache import createFinderStrategyInstance
-
 from app import logger
 
 class Scheduler:
@@ -22,50 +20,49 @@ class Scheduler:
     def makeJobId(self) -> str:
         return datetime.today().strftime('%Y%m%d%H%M%S%f')
 
-    def addFinderStrategyJob(self, **kwargs) -> str | None:
-        # logger.debug(kwargs)
+    # def addFinderStrategyJob(self, **kwargs) -> str | None:
+    #     # logger.debug(kwargs)
 
-        # strategy = kwargs['strategy']
-        func: callable = kwargs['func']
-        name: str = kwargs['title']
-        trigger: dict = kwargs['trigger']
-        args: dict = kwargs['args']
+    #     # strategy = kwargs['strategy']
+    #     func: callable = kwargs['func']
+    #     name: str = kwargs['title']
+    #     trigger: dict = kwargs['trigger']
+    #     args: dict = kwargs['args']
 
-        mode: str = trigger['mode'] # kwargs['mode']
-        days: str = trigger['days'] # '0-4' or 'mon,tue,wed,thu,fri'
-        hour: int = trigger['hour']
-        minute: int = trigger['minute']
+    #     mode: str = trigger['mode'] # kwargs['mode']
+    #     days: str = trigger['days'] # '0-4' or 'mon,tue,wed,thu,fri'
+    #     hour: int = trigger['hour']
+    #     minute: int = trigger['minute']
 
-        # trigger: CronTrigger = CronTrigger(day_of_week=days, hour=hour, minute=minute)
+    #     # trigger: CronTrigger = CronTrigger(day_of_week=days, hour=hour, minute=minute)
+    #     id = self.makeJobId()
+    #     args['id'] = id
+    #     job = self._scheduler.add_job(func=func, kwargs=args, trigger=CronTrigger(day_of_week=days, hour=hour, minute=minute), name=name, id=id)
+
+    #     # createFinderStrategyInstance(id, name, trigger, strategy, args)
+
+    #     logger.debug(f'schedule job - \n{job}')
+
+    #     return job.id
+
+    def addDailyJob(self, func: callable, args: dict, days: str, hour: int, minute: int) -> str:
         id = self.makeJobId()
+        trigger = CronTrigger(day_of_week=days, hour=hour, minute=minute)
         args['id'] = id
-        job = self._scheduler.add_job(func=func, kwargs=args, trigger=CronTrigger(day_of_week=days, hour=hour, minute=minute), name=name, id=id)
+        return self._scheduler.add_job(id=id, trigger=trigger, func=func, kwargs=args).id
 
-        # createFinderStrategyInstance(id, name, trigger, strategy, args)
-
-        logger.debug(f'schedule job - \n{job}')
-
-        return job.id
-
-    def addDailyJob(self, func: callable, days: str, hour: int, minute: int) -> str:
-        pass
-
-    def addIntervalJob(self, func: callable, interval: int) -> str:
+    def addIntervalJob(self, func: callable, args: dict, interval: int) -> str:
         id = self.makeJobId()
         trigger = IntervalTrigger(seconds=interval)
-        args = {
-            'id': id
-        }
+        args['id'] = id
         job = self._scheduler.add_job(id=id, trigger=trigger, func=func, kwargs=args)
         return job.id
     
-    def addDelayJob(self, func: callable, seconds: int) -> str:
+    def addDelayJob(self, func: callable, args: dict, seconds: int) -> str:
         id = self.makeJobId()
         t = datetime.now() + timedelta(seconds=seconds)
         trigger = CronTrigger(year=t.year, month=t.month, day=t.day, hour=t.hour, minute=t.minute, second=t.second)
-        args = {
-            'id': id
-        }
+        args['id'] = id
         job = self._scheduler.add_job(id=id, trigger=trigger, func=func, kwargs=args)
         return job.id
 

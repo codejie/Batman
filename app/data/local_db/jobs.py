@@ -16,7 +16,7 @@ def fetchAStock() -> str:
         df.to_sql(TableName['A_Stock'], engine, if_exists='replace')
         logger.debug('fetchAStock() end.')
 
-    return scheduler.addDelayJob(func=func, seconds=2)
+    return scheduler.addDelayJob(func=func, args={}, seconds=2)
 
 async def scheduleFetchJob(name: str) -> str:
     if name == 'fetch_a_stock':

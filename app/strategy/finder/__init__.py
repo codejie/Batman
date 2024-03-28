@@ -5,7 +5,10 @@ FinderStrategy Base Classes
 from .. import Result, Strategy, Type
 
 class FinderResult(Result):
-    index: list[int] = []
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.index = []
 
     def represent(self, **kwargs) -> str:
         return str(self.index)

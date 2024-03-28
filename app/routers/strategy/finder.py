@@ -78,12 +78,14 @@ async def schedule(body: ScheduleRequest=Body()):
     strategy = validFinderStrategyFunc(body.strategy, body.args)
     if strategy is None:
         return ScheduleResponse(code=-1, result=f'strategy func {body.strategy} not found.')
-    result = scheduler.addFinderStrategyJob(
-        strategy = body.strategy,
-        func=strategy['func'],
-        title=body.title,
-        trigger = body.trigger.model_dump(),
-        args=body.args)
+    
+    result = scheduler.addDailyJob(func=strategy['func'], args=body.args, days=body.trigger.days, hour=body.trigger.hour, minute=body.trigger.minute)
+    # result = scheduler.addFinderStrategyJob(
+    #     strategy = body.strategy,
+    #     func=strategy['func'],
+    #     title=body.title,
+    #     trigger = body.trigger.model_dump(),
+    #     args=body.args)
     
     args = body.args
     args['id'] = result
@@ -100,15 +102,15 @@ class ResultRequest(RequestModel):
     id: str
 
 class ResultResponse(ResponseModel):
-    result: dict | None = None
+    result: dict | str = None
 
 @router.post('/result', response_model=ResultResponse, response_model_exclude_none=True)
 async def result(body: ResultRequest=Body()):
     instance = getFinderStrategyInstance(body.id)
     if instance is None:
-        return ResultResponse(code=-1, result=None)
-    print(instance)
-    print(instance._response)
+        return ResultResponse(code=-1, result=f'strategy {body.id} not found.')
+    # print(instance)
+    # print(instance._response)
     return ResultResponse(result=instance._response)
 
     # print(RapidRaiseFall00FinderStrategy._response)

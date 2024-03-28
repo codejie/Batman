@@ -7,6 +7,9 @@ class FS1Result(FinderResult):
     _name: str = 'FS1Result'
     _desc: str = 'FS1Strategy Result'
 
+    def __init__(self) -> None:
+        super().__init__()
+
     def represent(self, **kwargs) -> str:
         ret = super().represent(**kwargs)
 
@@ -97,7 +100,7 @@ class FS1Strategy(FinderStrategy):
             self.upCount = 0
             self.downCount = 0
 
-        if self.upCount >= self.up_count and self.downCount >= self.down_count:
+        if (self.upCount >= self.up_count) and (self.downCount >= self.down_count):
             self._result.index.append(self._pos)
             self.upCount = 0
             self.downCount = 0
