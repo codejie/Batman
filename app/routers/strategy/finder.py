@@ -102,15 +102,13 @@ class ResultRequest(RequestModel):
     id: str
 
 class ResultResponse(ResponseModel):
-    result: dict | str = None
+    result: dict | str | None = None
 
 @router.post('/result', response_model=ResultResponse, response_model_exclude_none=True)
 async def result(body: ResultRequest=Body()):
     instance = getFinderStrategyInstance(body.id)
     if instance is None:
         return ResultResponse(code=-1, result=f'strategy {body.id} not found.')
-    # print(instance)
-    # print(instance._response)
     return ResultResponse(result=instance._response)
 
     # print(RapidRaiseFall00FinderStrategy._response)
