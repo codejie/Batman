@@ -20,3 +20,10 @@ export const getInstanceByStategy = (data: any) =>
         method: 'post',
         data
     })
+
+export const getResultByInstance = (data: any) =>
+    request({
+        url: '/strategy/finder/result',
+        method: 'post',
+        data
+    })

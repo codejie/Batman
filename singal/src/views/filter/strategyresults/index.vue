@@ -148,7 +148,7 @@ export default class extends Vue {
     
     for (const inst of data.result) {
       instanceList.push({
-        id: 0,
+        id: (<any>inst).id,
         strategyId: (<any>inst).id,
         title: (<any>inst).name,
         trigger: (<any>inst).trigger,
@@ -209,7 +209,7 @@ export default class extends Vue {
   private showResults(instance: IStrategyInstanceData){
     this.curInstance = instance
     let ref:any =this.$refs.refResult
-    ref.init()
+    ref.init(instance)
   }
 
   private currentChange(currentPage: number) {
