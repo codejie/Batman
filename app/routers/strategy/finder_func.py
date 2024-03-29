@@ -56,7 +56,7 @@ RapidRaiseFall00FinderStrategy base FS1
 #     items: list[dict] = []
 
 class RapidRaiseFall00FinderStrategy:
-    _name = 'RapidRaiseFall00FinderStrategy'
+    _name = '速涨急跌'
     _desc = '全部A股计算Close/Open最近速涨速跌'
     _strategy = {
         'name': FS1Strategy._name,
@@ -68,7 +68,7 @@ class RapidRaiseFall00FinderStrategy:
 
     @staticmethod
     def func(**kwargs):
-        logger.info('RapidRaiseFall00FinderStrategy:func() called.')
+        logger.debug('RapidRaiseFall00FinderStrategy:func() called.')
         id = kwargs['id']
         # start = utils.dateConvert1(kwargs['start'])
         # end = utils.dateConvert1(kwargs['end'])
@@ -89,7 +89,7 @@ class RapidRaiseFall00FinderStrategy:
         codes = DataFrame()
         if 'symbol' in kwargs:
             codes = codes.from_dict(kwargs['symbol'])
-            print(codes)
+            # print(codes)
         else:
             codes = stock.get_a_code()
 
@@ -97,12 +97,9 @@ class RapidRaiseFall00FinderStrategy:
             df = stock.get_history(r['code'], start, end)
             if df is not None and {'开盘','收盘'}.issubset(df.columns):
                 df = df.tail(up_count + down_count).reset_index()
-                # print(df)
                 strategy = FS1Strategy()
-                print(f'{r['code']} - {up_count} {up_rate} {down_count} {down_rate} -- {len(df)}')
                 strategy.load(close=df['收盘'], open=df['开盘'], up_count=up_count, up_rate=up_rate, down_count=down_count, down_rate=down_rate)
                 result: FS1Result = strategy.run()
-                print(result)
                 if result.index and len(result.index) > 0:
                     # RapidRaiseFall00FinderStrategy._response.items.append({
                     response['items'].append({
@@ -113,5 +110,7 @@ class RapidRaiseFall00FinderStrategy:
                     })
                     
         # RapidRaiseFall00FinderStrategy._response.updated = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'
-        response['updated'] = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'
+        response['updated'] = f'{datetime.today().strftime('%Y%m%d %H%M%S')}({datetime.now() - begin})'
         setFinderStrategyInstanceResponse(id=id, response=response)
+
+        logger.debug('RapidRaiseFall00FinderStrategy:func() end.')

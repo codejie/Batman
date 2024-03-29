@@ -9,8 +9,8 @@ import akshare
 
 from .. import AppException
 from .. import logger
-from . import DataSource, DATA_SOURCE_REQUEST_TIMEOUT
-
+from . import DataSource, DATA_SOURCE_REQUEST_TIMEOUT, USE_LOCAL
+from app.data.local_db import local
 
 DATA_SOURCE = DataSource.AKSHARE
 
@@ -31,6 +31,8 @@ def get_a_code(market: str | None = None) -> DataFrame:
         bj: 北交所
     """
     try:
+        if USE_LOCAL:
+            return local.get_a_code(market=market)
         if DATA_SOURCE == DataSource.AKSHARE:
             if market == 'sh':
                 return akshare.stock_info_sh_name_code(symbol='主板A股')

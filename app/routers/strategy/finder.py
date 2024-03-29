@@ -9,8 +9,8 @@ from app.routers.dependencies import verify_token
 from app.routers.define import RequestModel, ResponseModel
 
 from app.scheduler import scheduler
-from app.routers.strategy.finder_func_define import getFinderStrategyFunc, validFinderStrategyFunc # finderStrategyFuncList
-from app.routers.strategy.local_cache import getFinderStrategyInstance, removeFinderStrategyInstance
+from app.routers.strategy.finder_func_define import getFinderStrategyFunc, validFinderStrategyFunc
+from app.routers.strategy.local_cache import getFinderStrategyInstance, removeFinderStrategyInstance, createFinderStrategyInstance
 
 router = APIRouter(prefix='/strategy/finder', tags=['strategy', 'finder strategy'], dependencies=[Depends(verify_token)])
 
@@ -78,12 +78,20 @@ async def schedule(body: ScheduleRequest=Body()):
     strategy = validFinderStrategyFunc(body.strategy, body.args)
     if strategy is None:
         return ScheduleResponse(code=-1, result=f'strategy func {body.strategy} not found.')
-    result = scheduler.addJob(
-        strategy = body.strategy,
-        func=strategy['func'],
-        title=body.title,
-        trigger = body.trigger.model_dump(),
-        args=body.args)
+    
+    result = scheduler.addDailyJob(func=strategy['func'], args=body.args, days=body.trigger.days, hour=body.trigger.hour, minute=body.trigger.minute)
+    # result = scheduler.addFinderStrategyJob(
+    #     strategy = body.strategy,
+    #     func=strategy['func'],
+    #     title=body.title,
+    #     trigger = body.trigger.model_dump(),
+    #     args=body.args)
+    
+    args = body.args
+    args['id'] = result
+
+    createFinderStrategyInstance(result, body.title, body.trigger.model_dump(), body.strategy, args)
+
     return ScheduleResponse(code=(-1 if result is None else 0), result=result)
 
 """
@@ -94,15 +102,15 @@ class ResultRequest(RequestModel):
     id: str
 
 class ResultResponse(ResponseModel):
-    result: dict | None = None
+    result: dict | str = None
 
 @router.post('/result', response_model=ResultResponse, response_model_exclude_none=True)
 async def result(body: ResultRequest=Body()):
     instance = getFinderStrategyInstance(body.id)
     if instance is None:
-        return ResultResponse(code=-1, result=None)
-    print(instance)
-    print(instance._response)
+        return ResultResponse(code=-1, result=f'strategy {body.id} not found.')
+    # print(instance)
+    # print(instance._response)
     return ResultResponse(result=instance._response)
 
     # print(RapidRaiseFall00FinderStrategy._response)
@@ -152,33 +160,6 @@ async def instance(body: InstanceRequest=Body()):
             args=instance._args,
             response=instance._response
         ))
-    
-    # if body.id is None and body.strategy is None:
-    #     result = []
-    #     instances = getFinderStrategyInstance()
-    #     for instance in instances:
-    #         result.append(InstanceResult(
-    #             id=instance._id,
-    #             name=instance._name,
-    #             trigger=instance._trigger,
-    #             strategy=instance._strategy,
-    #             args=instance._args,
-    #             response=instance._response
-    #         ))
-    #     return InstanceResponse(result=result)
-    # else:
-    #     instance = getFinderStrategyInstance(body.id)
-    #     if instance is None:
-    #         return InstanceResponse(result=None)
-    #     else:
-    #         return InstanceResponse(result=InstanceResult(
-    #             id=instance._id,
-    #             name=instance._name,
-    #             trigger=instance._trigger,
-    #             strategy=instance._strategy,
-    #             args=instance._args,
-    #             response=instance._response
-    #         ))
         
 """
 删除策略实例
