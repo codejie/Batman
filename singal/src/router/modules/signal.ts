@@ -38,6 +38,15 @@ const signalRouters: RouteConfig[] = [
             }
         },
         {
+          path: '/compare',
+          component: () => import(/* webpackChunkName: "DataIndex" */ '@/views/data/stock/compare.vue'),
+          name: 'CompareIndex',
+          meta: {
+              title: 'CompareIndex',
+              roles: ['admin', 'signal']
+          }
+        },
+        {
           path: '/stocklinechart',
           component: () => import(/* webpackChunkName: "DataStock" */ '@/views/data/stock/stocklinechart.vue'),
           name: 'DataStockLineChart',
