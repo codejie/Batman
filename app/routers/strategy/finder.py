@@ -9,8 +9,8 @@ from app.routers.dependencies import verify_token
 from app.routers.define import RequestModel, ResponseModel
 
 from app.scheduler import scheduler
-from app.routers.strategy.finder_func_define import getFinderStrategyFunc, validFinderStrategyFunc
-from app.routers.strategy.local_cache import getFinderStrategyInstance, removeFinderStrategyInstance, createFinderStrategyInstance
+from app.strategy.finder.func import getFinderStrategyFunc, validFinderStrategyFunc
+from app.strategy.finder.func.local_cache import getFinderStrategyInstance, removeFinderStrategyInstance, createFinderStrategyInstance
 
 router = APIRouter(prefix='/strategy/finder', tags=['strategy', 'finder strategy'], dependencies=[Depends(verify_token)])
 
@@ -46,6 +46,7 @@ async def info(body: InfoRequest=Body()):
     result: list[InfoResult] = []
     if body.name is None:
         for k, v in getFinderStrategyFunc().items():
+            print(f'=================={v}')
             result.append(InfoResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
     else:
         v = getFinderStrategyFunc(body.name)
@@ -123,7 +124,7 @@ class InstanceRequest(RequestModel):
 
 class InstanceResult(BaseModel):
     id: str
-    name: str
+    title: str
     strategy: str
     args: dict | None = None
     response: dict | None = None
@@ -136,13 +137,12 @@ async def instance(body: InstanceRequest=Body()):
     instance = getFinderStrategyInstance(id=body.id, strategy=body.strategy)
     if instance is None:
         return InstanceResponse(result=None)
-    
     if type(instance) == list:
         result = []
         for inst in instance:
             result.append(InstanceResult(
                 id=inst._id,
-                name=inst._name,
+                title=inst._title,
                 trigger=inst._trigger,
                 strategy=inst._strategy,
                 args=inst._args,
@@ -152,7 +152,7 @@ async def instance(body: InstanceRequest=Body()):
     else:
         return InstanceResponse(result=InstanceResult(
             id=instance._id,
-            name=instance._name,
+            title=instance._title,
             trigger=instance._trigger,
             strategy=instance._strategy,
             args=instance._args,

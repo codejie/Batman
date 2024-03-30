@@ -150,7 +150,7 @@ export default class extends Vue {
       instanceList.push({
         id: 0,
         strategyId: (<any>inst).id,
-        title: (<any>inst).name,
+        title: (<any>inst).title,
         trigger: (<any>inst).trigger,
         arguments: (<any>inst).args,
         lastRunTime: (<any>inst).response ? (<any>inst).response.updated : '<>',

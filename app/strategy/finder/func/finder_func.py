@@ -3,18 +3,27 @@
 """
 from datetime import datetime, timedelta
 from pandas import DataFrame
-from pydantic import BaseModel
 
 from app import AppException, logger
 
 from app.data import stock
-from app.strategy.finder.fs_1 import FS1Result, FS1Strategy
-from app.strategy.finder.t_1 import T1Strategy
+from app.strategy.finder import FinderStrategy, FinderResult
+from app.strategy.finder.base import FS1Strategy, FS1Result, T1Strategy
 from app.routers import utils
-from app.routers.strategy.local_cache import setFinderStrategyInstanceResponse
-# from app.routers.strategy.finder_model import FinderStrategyResponse
-# class FinderStrategyResponse(BaseModel):
-#     updated: str = ''
+from app.strategy.finder.func.local_cache import setFinderStrategyInstanceResponse
+
+"""
+Finder Strategy Function Base
+"""
+class FinderStrategyFunction:
+
+    @staticmethod
+    def bindStrategy(base: FinderStrategy) -> dict:
+        return {
+            'name': base._name,
+            'desc': base._desc,
+            'args': base._args
+        }
 
 """
 TestStrategy
@@ -23,15 +32,10 @@ TestStrategy
 #     id: str
 #     kwargs: str
 
-class TestStrategy:
+class TestFunction(FinderStrategyFunction):
     _name = 'Test'
     _desc = 'for test'
-    _strategy = {
-        'name': T1Strategy._name,
-        'desc': T1Strategy._desc,
-        'args': T1Strategy._args
-    }
-    # _response: TestStrategyResponse | None = None
+    _strategy = FinderStrategyFunction.bindStrategy(T1Strategy)
 
     @staticmethod
     def func(**kwargs):
@@ -55,20 +59,14 @@ RapidRaiseFall00FinderStrategy base FS1
 # class RapidRaiseFall00FinderStrategyResponse(FinderStrategyResponse):
 #     items: list[dict] = []
 
-class RapidRaiseFall00FinderStrategy:
+class RapidRaiseFall00Function(FinderStrategyFunction):
     _name = '速涨急跌'
     _desc = '全部A股计算Close/Open最近速涨速跌'
-    _strategy = {
-        'name': FS1Strategy._name,
-        'desc': FS1Strategy._desc,
-        'args': FS1Strategy._args
-    }
-
-    # _response: RapidRaiseFall00FinderStrategyResponse = RapidRaiseFall00FinderStrategyResponse()
+    _strategy = FinderStrategyFunction.bindStrategy(FS1Strategy)
 
     @staticmethod
     def func(**kwargs):
-        logger.debug('RapidRaiseFall00FinderStrategy:func() called.')
+        logger.debug('RapidRaiseFall00Function:func() called.')
         id = kwargs['id']
         # start = utils.dateConvert1(kwargs['start'])
         # end = utils.dateConvert1(kwargs['end'])

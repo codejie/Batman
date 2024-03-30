@@ -1,7 +1,7 @@
 """
 选股策略一: 连续N天涨幅[(Close-Open) or (High-Low)]U%，再连续M天跌幅D%
 """
-from . import FinderResult, FinderStrategy
+from app.strategy.finder import FinderResult, FinderStrategy
 
 class FS1Result(FinderResult):
     _name: str = 'FS1Result'

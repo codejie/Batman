@@ -2,7 +2,7 @@
 策略函数相关定义
 """
 from app import AppException
-from app.routers.strategy.finder_func import TestStrategy, RapidRaiseFall00FinderStrategy
+from app.strategy.finder.func.finder_func import TestFunction, RapidRaiseFall00Function
 
 class StrategyInfo:
     name: str
@@ -18,20 +18,21 @@ class StrategyFuncInfo:
 """
 策略函数列表
 """
-finderStrategyFuncList: dict[str, dict] = {
-    'Test': {
-        'name': TestStrategy._name,
-        'desc': TestStrategy._desc,
-        'func': TestStrategy.func,
-        'strategy': TestStrategy._strategy
-    },
-    'RapidRaiseFall00FinderStrategy': {
-        'name': RapidRaiseFall00FinderStrategy._name,
-        'desc': RapidRaiseFall00FinderStrategy._desc,
-        'func': RapidRaiseFall00FinderStrategy.func,
-        'strategy': RapidRaiseFall00FinderStrategy._strategy
+
+def addStrategyFuncList(strategy: callable):
+    finderStrategyFuncList[strategy._name] = {
+        'name': strategy._name,
+        'desc': strategy._desc,
+        'func': strategy.func,
+        'strategy': strategy._strategy
     }
-} 
+
+finderStrategyFuncList: dict[str, dict] = {}
+
+addStrategyFuncList(TestFunction)
+addStrategyFuncList(RapidRaiseFall00Function)
+
+# print(f'funlist = \n{finderStrategyFuncList}')
 
 def getFinderStrategyFunc(name: str | None = None) -> dict | list[dict] | None:
     if name is None:
@@ -40,7 +41,7 @@ def getFinderStrategyFunc(name: str | None = None) -> dict | list[dict] | None:
         return finderStrategyFuncList[name]
 
 def validFinderStrategyFunc(name: str, kwargs: dict) -> dict | None:
-    func = finderStrategyFuncList[name]
+    func = finderStrategyFuncList.get(name, None)
     if func is None:
         return None
     
