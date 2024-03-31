@@ -1,19 +1,36 @@
 """
 策略函数相关定义
 """
+from datetime import datetime, timedelta
 from app import AppException
 from app.strategy.finder.func.finder_func import TestFunction, RapidRaiseFall00Function
 
-class StrategyInfo:
-    name: str
-    desc: str
-    args: list
+# class StrategyInfo:
+#     name: str
+#     desc: str
+#     args: list
 
-class StrategyFuncInfo:
-    name: str
-    desc: str
-    func: callable
-    strategy: StrategyInfo
+# class StrategyFuncInfo:
+#     name: str
+#     desc: str
+#     func: callable
+#     strategy: StrategyInfo
+
+# class StrategyFuncResultItem:
+#     code: str
+#     name: str
+#     range: str
+#     index: int
+
+# class StrategyFuncResponse:
+#     _type: int = 0 # response type, 0: base; 1: code & name
+
+#     def __init__(self, t: int) -> None:
+#         self._type = t
+#         self.items: list[StrategyFuncResultItem] = []
+#         self.updated: datetime = None
+#         self.duration: timedelta = None
+
 
 """
 策略函数列表
@@ -42,7 +59,7 @@ def getFinderStrategyFunc(name: str | None = None) -> dict | list[dict] | None:
 
 def validFinderStrategyFunc(name: str, kwargs: dict) -> dict | None:
     func = finderStrategyFuncList.get(name, None)
-    if func is None:
+    if func is None :
         return None
     
     strategy = func['strategy']

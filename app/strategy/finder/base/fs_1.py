@@ -69,7 +69,7 @@ class FS1Strategy(FinderStrategy):
 
     def __init__(self):
         super().__init__(self._name, self._desc)
-        self._result = FS1Result()
+        self.result = FS1Result()
 
         self.upCount = 0
         self.downCount = 0
@@ -84,12 +84,12 @@ class FS1Strategy(FinderStrategy):
 
         return super().load(kwargs=kwargs)
 
-    def _update(self) -> bool:
+    def update(self) -> bool:
         self._size = len(self.close)
-        return super()._update()
+        return super().update()
 
-    def _next(self) -> bool:
-        rate = (self.close[self._pos] - self.open[self._pos]) / self.open[self._pos]
+    def next(self) -> bool:
+        rate = (self.close[self.pos] - self.open[self.pos]) / self.open[self.pos]
         if rate >= self.up_rate:
             self.upCount += 1
             self.downCount = 0
@@ -101,7 +101,7 @@ class FS1Strategy(FinderStrategy):
             self.downCount = 0
 
         if (self.upCount >= self.up_count) and (self.downCount >= self.down_count):
-            self._result.index.append(self._pos)
+            self.result.index.append(self.pos)
             self.upCount = 0
             self.downCount = 0
 

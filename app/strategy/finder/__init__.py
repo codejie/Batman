@@ -14,6 +14,8 @@ class FinderResult(Result):
         return str(self.index)
 
 class FinderStrategy(Strategy):
+    _type = Type.Finder
+    
     def __init__(self, name: str = 'undefined', desc: str | None = None):
         super().__init__(Type.Finder, name, desc)
  

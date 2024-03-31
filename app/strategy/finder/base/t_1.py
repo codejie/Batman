@@ -26,10 +26,10 @@ class T1Strategy(FinderStrategy):
         logger.debug('T1Strategy:load()')
         return super().load(kwargs)
     
-    def _update(self) -> bool:
+    def update(self) -> bool:
         logger.debug('T1Strategy:update()')
-        return super()._update()
+        return super().update()
     
-    def _next(self) -> bool:
+    def next(self) -> bool:
         logger.debug('T1Strategy:_next()')
         return True

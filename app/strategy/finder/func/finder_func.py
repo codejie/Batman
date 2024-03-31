@@ -40,13 +40,22 @@ class TestFunction(FinderStrategyFunction):
     @staticmethod
     def func(**kwargs):
         logger.debug('TestStrategy:func() called')
-        logger.debug(kwargs)
+        # logger.debug(kwargs)
+        begin = datetime.now()
         id=kwargs['id']
         response = {
-            'updated': f'{datetime.today().strftime('%Y%m%d')}',
-            'id': id,
-            'kwargs': utils.kwargString(kwargs)
+            'items': [],
+            'updated': datetime.now(),
+            'duration': f'{(datetime.now() - begin)}' # '{datetime.now().strftime('%Y%m%d %H%M%S')}({datetime.now() - begin})'
+            # 'id': id,
+            # 'kwargs': utils.kwargString(kwargs)
         }
+        response['items'].append({
+            'code': '000001',
+            'name': '平安银行',
+            'range': '2024-01-01~2024-01-02',
+            'index': 1
+        })
         # response = TestStrategyResponse(id=id, kwargs=utils.kwargString(kwargs))
         # print(response)
         setFinderStrategyInstanceResponse(id=id, response=response)
@@ -103,12 +112,13 @@ class RapidRaiseFall00Function(FinderStrategyFunction):
                     response['items'].append({
                         'code': r['code'],
                         'name': r['name'],
-                        'range': f'{df['日期'].iloc[0]} - {df['日期'].iloc[-1]}',
+                        'range': f'{df['日期'].iloc[0]}~{df['日期'].iloc[-1]}',
                         'index': result.index
                     })
                     
         # RapidRaiseFall00FinderStrategy._response.updated = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'
-        response['updated'] = f'{datetime.today().strftime('%Y%m%d %H%M%S')}({datetime.now() - begin})'
-        setFinderStrategyInstanceResponse(id=id, response=response)
+        response['updated'] =  datetime.now() # f'{datetime.now().strftime('%Y%m%d %H%M%S')}({datetime.now() - begin})'
+        response['duration'] = f'{(datetime.now() - begin)}'
 
+        setFinderStrategyInstanceResponse(id=id, response=response)
         logger.debug('RapidRaiseFall00FinderStrategy:func() end.')
