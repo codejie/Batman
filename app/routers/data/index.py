@@ -9,10 +9,10 @@ from pydantic.fields import Field
 import datetime
 from fastapi import APIRouter, Depends, Body
 
-from ..dependencies import verify_token
-from ..define import RequestModel, ResponseModel
-from ...data import index as ds
-from ...toolkit.talib import overlap_studies as ta
+from app.routers.dependencies import verify_token
+from app.routers.define import RequestModel, ResponseModel
+from app.data import index as ds
+from app.toolkit.talib import overlap_studies as ta
 
 router = APIRouter(prefix='/data/index', tags=['data', 'index'], dependencies=[Depends(verify_token)])
 

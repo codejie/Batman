@@ -9,10 +9,10 @@ from pydantic.fields import Field
 from pydantic import BaseModel
 import datetime
 
-from ..dependencies import verify_token
-from ..define import RequestModel, ResponseModel
-from ...data import stock as ds
-from ...toolkit.talib import overlap_studies as ta
+from app.routers.dependencies import verify_token
+from app.routers.define import RequestModel, ResponseModel
+from app.data import stock as ds
+from app.toolkit.talib import overlap_studies as ta
 
 from ... import logger
 

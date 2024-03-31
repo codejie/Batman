@@ -5,7 +5,7 @@ Scheduler Job definition
 from app import logger, AppException
 from app.scheduler import scheduler
 from app.dbengine import engine
-from app.data import stock
+from app.data.remote_api import stock
 
 from app.data.local_db.define import TableName
 
