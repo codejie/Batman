@@ -102,17 +102,17 @@ class RapidRaiseFall00Function(FinderStrategyFunction):
 
         for i,r in codes.iterrows():
             df = stock.get_history(r['code'], start, end)
-            if df is not None and {'开盘','收盘'}.issubset(df.columns):
+            if df is not None and {'Open','Close'}.issubset(df.columns):
                 df = df.tail(up_count + down_count).reset_index()
                 strategy = FS1Strategy()
-                strategy.load(close=df['收盘'], open=df['开盘'], up_count=up_count, up_rate=up_rate, down_count=down_count, down_rate=down_rate)
+                strategy.load(close=df['Close'], open=df['Open'], up_count=up_count, up_rate=up_rate, down_count=down_count, down_rate=down_rate)
                 result: FS1Result = strategy.run()
                 if result.index and len(result.index) > 0:
                     # RapidRaiseFall00FinderStrategy._response.items.append({
                     response['items'].append({
                         'code': r['code'],
                         'name': r['name'],
-                        'range': f'{df['日期'].iloc[0]}~{df['日期'].iloc[-1]}',
+                        'range': f'{df['Date'].iloc[0]}~{df['Date'].iloc[-1]}',
                         'index': result.index
                     })
                     

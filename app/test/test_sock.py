@@ -8,3 +8,8 @@ class TestSockData(unittest.TestCase):
         print(df)
 
         self.assertTrue(True)
+
+    def test_history(self):
+        df = stock.get_history('002236', '2023-03-01', '2024-01-01')
+        print(df)
+        self.assertTrue(True)

@@ -1,6 +1,23 @@
 """
 指数数据相关函数计划
 """
+
+import pandas
+from pandas import DataFrame
+
+from app import logger, AppException
+from app.dbengine import engine
+from app.data.local_db import TableName
+
+"""
+获取A股指数列表
+"""
+def get_a_index(symbol: str = None) -> DataFrame:
+    try:
+        return pandas.read_sql_table(TableName.Index_A_List, engine)
+    except Exception as e:
+        raise AppException(e)
+
 # from pandas import DataFrame
 # import akshare
 

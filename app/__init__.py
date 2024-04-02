@@ -5,6 +5,10 @@ class AppException(Exception):
     def __init__(self, code: int = -1, message: str | None = None):
         self.code = code
         self.message = message
+        
+    def __init__(self, e: Exception):
+        self.code = -1
+        self.message = f'{e}'
 
 stream_handler = logging.StreamHandler(sys.stdout)
 # log_formatter = logging.Formatter("%(asctime)s [%(processName)s: %(process)d] [%(threadName)s: %(thread)d] [%(levelname)s] %(name)s: %(message)s")
