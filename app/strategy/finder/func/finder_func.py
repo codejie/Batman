@@ -84,8 +84,8 @@ class RapidRaiseFall00Function(FinderStrategyFunction):
         down_count = int(kwargs['down_count'])
         down_rate = float(kwargs['down_rate']) / 100
 
-        start = (datetime.today() - timedelta(30)).strftime('%Y%m%d')
-        end = datetime.today().strftime('%Y%m%d')
+        start = (datetime.today() - timedelta(30)).strftime('%Y-%m-%d')
+        end = datetime.today().strftime('%Y-%m-%d')
 
         response:dict = {
             'items': []

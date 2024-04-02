@@ -55,8 +55,8 @@ async def history(body: HistoryRequest = Body()):
     """
     result = ds.get_history(
         symbol=body.symbol,
-        start_date=body.start.strftime('%Y%m%d'),
-        end_date=body.end.strftime('%Y%m%d'),
+        start_date=body.start, # .strftime('%Y%m%d'),
+        end_date=body.end, # .strftime('%Y%m%d'),
         period=(body.period or "daily")
         )
     return HistoryResponse(code=0, result=result.to_dict('list'))

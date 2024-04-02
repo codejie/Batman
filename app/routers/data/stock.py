@@ -60,11 +60,11 @@ async def history(body: HistoryRequest = Body()):
     # logger.debug(body.period)
     result = ds.get_history(
             symbol=body.symbol,
-            start_date=body.start.strftime('%Y%m%d'),
-            end_date=body.end.strftime('%Y%m%d'),
+            start_date=body.start, # .strftime('%Y%m%d'),
+            end_date=body.end, #.strftime('%Y%m%d'),
             # period=("daily" if body.period is None else body.period)
             period=(body.period or "daily"),
-            adjust=(body.adjust or "")
+            adjust=(body.adjust or "qfq")
         )
     # result = adapter.history(result)
     return HistoryResponse(code=0, result=result.to_dict('list'))
