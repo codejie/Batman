@@ -46,7 +46,6 @@ async def info(body: InfoRequest=Body()):
     result: list[InfoResult] = []
     if body.name is None:
         for k, v in getFinderStrategyFunc().items():
-            print(f'=================={v}')
             result.append(InfoResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
     else:
         v = getFinderStrategyFunc(body.name)
@@ -125,6 +124,7 @@ class InstanceRequest(RequestModel):
 class InstanceResult(BaseModel):
     id: str
     title: str
+    trigger: dict | None = None
     strategy: str
     args: dict | None = None
     response: dict | None = None
