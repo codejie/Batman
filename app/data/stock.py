@@ -25,7 +25,7 @@ def get_history(symbol: str, start_date: str, end_date: str, period: str = 'dail
     try:
         table = TableName.make_stock_history_name(symbol, period, adjust)
         sql = f'SELECT * FROM {table} WHERE "Date" >= "{start_date}" AND "Date" <= "{end_date}"'
-        print(sql)
+        # print(sql)
         return pandas.read_sql_query(sql, engine)
     except Exception as e:
         raise AppException(e)

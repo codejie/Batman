@@ -85,7 +85,7 @@ class FS1Strategy(FinderStrategy):
         return super().load(kwargs=kwargs)
 
     def update(self) -> bool:
-        self._size = len(self.close)
+        self.size = len(self.close)
         return super().update()
 
     def next(self) -> bool:
