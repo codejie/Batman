@@ -19,8 +19,10 @@
           </template>
         </el-table-column>
         <el-table-column label="名称" prop="name" min-width="150"/>
-        <el-table-column label="block" prop="block" min-width="150"/>
-        <el-table-column label="block rate" prop="blockRate" min-width="150"/>
+        <el-table-column label="范围" prop="range" min-width="150"/>
+        <el-table-column label="命中位置" prop="index" min-width="150"/>
+        <!-- <el-table-column label="block" prop="block" min-width="150"/>
+        <el-table-column label="block rate" prop="blockRate" min-width="150"/> -->
       </el-table>
       <el-pagination style="text-align:center"
         layout="prev, pager, next, sizes, jumper"
@@ -44,6 +46,7 @@
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import { Pager } from '@/api/pager'
 import { IStrategyData, IStrategyInstanceData } from '@/api/def/strategy'
+import { getResultByInstance } from '@/api/strategy/finder'
 import StockDetail from '../../data/stock/components/stockdetail.vue'
 
 @Component({
@@ -68,26 +71,48 @@ export default class extends Vue {
   created() {
   }
 
-  private init() {
+  private init(instance: IStrategyInstanceData) {
+    this.instance = instance
     this.pager.currentPage = 1
     this.dialogVisible = true
     this.loadResultList()
   }
 
-  private loadResultList(){
+  private async loadResultList(){
     console.log('===========加载结果列表==========')
     console.log(this.pager)
+
+    const { data } = await getResultByInstance({
+      id: this.instance.id
+    })
     var resultList = []
-    for(var i=1; i<=2; i++){
+    console.log(data)
+    console.log(data.result)
+    
+    for (const inst of data.result.items) {
       resultList.push({
-        code: '002236',
-        name: '财富密码' + i,
-        block: 5300,
-        blockRate: '1' + i + '%'
+        id: (<any>inst).id,
+        code: (<any>inst).code,
+        name: (<any>inst).name,
+        range: (<any>inst).range,
+        index: (<any>inst).index.toString(),
+        // lastRunTime: (<any>inst).response ? (<any>inst).response.updated : '<>',
+        // runTimes: (<any>inst).response ? (<any>inst).response.runTimes : '<>'
       })
     }
     this.resultList = resultList
-    this.pager.total = 50
+    this.pager.total = this.resultList.length
+
+    // for(var i=1; i<=2; i++){
+    //   resultList.push({
+    //     code: '002236',
+    //     name: '财富密码' + i,
+    //     block: 5300,
+    //     blockRate: '1' + i + '%'
+    //   })
+    // }
+    // this.resultList = resultList
+    // this.pager.total = 50
   }
 
   private currentChange(currentPage: number) {

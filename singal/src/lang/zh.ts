@@ -5,6 +5,7 @@ export default {
     DataStockLineChart: '股票折线图',
     MultiStockLineChart: '合并股票折线图',
     DataIndex: '指数数据',
+    CompareIndex: '股指对比',
     Filtering: '筛选',
     FilterSearch: '条件检索',
     FilterResults: '备选集合',

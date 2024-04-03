@@ -5,6 +5,7 @@ export default {
     DataStockLineChart: 'Stock Data Line Chart',
     MultiStockLineChart: 'Multi Stock Data Line Chart',
     DataIndex: 'Index Data',
+    CompareIndex: 'Compare Data',
     Filtering: 'Filtering',
     FilterSearch: 'Searching',
     FilterResults: 'Results',
