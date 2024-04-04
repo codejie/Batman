@@ -5,7 +5,7 @@ from app.routers import utils
 
 class TestLocalDb(unittest.TestCase):
     def test_a_stock(self):
-        df = stock.get_a_code()
+        df = stock.get_a_list()
         print(df)
 
         self.assertTrue(True)

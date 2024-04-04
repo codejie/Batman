@@ -64,7 +64,6 @@ class Scheduler:
         t = datetime.now() + timedelta(seconds=seconds)
         trigger = CronTrigger(year=t.year, month=t.month, day=t.day, hour=t.hour, minute=t.minute, second=t.second)
         args['id'] = id
-        print(f'=========args:{args}')
         job = self._scheduler.add_job(id=id, trigger=trigger, func=func, kwargs=args)
         return job.id
 
