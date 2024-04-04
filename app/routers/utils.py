@@ -1,6 +1,7 @@
 """
 工具集合
 """
+from datetime import date, datetime
 
 def dateConvert1(date: str) -> str:
     """
@@ -16,3 +17,15 @@ def dateConvert2(date: str) -> str:
 
 def kwargString(kwargs):
     return ", ".join(f"{k}={v}" for k, v in kwargs.items())
+
+def string2Date1(date: str) -> date:
+    return datetime.strptime(date, '%Y%m%d').date()
+
+def string2Date2(date: str) -> date:
+    return datetime.strptime(date, '%Y-%m-%d').date()
+
+def date2String1(date: datetime.date) -> str:
+    return date.strftime('%Y%m%d')
+
+def date2String2(date: datetime.date) -> str:
+    return date.strftime('%Y-%m-%d')

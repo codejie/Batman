@@ -141,22 +141,22 @@ async def instance(body: InstanceRequest=Body()):
         result = []
         for inst in instance:
             result.append(InstanceResult(
-                id=inst._id,
-                title=inst._title,
-                trigger=inst._trigger,
-                strategy=inst._strategy,
-                args=inst._args,
-                response=inst._response
+                id=inst.id,
+                title=inst.title,
+                trigger=inst.trigger,
+                strategy=inst.strategy,
+                args=inst.args,
+                response=inst.response
             ))
         return InstanceResponse(result=result)
     else:
         return InstanceResponse(result=InstanceResult(
-            id=instance._id,
-            title=instance._title,
-            trigger=instance._trigger,
-            strategy=instance._strategy,
-            args=instance._args,
-            response=instance._response
+            id=instance.id,
+            title=instance.title,
+            trigger=instance.trigger,
+            strategy=instance.strategy,
+            args=instance.args,
+            response=instance.response
         ))
         
 """

@@ -1,5 +1,6 @@
-from app.routers.system import fetch_data
+from app.routers.system import stock_data, index_data
 
 routers = [
-    fetch_data.router
+    stock_data.router,
+    index_data.router
 ]

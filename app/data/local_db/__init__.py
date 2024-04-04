@@ -13,3 +13,11 @@ class TableName:
     @staticmethod
     def make_index_history_name(symbol: str, period: str = 'daily') -> str:
         return f'index_{symbol}_{period}'
+    
+    @staticmethod
+    def make_stock_hsgt_name(symbol: str) -> str:
+        return f'stock_{symbol}_hsgt'
+    
+    @staticmethod
+    def make_stock_margin_name(symbol: str) -> str:
+        return f'stock_{symbol}_margin'

@@ -27,7 +27,7 @@ class TestFinderStrategy(unittest.TestCase):
             return None
 
     def test_fs1_with_all(self):
-        codedf = stock.get_a_code()
+        codedf = stock.get_a_list()
         # for i, w in codedf.iterrows():
         #     print(f'{i}: {w['code']} - {w['name']}')
         # # print(codedf)
