@@ -42,7 +42,7 @@ def get_individual_info(symbol: str) -> DataFrame:
 def get_hsgt(symbol: str, start_date: str, end_date: str) -> DataFrame:
     try:
         table = TableName.make_stock_hsgt_name(symbol)
-        sql = f'SELECT * FROM {table} WHERE "持股日期" >= "{start_date}" AND "持股日期" <= "{end_date}"'
+        sql = f'SELECT * FROM {table} WHERE "持股日期" >= "{start_date}" AND "持股日期" <= "{end_date}" ORDER BY "持股日期"'
         # print(sql)
         return pandas.read_sql_query(sql, engine)
     except Exception as e:

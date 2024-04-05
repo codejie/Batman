@@ -18,7 +18,7 @@ router = APIRouter(prefix='/strategy/finder', tags=['strategy', 'finder strategy
 """
 获取Finder策略列表
 """
-class InfoRequest(RequestModel):
+class FuncRequest(RequestModel):
     name: str | None = None
 
 class Argument(BaseModel):
@@ -28,29 +28,29 @@ class Argument(BaseModel):
     desc: str = ''
     default: str = ''
 
-class StrategyInfoResult(BaseModel):
+class StrategyFuncResult(BaseModel):
     name: str
     desc: str
     args: list
 
-class InfoResult(BaseModel):
+class FuncResult(BaseModel):
     name: str
     desc: str
-    strategy: StrategyInfoResult
+    strategy: StrategyFuncResult
 
-class InfoResponse(ResponseModel):
-    result: list[InfoResult]
+class FuncResponse(ResponseModel):
+    result: list[FuncResult]
 
-@router.post('/info', response_model=InfoResponse, response_model_exclude_none=True)
-async def info(body: InfoRequest=Body()):
-    result: list[InfoResult] = []
+@router.post('/func', response_model=FuncResponse, response_model_exclude_none=True)
+async def func(body: FuncRequest=Body()):
+    result: list[FuncResult] = []
     if body.name is None:
         for k, v in getFinderStrategyFunc().items():
-            result.append(InfoResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
+            result.append(FuncResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
     else:
         v = getFinderStrategyFunc(body.name)
-        result.append(InfoResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
-    return InfoResponse(result=result)
+        result.append(FuncResult(name=v['name'], desc=v['desc'], strategy=v['strategy']))
+    return FuncResponse(result=result)
 
 """
 创建Finder策略任务
@@ -109,7 +109,7 @@ async def result(body: ResultRequest=Body()):
     instance = getFinderStrategyInstance(body.id)
     if instance is None:
         return ResultResponse(code=-1, result=f'strategy {body.id} not found.')
-    return ResultResponse(result=instance._response)
+    return ResultResponse(result=instance.response)
 
     # print(RapidRaiseFall00FinderStrategy._response)
     # return ResultResponse(result=RapidRaiseFall00FinderStrategy._response)

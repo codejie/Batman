@@ -16,7 +16,7 @@ class FinderStrategyInstance:
         
     def setResponse(self, response: dict):
         self.runTimes += 1
-        self._runDate = datetime.now()
+        self.runDate = datetime.now()
         self.response = response
 
 """

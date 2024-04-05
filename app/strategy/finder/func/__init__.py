@@ -3,7 +3,7 @@
 """
 from datetime import datetime, timedelta
 from app import AppException
-from app.strategy.finder.func.finder_func import TestFunction, RapidRaiseFall00Function
+from app.strategy.finder.func import func
 
 # class StrategyInfo:
 #     name: str
@@ -46,8 +46,10 @@ def addStrategyFuncList(strategy: callable):
 
 finderStrategyFuncList: dict[str, dict] = {}
 
-addStrategyFuncList(TestFunction)
-addStrategyFuncList(RapidRaiseFall00Function)
+addStrategyFuncList(func.TestFunction)
+addStrategyFuncList(func.RapidRaiseFall00Function)
+addStrategyFuncList(func.HSGTRaise00StrategyFunction)
+addStrategyFuncList(func.MarginRaise00StrategyFunction)
 
 # print(f'funlist = \n{finderStrategyFuncList}')
 
