@@ -37,14 +37,9 @@ from app.strategy.finder.func import func
 """
 
 def addStrategyFuncList(strategy: callable):
-    finderStrategyFuncList[strategy._name] = {
-        'name': strategy._name,
-        'desc': strategy._desc,
-        'func': strategy.func,
-        'strategy': strategy._strategy
-    }
+    finderStrategyFuncList[strategy._name] = strategy
 
-finderStrategyFuncList: dict[str, dict] = {}
+finderStrategyFuncList: dict[str, callable] = {}
 
 addStrategyFuncList(func.TestFunction)
 addStrategyFuncList(func.RapidRaiseFall00Function)
@@ -53,25 +48,25 @@ addStrategyFuncList(func.MarginRaise00StrategyFunction)
 
 # print(f'funlist = \n{finderStrategyFuncList}')
 
-def getFinderStrategyFunc(name: str | None = None) -> dict | list[dict] | None:
-    if name is None:
-        return finderStrategyFuncList
-    else:
-        return finderStrategyFuncList[name]
+def getFinderStrategyFunc(name: str) -> callable:
+    return finderStrategyFuncList.get(name, None)
+    
+def getFinderStrategyFuncList() -> dict:
+    return finderStrategyFuncList
 
-def validFinderStrategyFunc(name: str, kwargs: dict) -> dict | None:
-    func = finderStrategyFuncList.get(name, None)
-    if func is None :
+def validFinderStrategyFunc(name: str, kwargs: dict) -> callable:
+    strategyFunc = finderStrategyFuncList.get(name, None)
+    if strategyFunc is None:
         return None
     
-    strategy = func['strategy']
-    if strategy is None and strategy['args'] is None:
-        raise AppException(code=-1, message=f'strategy \'{strategy['name']}\' not found')
-    args = strategy['args']
+    strategy = strategyFunc._strategy
+    if strategy is None:
+        raise AppException(code=-1, message=f'strategy \'{strategy._name}\' not found')
+    args = strategy._args
     for arg in args:
         if arg['name'] not in kwargs:
             if 'default' not in arg:
-                raise AppException(code=-100, message=f'strategy \'{strategy['name']}\' missing argument \'{arg['name']}\'')
+                raise AppException(code=-100, message=f'strategy \'{strategy._name}\' missing argument \'{arg['name']}\'')
             else:
                 kwargs[arg['name']] = arg['default']
-    return func
+    return strategyFunc

@@ -11,8 +11,7 @@ from app.strategy.finder import FinderStrategy, FinderResult
 from app.strategy.finder.base.fs_1 import FS1Strategy, FS1Result
 from app.strategy.finder.base.fs_2 import FS2Strategy, FS2Result
 from app.strategy.finder.base.t_1 import T1Strategy
-from app.routers import utils
-from app.strategy.finder.func.local_cache import setFinderStrategyInstanceResponse
+from app.strategy.finder.func import func_instance as funcInstance
 
 """
 Finder Strategy Function Base
@@ -37,7 +36,8 @@ TestStrategy
 class TestFunction(FinderStrategyFunction):
     _name = 'Test'
     _desc = 'for test'
-    _strategy = FinderStrategyFunction.bindStrategy(T1Strategy)
+    # _strategy = FinderStrategyFunction.bindStrategy(T1Strategy)
+    _strategy = T1Strategy # FinderStrategyFunction.bindStrategy(T1Strategy)
 
     @staticmethod
     def func(**kwargs):
@@ -60,7 +60,7 @@ class TestFunction(FinderStrategyFunction):
         })
         # response = TestStrategyResponse(id=id, kwargs=utils.kwargString(kwargs))
         # print(response)
-        setFinderStrategyInstanceResponse(id=id, response=response)
+        funcInstance.set_response(id=id, response=response)
 
 
 """
@@ -73,14 +73,68 @@ RapidRaiseFall00FinderStrategy base FS1
 class RapidRaiseFall00Function(FinderStrategyFunction):
     _name = '速涨急跌'
     _desc = '全部A股计算Close/Open最近速涨速跌'
-    _strategy = FinderStrategyFunction.bindStrategy(FS1Strategy)
+    _strategy = FS1Strategy # FinderStrategyFunction.bindStrategy(FS1Strategy)
 
     @staticmethod
     def func(**kwargs):
         logger.debug('RapidRaiseFall00Function:func() called.')
+        begin = datetime.now()
         id = kwargs['id']
-        # start = utils.dateConvert1(kwargs['start'])
-        # end = utils.dateConvert1(kwargs['end'])
+        response = RapidRaiseFall00Function.exec(kwargs)
+        response['updated'] =  datetime.now()
+        response['duration'] = f'{(datetime.now() - begin)}'
+
+        funcInstance.set_response(id=id, response=response)
+        logger.debug('RapidRaiseFall00FinderStrategy:func() end.')
+
+        # logger.debug('RapidRaiseFall00Function:func() called.')
+        # id = kwargs['id']
+        # up_count = int(kwargs['up_count'])
+        # up_rate = float(kwargs['up_rate']) / 100
+        # down_count = int(kwargs['down_count'])
+        # down_rate = float(kwargs['down_rate']) / 100
+
+        # start = (datetime.today() - timedelta(30)).strftime('%Y-%m-%d')
+        # end = datetime.today().strftime('%Y-%m-%d')
+
+        # response:dict = {
+        #     'items': []
+        # }
+
+        # begin = datetime.now()
+        # codes = DataFrame()
+        # if 'symbol' in kwargs:
+        #     codes = codes.from_dict(kwargs['symbol'])
+        #     # print(codes)
+        # else:
+        #     codes = stock.get_a_list()
+
+        # for i,r in codes.iterrows():
+        #     df = stock.get_history(r['code'], start, end)
+        #     if df is not None and {'开盘','收盘'}.issubset(df.columns):
+        #         df = df.tail(up_count + down_count).reset_index()
+        #         strategy = FS1Strategy()
+        #         strategy.load(close=df['收盘'], open=df['开盘'], up_count=up_count, up_rate=up_rate, down_count=down_count, down_rate=down_rate)
+        #         result: FS1Result = strategy.run()
+        #         if result.index and len(result.index) > 0:
+        #             # RapidRaiseFall00FinderStrategy._response.items.append({
+        #             response['items'].append({
+        #                 'code': r['code'],
+        #                 'name': r['name'],
+        #                 'range': f'{df['日期'].iloc[0]}~{df['日期'].iloc[-1]}',
+        #                 'index': result.index
+        #             })
+                    
+        # # RapidRaiseFall00FinderStrategy._response.updated = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'
+        # response['updated'] =  datetime.now() # f'{datetime.now().strftime('%Y%m%d %H%M%S')}({datetime.now() - begin})'
+        # response['duration'] = f'{(datetime.now() - begin)}'
+
+        # setFinderStrategyInstanceResponse(id=id, response=response)
+        # logger.debug('RapidRaiseFall00FinderStrategy:func() end.')
+
+    @staticmethod
+    def exec(kwargs: dict) -> dict:
+        symbol = kwargs['symbol'] if 'symbol' in kwargs else None
         up_count = int(kwargs['up_count'])
         up_rate = float(kwargs['up_rate']) / 100
         down_count = int(kwargs['down_count'])
@@ -93,15 +147,8 @@ class RapidRaiseFall00Function(FinderStrategyFunction):
             'items': []
         }
 
-        # RapidRaiseFall00FinderStrategy._response.items.clear()
-        begin = datetime.now()
-        codes = DataFrame()
-        if 'symbol' in kwargs:
-            codes = codes.from_dict(kwargs['symbol'])
-            # print(codes)
-        else:
-            codes = stock.get_a_list()
-
+        # begin = datetime.now()
+        codes = stock.get_a_list() if symbol is None else kwargs['symbol']
         for i,r in codes.iterrows():
             df = stock.get_history(r['code'], start, end)
             if df is not None and {'开盘','收盘'}.issubset(df.columns):
@@ -119,11 +166,10 @@ class RapidRaiseFall00Function(FinderStrategyFunction):
                     })
                     
         # RapidRaiseFall00FinderStrategy._response.updated = f'{datetime.today().strftime('%Y%m%d')}({datetime.now() - begin})'
-        response['updated'] =  datetime.now() # f'{datetime.now().strftime('%Y%m%d %H%M%S')}({datetime.now() - begin})'
-        response['duration'] = f'{(datetime.now() - begin)}'
+        # response['updated'] =  datetime.now() # f'{datetime.now().strftime('%Y%m%d %H%M%S')}({datetime.now() - begin})'
+        # response['duration'] = f'{(datetime.now() - begin)}'
 
-        setFinderStrategyInstanceResponse(id=id, response=response)
-        logger.debug('RapidRaiseFall00FinderStrategy:func() end.')
+        return response   
 
 """
 HSGTRaise00StrategyFunction
@@ -132,14 +178,23 @@ HSGTRaise00StrategyFunction
 class HSGTRaise00StrategyFunction(FinderStrategyFunction):
     _name = '北向持股数量变化'
     _desc = '全部股票连续北向持股数量(hsgt)变化'
-    _strategy = FinderStrategyFunction.bindStrategy(FS2Strategy)
+    _strategy = FS2Strategy # FinderStrategyFunction.bindStrategy(FS2Strategy)
 
     @staticmethod
     def func(**kwargs):
-        begin = datetime.now()
         logger.debug('HSGTRaise00StrategyFunction:func() called.')
+        begin = datetime.now()
 
         id = kwargs['id']
+        response = HSGTRaise00StrategyFunction.exec(kwargs)
+        response['updated'] =  datetime.now()
+        response['duration'] = f'{(datetime.now() - begin)}'
+
+        funcInstance.set_response(id=id, response=response)
+        logger.debug('HSGTRaise00StrategyFunction:func() end.')
+
+    @staticmethod
+    def exec(kwargs: dict) -> dict:        
         symbol = kwargs['symbol'] if 'symbol' in kwargs else None
         days = int(kwargs['days'])
         rate = float(kwargs['rate']) / 100
@@ -151,7 +206,7 @@ class HSGTRaise00StrategyFunction(FinderStrategyFunction):
             'items': []
         }
 
-        codes = stock.get_a_list() if symbol is None else DataFrame({ 'code': [kwargs['symbol']], 'name': [''] })
+        codes = stock.get_a_list() if symbol is None else kwargs['symbol']
         for index, row in codes.iterrows():
             df = None
             try:
@@ -173,11 +228,8 @@ class HSGTRaise00StrategyFunction(FinderStrategyFunction):
                         'range': f'{df['持股日期'].iloc[0]}~{df['持股日期'].iloc[-1]}',
                         'index': result.index
                     })
-        response['updated'] =  datetime.now()
-        response['duration'] = f'{(datetime.now() - begin)}'
 
-        setFinderStrategyInstanceResponse(id=id, response=response)
-        logger.debug('HSGTRaise00StrategyFunction:func() end.')                
+        return response            
 
 
 """
@@ -187,14 +239,23 @@ MarginRaise00StrategyFunction
 class MarginRaise00StrategyFunction(FinderStrategyFunction):
     _name = '融资余额变化'
     _desc = '全部股票连续融资余额(margin)变化'
-    _strategy = FinderStrategyFunction.bindStrategy(FS2Strategy)
+    _strategy = FS2Strategy # FinderStrategyFunction.bindStrategy(FS2Strategy)
 
     @staticmethod
     def func(**kwargs):
+        logger.debug('MarginRaise00StrategyFunction:func() called.')        
         begin = datetime.now()
-        logger.debug('MarginRaise00StrategyFunction:func() called.')
 
         id = kwargs['id']
+        response = MarginRaise00StrategyFunction.exec(kwargs)
+        response['updated'] =  datetime.now()
+        response['duration'] = f'{(datetime.now() - begin)}'
+
+        funcInstance.set_response(id=id, response=response)
+        logger.debug('MarginRaise00StrategyFunction:func() end.')
+
+    @staticmethod
+    def exec(kwargs: dict) -> dict:
         symbol = kwargs['symbol'] if 'symbol' in kwargs else None
         days = int(kwargs['days'])
         rate = float(kwargs['rate']) / 100
@@ -206,7 +267,8 @@ class MarginRaise00StrategyFunction(FinderStrategyFunction):
             'items': []
         }
 
-        codes = stock.get_a_list() if symbol is None else DataFrame({ 'code': [kwargs['symbol']], 'name': [''] })
+        codes = stock.get_a_list() if symbol is None else kwargs['symbol']
+        # print(f'codes = {codes}')
         for index, row in codes.iterrows():
             df = None
             try:
@@ -228,9 +290,5 @@ class MarginRaise00StrategyFunction(FinderStrategyFunction):
                         'range': f'{df['日期'].iloc[0]}~{df['日期'].iloc[-1]}',
                         'index': result.index
                     })
-        response['updated'] =  datetime.now()
-        response['duration'] = f'{(datetime.now() - begin)}'
-
-        setFinderStrategyInstanceResponse(id=id, response=response)
-        logger.debug('MarginRaise00StrategyFunction:func() end.')
-
+        
+        return response
