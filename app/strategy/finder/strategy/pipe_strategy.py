@@ -6,8 +6,8 @@ from datetime import datetime
 from app.data import stock
 from app import logger
 
-from app.strategy.finder.func import validFinderStrategyFunc
-from app.strategy.finder.func import pipe_func_instance as pipeFuncInstance
+from app.strategy.finder import strategy
+from app.strategy.finder import pipe_instance as instance
 # symbol
 # strategy
 # args
@@ -34,10 +34,10 @@ def PipeStrategyFunction(**kwargs) -> None:
             logger.debug(f'PipeStrategyFunction() - code list is empty skip {item.strategy}.')
             continue
         args = item.args
-        args['symbol'] = codes # .to_dict(orient='list')
+        args['symbol'] = codes.to_dict() # .to_dict(orient='list')
 
         logger.debug(f'pipe strategy call {item.strategy} function.')
-        func = validFinderStrategyFunc(item.strategy, item.args)
+        func = strategy.valid(item.strategy, item.args)
         resp = func.exec(args)
         logger.debug(f'pipe strategy call {item.strategy} end.')
         codes = DataFrame(columns=['code', 'name'])
@@ -52,6 +52,6 @@ def PipeStrategyFunction(**kwargs) -> None:
 
     response['updated'] =  datetime.now()
     response['duration'] = f'{(datetime.now() - begin)}'            
-    pipeFuncInstance.set_response(id=id, response=response)
+    instance.set_response(id=id, response=response)
     logger.debug('PipeStrategyFunction:func() end.')        
 

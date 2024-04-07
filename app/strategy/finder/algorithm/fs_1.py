@@ -2,9 +2,9 @@
 选股策略一: 连续N天涨幅[(Close-Open) or (High-Low)]U%，再连续M天跌幅D%
 选股策略一: 连续(N)的两个数据[(Close-Open) or (High-Low)]的比率大于U，再连续(M)个数据小于D
 """
-from app.strategy.finder import FinderResult, FinderStrategy
+from app.strategy.finder.algorithm import Algorithm, Result
 
-class FS1Result(FinderResult):
+class FS1Result(Result):
     _name: str = 'FS1Result'
     _desc: str = 'FS1Strategy Result'
 
@@ -33,7 +33,7 @@ class FS1Result(FinderResult):
         return ret        
 
 
-class FS1Strategy(FinderStrategy):
+class FS1Algorithem(Algorithm):
     _name: str = 'FS1Strategy'
     _desc: str = '连续(N)的两个数据[(Close-Open) or (High-Low)]的比率大于U，再连续(M)个数据小于D'
 

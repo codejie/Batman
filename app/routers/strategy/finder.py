@@ -9,9 +9,9 @@ from app.routers.dependencies import verify_token
 from app.routers.define import RequestModel, ResponseModel
 
 from app.scheduler import scheduler
-from app.strategy.finder.func import getFinderStrategyFunc, getFinderStrategyFuncList, validFinderStrategyFunc
-from app.strategy.finder.func import func_instance as funcInstance, pipe_func_instance as pipeFuncInstance
-from app.strategy.finder.func.pipe_func import PipeStrategyFunction
+from app.strategy.finder import strategy, instance as strategyInstance, pipe_instance as pipeStrategyInstance
+
+from app.strategy.finder.strategy.pipe_strategy import PipeStrategyFunction
 
 router = APIRouter(prefix='/strategy/finder', tags=['strategy', 'finder strategy'], dependencies=[Depends(verify_token)])
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix='/strategy/finder', tags=['strategy', 'finder strategy
 """
 获取Finder策略列表
 """
-class FuncRequest(RequestModel):
+class InfosRequest(RequestModel):
     name: str | None = None
 
 class Argument(BaseModel):
@@ -29,39 +29,38 @@ class Argument(BaseModel):
     desc: str = ''
     default: str = ''
 
-class StrategyFuncResult(BaseModel):
+class AlgorithemResult(BaseModel):
     name: str
     desc: str
     args: list
 
-class FuncResult(BaseModel):
+class InfosResult(BaseModel):
     name: str
     desc: str
-    strategy: StrategyFuncResult
+    algorithm: AlgorithemResult
 
-class FuncResponse(ResponseModel):
-    result: list[FuncResult]
+class InfosResponse(ResponseModel):
+    result: list[InfosResult]
 
-@router.post('/func', response_model=FuncResponse, response_model_exclude_none=True)
-async def func(body: FuncRequest=Body()):
-    result: list[FuncResult] = []
+@router.post('/infos', response_model=InfosResponse, response_model_exclude_none=True)
+async def infos(body: InfosRequest=Body()):
+    result: list[InfosResult] = []
     if body.name is None:
-        for k, v in getFinderStrategyFuncList().items():
-            print(f'v = {v}')
-            result.append(FuncResult(name=v._name, desc=v._desc, strategy={
-                'name': v._strategy._name,
-                'desc': v._strategy._desc,
-                'args': v._strategy._args
+        for k, v in strategy.getList().items():
+            result.append(InfosResult(name=v._name, desc=v._desc, algorithm={
+                'name': v._algorithm._name,
+                'desc': v._algorithm._desc,
+                'args': v._algorithm._args
             }))
     else:
-        v = getFinderStrategyFunc(body.name)
+        v = strategy.get(body.name)
         if v is None:
-            result.append(FuncResult(name=v._name, desc=v._desc, strategy={
-                'name': v._strategy._name,
-                'desc': v._strategy._desc,
-                'args': v._strategy._args
+            result.append(InfosResult(name=v._name, desc=v._desc, algorithm={
+                'name': v._algorithm._name,
+                'desc': v._algorithm._desc,
+                'args': v._algorithm._args
             }))
-    return FuncResponse(result=result)
+    return InfosResponse(result=result)
 
 """
 创建Finder策略任务
@@ -86,7 +85,7 @@ class ScheduleResponse(ResponseModel):
 
 @router.post('/schedule', response_model=ScheduleResponse, response_model_exclude_none=True)
 async def schedule(body: ScheduleRequest=Body()):
-    func = validFinderStrategyFunc(body.strategy, body.args)
+    func = strategy.valid(body.strategy, body.args)
     if func is None:
         return ScheduleResponse(code=-1, result=f'strategy func {body.strategy} not found.')
     
@@ -94,7 +93,7 @@ async def schedule(body: ScheduleRequest=Body()):
 
     id = scheduler.addDailyJob(func=func.func, args=body.args, days=body.trigger.days, hour=body.trigger.hour, minute=body.trigger.minute)
     args['id'] = id
-    funcInstance.create(id, body.title, body.trigger.model_dump(), body.strategy, args)
+    strategyInstance.create(id, body.title, body.trigger.model_dump(), body.strategy, args)
 
     return ScheduleResponse(code=(-1 if id is None else 0), result=id)
 
@@ -110,7 +109,7 @@ class ResultResponse(ResponseModel):
 
 @router.post('/result', response_model=ResultResponse, response_model_exclude_none=True)
 async def result(body: ResultRequest=Body()):
-    instance = funcInstance.get(body.id)
+    instance = strategyInstance.get(body.id)
     if instance is None:
         return ResultResponse(code=-1, result=f'strategy {body.id} not found.')
     return ResultResponse(result=instance.response)
@@ -136,7 +135,7 @@ class InstanceResponse(ResponseModel):
 
 @router.post('/instance', response_model=InstanceResponse, response_model_exclude_none=True)
 async def instance(body: InstanceRequest=Body()):
-    instance = funcInstance.get(id=body.id, strategy=body.strategy)
+    instance = strategyInstance.get(id=body.id, strategy=body.strategy)
     if instance is None:
         return InstanceResponse(result=None)
     if type(instance) == list:
@@ -172,7 +171,7 @@ class RemoveResponse(ResponseModel):
 
 @router.post('/remove', response_model=RemoveResponse, response_model_exclude_none=True)
 async def remove(body: RemoveRequest=Body()):
-    funcInstance.remove(body.id)
+    strategyInstance.remove(body.id)
     return RemoveResponse(result=body.id)
 
 """
@@ -189,7 +188,7 @@ class RescheduleResponse(ResponseModel):
 async def reschedule(body: RescheduleRequest=Body()):
     ret = scheduler.rescheduleJob(id=body.id, trigger=body.trigger.model_dump())
     if ret:
-        funcInstance.set_trigger(id, body.trigger.model_dump())
+        strategyInstance.set_trigger(id, body.trigger.model_dump())
         return RescheduleResponse(result=body.id)
     else:
         return RescheduleResponse(code=-1, result=body.id)
@@ -218,7 +217,7 @@ async def pipe_schedule(body: PipeScheduleRequest=Body()):
     # id = scheduler.addDelayJob(func=PipeStrategyFunction, args=args, seconds=2)
 
     args['id'] = id
-    pipeFuncInstance.create(id, body.title, body.trigger.model_dump(), body.strategies)
+    pipeStrategyInstance.create(id, body.title, body.trigger.model_dump(), body.strategies)
 
     return PipeScheduleResponse(result=id)
 
@@ -233,7 +232,7 @@ class PipeResultResponse(ResponseModel):
 
 @router.post('/pipe/result', response_model=PipeResultResponse, response_model_exclude_none=True)
 async def pipe_result(body: PipeResultRequest=Body()):
-    instance = pipeFuncInstance.get(body.id)
+    instance = pipeStrategyInstance.get(body.id)
     if instance is None:
         return PipeResultResponse(code=-1, result=f'strategy {body.id} not found.')
     return PipeResultResponse(result=instance.response)
@@ -258,7 +257,7 @@ class PipeInstanceResponse(ResponseModel):
 
 @router.post('/pipe/instance', response_model=PipeInstanceResponse, response_model_exclude_none=True)
 async def instance(body: PipeInstanceRequest=Body()):
-    instance = pipeFuncInstance.get(id=body.id)
+    instance = pipeStrategyInstance.get(id=body.id)
     if instance is None:
         return PipeInstanceResponse(result=None)
     if type(instance) == list:
@@ -292,7 +291,7 @@ class PipeRemoveResponse(ResponseModel):
 
 @router.post('/pipe/remove', response_model=PipeRemoveResponse, response_model_exclude_none=True)
 async def remove(body: RemoveRequest=Body()):
-    pipeFuncInstance.remove(body.id)
+    pipeStrategyInstance.remove(body.id)
     return PipeRemoveResponse(result=body.id)
 
 """
@@ -309,7 +308,7 @@ class PipeRescheduleResponse(ResponseModel):
 async def reschedule(body: RescheduleRequest=Body()):
     ret = scheduler.rescheduleJob(id=body.id, trigger=body.trigger.model_dump())
     if ret:
-        pipeFuncInstance.set_trigger(id, body.trigger.model_dump())
+        pipeStrategyInstance.set_trigger(id, body.trigger.model_dump())
         return PipeRescheduleResponse(result=body.id)
     else:
         return PipeRescheduleResponse(code=-1, result=body.id)

@@ -1,15 +1,15 @@
 """
-选股策略二：连续数据(days),后一与前一的比率大于(rate)
+选股算法二：连续数据(days),后一与前一的比率大于(rate)
 """
-from app.strategy.finder import FinderResult, FinderStrategy
+from app.strategy.finder.algorithm import Algorithm, Result
 
-class FS2Result(FinderResult):
+class FS2Result(Result):
     __name: str = 'FS2Result'
     __desc: str = 'FS2Stragety Result'
 
 
-class FS2Strategy(FinderStrategy):
-    _name: str = 'FS2Strategy'
+class FS2Algorithem(Algorithm):
+    _name: str = 'FS2Algorithem'
     _desc: str = '连续数据(days),后一与前一的比率大于(rate)'
     _args: list = [
         {
