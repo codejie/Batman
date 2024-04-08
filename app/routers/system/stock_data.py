@@ -73,6 +73,6 @@ class FetchMarginResponse(ResponseModel):
     result: str
 
 @router.post('/fetch_margin', response_model=FetchMarginResponse, response_model_exclude_unset=True)
-def fetch_hsgt(body: FetchMarginRequest=Body()):
+def fetch_margin(body: FetchMarginRequest=Body()):
     id = scheduler.addDelayJob(stock.fetch_margin, body.model_dump(), JOB_DELAY_SECONDS)
     return FetchMarginResponse(result=id)
