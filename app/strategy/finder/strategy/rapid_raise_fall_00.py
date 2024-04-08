@@ -8,7 +8,7 @@ from pandas import DataFrame
 from app import logger
 from app.strategy.finder.algorithm.fs_1 import FS1Algorithem, FS1Result
 
-from app.strategy.finder import instance
+from app.task import taskManager
 from app.data import stock
 
 
@@ -24,10 +24,8 @@ class RapidRaiseFall00Strategy:
 
         id = kwargs['id']
         response = RapidRaiseFall00Strategy.exec(kwargs)
-        response['updated'] =  datetime.now()
-        response['duration'] = f'{(datetime.now() - begin)}'
 
-        instance.set_response(id=id, response=response)
+        taskManager.set_result(id=id, result=response, duration=(datetime.now() - begin))        
         logger.debug('RapidRaiseFall00FinderStrategy:func() end.')
 
     @staticmethod
@@ -45,7 +43,7 @@ class RapidRaiseFall00Strategy:
             'items': []
         }
 
-        codes = stock.get_a_list() if symbol is None else DataFrame.from_dict(kwargs['symbol'])
+        codes = stock.get_a_list() if symbol is None else DataFrame.from_dict(symbol)
         for i,r in codes.iterrows():
             df = stock.get_history(r['code'], start, end)
             if df is not None and {'开盘','收盘'}.issubset(df.columns):

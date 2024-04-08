@@ -2,6 +2,7 @@
 本地化股票数据函数集合
 """
 from datetime import timedelta
+from pandas import DataFrame
 from app.dbengine import engine
 from app import logger, AppException
 from app.data.remote_api import stock as remote
@@ -26,7 +27,7 @@ def fetch_a_stock(**kwargs) -> None:
 """
 def fetch_history(**kwargs) -> None:
     try:
-        symbol = kwargs['symbol']
+        symbol = kwargs['symbol'] if 'symbol' in kwargs else None
         start_date = utils.dateConvert1(kwargs['start'])
         end_date = utils.dateConvert1(kwargs['end'])
         period = kwargs['period']
@@ -34,11 +35,13 @@ def fetch_history(**kwargs) -> None:
         if_exists = kwargs['if_exists']
 
         logger.info('fetch_all_stock_history() called.')
-        codes = local.get_a_list() if symbol is None else { 'code': [symbol], 'name': ['']}
+
+        codes = local.get_a_list() if symbol is None else DataFrame().from_dict(symbol)        
         for code in codes['code']:
             table = TableName.make_stock_history_name(code, period, adjust)
             df = remote.get_history(code, start_date, end_date, period, adjust)
             df.to_sql(table, engine, if_exists=if_exists, index=False)
+
         logger.info('fetch_all_stock_history() end.')
     except Exception as e:
         logger.error(f'fetch_all_stock_history() fail - {e}')
@@ -48,10 +51,10 @@ def fetch_history(**kwargs) -> None:
 """
 def fetch_hsgt(**kwargs) -> None:
     # try:
-    symbol = kwargs['symbol']
+    symbol = kwargs['symbol'] if 'symbol' in kwargs else None
     if_exists = kwargs['if_exists']
     logger.info('fetch_hsgt() called.')
-    codes = local.get_a_list() if symbol is None else { 'code': [symbol], 'name': ['']}
+    codes = local.get_a_list() if symbol is None else DataFrame().from_dict(symbol)
     for code in codes['code']:
         try:
             df = remote.get_individual_hsgt(code)
@@ -71,7 +74,7 @@ def fetch_hsgt(**kwargs) -> None:
 """
 def fetch_margin(**kwargs) -> None:
     try:
-        symbol = kwargs['symbol']
+        symbol = kwargs['symbol'] if 'symbol' in kwargs else None
         start_date = utils.string2Date2(kwargs['start'])
         end_date = utils.string2Date2(kwargs['end'])      
         if_exists = kwargs['if_exists']

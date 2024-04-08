@@ -1,7 +1,7 @@
 """
 工具集合
 """
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 def dateConvert1(date: str) -> str:
     """
@@ -29,3 +29,18 @@ def date2String1(date: datetime.date) -> str:
 
 def date2String2(date: datetime.date) -> str:
     return date.strftime('%Y-%m-%d')
+
+def datetime2String1(time: datetime) -> str:
+    if time is None:
+        return ''
+    return time.strftime('%Y%m%d%H%M%S')
+
+def datetime2String2(time: datetime) -> str:
+    if time is None:
+        return ''
+    return time.strftime('%Y-%m-%d %H:%M:%S')
+
+def timedelta2String(delta: timedelta) -> str:
+    if delta is None:
+        return ''
+    return str(delta)

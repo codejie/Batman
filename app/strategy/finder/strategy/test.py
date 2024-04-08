@@ -5,7 +5,7 @@ from datetime import datetime
 from app import logger
 from app.strategy.finder.algorithm.t_1 import T1Algorithem
 
-from app.strategy.finder import instance
+from app.task import taskManager
 
 class TestStrategy:
     _name = 'Test'
@@ -33,5 +33,6 @@ class TestStrategy:
         })
         # response = TestStrategyResponse(id=id, kwargs=utils.kwargString(kwargs))
         # print(response)
-        instance.set_response(id=id, response=response)
+        # instance.set_response(id=id, response=response)
+        taskManager.set_result(id=id, result=response, duration=(datetime.now() - begin))        
         logger.debug('TestFunction:func() called end.')

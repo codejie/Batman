@@ -7,7 +7,7 @@ from pandas import DataFrame
 from app import logger
 from app.strategy.finder.algorithm.fs_2 import FS2Algorithem, FS2Result
 
-from app.strategy.finder import instance
+from app.task import taskManager
 from app.data import stock
 
 class MarginRaise00Strategy:
@@ -22,10 +22,8 @@ class MarginRaise00Strategy:
 
         id = kwargs['id']
         response = MarginRaise00Strategy.exec(kwargs)
-        response['updated'] =  datetime.now()
-        response['duration'] = f'{(datetime.now() - begin)}'
 
-        instance.set_response(id=id, response=response)
+        taskManager.set_result(id=id, result=response, duration=(datetime.now() - begin))        
         logger.debug('MarginRaise00StrategyFunction:func() end.')
 
     @staticmethod
@@ -41,7 +39,7 @@ class MarginRaise00Strategy:
             'items': []
         }
 
-        codes = stock.get_a_list() if symbol is None else DataFrame.from_dict(kwargs['symbol'])
+        codes = stock.get_a_list() if symbol is None else DataFrame.from_dict(symbol)
         # print(f'codes = {codes}')
         for index, row in codes.iterrows():
             df = None

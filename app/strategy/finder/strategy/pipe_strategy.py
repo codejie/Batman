@@ -7,7 +7,7 @@ from app.data import stock
 from app import logger
 
 from app.strategy.finder import strategy
-from app.strategy.finder import pipe_instance as instance
+from app.task import taskManager
 # symbol
 # strategy
 # args
@@ -23,12 +23,12 @@ def PipeStrategyFunction(**kwargs) -> None:
     strategies = kwargs['strategies']
 
     response: dict = {
-        'responses': []
+        'items': []
     }
     for item in strategies:
         # print(f'item = {item}')
         if len(codes) == 0:
-            response['responses'].append({
+            response['items'].append({
                 'strategy': item.strategy
             })
             logger.debug(f'PipeStrategyFunction() - code list is empty skip {item.strategy}.')
@@ -45,13 +45,11 @@ def PipeStrategyFunction(**kwargs) -> None:
             r = resp['items'][i]
             codes.loc[i] = [r['code'], r['name']]
         # print(f'func codes = {codes}')
-        response['responses'].append({
+        response['items'].append({
             'strategy': item.strategy,
-            'response': resp
+            'result': resp
         })
 
-    response['updated'] =  datetime.now()
-    response['duration'] = f'{(datetime.now() - begin)}'            
-    instance.set_response(id=id, response=response)
+    taskManager.set_result(id=id, result=response, duration=(datetime.now() - begin))    
     logger.debug('PipeStrategyFunction:func() end.')        
 

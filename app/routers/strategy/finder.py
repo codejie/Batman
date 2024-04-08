@@ -1,15 +1,18 @@
 """
 Finder Strategy APIs
 """
-
+from datetime import datetime
 from fastapi import APIRouter, Depends, Body
 from pydantic import BaseModel
 
 from app.routers.dependencies import verify_token
 from app.routers.define import RequestModel, ResponseModel
 
+from app.routers import utils
 from app.scheduler import scheduler
-from app.strategy.finder import strategy, instance as strategyInstance, pipe_instance as pipeStrategyInstance
+from app.strategy.finder import strategy
+
+from app.task import taskManager
 
 from app.strategy.finder.strategy.pipe_strategy import PipeStrategyFunction
 
@@ -93,7 +96,7 @@ async def schedule(body: ScheduleRequest=Body()):
 
     id = scheduler.addDailyJob(func=func.func, args=body.args, days=body.trigger.days, hour=body.trigger.hour, minute=body.trigger.minute)
     args['id'] = id
-    strategyInstance.create(id, body.title, body.trigger.model_dump(), body.strategy, args)
+    taskManager.create_finder_strategy(id, body.title, body.trigger.model_dump(), body.strategy, args)
 
     return ScheduleResponse(code=(-1 if id is None else 0), result=id)
 
@@ -104,15 +107,25 @@ class ResultRequest(RequestModel):
     # title: str | None = None
     id: str
 
+class InstanceResultResponse(BaseModel):
+    runTimes: int = 0
+    lastUpdated: str = None
+    duration: str = None
+    result: dict | None = None
+
 class ResultResponse(ResponseModel):
-    result: dict | str | None = None
+    result: InstanceResultResponse | str = None
 
 @router.post('/result', response_model=ResultResponse, response_model_exclude_none=True)
 async def result(body: ResultRequest=Body()):
-    instance = strategyInstance.get(body.id)
+    instance = taskManager.get_finder_strategy(body.id)
     if instance is None:
         return ResultResponse(code=-1, result=f'strategy {body.id} not found.')
-    return ResultResponse(result=instance.response)
+    return ResultResponse(result=InstanceResultResponse(
+        lastUpdated=utils.datetime2String2(instance.lastUpdated),
+        duration=utils.timedelta2String(instance.duration),
+        result=instance.result
+    ))
 
 
 """
@@ -128,14 +141,17 @@ class InstanceResult(BaseModel):
     trigger: dict | None = None
     strategy: str
     args: dict | None = None
-    response: dict | None = None
+    runTimes: int = 0
+    lastUpdated: str = None
+    duration: str = None
+    result: dict | None = None
 
 class InstanceResponse(ResponseModel):
     result: list[InstanceResult] | InstanceResult | None = None
 
 @router.post('/instance', response_model=InstanceResponse, response_model_exclude_none=True)
 async def instance(body: InstanceRequest=Body()):
-    instance = strategyInstance.get(id=body.id, strategy=body.strategy)
+    instance = taskManager.get_finder_strategy(id=body.id)
     if instance is None:
         return InstanceResponse(result=None)
     if type(instance) == list:
@@ -143,21 +159,27 @@ async def instance(body: InstanceRequest=Body()):
         for inst in instance:
             result.append(InstanceResult(
                 id=inst.id,
-                title=inst.title,
+                title=inst.element['title'],
                 trigger=inst.trigger,
-                strategy=inst.strategy,
-                args=inst.args,
-                response=inst.response
+                strategy=inst.element['strategy'],
+                args=inst.element['args'],
+                runTimes = inst.runTimes,
+                lastUpdated=utils.datetime2String2(inst.lastUpdated),
+                duration=utils.timedelta2String(inst.duration),
+                result=inst.result
             ))
         return InstanceResponse(result=result)
     else:
         return InstanceResponse(result=InstanceResult(
             id=instance.id,
-            title=instance.title,
             trigger=instance.trigger,
-            strategy=instance.strategy,
-            args=instance.args,
-            response=instance.response
+            title=instance.element['title'],
+            strategy=instance.element['strategy'],
+            args=instance.element['args'],
+            runTimes = instance.runTimes,
+            lastUpdated=utils.datetime2String2(instance.lastUpdated),
+            duration=utils.timedelta2String(instance.duration),      
+            result = instance.result
         ))
         
 """
@@ -171,7 +193,7 @@ class RemoveResponse(ResponseModel):
 
 @router.post('/remove', response_model=RemoveResponse, response_model_exclude_none=True)
 async def remove(body: RemoveRequest=Body()):
-    strategyInstance.remove(body.id)
+    taskManager.remove(body.id)
     return RemoveResponse(result=body.id)
 
 """
@@ -188,7 +210,7 @@ class RescheduleResponse(ResponseModel):
 async def reschedule(body: RescheduleRequest=Body()):
     ret = scheduler.rescheduleJob(id=body.id, trigger=body.trigger.model_dump())
     if ret:
-        strategyInstance.set_trigger(id, body.trigger.model_dump())
+        taskManager.set_trigger(id, body.trigger.model_dump())
         return RescheduleResponse(result=body.id)
     else:
         return RescheduleResponse(code=-1, result=body.id)
@@ -217,7 +239,7 @@ async def pipe_schedule(body: PipeScheduleRequest=Body()):
     # id = scheduler.addDelayJob(func=PipeStrategyFunction, args=args, seconds=2)
 
     args['id'] = id
-    pipeStrategyInstance.create(id, body.title, body.trigger.model_dump(), body.strategies)
+    taskManager.create_pipe_finder_strategy(id, body.title, body.trigger.model_dump(), body.strategies)
 
     return PipeScheduleResponse(result=id)
 
@@ -228,14 +250,19 @@ class PipeResultRequest(RequestModel):
     id: str
 
 class PipeResultResponse(ResponseModel):
-    result: dict | str | None = None
+    result: InstanceResultResponse | str = None
 
 @router.post('/pipe/result', response_model=PipeResultResponse, response_model_exclude_none=True)
 async def pipe_result(body: PipeResultRequest=Body()):
-    instance = pipeStrategyInstance.get(body.id)
+    instance = taskManager.get_pipe_finder_strategy(body.id)
     if instance is None:
         return PipeResultResponse(code=-1, result=f'strategy {body.id} not found.')
-    return PipeResultResponse(result=instance.response)
+    return PipeResultResponse(result=InstanceResultResponse(
+        runTimes=instance.runTimes,
+        lastUpdated=utils.datetime2String2(instance.lastUpdated),
+        duration=utils.timedelta2String(instance.duration),
+        result=instance.result
+    ))
 
 
 """
@@ -250,14 +277,17 @@ class PipeInstanceResult(BaseModel):
     trigger: dict | None = None
     strategies: list
     args: dict | None = None
-    response: dict | None = None
+    runTimes: int = 0
+    lastUpdated: str = None
+    duration: str = None    
+    result: dict | None = None
 
 class PipeInstanceResponse(ResponseModel):
     result: list[PipeInstanceResult] | PipeInstanceResult | None = None
 
 @router.post('/pipe/instance', response_model=PipeInstanceResponse, response_model_exclude_none=True)
 async def instance(body: PipeInstanceRequest=Body()):
-    instance = pipeStrategyInstance.get(id=body.id)
+    instance = taskManager.get_pipe_finder_strategy(body.id)
     if instance is None:
         return PipeInstanceResponse(result=None)
     if type(instance) == list:
@@ -265,19 +295,25 @@ async def instance(body: PipeInstanceRequest=Body()):
         for inst in instance:
             result.append(PipeInstanceResult(
                 id=inst.id,
-                title=inst.title,
                 trigger=inst.trigger,
-                strategies=inst.strategies,
-                response=inst.response
+                title=inst.element['title'],
+                strategies=inst.element['strategies'],
+                runTimes=inst.runTimes,
+                lastUpdated=utils.datetime2String2(inst.lastUpdated),
+                duration=utils.timedelta2String(inst.duration),
+                result=inst.result
             ))
         return PipeInstanceResponse(result=result)
     else:
         return PipeInstanceResponse(result=PipeInstanceResult(
             id=instance.id,
-            title=instance.title,
             trigger=instance.trigger,
-            strategies=instance.strategies,
-            response=instance.response
+            title=instance.element['title'],
+            strategies=instance.element['strategies'],
+            runTimes=instance.runTimes,
+            lastUpdated=utils.datetime2String2(instance.lastUpdated),
+            duration=utils.timedelta2String(instance.duration),          
+            response=instance.result
         ))
         
 """
@@ -291,7 +327,7 @@ class PipeRemoveResponse(ResponseModel):
 
 @router.post('/pipe/remove', response_model=PipeRemoveResponse, response_model_exclude_none=True)
 async def remove(body: RemoveRequest=Body()):
-    pipeStrategyInstance.remove(body.id)
+    taskManager.remove(body.id)
     return PipeRemoveResponse(result=body.id)
 
 """
@@ -308,7 +344,7 @@ class PipeRescheduleResponse(ResponseModel):
 async def reschedule(body: RescheduleRequest=Body()):
     ret = scheduler.rescheduleJob(id=body.id, trigger=body.trigger.model_dump())
     if ret:
-        pipeStrategyInstance.set_trigger(id, body.trigger.model_dump())
+        taskManager.set_trigger(id, body.trigger.model_dump())
         return PipeRescheduleResponse(result=body.id)
     else:
         return PipeRescheduleResponse(code=-1, result=body.id)
