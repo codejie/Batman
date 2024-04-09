@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, Body
 
 from app.routers.dependencies import verify_admin
 from app.routers.define import RequestModel, ResponseModel
-from app.scheduler import scheduler
+# from app.scheduler import scheduler
+from app.task_manager import taskManager
 from app.data.local_db import index
 
 router = APIRouter(prefix='/sys/data/index', tags=['sys'], dependencies=[Depends(verify_admin)])
@@ -24,7 +25,8 @@ class AppendCodeResponse(ResponseModel):
 
 @router.post('/append_code', response_model=AppendCodeResponse, response_model_exclude_unset=True)
 def append_index_code(body: AppendCodeRequest=Body()):
-    id = scheduler.addDelayJob(index.append_a_index, body.model_dump(), JOB_DELAY_SECONDS)
+    # id = scheduler.addDelayJob(index.append_a_index, body.model_dump(), JOB_DELAY_SECONDS)
+    id = taskManager.create_fetch_data(func=index.append_a_index, args=body.model_dump(), seconds=JOB_DELAY_SECONDS)
     return AppendCodeResponse(result=id)
 
 """
@@ -42,5 +44,6 @@ class FetchHistoryResponse(ResponseModel):
 
 @router.post('/fetch_history', response_model=FetchHistoryResponse, response_model_exclude_unset=True)
 def fetch_index_history(body: FetchHistoryRequest=Body()):
-    id = scheduler.addDelayJob(index.fetch_history, body.model_dump(), JOB_DELAY_SECONDS)
+    # id = scheduler.addDelayJob(index.fetch_history, body.model_dump(), JOB_DELAY_SECONDS)
+    id = taskManager.create_fetch_data(index.fetch_history, body.model_dump(), JOB_DELAY_SECONDS)
     return FetchHistoryResponse(result=id)

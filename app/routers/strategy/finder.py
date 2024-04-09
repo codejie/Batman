@@ -9,10 +9,10 @@ from app.routers.dependencies import verify_token
 from app.routers.define import RequestModel, ResponseModel
 
 from app.routers import utils
-from app.scheduler import scheduler
+# from app.scheduler import scheduler
 from app.strategy.finder import strategy
 
-from app.task import taskManager
+from app.task_manager import taskManager
 
 from app.strategy.finder.strategy.pipe_strategy import PipeStrategyFunction
 
@@ -92,11 +92,11 @@ async def schedule(body: ScheduleRequest=Body()):
     if func is None:
         return ScheduleResponse(code=-1, result=f'strategy func {body.strategy} not found.')
     
-    args = body.args
+    # args = body.args
 
-    id = scheduler.addDailyJob(func=func.func, args=body.args, days=body.trigger.days, hour=body.trigger.hour, minute=body.trigger.minute)
-    args['id'] = id
-    taskManager.create_finder_strategy(id, body.title, body.trigger.model_dump(), body.strategy, args)
+    # id = scheduler.addDailyJob(func=func.func, args=body.args, days=body.trigger.days, hour=body.trigger.hour, minute=body.trigger.minute)
+    # args['id'] = id
+    id =taskManager.create_finder_strategy(title=body.title, func=func.func, trigger=body.trigger.model_dump(), strategy=body.strategy, args=body.args)
 
     return ScheduleResponse(code=(-1 if id is None else 0), result=id)
 
@@ -193,8 +193,8 @@ class RemoveResponse(ResponseModel):
 
 @router.post('/remove', response_model=RemoveResponse, response_model_exclude_none=True)
 async def remove(body: RemoveRequest=Body()):
-    taskManager.remove(body.id)
-    return RemoveResponse(result=body.id)
+    id = taskManager.remove(body.id)
+    return RemoveResponse(result=id)
 
 """
 更改策略实例执行时间
@@ -208,12 +208,12 @@ class RescheduleResponse(ResponseModel):
 
 @router.post('/reschedule', response_model=RescheduleResponse, response_model_exclude_none=True)
 async def reschedule(body: RescheduleRequest=Body()):
-    ret = scheduler.rescheduleJob(id=body.id, trigger=body.trigger.model_dump())
-    if ret:
-        taskManager.set_trigger(id, body.trigger.model_dump())
-        return RescheduleResponse(result=body.id)
-    else:
-        return RescheduleResponse(code=-1, result=body.id)
+    # ret = scheduler.rescheduleJob(id=body.id, trigger=body.trigger.model_dump())
+    # if ret:
+    id = taskManager.set_trigger(body.id, body.trigger.model_dump())
+    return RescheduleResponse(result=id)
+    # else:
+    #     return RescheduleResponse(code=-1, result=body.id)
 
 """
 创建组合策略
@@ -232,14 +232,14 @@ class PipeScheduleResponse(ResponseModel):
 
 @router.post('/pipe/schedule', response_model=PipeScheduleResponse, response_model_exclude_none=True)
 async def pipe_schedule(body: PipeScheduleRequest=Body()):
-    args = {
-        'strategies': body.strategies
-    }
-    id = scheduler.addDailyJob(func=PipeStrategyFunction, args=args, days=body.trigger.days, hour=body.trigger.hour, minute=body.trigger.minute)
-    # id = scheduler.addDelayJob(func=PipeStrategyFunction, args=args, seconds=2)
+    # args = {
+    #     'strategies': body.strategies
+    # }
+    # id = scheduler.addDailyJob(func=PipeStrategyFunction, args=args, days=body.trigger.days, hour=body.trigger.hour, minute=body.trigger.minute)
+    # # id = scheduler.addDelayJob(func=PipeStrategyFunction, args=args, seconds=2)
 
-    args['id'] = id
-    taskManager.create_pipe_finder_strategy(id, body.title, body.trigger.model_dump(), body.strategies)
+    # args['id'] = id
+    id = taskManager.create_pipe_finder_strategy(title=body.title, func=PipeStrategyFunction, trigger=body.trigger.model_dump(), strategies=body.strategies)
 
     return PipeScheduleResponse(result=id)
 
@@ -275,7 +275,6 @@ class PipeInstanceResult(BaseModel):
     id: str
     title: str
     trigger: dict | None = None
-    strategies: list
     args: dict | None = None
     runTimes: int = 0
     lastUpdated: str = None
@@ -288,6 +287,7 @@ class PipeInstanceResponse(ResponseModel):
 @router.post('/pipe/instance', response_model=PipeInstanceResponse, response_model_exclude_none=True)
 async def instance(body: PipeInstanceRequest=Body()):
     instance = taskManager.get_pipe_finder_strategy(body.id)
+    print(f'{instance}')
     if instance is None:
         return PipeInstanceResponse(result=None)
     if type(instance) == list:
@@ -297,7 +297,7 @@ async def instance(body: PipeInstanceRequest=Body()):
                 id=inst.id,
                 trigger=inst.trigger,
                 title=inst.element['title'],
-                strategies=inst.element['strategies'],
+                args=inst.element['args'],
                 runTimes=inst.runTimes,
                 lastUpdated=utils.datetime2String2(inst.lastUpdated),
                 duration=utils.timedelta2String(inst.duration),
@@ -309,7 +309,7 @@ async def instance(body: PipeInstanceRequest=Body()):
             id=instance.id,
             trigger=instance.trigger,
             title=instance.element['title'],
-            strategies=instance.element['strategies'],
+            args=instance.element['args'],
             runTimes=instance.runTimes,
             lastUpdated=utils.datetime2String2(instance.lastUpdated),
             duration=utils.timedelta2String(instance.duration),          
@@ -327,8 +327,8 @@ class PipeRemoveResponse(ResponseModel):
 
 @router.post('/pipe/remove', response_model=PipeRemoveResponse, response_model_exclude_none=True)
 async def remove(body: RemoveRequest=Body()):
-    taskManager.remove(body.id)
-    return PipeRemoveResponse(result=body.id)
+    id = taskManager.remove(body.id)
+    return PipeRemoveResponse(result=id)
 
 """
 更改组合策略实例执行时间
@@ -338,13 +338,13 @@ class PipeRescheduleRequest(RequestModel):
     trigger: TriggerRequest
 
 class PipeRescheduleResponse(ResponseModel):
-    result: str
+    result: str | None
 
 @router.post('/pipe/reschedule', response_model=PipeRescheduleResponse, response_model_exclude_none=True)
 async def reschedule(body: RescheduleRequest=Body()):
-    ret = scheduler.rescheduleJob(id=body.id, trigger=body.trigger.model_dump())
-    if ret:
-        taskManager.set_trigger(id, body.trigger.model_dump())
-        return PipeRescheduleResponse(result=body.id)
-    else:
-        return PipeRescheduleResponse(code=-1, result=body.id)
+    # ret = scheduler.rescheduleJob(id=body.id, trigger=body.trigger.model_dump())
+    # if ret:
+    id = taskManager.set_trigger(id, body.trigger.model_dump())
+    return PipeRescheduleResponse(code=-1 if id is None else 0, result=id)
+    # else:
+    #     return PipeRescheduleResponse(code=-1, result=body.id)

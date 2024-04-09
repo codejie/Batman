@@ -5,7 +5,7 @@ from datetime import datetime
 from app import logger
 from app.strategy.finder.algorithm.t_1 import T1Algorithem
 
-from app.task import taskManager
+from app.task_manager import taskManager
 
 class TestStrategy:
     _name = 'Test'

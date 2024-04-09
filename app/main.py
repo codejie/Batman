@@ -10,7 +10,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
 from app import routers, AppException
 
-from app.scheduler import scheduler
+# from app.scheduler import scheduler
+from app.task_manager import taskManager
 from app.dbengine import engine, initDb, shutdownDb
 from app import logger
 
@@ -19,11 +20,11 @@ async def lifespan(app: FastAPI):
     logger.info('Service Startup.')
     logger.debug('========engine connect')
     initDb(engine=engine)
-    logger.debug('========scheduler startup')
-    scheduler.start()
+    logger.debug('========taskManager startup')
+    taskManager.start()
     yield
-    scheduler.shutdown()
-    logger.debug('========scheduler shutdown.')
+    taskManager.shutdown()
+    logger.debug('========taskManager shutdown.')
     shutdownDb(engine=engine)
     logger.debug('========engine shutdown.')
     logger.info('Service Stop.')

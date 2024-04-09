@@ -7,7 +7,7 @@ from app.data import stock
 from app import logger
 
 from app.strategy.finder import strategy
-from app.task import taskManager
+from app.task_manager import taskManager
 # symbol
 # strategy
 # args

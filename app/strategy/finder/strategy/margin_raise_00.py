@@ -7,7 +7,7 @@ from pandas import DataFrame
 from app import logger
 from app.strategy.finder.algorithm.fs_2 import FS2Algorithem, FS2Result
 
-from app.task import taskManager
+from app.task_manager import taskManager
 from app.data import stock
 
 class MarginRaise00Strategy:

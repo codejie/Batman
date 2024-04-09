@@ -8,7 +8,7 @@ from pandas import DataFrame
 from app import logger
 from app.strategy.finder.algorithm.fs_1 import FS1Algorithem, FS1Result
 
-from app.task import taskManager
+from app.task_manager import taskManager
 from app.data import stock
 
 
