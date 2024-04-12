@@ -3,6 +3,7 @@
 """
 from enum import Enum
 from datetime import datetime, timedelta
+import _pickle as pickle
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.base import BaseTrigger
@@ -102,14 +103,12 @@ class TaskManager:
     
     def start(self) -> None:
         self.scheduler.start()
+        self.load()
     
     def shutdown(self) -> None:
+        self.save()
         self.scheduler.shutdown()
 
-    # def create(self, type: TaskType, id: str, trigger: dict, element: dict) -> bool:
-    #     self.taskList[id] = Task(type, id, trigger, element)
-    #     return True
-    
     def create(self, type: TaskType, trigger: dict, func: callable, args: dict = None, attachment: dict = None) -> str:
         id = self.scheduler.make_job(trigger=trigger, func=func, args=args)
         if attachment is None:
@@ -145,13 +144,6 @@ class TaskManager:
     def get_pipe_finder_strategy(self, id: str | None) -> Task | list[Task] | None:
         return self.get_type(TaskType.PipeFinderStrategyInstance, id)
 
-    # def set_element_arg(self, id, arg: str, value: any) -> str | None:
-    #     task = self.taskList.get(id, None)
-    #     if task is None:
-    #         return None
-    #     task.element[arg] = value
-    #     return id
-
     def set_result(self, id: str, result: any, duration: timedelta = None) -> str | None:
         task = self.taskList.get(id, None)
         if task is None:
@@ -171,21 +163,12 @@ class TaskManager:
         return id
 
     def create_finder_strategy(self, title: str, func: callable, trigger: dict, strategy: str, args: dict = None) -> str:
-        # return self.create(TaskType.FinderStrategyInstance, id, trigger, {
-        #     'title': title,
-        #     'strategy': strategy,
-        #     'args': args,
-        # })
         return self.create(TaskType.FinderStrategyInstance, trigger, func, args, {
             'title': title,
             'strategy': strategy,           
         })
     
     def create_pipe_finder_strategy(self, title: str, func: callable, trigger: dict, strategies: list) -> str:
-        # return self.create(TaskType.PipeFinderStrategyInstance, id, trigger, {
-        #     'title': title,
-        #     'strategies': strategies
-        # })
         args = {
             'strategies': strategies
         }
@@ -204,6 +187,8 @@ class TaskManager:
         pass
 
     def save(self) -> None:
-        pass
+        for task in self.taskList:
+            j = json.dumps(task)
+            print(j)
 
 taskManager = TaskManager() 
