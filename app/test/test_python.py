@@ -2,7 +2,7 @@
 import unittest
 import pandas as pd
 
-import _pickle as pickle
+import pickle
 from app.task_manager import TaskType, Task
 
 class TestPython(unittest.TestCase):
@@ -60,6 +60,11 @@ class TestPython(unittest.TestCase):
         a = pickle.dumps(task)
 
         print(a)
+
+        b = pickle.loads(a)
+        print(type(b))
+        print(b)
+        print(b.trigger)
 
         self.assertTrue(True)
 

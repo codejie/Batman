@@ -1,17 +1,20 @@
 """
 系统任务管理
 """
+import os
 from enum import Enum
 from datetime import datetime, timedelta
-import _pickle as pickle
+import pickle
+from sqlalchemy.sql import text
 
+from app.dbengine import engine
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.base import BaseTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.combining import AndTrigger
 
-from app import AppException
+from app import AppException, logger
 
 """
 Scheduler
@@ -55,6 +58,12 @@ class Scheduler:
         job = self.scheduler.add_job(id=id, trigger=trig, func=func, kwargs=args)
         return job.id
     
+    def restore_job(self, id: str, trigger: dict, func: callable, args: dict = None) -> str:
+        id = args['id']
+        trig = self.make_trigger(trigger)
+        job = self.scheduler.add_job(id=id, trigger=trig, func=func, kwargs=args)
+        return job.id        
+
     def remove_job(self, id: str):
         self.scheduler.remove_job(id)
 
@@ -77,6 +86,10 @@ class Scheduler:
 """
 TaskManager
 """
+
+PATH_TASK_INSTANCE = './app/db/instance' # 'app\\db\\instance'
+TABLE_TASK_INSTANCE = 'sys_task_instance'
+
 class TaskType(Enum):
     All = 0
     FinderStrategyInstance = 1
@@ -86,11 +99,13 @@ class TaskType(Enum):
     FetchDataInstance = 5
 
 class Task:
-    def __init__(self, type: TaskType, id: str, trigger: dict, element: dict) -> None:
+    def __init__(self, type: TaskType, id: str, trigger: dict, func: callable, attach: dict = None) -> None:
         self.type = type
         self.id = id
         self.trigger = trigger
-        self.element = element
+        self.func = func
+        # self.args = args
+        self.attach = attach
         self.runTimes = 0
         self.lastUpdated = None
         self.duration = None
@@ -103,23 +118,36 @@ class TaskManager:
     
     def start(self) -> None:
         self.scheduler.start()
-        self.load()
+        self.load_tasks()
     
     def shutdown(self) -> None:
-        self.save()
+        # self.save()
         self.scheduler.shutdown()
 
-    def create(self, type: TaskType, trigger: dict, func: callable, args: dict = None, attachment: dict = None) -> str:
+    def create(self, type: TaskType, trigger: dict, func: callable, args: dict = None, attach: dict = None) -> str:
         id = self.scheduler.make_job(trigger=trigger, func=func, args=args)
-        if attachment is None:
-            attachment = {}
-        attachment['args'] = args
-        self.taskList[id] = Task(type, id, trigger, attachment)
+        if attach is None:
+            attach = {}
+        attach['args'] = args
+        self.taskList[id] = Task(type, id, trigger, func, attach)
+
+        self.save_task(self.taskList[id])
+
         return id
     
+    def restore(self, task: Task) -> str:
+        args = task.attach['args']
+        id = args['id']
+        self.scheduler.restore_job(id=id, trigger=task.trigger, func=task.func, args=args)
+        self.taskList[id] = task
+
+        return id
+
     def remove(self, id) -> str:
         self.scheduler.remove_job(id)
         self.taskList.pop(id, None)
+
+        self.delete_task(id)
         return id
     
     def get_jobs(self) -> list:
@@ -152,7 +180,8 @@ class TaskManager:
         task.runTimes += 1
         task.lastUpdated = datetime.now()
         task.duration = duration
-        return id
+
+        return self.update_task(task)
 
     def set_trigger(self, id: str, trigger: dict) -> str | None:
         task = self.taskList.get(id, None)
@@ -160,7 +189,7 @@ class TaskManager:
             return None        
         self.scheduler.reschedule_job(id, trigger)
         task.trigger = trigger
-        return id
+        return self.update_task(task)
 
     def create_finder_strategy(self, title: str, func: callable, trigger: dict, strategy: str, args: dict = None) -> str:
         return self.create(TaskType.FinderStrategyInstance, trigger, func, args, {
@@ -179,16 +208,70 @@ class TaskManager:
     def create_fetch_data(self, func: callable, args: dict = None, seconds=2) -> str:
         trigger = {
             'mode': 'delay',
-            'seconds': seconds
+            'seconds': seconds 
         }
         return self.create(TaskType.FetchDataInstance, trigger, func, args)
     
-    def load(self) -> None:
-        pass
+    def __load_task(self, id: str) -> str:
+        file = self.__make_task_local(id)
+        with open(file, 'rb') as input:
+            task = pickle.load(input)
+            return self.restore(task)
 
-    def save(self) -> None:
-        for task in self.taskList:
-            j = json.dumps(task)
-            print(j)
+    def load_tasks(self) -> None:
+        try:
+            stmt = text(f'SELECT id FROM {TABLE_TASK_INSTANCE}') # select(TABLE_TASK_INSTANCE)
+            with engine.connect() as conn:
+                results = conn.execute(stmt)
+                for row in results:
+                    self.__load_task(row.id)
+        except Exception as e:
+            raise AppException(e)
+
+    def __make_task_local(self, id: str) -> str:
+        return f'{PATH_TASK_INSTANCE}\\{id}.i'
+
+    def save_task(self, task: Task) -> str:
+        try:
+            file = self.__make_task_local(task.id)
+            with open(file, 'wb') as output:
+                pickle.dump(task, output)
+
+            data = {
+                "id": task.id
+            }
+
+            stmt = text(f'INSERT INTO {TABLE_TASK_INSTANCE}(id) VALUES(:id)')
+            with engine.connect() as conn:
+                conn.execute(stmt, data)
+                conn.commit()
+            
+            return task.id
+        except Exception as e:
+            raise AppException(e)    
+
+    def delete_task(self, id: str) -> str:
+        try:
+            data = {
+                "id": id
+            }
+            stmt = text(f'DELETE FROM {TABLE_TASK_INSTANCE} WHERE id==:id')
+            with engine.connect() as conn:
+                conn.execute(stmt, data)
+                conn.commit()
+            file = self.__make_task_local(id)
+            os.remove(file)
+        except Exception as e:
+            raise AppException(e)
+
+    def update_task(self, task: Task) -> str:
+        try:
+            file = self.__make_task_local(task.id)
+            with open(file, 'wb') as output:
+                pickle.dump(task, output)
+            return task.id
+        except Exception as e:
+            raise AppException(e)                  
+
 
 taskManager = TaskManager() 

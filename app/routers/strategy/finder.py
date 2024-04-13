@@ -159,10 +159,10 @@ async def instance(body: InstanceRequest=Body()):
         for inst in instance:
             result.append(InstanceResult(
                 id=inst.id,
-                title=inst.element['title'],
+                title=inst.attach['title'],
                 trigger=inst.trigger,
-                strategy=inst.element['strategy'],
-                args=inst.element['args'],
+                strategy=inst.attach['strategy'],
+                args=inst.attach['args'],
                 runTimes = inst.runTimes,
                 lastUpdated=utils.datetime2String2(inst.lastUpdated),
                 duration=utils.timedelta2String(inst.duration),
@@ -173,9 +173,9 @@ async def instance(body: InstanceRequest=Body()):
         return InstanceResponse(result=InstanceResult(
             id=instance.id,
             trigger=instance.trigger,
-            title=instance.element['title'],
-            strategy=instance.element['strategy'],
-            args=instance.element['args'],
+            title=instance.attach['title'],
+            strategy=instance.attach['strategy'],
+            args=instance.attach['args'],
             runTimes = instance.runTimes,
             lastUpdated=utils.datetime2String2(instance.lastUpdated),
             duration=utils.timedelta2String(instance.duration),      
@@ -287,7 +287,6 @@ class PipeInstanceResponse(ResponseModel):
 @router.post('/pipe/instance', response_model=PipeInstanceResponse, response_model_exclude_none=True)
 async def instance(body: PipeInstanceRequest=Body()):
     instance = taskManager.get_pipe_finder_strategy(body.id)
-    print(f'{instance}')
     if instance is None:
         return PipeInstanceResponse(result=None)
     if type(instance) == list:
@@ -296,8 +295,8 @@ async def instance(body: PipeInstanceRequest=Body()):
             result.append(PipeInstanceResult(
                 id=inst.id,
                 trigger=inst.trigger,
-                title=inst.element['title'],
-                args=inst.element['args'],
+                title=inst.attach['title'],
+                args=inst.attach['args'],
                 runTimes=inst.runTimes,
                 lastUpdated=utils.datetime2String2(inst.lastUpdated),
                 duration=utils.timedelta2String(inst.duration),
@@ -308,8 +307,8 @@ async def instance(body: PipeInstanceRequest=Body()):
         return PipeInstanceResponse(result=PipeInstanceResult(
             id=instance.id,
             trigger=instance.trigger,
-            title=instance.element['title'],
-            args=instance.element['args'],
+            title=instance.attach['title'],
+            args=instance.attach['args'],
             runTimes=instance.runTimes,
             lastUpdated=utils.datetime2String2(instance.lastUpdated),
             duration=utils.timedelta2String(instance.duration),          

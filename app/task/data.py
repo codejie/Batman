@@ -13,6 +13,7 @@ options: dict = {
 }
 
 def checkStockData(start: str, end: str) -> None:
+    
     pass
 
 """
@@ -23,7 +24,7 @@ incoude:
 """
 def updateDailyStockData():
     try:
-        stock.fetch_a_stock(symbol=options['codes'], start=options['start'], end=options['end'], period='daily', adjust='qfq', if_exists=options['if_exits'])
+        stock.fetch_history(symbol=options['codes'], start=options['start'], end=options['end'], period='daily', adjust='qfq', if_exists=options['if_exits'])
 
         stock.fetch_hsgt(symbol=options['codes'], start=options['start'], end=options['end'], if_exists='replace') # options['if_exits'])
 
