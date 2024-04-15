@@ -5,9 +5,8 @@ import os
 from enum import Enum
 from datetime import datetime, timedelta
 import pickle
-from sqlalchemy.sql import text
 
-from app.dbengine import engine
+from app.dbengine import engine, text
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.base import BaseTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -131,11 +130,10 @@ class TaskManager:
         attach['args'] = args
         self.taskList[id] = Task(type, id, trigger, func, attach)
 
-        self.save_task(self.taskList[id])
-
+        # self.save_task(self.taskList[id])
         return id
     
-    def restore(self, task: Task) -> str:
+    def create(self, task: Task) -> str:
         args = task.attach['args']
         id = args['id']
         self.scheduler.restore_job(id=id, trigger=task.trigger, func=task.func, args=args)
@@ -192,31 +190,39 @@ class TaskManager:
         return self.update_task(task)
 
     def create_finder_strategy(self, title: str, func: callable, trigger: dict, strategy: str, args: dict = None) -> str:
-        return self.create(TaskType.FinderStrategyInstance, trigger, func, args, {
+        id =  self.create(TaskType.FinderStrategyInstance, trigger, func, args, {
             'title': title,
             'strategy': strategy,           
         })
+
+        self.save_task(self.taskList[id])
+        return id
     
     def create_pipe_finder_strategy(self, title: str, func: callable, trigger: dict, strategies: list) -> str:
         args = {
             'strategies': strategies
         }
-        return self.create(TaskType.PipeFinderStrategyInstance, trigger, func, args, {
+        id = self.create(TaskType.PipeFinderStrategyInstance, trigger, func, args, {
             'title': title,       
         })
+        self.save_task(self.taskList[id])
+        return id
     
     def create_fetch_data(self, func: callable, args: dict = None, seconds=2) -> str:
         trigger = {
             'mode': 'delay',
             'seconds': seconds 
         }
-        return self.create(TaskType.FetchDataInstance, trigger, func, args)
+        id = self.create(TaskType.FetchDataInstance, trigger, func, args)
+        self.save_task(self.taskList[id])
+        return id
+
     
     def __load_task(self, id: str) -> str:
         file = self.__make_task_local(id)
         with open(file, 'rb') as input:
             task = pickle.load(input)
-            return self.restore(task)
+            return self.create(task)
 
     def load_tasks(self) -> None:
         try:
