@@ -24,6 +24,9 @@ def string2Date1(date: str) -> date:
 def string2Date2(date: str) -> date:
     return datetime.strptime(date, '%Y-%m-%d').date()
 
+def string2Datetime2(date: str) -> datetime:
+    return datetime.strptime(date, '%Y-%m-%d %H:%M:%S.%f')
+
 def date2String1(date: datetime.date) -> str:
     return date.strftime('%Y%m%d')
 

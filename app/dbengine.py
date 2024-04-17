@@ -29,8 +29,8 @@ class DataUpdatedRecord(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     item = Column(Integer, nullable=False)
-    start = Column(String, nullable=False)
-    end = Column(String, nullable=False)
+    start = Column(DateTime(timezone=True), nullable=False)
+    end = Column(DateTime(timezone=True), nullable=False)
     result = Column(Integer, nullable=False)
     arg1 = Column(Integer, nullable=True)
     arg2 = Column(String, nullable=True)

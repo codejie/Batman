@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from app.routers.dependencies import verify_token
 from app.routers.define import RequestModel, ResponseModel
 
-from app.routers import utils
+from app import utils
 # from app.scheduler import scheduler
 from app.strategy.finder import strategy
 

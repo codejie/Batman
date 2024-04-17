@@ -8,7 +8,7 @@ from app import logger, AppException
 from app.data.remote_api import stock as remote
 from app.data import stock as local
 from app.data.local_db import TableName
-from app.routers import utils
+from app import utils
 
 """
 获取A股所有股票代码
@@ -40,7 +40,8 @@ def fetch_history(**kwargs) -> None:
         for code in codes['code']:
             table = TableName.make_stock_history_name(code, period, adjust)
             df = remote.get_history(code, start_date, end_date, period, adjust)
-            df.to_sql(table, engine, if_exists=if_exists, index=False)
+            if not df.empty:
+                df.to_sql(table, engine, if_exists=if_exists, index=False)
 
         logger.info('fetch_all_stock_history() end.')
     except Exception as e:

@@ -133,7 +133,7 @@ class TaskManager:
         # self.save_task(self.taskList[id])
         return id
     
-    def create(self, task: Task) -> str:
+    def create_task(self, task: Task) -> str:
         args = task.attach['args']
         id = args['id']
         self.scheduler.restore_job(id=id, trigger=task.trigger, func=task.func, args=args)
@@ -217,12 +217,11 @@ class TaskManager:
         self.save_task(self.taskList[id])
         return id
 
-    
     def __load_task(self, id: str) -> str:
         file = self.__make_task_local(id)
         with open(file, 'rb') as input:
             task = pickle.load(input)
-            return self.create(task)
+            return self.create_task(task)
 
     def load_tasks(self) -> None:
         try:
