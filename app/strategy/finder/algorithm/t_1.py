@@ -1,12 +1,12 @@
 """
-Test Strategy
+Test Algorithm
 """
 
-from app.strategy.finder import FinderResult, FinderStrategy
+from app.strategy.finder.algorithm import Algorithm, Result
 
 from app import logger
 
-class T1Strategy(FinderStrategy):
+class T1Algorithem(Algorithm):
     _name = 't1'
     _desc = 'for test'
     _args = [

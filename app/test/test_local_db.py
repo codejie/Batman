@@ -1,7 +1,7 @@
 import unittest
 
 from app.data import stock
-from app.routers import utils
+from app import utils
 
 class TestLocalDb(unittest.TestCase):
     def test_a_stock(self):

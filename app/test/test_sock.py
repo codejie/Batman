@@ -11,7 +11,7 @@ class TestSockData(unittest.TestCase):
         self.assertTrue(True)
 
     def test_history(self):
-        df = stock.get_history('002236', '2023-03-01', '2024-01-01')
+        df = remote.get_history('002236', '20200110', '20200110')
         print(df)
         self.assertTrue(True)
 
