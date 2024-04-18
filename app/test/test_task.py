@@ -45,18 +45,18 @@ class TestTask(unittest.TestCase):
 
 
     def test_select_last_item(self):
-        ret = select_last_item(DataItem.STOCK_DAILY_HISTORY)
+        ret = select_last_item(DataItem.STOCK_LIST)
         print(ret)
 
         self.assertTrue(True)
 
     def test_insert_last_item(self):
         data = {
-            DataItem.STOCK_DAILY_HISTORY
+            DataItem.STOCK_LIST
         }
 
         insert_last_item(
-            item=DataItem.STOCK_DAILY_HISTORY,
+            item=DataItem.STOCK_LIST,
             start=datetime.now(),
             end=datetime.now() + timedelta(days=1),
             result=0,

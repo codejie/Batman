@@ -9,8 +9,8 @@ def register_daily_data_check():
     trigger = {
         'mode': 'daily',
         'days': '0-4',
-        'hour': 21,
-        'minute': 21
+        'hour': 22,
+        'minute': 32
     }
 
     id = taskManager.create(type=TaskType.SysDataInstance,
