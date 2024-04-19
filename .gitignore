@@ -1,6 +1,7 @@
 # Batman files
 *.i
 batman.db
+db/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
