@@ -1,29 +1,29 @@
 import os
 from contextlib import asynccontextmanager
-from starlette.types import ASGIApp, Receive, Scope, Send
-from apscheduler.schedulers.background import BackgroundScheduler
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
-from fastapi.staticfiles import StaticFiles
+# from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, FileResponse
 from app import routers, AppException
 
-from app.scheduler import scheduler
-from app.dbengine import engine, initDb, shutdownDb
 from app import logger
+from app.task_manager import taskManager
+from app.dbengine import engine, initDb, shutdownDb
+from app.task import register_system_check
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info('Service Startup.')
     logger.debug('========engine connect')
     initDb(engine=engine)
-    logger.debug('========scheduler startup')
-    scheduler.start()
+    logger.debug('========taskManager startup')
+    taskManager.start()
+    register_system_check()
     yield
-    scheduler.shutdown()
-    logger.debug('========scheduler shutdown.')
+    taskManager.shutdown()
+    logger.debug('========taskManager shutdown.')
     shutdownDb(engine=engine)
     logger.debug('========engine shutdown.')
     logger.info('Service Stop.')
@@ -51,8 +51,6 @@ async def app_exception_handler(request: Request, e: AppException):
                 'message': e.message
             }
         ))
-
-# app.mount('/static', StaticFiles(directory='.\\static'))
 
 @app.get('/')
 async def root():

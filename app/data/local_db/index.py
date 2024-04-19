@@ -7,7 +7,7 @@ from app import logger, AppException
 from app.data.remote_api import index as remote
 from app.data import index as local
 from app.data.local_db import TableName
-from app.routers import utils
+from app import utils
 
 """
 添加指数列表记录

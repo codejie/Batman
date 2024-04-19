@@ -2,9 +2,9 @@
 SQLAlchemy数据访问引擎
 """
 
-from sqlalchemy import create_engine, Engine, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, Engine, Column, Integer, String, DateTime, insert, select, delete
 from sqlalchemy.orm import Session, DeclarativeBase
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, text
 
 DATABASE_URL = 'sqlite:///./app/db/batman.db'
 
@@ -16,6 +16,24 @@ class Version(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     version = Column(String)
+    updated = Column(DateTime(timezone=True), server_default=func.now())
+
+class TaskInstance(Base):
+    __tablename__ = 'sys_task_instance'
+
+    id = Column(String, primary_key=True)
+    updated = Column(DateTime(timezone=True), server_default=func.now())
+
+class DataUpdatedRecord(Base):
+    __tablename__ = 'sys_data_updated_record'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    item = Column(Integer, nullable=False)
+    start = Column(DateTime(timezone=True), nullable=False)
+    end = Column(DateTime(timezone=True), nullable=False)
+    result = Column(Integer, nullable=False)
+    arg1 = Column(Integer, nullable=True)
+    arg2 = Column(String, nullable=True)
     updated = Column(DateTime(timezone=True), server_default=func.now())
 
 engine = create_engine(DATABASE_URL, connect_args={'check_same_thread': False}) # .execution_options(isolation_level="AUTOCOMMIT")
