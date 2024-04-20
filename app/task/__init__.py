@@ -5,6 +5,8 @@ from app import logger
 from app.task_manager import taskManager, TaskType
 from app.task.daily_data_check import system_daily_data_updated_check
 
+from app.task.fetch_init_data import init_check
+
 def register_daily_data_check():
     trigger = {
         'mode': 'daily',

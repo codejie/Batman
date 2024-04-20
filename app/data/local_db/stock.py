@@ -24,11 +24,11 @@ def fetch_a_stock(**kwargs) -> None:
         raise AppException(e)
 
 """
-获取A股所有股票历史数据
+获取股票历史数据
 """
 def fetch_history(**kwargs) -> None:
     try:
-        symbol = kwargs['symbol'] if 'symbol' in kwargs else None
+        symbol = kwargs['symbol'] # only stock code
         start_date = utils.dateConvert1(kwargs['start'])
         end_date = utils.dateConvert1(kwargs['end'])
         period = kwargs['period']
@@ -36,18 +36,42 @@ def fetch_history(**kwargs) -> None:
         if_exists = kwargs['if_exists']
 
         logger.debug('fetch_all_stock_history() called.')
-
-        codes = local.get_a_list() if symbol is None else DataFrame().from_dict(symbol)
-        for code in codes['code']:
-            table = TableName.make_stock_history_name(code, period, adjust)
-            df = remote.get_history(code, start_date, end_date, period, adjust)
-            if not df.empty:
-                df.to_sql(table, engine, if_exists=if_exists, index=False)
-
+        table = TableName.make_stock_history_name(symbol, period, adjust)
+        df = remote.get_history(symbol, start_date, end_date, period, adjust)
+        if not df.empty:
+            df.to_sql(table, engine, if_exists=if_exists, index=False)
         logger.debug('fetch_all_stock_history() end.')
     except Exception as e:
-        # logger.error(f'fetch_all_stock_history() fail - {e}')
         raise AppException(e)
+
+
+# def fetch_history(**kwargs) -> None:
+#     print(kwargs)
+#     try:
+#         symbol = kwargs['symbol'] if 'symbol' in kwargs else None
+#         start_date = utils.dateConvert1(kwargs['start'])
+#         end_date = utils.dateConvert1(kwargs['end'])
+#         period = kwargs['period']
+#         adjust = kwargs['adjust']
+#         if_exists = kwargs['if_exists']
+
+#         logger.debug('fetch_all_stock_history() called.')
+#         print(symbol)
+#         codes = local.get_a_list() if symbol is None else DataFrame().from_dict(symbol)
+#         print(codes)
+#         for code in codes['code']:
+#             print(code)
+#             table = TableName.make_stock_history_name(code, period, adjust)
+#             print(table)
+#             df = remote.get_history(code, start_date, end_date, period, adjust)
+#             print(df)
+#             if not df.empty:
+#                 df.to_sql(table, engine, if_exists=if_exists, index=False)
+
+#         logger.debug('fetch_all_stock_history() end.')
+#     except Exception as e:
+#         # logger.error(f'fetch_all_stock_history() fail - {e}')
+#         raise AppException(e)
 
 """
 个股持股数据
@@ -80,7 +104,7 @@ def fetch_hsgt(**kwargs) -> None:
 """
 def fetch_margin(**kwargs) -> None:
     try:
-        symbol = kwargs['symbol'] if 'symbol' in kwargs else None
+        symbol = kwargs['symbol'] # code list
         start_date = utils.string2Date2(kwargs['start'])
         end_date = utils.string2Date2(kwargs['end'])      
         if_exists = kwargs['if_exists']
@@ -96,9 +120,10 @@ def fetch_margin(**kwargs) -> None:
                     for i in range(len(df)):
                         sdf = df.iloc[i:i+1]
                         code = sdf.iloc[0]['证券代码']
-                        table = TableName.make_stock_margin_name(symbol=code)
-                        sdf = sdf.iloc[:,2:]
-                        sdf.to_sql(table, engine, if_exists=if_exists, index=False)
+                        if code in symbol:
+                            table = TableName.make_stock_margin_name(symbol=code)
+                            sdf = sdf.iloc[:,2:]
+                            sdf.to_sql(table, engine, if_exists=if_exists, index=False)
                 else:
                     logger.warn(f'fetch_margin() fetch {code} data None.')
             except Exception as e:
@@ -108,3 +133,34 @@ def fetch_margin(**kwargs) -> None:
     except Exception as e:
         # logger.error(f'fetch_margin() fail - {e}')
         raise AppException(e)
+
+# def fetch_margin(**kwargs) -> None:
+#     try:
+#         symbol = kwargs['symbol'] if 'symbol' in kwargs else None
+#         start_date = utils.string2Date2(kwargs['start'])
+#         end_date = utils.string2Date2(kwargs['end'])      
+#         if_exists = kwargs['if_exists']
+#         logger.debug('fetch_margin() called.')
+
+#         delta = timedelta(days=1)
+#         while start_date <= end_date:
+#             code = None
+#             try:
+#                 df = remote.get_margin(utils.date2String1(date=start_date))
+#                 if df is not None:
+#                     df.insert(2, '日期', utils.date2String2(date=start_date))
+#                     for i in range(len(df)):
+#                         sdf = df.iloc[i:i+1]
+#                         code = sdf.iloc[0]['证券代码']
+#                         table = TableName.make_stock_margin_name(symbol=code)
+#                         sdf = sdf.iloc[:,2:]
+#                         sdf.to_sql(table, engine, if_exists=if_exists, index=False)
+#                 else:
+#                     logger.warn(f'fetch_margin() fetch {code} data None.')
+#             except Exception as e:
+#                 logger.warn(f'fetch_margin() fetch {code} data fail - {e}')
+#             start_date += delta            
+#         logger.debug('fetch_margin() end.')
+#     except Exception as e:
+#         # logger.error(f'fetch_margin() fail - {e}')
+#         raise AppException(e)
