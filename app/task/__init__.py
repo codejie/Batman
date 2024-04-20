@@ -8,9 +8,9 @@ from app.task.daily_data_check import system_daily_data_updated_check
 def register_daily_data_check():
     trigger = {
         'mode': 'daily',
-        'days': '0-4',
-        'hour': 22,
-        'minute': 32
+        'days': '0-6',
+        'hour': 13,
+        'minute': 38
     }
 
     id = taskManager.create(type=TaskType.SysDataInstance,

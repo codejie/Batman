@@ -60,6 +60,8 @@ def system_daily_data_updated_check(**kwargs):
     fetch_stock_list(**kwargs)
     # STOCK_DAILY_HISTORY
     fetch_stock_history(**kwargs)
+    # STOCK_DAILY_MARGIN
+    fetch_stock_margin(**kwargs)
 
     logger.info('system_daily_data_updated_check() end.')
 
