@@ -3,21 +3,20 @@ register daily_data_check function
 """
 from app import logger
 from app.task_manager import taskManager, TaskType
-from app.task.daily_data_check import system_daily_data_updated_check
-
 from app.task.fetch_init_data import init_check
+from app.task.fetch_daily_data import fetch_data as fetch_daily_data
 
 def register_daily_data_check():
     trigger = {
         'mode': 'daily',
         'days': '0-6',
-        'hour': 13,
-        'minute': 38
+        'hour': 23,
+        'minute': 28
     }
 
     id = taskManager.create(type=TaskType.SysDataInstance,
                        trigger=trigger,
-                       func=system_daily_data_updated_check,
+                       func=fetch_daily_data,
                        args=None)
     logger.info(f'register_daily_data_check() - {id}')
 

@@ -74,29 +74,44 @@ def fetch_history(**kwargs) -> None:
 #         raise AppException(e)
 
 """
-个股持股数据
-"""
+个股深沪港股通持股数据
+""" 
 def fetch_hsgt(**kwargs) -> None:
     logger.debug('fetch_hsgt() called.')
     try:
-        symbol = kwargs['symbol'] if 'symbol' in kwargs else None
+        symbol = kwargs['symbol'] # code
         if_exists = kwargs['if_exists']
 
-        codes = local.get_a_list() if symbol is None else DataFrame().from_dict(symbol)
-        for code in codes['code']:
-            try:
-                df = remote.get_individual_hsgt(code)
-                table = TableName.make_stock_hsgt_name(code)
-                if not df:
-                    df.to_sql(table, engine, if_exists=if_exists, index=False)
-                else:
-                    logger.warn(f'fetch_hsgt() {code} data is None.')
-            except Exception as e:
-                logger.warn(f'fetch_hsgt() fetch {code} data fail - {e}')
+        df = remote.get_individual_hsgt(symbol)
+        table = TableName.make_stock_hsgt_name(symbol)
+        if not df.empty:
+            df.to_sql(table, engine, if_exists=if_exists, index=False)
         logger.debug('fetch_hsgt() end.')
     except Exception as e:
-        # logger.error(f'fetch_hsgt() fail - {e}')
         raise AppException(e)
+
+
+# def fetch_hsgt(**kwargs) -> None:
+#     logger.debug('fetch_hsgt() called.')
+#     try:
+#         symbol = kwargs['symbol'] if 'symbol' in kwargs else None
+#         if_exists = kwargs['if_exists']
+
+#         codes = local.get_a_list() if symbol is None else DataFrame().from_dict(symbol)
+#         for code in codes['code']:
+#             try:
+#                 df = remote.get_individual_hsgt(code)
+#                 table = TableName.make_stock_hsgt_name(code)
+#                 if not df:
+#                     df.to_sql(table, engine, if_exists=if_exists, index=False)
+#                 else:
+#                     logger.warn(f'fetch_hsgt() {code} data is None.')
+#             except Exception as e:
+#                 logger.warn(f'fetch_hsgt() fetch {code} data fail - {e}')
+#         logger.debug('fetch_hsgt() end.')
+#     except Exception as e:
+#         # logger.error(f'fetch_hsgt() fail - {e}')
+#         raise AppException(e)
 
 
 """

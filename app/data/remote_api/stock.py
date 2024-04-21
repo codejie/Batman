@@ -89,7 +89,7 @@ def get_spot(symbols: List[str] | None = None) -> DataFrame:
         raise AppException(e)
     
 """
-获取个股持股数据
+获取个股深沪港股通持股数据
 """
 def get_individual_hsgt(symbol: str) -> DataFrame:
     try:

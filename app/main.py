@@ -11,8 +11,7 @@ from app import routers, AppException
 from app import logger
 from app.task_manager import taskManager
 from app.dbengine import engine, initDb, shutdownDb
-# from app.task import register_system_check
-from app.task import init_check
+from app.task import init_check, register_system_check
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,7 +24,7 @@ async def lifespan(app: FastAPI):
 
     logger.debug('========taskManager startup')
     taskManager.start()
-    # register_system_check()
+    register_system_check()
     yield
     taskManager.shutdown()
     logger.debug('========taskManager shutdown.')

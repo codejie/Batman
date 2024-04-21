@@ -1,17 +1,19 @@
 """
 每日数据下载
 """
-from enum import Enum
-from datetime import datetime, timedelta
-
-from app import logger, utils
+from app import logger
 from app.dbengine import engine, text
-from app.data.local_db import stock
+from app.data import stock
+from app.data.local_db import stock as local
+
+from app.task.item_updated import DataItem, get_item_start_end, set_item_latest
 
 
-    
-def check(**kwargs):
+def fetch_data(**kwargs):
     logger.info('fetch_daily_data check() start.')
+
+    # kwargs['end'] = utils.date2String2(datetime.now()) 
+
     # STOCK_DIALIY_HISTORY
     fetch_stock_history(**kwargs)
 
@@ -20,8 +22,19 @@ def check(**kwargs):
 def fetch_stock_history(**kwargs):
     logger.info('-- fetch_stock_history() start.')
 
+    symbols = stock.get_a_list()
     
+    # check
+    kwargs['period'] = 'daily'
+    kwargs['adjust'] = 'qfq'
+    kwargs['if_exists'] = 'append'
 
+    for index, row in symbols.iterrows():
+        kwargs['symbol'] = row['code']
+        kwargs['start'], kwargs['end'], insert = get_item_start_end(DataItem.STOCK_DAILY_HISTORY, kwargs['symbol'])
+        if kwargs['start'] and kwargs['end']:
+            local.fetch_history(**kwargs)
+            set_item_latest(DataItem.STOCK_DAILY_HISTORY, kwargs['end'], kwargs['symbol'], insert)
 
     logger.info('-- fetch_stock_history() end.')
 
