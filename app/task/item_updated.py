@@ -6,7 +6,7 @@ from app import logger
 from app.dbengine import engine, text
 from app import utils
 
-HISTORY_START =  datetime(year=2022, month=1, day=1, hour=0, minute=0, second=0)
+HISTORY_START =  datetime(year=2023, month=1, day=1, hour=0, minute=0, second=0)
 
 TABLE_FATCH_DATA_RECORD = 'sys_fetch_data_record'
 

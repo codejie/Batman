@@ -17,6 +17,9 @@ def fetch_data(**kwargs):
     # STOCK_DIALIY_HISTORY
     fetch_stock_history(**kwargs)
 
+    # STOCK_DAILY_HSGT
+    fetch_stock_hsgt(**kwargs)
+
     logger.info('fetch_daily_data check() end.')
 
 def fetch_stock_history(**kwargs):
@@ -37,4 +40,25 @@ def fetch_stock_history(**kwargs):
             set_item_latest(DataItem.STOCK_DAILY_HISTORY, kwargs['end'], kwargs['symbol'], insert)
 
     logger.info('-- fetch_stock_history() end.')
+
+def fetch_stock_hsgt(**kwargs):
+    logger.info('-- fetch_stock_hsgt() start.')
+
+    symbols = stock.get_a_list()
+    
+    # check
+    kwargs['if_exists'] = 'append'
+
+    for index, row in symbols.iterrows():
+        kwargs['symbol'] = row['code']
+        kwargs['start'], kwargs['end'], insert = get_item_start_end(DataItem.STOCK_DAILY_HSGT, kwargs['symbol'])
+        if kwargs['start'] and kwargs['end']:
+            local.fetch_hsgt(**kwargs)
+            set_item_latest(DataItem.STOCK_DAILY_HSGT, kwargs['end'], kwargs['symbol'], insert)
+
+    logger.info('-- fetch_stock_hsgt() end.')
+
+
+
+
 

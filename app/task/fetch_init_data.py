@@ -18,6 +18,7 @@ def init_check(**kwargs) -> bool:
         return False
 
 def check(**kwargs) -> bool:
+    # return False
     # check stock list table
     try:
         stmt = text(f'SELECT count(*) FROM sqlite_master WHERE name="{TableName.Stock_A_List}"')
@@ -34,6 +35,7 @@ def check(**kwargs) -> bool:
 
 def init_daily_data(**kwargs):
     latest = utils.date2String2(datetime.now())
+    # latest = '2024-01-01'
     # STOCK LIST
     local.fetch_a_stock(if_exists='replace')
     insert_item_latest(DataItem.STOCK_LIST, latest)
@@ -68,10 +70,10 @@ def init_daily_stock(**kwargs):
             logger.info(f'{kwargs['symbol']} hsgt data init failed - {e}')
 
     # margin
-    # kwargs['symbol'] = symbols['code'].to_list()
-    # kwargs['if_exists'] = 'append'
-    # local.fetch_margin(**kwargs)
-    # insert_item_latest(DataItem.STOCK_DAILY_MARGIN, kwargs['end'])
+    kwargs['symbol'] = symbols['code'].to_list()
+    kwargs['if_exists'] = 'append'
+    local.fetch_margin(**kwargs)
+    insert_item_latest(DataItem.STOCK_DAILY_MARGIN, kwargs['end'])
 
 
 

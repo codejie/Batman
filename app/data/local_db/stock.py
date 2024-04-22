@@ -85,6 +85,7 @@ def fetch_hsgt(**kwargs) -> None:
         df = remote.get_individual_hsgt(symbol)
         table = TableName.make_stock_hsgt_name(symbol)
         if not df.empty:
+            df = df[::-1]
             df.to_sql(table, engine, if_exists=if_exists, index=False)
         logger.debug('fetch_hsgt() end.')
     except Exception as e:
@@ -118,12 +119,12 @@ def fetch_hsgt(**kwargs) -> None:
 个股融资融券数据
 """
 def fetch_margin(**kwargs) -> None:
+    logger.debug('fetch_margin() called.')
     try:
         symbol = kwargs['symbol'] # code list
         start_date = utils.string2Date2(kwargs['start'])
         end_date = utils.string2Date2(kwargs['end'])      
         if_exists = kwargs['if_exists']
-        logger.debug('fetch_margin() called.')
 
         delta = timedelta(days=1)
         while start_date <= end_date:
