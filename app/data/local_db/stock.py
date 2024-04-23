@@ -82,11 +82,14 @@ def fetch_hsgt(**kwargs) -> None:
         symbol = kwargs['symbol'] # code
         if_exists = kwargs['if_exists']
 
-        df = remote.get_individual_hsgt(symbol)
-        table = TableName.make_stock_hsgt_name(symbol)
-        if not df.empty:
-            df = df[::-1]
-            df.to_sql(table, engine, if_exists=if_exists, index=False)
+        try:
+            df = remote.get_individual_hsgt(symbol)
+            table = TableName.make_stock_hsgt_name(symbol)
+            if not df.empty:
+                df = df[::-1]
+                df.to_sql(table, engine, if_exists=if_exists, index=False)
+        except Exception as e:
+            logger.warn(f'fetch_hsgt() fetch {symbol} data fail - {e}')
         logger.debug('fetch_hsgt() end.')
     except Exception as e:
         raise AppException(e)

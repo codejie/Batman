@@ -65,7 +65,7 @@ def update_item_latest(item: DataItem, latest: str, code: str = None) -> int:
     
     
 def get_item_start_end(item: DataItem, code: str = None) -> tuple:
-    start = HISTORY_START
+    start = HISTORY_START.date()
     latest = select_item_latest(item, code)
     insert = True
     if latest:

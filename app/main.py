@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     logger.info('Service Startup.')
     logger.debug('========engine connect')
     initDb(engine=engine)
-    logger.info('system init data check, maybe take a long long time, please wait..')
+    logger.info('system init data check, maybe take a long long time while fist run , please wait..')
     init_check()
     logger.info('system init data check end.')
 

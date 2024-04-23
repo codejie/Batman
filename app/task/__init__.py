@@ -7,11 +7,16 @@ from app.task.fetch_init_data import init_check
 from app.task.fetch_daily_data import fetch_data as fetch_daily_data
 
 def register_daily_data_check():
+    # trigger = {
+    #     'mode': 'daily',
+    #     'days': '0-6',
+    #     'hour': 19,
+    #     'minute': 36
+    # }
+
     trigger = {
-        'mode': 'daily',
-        'days': '0-6',
-        'hour': 20,
-        'minute': 44
+        'mode': 'interval',
+        'seconds': 3600
     }
 
     id = taskManager.create(type=TaskType.SysDataInstance,
