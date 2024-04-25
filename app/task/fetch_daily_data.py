@@ -13,7 +13,7 @@ from app.task.item_updated import DataItem, get_item_start_end, set_item_latest
 
 def fetch_data(**kwargs):
     now = datetime.now()
-    if (now.hour() > 9 and now.hour() < 16) or now.weekday() > 4:
+    if (now.hour > 9 and now.hour < 16) or now.weekday() > 4:
         logger.debug('exchange time, fetch data skip..')
         return
 
