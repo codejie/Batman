@@ -1,5 +1,8 @@
 export default {
   route: {
+    Quotes: '行情',
+    Personalized: '自选股',
+
     Data: '数据',
     DataStock: '股票数据',
     DataStockLineChart: '股票折线图',

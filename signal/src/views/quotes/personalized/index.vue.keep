@@ -1,0 +1,77 @@
+<template>
+    <div style="padding:30px;">
+      <h1>Personalized Portfolio</h1>
+      <ve-table 
+        :columns="columns"
+        :table-data="tableData"
+        :border-x="true"
+        :border-y="true"
+        :row-height=1000
+      />
+    </div>
+  </template>
+  
+  <script lang="ts">
+  import { Component, Vue } from 'vue-property-decorator'
+  // import { VeTable} from 'vue-easytable'
+  
+  @Component({
+    name: 'Personsalized'
+  })
+  export default class extends Vue {
+      private columns = [
+          { field: 'code', key: 'a', title: '代码', align: 'center'},
+          { field: 'name', key: 'b', title: '名称', align: 'center'},
+          { field: 'price', key: 'c', title: '现价', align: 'center'},
+          { field: 'percentage', key: 'd', title: '涨跌幅%', align: 'center'},
+          { field: 'amount', key: 'e', title: '涨跌额', align: 'center'},
+          { field: 'Volatility', key: 'i', title: '振幅%', align: 'center'},          
+          { field: 'open', key: 'f', title: '今开', align: 'center'},
+          { field: 'close', key: 'g', title: '昨收', align: 'center'},
+          { field: 'high', key: 'h', title: '最高', align: 'center'},
+          { field: 'low', key: 'i', title: '最低', align: 'center'},
+          { field: 'Volume', key: 'i', title: '成交量', align: 'center'},
+          { field: 'Turnover', key: 'i', title: '成交额', align: 'center'},
+          { field: 'Rate', key: 'i', title: '换手率%', align: 'center'}
+        ]
+      private tableData = [
+          {
+            name: "John",
+            
+            date: "1900-05-20",
+            hobby: "coding and coding repeat",
+            address: "No.1 Century Avenue, Shanghai",
+          },
+          {
+            name: "Dickerson",
+            date: "1910-06-20",
+            hobby: "coding and coding repeat",
+            address: "No.1 Century Avenue, Beijing",
+          },
+          {
+            name: "Larsen",
+            date: "2000-07-20",
+            hobby: "coding and coding repeat",
+            address: "No.1 Century Avenue, Chongqing",
+          },
+          {
+            name: "Geneva",
+            date: "2010-08-20",
+            hobby: "coding and coding repeat",
+            address: "No.1 Century Avenue, Xiamen",
+          },
+          {
+            name: "Jami",
+            date: "2020-09-20",
+            hobby: "coding and coding repeat",
+            address: "No.1 Century Avenue, Shenzhen",
+          },
+        ]
+
+      create() {
+        this.loadPersonalized()
+      }
+          
+  }
+  </script>
+  

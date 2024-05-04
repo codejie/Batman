@@ -24,12 +24,9 @@ import { getStockHistory } from '@/api/data/stock'
 })
 
 export default class extends Vue {
-  @Prop({  }) private stockSymbol!: string
-  // private showYear: number = this.getDefaultYear()
-  // private getDefaultYear(){
-  //   let now = new Date()
-  //   return now.getMonth()>=6?now.getFullYear():(now.getFullYear() - 1)
-  // }
+  // @Prop({ default: '000001' }) private stockSymbol!: string
+
+  private stockSymbol: string = '000001'
   private showYear: number = (new Date()).getFullYear()
   private years: number[] = []
   private showStart?:string
@@ -42,13 +39,14 @@ export default class extends Vue {
     for(var i=2004; i<=(new Date()).getFullYear(); i++){
       this.years.push(i)
     }
-    if(this.stockSymbol){
-      this.loadStock()
-    }
+    // console.log(this.stockSymbol)
+    // if(this.stockSymbol){
+    this.loadStock(this.stockSymbol)
+    // }
   }
 
-  private async loadStock() {
-
+  private async loadStock(symbol: string) {
+    this.stockSymbol = symbol
     const { data } = await getStockHistory({
         "symbol": this.stockSymbol,
         "start": (this.showYear - 1) + "-11-01",
@@ -69,7 +67,7 @@ export default class extends Vue {
   }
 
   private yearChange(index: number){
-    this.loadStock()
+    this.loadStock(this.stockSymbol)
   }
 }
 </script>

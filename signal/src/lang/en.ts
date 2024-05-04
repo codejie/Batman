@@ -1,5 +1,9 @@
 export default {
   route: {
+    Quotes: 'Quotes',
+    Personalized: 'Personalized Portfolio',
+
+
     Data: 'Data',
     DataStock: 'Stock Data',
     DataStockLineChart: 'Stock Data Line Chart',

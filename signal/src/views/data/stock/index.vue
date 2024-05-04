@@ -1,6 +1,7 @@
 <template>
   <div style="padding:30px;">
     <h1>Data Stock</h1>
+    <div>{{ stockSymbol }}</div>
     <div>
       <label>
         stock symbol:
@@ -13,8 +14,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Prop, Watch, Vue } from 'vue-property-decorator'
 import StockDetail from './components/stockdetail.vue'
+
 
 @Component({
   name: 'DataStock',
@@ -24,9 +26,11 @@ import StockDetail from './components/stockdetail.vue'
 })
 
 export default class extends Vue {
-  private stockSymbol: string = '002236'
-
-  created() {
+  @Prop({required: true, default: '000001'}) private stockSymbol: string = this.$route.params.stockSymbol
+  // private stockSymbol: string = props.symbol
+  @Watch('stockSymbol')
+  private onSymbolChange(value: String) {
+    this.onStockSymbol()
   }
 
   private async onStockSymbol() {
@@ -35,8 +39,9 @@ export default class extends Vue {
       return
     }
 
-    let ref:any =this.$refs.refDetail
-    ref.loadStock()
+    let ref:any = this.$refs.refDetail
+  
+    ref.loadStock(this.stockSymbol)
   }
 }
 </script>

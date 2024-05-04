@@ -1,28 +1,27 @@
 <template>
   <el-row>
     <el-col :span="4">
-      <!-- <el-menu default-active="0" style="height: 400px;">
+      <el-menu default-active="0" style="height: 400px;">
         <el-menu-item v-for="(strategy,index) in strategyList" :index="index.toString()" @click="selectStrategy(strategy)">
           <i class="el-icon-data-analysis"></i>
           <span slot="title">{{strategy.name}}</span>
         </el-menu-item>
-      </el-menu> -->
-      <el-table :data="strategyInfos" @row-click="handleRowClick" :border="true" :stripe="true" style="width: 100%; height: 100;">
-        <el-table-column label="名称" prop="name"/>
-        <el-table-column label="算法" prop="algorithm.name"/>
-      </el-table>
-      <!-- <el-card class="box-card">{{curStrategy.description}}</el-card> -->
+      </el-menu>
+      <el-card class="box-card">{{curStrategy.description}}</el-card>
     </el-col>
     <el-col :span="20" style="padding: 10px">
-      <el-card class="box-card">{{ currentStrategy ? currentStrategy.desc : ''}}</el-card>
       <el-button size="mini" @click="createStrategy">创建</el-button>
       <el-table :border="true" :stripe="true" align="center"
         :data="instanceList"
         style="width: 100%;margin-top: 15px;"
       >
         <el-table-column label="标题" prop="title" min-width="150"/>
-        <el-table-column label="策略" prop="strategy" min-width="150" />
-        <el-table-column label="最后执行时间" align="center" prop="lastUpdated" width="165"/>
+        <el-table-column label="策略" min-width="150">
+          <template>
+            {{ curStrategy.name }}
+          </template>
+        </el-table-column>
+        <el-table-column label="最后执行时间" align="center" prop="lastRunTime" width="165"/>
         <el-table-column label="执行次数" align="center" prop="runTimes" width="60"/>
         <el-table-column label="计划时间" prop="scheduleTime" width="115">
           <template slot-scope="{row}">
@@ -60,7 +59,6 @@
 import { Component, Vue } from 'vue-property-decorator'
 import { Pager } from '@/api/pager'
 import { IStrategyData, IStrategyInstanceData } from '@/api/def/strategy'
-import { IArgumentInfo, IAlgorithmInfo, IStrategyInfo, InstanceInfo } from '@/api/def/finder_strategy'
 import StrategyForm from './form.vue'
 import TriggerForm from './triggerform.vue'
 import StrategyResult from './resultindex.vue'
@@ -93,10 +91,6 @@ export default class extends Vue {
     pageSize: 20,
     currentPage: 1
   }
-  private strategyInfos: IStrategyInfo[] = []
-  private currentStrategy?: IStrategyInfo
-  private instanceList: InstanceInfo[] = []
-
   private strategyList: IStrategyData[] = []
   private curStrategyId: String = '1'
   private curStrategy: IStrategyData = {
@@ -104,47 +98,15 @@ export default class extends Vue {
     name: '',
     description: ''
   }
-  // private instanceList: IStrategyInstanceData[] = [] 
+  private instanceList: IStrategyInstanceData[] = [] 
   private modeMap = { daily:'每天' }
  
   private curInstance?: IStrategyInstanceData
 
   created() { 
-    // this.loadStrategyList()
-    this.loadStrategyInfos()
+    this.loadStrategyList()
   }
 
-  private async loadStrategyInfos() {
-    const { data } = await getInfos({})
-    for (const info of data.result) {
-      const item: IStrategyInfo = {
-        name: info.name,
-        desc: info.desc,
-        algorithm: info.algorithm
-      }
-
-      this.strategyInfos.push(item)
-    }
-
-    this.currentStrategy = this.strategyInfos[0]
-    this.loadStrategyInstances()
-  }
-
-  private async loadStrategyInstances() {
-    const { data } = await getInstanceByStategy({
-      strategy: this.currentStrategy!.name
-    })
-
-    this.instanceList = data.result
-    // console.log(this.instanceList)
-  }
-
-  private handleRowClick(row: IStrategyInfo) {
-    this.currentStrategy = row
-    this.loadStrategyInstances()
-  }
-
-  /////////////////////
   private async loadStrategyList(){
     // var strategyList = []
     const { data } = await getInfos({})

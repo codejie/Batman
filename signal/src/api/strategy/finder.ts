@@ -1,8 +1,8 @@
 import request from '@/utils/request'
 
-export const getInfo = (data: any) =>
+export const getInfos = (data: any) =>
     request({
-        url: '/strategy/finder/info',
+        url: '/strategy/finder/infos',
         method: 'post',
         data
     })

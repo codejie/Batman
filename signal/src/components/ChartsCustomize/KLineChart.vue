@@ -85,7 +85,7 @@ export default class extends mixins(ResizeMixin) {
               top: 10
             };
             obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
-            console.log(obj)
+            // console.log(obj)
             return obj;
           }
           // extraCssText: 'width: 170px'

@@ -154,21 +154,27 @@ class TaskManager:
     def get(self, id: str) -> Task | None:
         return self.taskList.get(id, None)
     
-    def get_type(self, type: TaskType, id: str | None) -> Task | list[Task] | None:
-        if id is None:
-            ret: list[Task] = []
+    def get_with_type(self, type: TaskType, id: str | None = None, attach: tuple[str, ...] | None = None) -> Task | list[Task] | None:
+        ret: list[Task] = []
+        if id is None and attach is None:
             for k, v in self.taskList.items():
                 if v.type == type or v.type == TaskType.All:
                     ret.append(v)
-            return ret
+        elif id is None and attach:
+            for k, v in self.taskList.items():
+                if v.type == type or v.type == TaskType.All:
+                    if v.attach:
+                        if attach[0] in v.attach and attach[1] == v.attach[attach[0]]:
+                            ret.append(v)
         else:
-            return self.get(id)
+            ret = self.get(id)
+        return ret
         
-    def get_finder_strategy(self, id: str | None) -> Task | list[Task] | None:
-        return self.get_type(TaskType.FinderStrategyInstance, id)
+    def get_finder_strategy(self, id: str | None, attach: tuple[str, ...] | None = None) -> Task | list[Task] | None:
+        return self.get_with_type(TaskType.FinderStrategyInstance, id, attach)
     
     def get_pipe_finder_strategy(self, id: str | None) -> Task | list[Task] | None:
-        return self.get_type(TaskType.PipeFinderStrategyInstance, id)
+        return self.get_with_type(TaskType.PipeFinderStrategyInstance, id)
 
     def set_result(self, id: str, result: any, duration: timedelta = None) -> str | None:
         task = self.taskList.get(id, None)

@@ -70,12 +70,12 @@ export default class extends mixins(ResizeMixin) {
     if (this.chart) {
       var xAxis : String[] = [], series : Object[], seriesData: Number[][] = []
       chartProp.props.forEach((prop: ILineChartDataProp)=>{
-        console.log(prop)
+        // console.log(prop)
         var data : Number[] = []
         seriesData.push(data)
       })
       chartData.forEach((data : any) =>{
-        console.log(data)
+        // console.log(data)
         xAxis.push(data[chartProp.keyProp])
         
         chartProp.props.forEach((prop  ,index )=>{

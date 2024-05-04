@@ -7,6 +7,28 @@ import Layout from '@/layout/index.vue'
 
 const signalRouters: RouteConfig[] = [
     {
+      path: '/quotes',
+      component: Layout,
+      redirect: '/quotes',
+      meta: {
+        title: 'Quotes',
+        icon: 'component',
+        roles: ['admin', 'signal'],
+        alwaysShow: true
+      },
+      children: [
+        {
+          path: '/personalized',
+          component: () => import('@/views/quotes/personalized/index.vue'),
+          name: 'Personalized',
+          meta: {
+            title: 'Personalized',
+            roles: ['admin', 'signal']
+          }
+        }
+      ]
+    },
+    {
       path: '/data',
       component: Layout,
       redirect: '/data',
@@ -26,7 +48,8 @@ const signalRouters: RouteConfig[] = [
                 title: 'DataStock',
                 roles: ['admin', 'signal'],
                 // affix: true
-            }
+            },
+            props: true
         },
         {
             path: '/index',

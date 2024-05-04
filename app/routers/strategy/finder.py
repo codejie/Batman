@@ -32,7 +32,7 @@ class Argument(BaseModel):
     desc: str = ''
     default: str = ''
 
-class AlgorithemResult(BaseModel):
+class AlgorithmResult(BaseModel):
     name: str
     desc: str
     args: list
@@ -40,7 +40,7 @@ class AlgorithemResult(BaseModel):
 class InfosResult(BaseModel):
     name: str
     desc: str
-    algorithm: AlgorithemResult
+    algorithm: AlgorithmResult
 
 class InfosResponse(ResponseModel):
     result: list[InfosResult]
@@ -151,7 +151,7 @@ class InstanceResponse(ResponseModel):
 
 @router.post('/instance', response_model=InstanceResponse, response_model_exclude_none=True)
 async def instance(body: InstanceRequest=Body()):
-    instance = taskManager.get_finder_strategy(id=body.id)
+    instance = taskManager.get_finder_strategy(id=body.id, attach=None if body.strategy is None else ('strategy', body.strategy))
     if instance is None:
         return InstanceResponse(result=None)
     if type(instance) == list:
