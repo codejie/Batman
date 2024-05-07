@@ -30,20 +30,20 @@ def get_list(**kwargs) -> list:
         date = kwargs['date']
         for item in ret:
             df = CommonStock.get_daily_history_quote(code=item['code'], date=date)
-            item['quote'] = {
-                'price': df['收盘'][0],
-                'percentage': df['涨跌幅'][0],
-                'amount': df['涨跌额'][0],
-                'volatility': df['振幅'][0],
-                'open': df['开盘'][0],
-                'close': df['收盘'][0],
-                'high': df['最高'][0],
-                'low': df['最低'][0],
-                'volume': df['成交量'][0],
-                'turnover': df['成交额'][0],
-                'rate': df['换手率'][0],
-
-            }
+            if not df.empty:
+                item['quote'] = {
+                    'price': df['收盘'][0],
+                    'percentage': df['涨跌幅'][0],
+                    'amount': df['涨跌额'][0],
+                    'volatility': df['振幅'][0],
+                    'open': df['开盘'][0],
+                    'close': df['收盘'][0],
+                    'high': df['最高'][0],
+                    'low': df['最低'][0],
+                    'volume': df['成交量'][0],
+                    'turnover': df['成交额'][0],
+                    'rate': df['换手率'][0],
+                }
 
     return ret
 

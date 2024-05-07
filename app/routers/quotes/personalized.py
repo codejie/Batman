@@ -72,7 +72,7 @@ async def infos(body: InfosRequest=Body()):
                 volume=item['quote']['volume'],
                 turnover=item['quote']['turnover'],
                 rate=item['quote']['rate'],
-            )
+            ) if 'quote' in item else None
         ))
 
     return InfosResponse(result=result)
@@ -89,7 +89,7 @@ class CreateRequest(RequestModel):
 class CreateResponse(ResponseModel):
     result: int
 
-@router.post('/create', response_model=CreateResponse, response_model_exclude_unset=True)
+@router.post('/create', response_model=CreateResponse, response_model_exclude_none=True)
 async def create(body: CreateRequest=Body()):
     result = personalized.create(
         code=body.code,

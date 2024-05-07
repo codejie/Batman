@@ -38,7 +38,6 @@
     "vue": "^2.6.12",
     "vue-class-component": "^7.2.6",
     "vue-count-to": "^1.0.13",
-    "vue-easytable": "^2.27.1",
     "vue-i18n": "^8.24.2",
     "vue-image-crop-upload": "^2.5.0",
     "vue-property-decorator": "^9.1.2",

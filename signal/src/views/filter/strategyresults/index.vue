@@ -268,6 +268,11 @@ export default class extends Vue {
   text-align: center;
 }
 
+.box-card {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
 </style>
 
 

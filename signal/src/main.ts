@@ -3,9 +3,6 @@ import Vue, { DirectiveOptions } from 'vue'
 import 'normalize.css'
 import ElementUI from 'element-ui'
 import SvgIcon from 'vue-svgicon'
-import 'vue-easytable/libs/theme-default/index.css'
-// import VueEasytable from 'vue-easytable'
-import { VeTable, VePagination, VeIcon, VeLoading} from 'vue-easytable'
 
 import '@/styles/element-variables.scss'
 import '@/styles/index.scss'
@@ -32,11 +29,6 @@ Vue.use(SvgIcon, {
   defaultWidth: '1em',
   defaultHeight: '1em'
 })
-
-Vue.use(VeTable)
-Vue.use(VePagination)
-Vue.use(VeIcon)
-Vue.use(VeLoading)
 
 // Register global directives
 Object.keys(directives).forEach(key => {
