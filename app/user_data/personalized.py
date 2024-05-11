@@ -27,11 +27,12 @@ def get_list(**kwargs) -> list:
 
     with_quote = kwargs['with_quote']
     if with_quote:
-        date = kwargs['date']
+        date = kwargs['date'] if 'date' in kwargs else None
         for item in ret:
             df = CommonStock.get_daily_history_quote(code=item['code'], date=date)
             if not df.empty:
                 item['quote'] = {
+                    'date': df['日期'][0],
                     'price': df['收盘'][0],
                     'percentage': df['涨跌幅'][0],
                     'amount': df['涨跌额'][0],

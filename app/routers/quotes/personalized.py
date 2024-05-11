@@ -21,6 +21,7 @@ class InfosRequest(RequestModel):
     date: str | None = None
     
 class ItemQuoteResponse(BaseModel):
+    date: str
     price: float
     percentage: float
     amount: float
@@ -61,6 +62,7 @@ async def infos(body: InfosRequest=Body()):
             type=item['type'],
             comment=item['comment'],
             quote=ItemQuoteResponse(
+                date=item['quote']['date'],
                 price=item['quote']['price'],
                 percentage=item['quote']['percentage'],
                 amount=item['quote']['amount'],

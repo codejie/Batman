@@ -29,6 +29,7 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 import { IStrategyData, IStrategyInstanceData, IStrategyArgumentData } from '@/api/def/strategy'
+import { IStrategyInfo } from '@/api/def/finder_strategy'
 import { schedule } from '@/api/strategy/finder'
 
 @Component({

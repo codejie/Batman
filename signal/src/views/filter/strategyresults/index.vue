@@ -14,8 +14,8 @@
       <!-- <el-card class="box-card">{{curStrategy.description}}</el-card> -->
     </el-col>
     <el-col :span="20" style="padding: 10px">
-      <el-card class="box-card">{{ currentStrategy ? currentStrategy.desc : ''}}</el-card>
-      <el-button size="mini" @click="createStrategy">创建</el-button>
+      <el-card class="box-card">{{ currentStrategy ? currentStrategy.name + ': ' + currentStrategy.desc : ''}}</el-card>
+      <el-button size="mini" style="padding-top: 10px; padding-bottom: 10px;" @click="createStrategy">创建</el-button>
       <el-table :border="true" :stripe="true" align="center"
         :data="instanceList"
         style="width: 100%;margin-top: 15px;"
@@ -50,27 +50,28 @@
         @current-change="currentChange">
       </el-pagination>
     </el-col>
-    <strategy-form ref="refForm" :strategy="curStrategy" :reload-parent="loadInstanceList"/>
-    <trigger-form ref="refTriggerForm" :strategy="curStrategy" :reload-parent="loadInstanceList"/>
-    <strategy-result ref="refResult" :strategy="curStrategy" :instance="curInstance"/>
+    <strategy-create-form ref="StrategyCreateForm" :visable="createFrameVisable"/>
+    <!-- <trigger-form ref="refTriggerForm" :strategy="curStrategy" :reload-parent="loadInstanceList"/>
+    <strategy-result ref="refResult" :strategy="curStrategy" :instance="curInstance"/> -->
   </el-row>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { Pager } from '@/api/pager'
-import { IStrategyData, IStrategyInstanceData } from '@/api/def/strategy'
+// import { IStrategyData, IStrategyInstanceData } from '@/api/def/strategy'
 import { IArgumentInfo, IAlgorithmInfo, IStrategyInfo, InstanceInfo } from '@/api/def/finder_strategy'
-import StrategyForm from './form.vue'
-import TriggerForm from './triggerform.vue'
-import StrategyResult from './resultindex.vue'
+// import StrategyForm from './form.vue'
+// import TriggerForm from './triggerform.vue'
+// import StrategyResult from './resultindex.vue'
 import { getInfos, getInstanceByStategy } from '@/api/strategy/finder'
-import { getInstanceByDom } from 'echarts'
+import StrategyCreateForm from './create_form.vue'
+// import { getInstanceByDom } from 'echarts'
 
 @Component({
   name: 'StrategyFilter',
   components: {
-    StrategyForm, TriggerForm, StrategyResult
+    StrategyCreateForm
   },
   filters: {
     transactionStatusFilter: (status: string) => {
@@ -97,18 +98,10 @@ export default class extends Vue {
   private currentStrategy?: IStrategyInfo
   private instanceList: InstanceInfo[] = []
 
-  private strategyList: IStrategyData[] = []
-  private curStrategyId: String = '1'
-  private curStrategy: IStrategyData = {
-    id: 0,
-    name: '',
-    description: ''
-  }
-  // private instanceList: IStrategyInstanceData[] = [] 
+  private createFrameVisable: boolean = true
+
   private modeMap = { daily:'每天' }
  
-  private curInstance?: IStrategyInstanceData
-
   created() { 
     // this.loadStrategyList()
     this.loadStrategyInfos()
@@ -144,122 +137,15 @@ export default class extends Vue {
     this.loadStrategyInstances()
   }
 
-  /////////////////////
-  private async loadStrategyList(){
-    // var strategyList = []
-    const { data } = await getInfos({})
-    console.log(data)
-    for (const info of data.result) {
-      console.log(info)
-      const item: IStrategyData = {
-        id: 0,
-        name: info.name,
-        description: info.desc,
-        arguments: []        
-      }
-      for (const arg of info.strategy.args) {
-        (<any[]>item.arguments).push({
-          name: arg.name,
-          unit: arg.unit,
-          value: arg.default,
-          notes: arg.desc
-        })
-      }
-
-      this.strategyList.push(item)
-    }
-
-    this.curStrategy = this.strategyList[0]
-    this.loadInstanceList()
-  }
-
-  private async loadInstanceList(){
-    console.log('===========加载实例列表==========')
-
-    const { data } = await getInstanceByStategy({
-      strategy: this.curStrategy.name
-    })
-
-    console.log(data)
-    console.log(data.result)
-    let instanceList: IStrategyInstanceData[] = []
-    
-    for (const inst of data.result) {
-      instanceList.push({
-        id: (<any>inst).id,
-        strategyId: (<any>inst).id,
-        title: (<any>inst).title,
-        trigger: (<any>inst).trigger,
-        arguments: (<any>inst).args,
-        lastRunTime: (<any>inst).response ? (<any>inst).response.updated : '<>',
-        runTimes: (<any>inst).response ? (<any>inst).response.runTimes : '<>'
-      })
-    }
-
-
-    // console.log(this.pager)
-    // var instanceList = []
-    // let now = new Date()
-    // let nowStr = now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate()
-    //     + ' ' + now.getHours() + '-' + now.getMinutes() + '-' + now.getSeconds() 
-    // for(var i=1; i<=2; i++){
-    //   instanceList.push({
-    //     id: i,
-    //     strategyId: this.curStrategy.id,
-    //     title: this.curStrategy.name + ' instance' + i,
-    //     lastRunTime: nowStr,
-    //     runTimes: 27,
-    //     scheduleTime: 'Every Trade Day 20:30',
-    //     trigger: {
-    //       mode: 'daily',
-    //       hour: 23,
-    //       minute: 30
-    //     },
-    //     arguments: [
-    //       { name: '上涨天数', unit: '天', value: 123, notes: '最近交易日前的连续上涨天数' },
-    //       { name: '上涨幅度', unit: '%', value: 66, notes: '最近交易日前的每天上涨幅度' },
-    //       { name: '下跌天数', unit: '天', value: 456, notes: '最近交易日前的连续下跌天数' },
-    //       { name: '下跌幅度', unit: '%', value: 88, notes: '最近交易日前的每天下跌幅度' }
-    //     ]
-    //   })
-    // }
-
-    this.instanceList = instanceList
-    this.pager.total = this.instanceList.length
-  }
-
-  private selectStrategy(strategy: IStrategyData) {
-    this.curStrategy = strategy
-    this.pager.currentPage = 1
-    this.loadInstanceList()
-  }
-
   private createStrategy() {
-    let ref:any =this.$refs.refForm
-    ref.init()
-  }
 
-  private editTrigger(row: any) {
-    let ref:any =this.$refs.refTriggerForm
-    ref.init(row.id, row.trigger)
-  }
+    this.createFrameVisable = true
 
-  private showResults(instance: IStrategyInstanceData){
-    this.curInstance = instance
-    let ref:any =this.$refs.refResult
-    ref.init(instance)
-  }
+    console.log('==========' + this.createFrameVisable)
+    // let ref:any =this.$refs.refForm
+    // ref.init()
+  }  
 
-  private currentChange(currentPage: number) {
-    this.pager.currentPage = currentPage
-    this.loadInstanceList()
-  }
-
-  private sizeChange(pageSize: number) {
-    this.pager.pageSize = pageSize
-    this.loadInstanceList()
-  }
-  
 }
 </script>
 
