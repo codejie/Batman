@@ -32,8 +32,8 @@ export default class extends Vue {
             code: form.code
         })
 
-        this.dlgVisable = false
-        this.$parent.loadPersonalized()
+        this.dlgVisable = false;
+        (<any>this.$parent).loadPersonalized()
     }
 
     private init() {

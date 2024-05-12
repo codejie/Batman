@@ -50,7 +50,7 @@
         @current-change="currentChange">
       </el-pagination>
     </el-col>
-    <strategy-create-form ref="StrategyCreateForm" :visable="createFrameVisable"/>
+    <strategy-create-form ref="StrategyCreateForm"/>
     <!-- <trigger-form ref="refTriggerForm" :strategy="curStrategy" :reload-parent="loadInstanceList"/>
     <strategy-result ref="refResult" :strategy="curStrategy" :instance="curInstance"/> -->
   </el-row>
@@ -98,8 +98,6 @@ export default class extends Vue {
   private currentStrategy?: IStrategyInfo
   private instanceList: InstanceInfo[] = []
 
-  private createFrameVisable: boolean = true
-
   private modeMap = { daily:'每天' }
  
   created() { 
@@ -139,9 +137,9 @@ export default class extends Vue {
 
   private createStrategy() {
 
-    this.createFrameVisable = true
-
-    console.log('==========' + this.createFrameVisable)
+    // this.createFrameVisable = true
+    (this.$refs.StrategyCreateForm as StrategyCreateForm).visable = true;
+    (this.$refs.StrategyCreateForm as StrategyCreateForm).strategy = this.currentStrategy;
     // let ref:any =this.$refs.refForm
     // ref.init()
   }  
