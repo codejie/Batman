@@ -6,7 +6,7 @@
       <el-form-item label="实例名称">
         <el-input v-model="form.title" size="mini" style="width:100%"/>
       </el-form-item>
-      <el-table :border="1"
+      <el-table :border="true"
           :data="form.arguments"
           style="width: 100%;margin-top: 15px;">
           <el-table-column label="参数名" prop="name" width="120"/>
