@@ -39,7 +39,8 @@
         :current-page="pager.currentPage"
         :total="pager.total" />
     </el-col>
-    <strategy-create-form ref="StrategyCreateForm" :visabled="createFormVisabled" :strategy="currentStrategy" @closed="onCreateFormClosed"/>
+    <strategy-create-form ref="StrategyCreateForm" :visibled="createFormVisabled" :strategy="currentStrategy" @closed="onCreateFormClosed"/>
+    <trigger-edit-form ref="TriggerEditForm" :visibled="triggerFormVisabled" @closed="onTriggerFormClosed"/>
     <!-- <trigger-form ref="refTriggerForm" :strategy="curStrategy" :reload-parent="loadInstanceList"/>
     <strategy-result ref="refResult" :strategy="curStrategy" :instance="curInstance"/> -->
   </el-row>
@@ -137,6 +138,14 @@ export default class IndexVue extends Vue {
 
   private onEditTrigger(row: any) {
     console.log(row)
+    this.triggerFormVisabled = true;
+  }
+
+  private onTriggerFormClosed(args: any) {
+    if (args.code == 0)
+      this.loadStrategyInstances()
+
+    this.triggerFormVisabled = false;
   }
 }
 </script>

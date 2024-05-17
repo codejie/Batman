@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :visible.sync="visabled" width="55%" @opened="onOpened">
+  <el-dialog :visible.sync="visibled" width="55%" @opened="onOpened">
     <el-form ref="form" label-position="right" label-width="80px">
       <el-form-item label="策略名称">
         {{ strategy.name }}({{ strategy.algorithm.name }})
@@ -38,7 +38,7 @@
     <div style="text-align:right; margin-top:15px;">
         <el-button type="primary" @click="onOKClick">确认</el-button>
         <el-button @click="onCancelClick">取消</el-button>
-      </div>
+    </div>
   </el-dialog>
 </template>
 
@@ -52,7 +52,7 @@ import { schedule } from '@/api/strategy/finder'
 })
 export default class StrategyCreateForm extends Vue {
   @Prop()
-  private visabled: boolean = false
+  private visibled: boolean = false
   @Prop()
   private strategy?: IStrategyInfo
   
