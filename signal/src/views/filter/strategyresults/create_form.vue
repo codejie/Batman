@@ -1,8 +1,8 @@
 <template>
-  <el-dialog :visible.sync="visibled" width="55%" @opened="onOpened">
+  <el-dialog :visible="visibled" width="55%" @opened="onOpened">
     <el-form ref="form" label-position="right" label-width="80px">
       <el-form-item label="策略名称">
-        {{ strategy.name }}({{ strategy.algorithm.name }})
+        {{ strategy ? strategy.name : '' }}({{ strategy ? strategy.algorithm.name : '' }})
       </el-form-item>      
       <el-form-item label="实例名称">
         <el-input v-model="form.name" />

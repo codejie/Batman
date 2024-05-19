@@ -20,10 +20,16 @@ export interface IStrategyInfo {
 }
 
 // Instance
-export interface InstanceInfo {
+export interface IITriggerInfo {
+    mode: string,
+    hour?: number,
+    minute?: number
+}
+
+export interface IInstanceInfo {
     id: string,
     title: string,
-    trigger: any,
+    trigger: IITriggerInfo,
     strategy: string,
     args: any,
     runTimes: number,

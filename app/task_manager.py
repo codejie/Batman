@@ -68,7 +68,7 @@ class Scheduler:
 
     def reschedule_job(self, id: str, trigger: dict) -> str:
         trig = self.make_trigger(trigger)
-        self._cheduler.reschedule_job(job_id=id, trigger=trig)
+        self.scheduler.reschedule_job(job_id=id, trigger=trig)
         return id
     
     def jobs(self) -> list:

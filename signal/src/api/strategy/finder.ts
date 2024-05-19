@@ -14,6 +14,13 @@ export const schedule = (data: any) =>
         data        
     })
 
+export const reschedule = (data: any) =>
+    request({
+        url: '/strategy/finder/reschedule',
+        method: 'post',
+        data
+    })
+
 export const getInstanceByStategy = (data: any) =>
     request({
         url: '/strategy/finder/instance',
