@@ -216,6 +216,20 @@ async def reschedule(body: RescheduleRequest=Body()):
     #     return RescheduleResponse(code=-1, result=body.id)
 
 """
+调用策略函数
+"""
+class RunRequest(RequestModel):
+    id: str
+
+class RunResponse(ResponseModel):
+    result: str
+
+@router.post('/run', response_model=RunResponse, response_model_exclude_none=True)
+async def call_func(body: RunRequest=Body()):
+    id = taskManager.run_job(body.id)
+    return RunResponse(result=id)
+
+"""
 创建组合策略
 """
 class StrategyRequest(BaseModel):

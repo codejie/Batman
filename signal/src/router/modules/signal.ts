@@ -164,7 +164,7 @@ const signalRouters: RouteConfig[] = [
       ]
     },
     {
-      path: 'Watching',
+      path: '/watching',
       component: Layout,
       redirect: '/watching',
       meta: {
@@ -175,7 +175,7 @@ const signalRouters: RouteConfig[] = [
       }
     },
     {
-      path: 'Holdings',
+      path: '/holdings',
       component: Layout,
       redirect: '/holdings',
       meta: {

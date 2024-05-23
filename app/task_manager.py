@@ -65,10 +65,15 @@ class Scheduler:
 
     def remove_job(self, id: str):
         self.scheduler.remove_job(id)
+        self.scheduler.modify
 
     def reschedule_job(self, id: str, trigger: dict) -> str:
         trig = self.make_trigger(trigger)
         self.scheduler.reschedule_job(job_id=id, trigger=trig)
+        return id
+    
+    def run_job(self, id: str) -> str:
+        self.scheduler.modify_job(id, next_run_time=datetime.now())
         return id
     
     def jobs(self) -> list:
@@ -79,7 +84,6 @@ class Scheduler:
                 'trigger': f'{job.trigger}',
                 'next run at': f'{job.next_run_time}'
             })
-        
         return ret
 
 """
@@ -194,6 +198,9 @@ class TaskManager:
         self.scheduler.reschedule_job(id, trigger)
         task.trigger = trigger
         return self.update_task(task)
+    
+    def run_job(self, id: str) -> str | None:
+        return self.scheduler.run_job(id)
 
     def create_finder_strategy(self, title: str, func: callable, trigger: dict, strategy: str, args: dict = None) -> str:
         id =  self.create(TaskType.FinderStrategyInstance, trigger, func, args, {

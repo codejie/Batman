@@ -1,7 +1,7 @@
 """
 自选股函数
 """
-from sqlalchemy import select
+from sqlalchemy import select,delete
 from sqlalchemy.orm import Session
 from app.dbengine import engine
 from app.user_data import PersonalizedTable
@@ -9,7 +9,7 @@ from app.user_data import PersonalizedTable
 from app import AppException
 from app.data import DataType, StockAListTable
 from app.user_data import common_stock as CommonStock
-from app.data import stock
+from app import utils
 
 def get_list(**kwargs) -> list:
     ret = []
@@ -22,7 +22,7 @@ def get_list(**kwargs) -> list:
                 'name': item.name,
                 'type': item.type,
                 'comment': item.comment,
-                'updated': item.updated
+                'updated': utils.date2String2(item.updated)
             })
 
     with_quote = kwargs['with_quote']
@@ -51,6 +51,13 @@ def get_list(**kwargs) -> list:
 def create(**kwargs) -> int:
     # print(kwargs)
     code=kwargs['code']
+
+    stmt = select(PersonalizedTable).where(PersonalizedTable.code == code)
+    with Session(engine) as session:
+        exist = session.query(PersonalizedTable.id).filter_by(code=code).first() is not None
+        if exist:
+            raise AppException(f'{code} exist')
+
     comment=kwargs['comment'] if 'comment' in kwargs and kwargs['comment'] else None
     type = int(kwargs['type']) if 'type' in kwargs and kwargs['type'] else DataType.STOCK.value
 
@@ -68,3 +75,17 @@ def create(**kwargs) -> int:
             return 0
         else:
             raise AppException(f'{code} not found')
+
+"""
+remove
+"""
+def remove(**kwargs) -> int:
+    id = kwargs['id']
+    if type(id) is int:
+        id = [id]
+    stmt = delete(PersonalizedTable).where(PersonalizedTable.id.in_(id))
+    with Session(engine) as session:
+        result = session.execute(stmt)
+        session.commit()
+
+        return result.rowcount

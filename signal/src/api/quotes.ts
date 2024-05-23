@@ -13,3 +13,10 @@ export const creatPersonalized = (data: any) =>
         method: 'post',
         data
     })
+
+export const removePersonalized = (data: any) =>
+    request({
+        url: '/quotes/personalized/remove',
+        method: 'post',
+        data
+    })

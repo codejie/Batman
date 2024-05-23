@@ -42,6 +42,7 @@ class InfosItemResponse(BaseModel):
     name: str
     type: int
     comment: str | None
+    updated: str
     quote: ItemQuoteResponse | None
 
 
@@ -61,6 +62,7 @@ async def infos(body: InfosRequest=Body()):
             name=item['name'],
             type=item['type'],
             comment=item['comment'],
+            updated=item['updated'],
             quote=ItemQuoteResponse(
                 date=item['quote']['date'],
                 price=item['quote']['price'],
@@ -99,4 +101,17 @@ async def create(body: CreateRequest=Body()):
         comment=body.comment)
     return CreateResponse(result=result)
 
+"""
+删除自选股
+"""
+class RemoveRequest(RequestModel):
+    id: int | list[int]
+
+class RemoveResponse(ResponseModel):
+    result: int
+
+@router.post('/remove', response_model=RemoveResponse, response_model_exclude_none=True)
+async def remove(body: RemoveRequest=Body()):
+    result = personalized.remove(id=body.id)
+    return RemoveResponse(result=result)
     

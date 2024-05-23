@@ -1,8 +1,8 @@
 <template>
-  <el-dialog :visible="visibled" width="55%" @opened="onOpened">
+  <el-dialog :visible="visibled" width="55%" :show-close="false">
     <el-form ref="form" label-position="right" label-width="80px">
       <el-form-item label="策略名称">
-        {{ strategy ? strategy.name : '' }}({{ strategy ? strategy.algorithm.name : '' }})
+        {{ getStrategyName() }}({{ getAlgorithmName() }})
       </el-form-item>      
       <el-form-item label="实例名称">
         <el-input v-model="form.name" />
@@ -44,18 +44,18 @@
 
 <script lang="ts">
 import { IStrategyInfo, IArgumentInfo } from '@/api/def/finder_strategy'
-import { Component, Prop, Vue} from 'vue-property-decorator'
+import { Component, Prop, Vue, Watch} from 'vue-property-decorator'
 import { schedule } from '@/api/strategy/finder'
 
 @Component({
   name: 'StrategyCreateForm'
 })
 export default class StrategyCreateForm extends Vue {
-  @Prop()
+  @Prop({ required: true })
   private visibled: boolean = false
-  @Prop()
+  @Prop({ required: true})
   private strategy?: IStrategyInfo
-  
+
   private form: {
     name: string,
     args: {
@@ -75,17 +75,26 @@ export default class StrategyCreateForm extends Vue {
     }
   }
 
-  private onOpened() {
+  private getStrategyName() {
+    return this.strategy?.name || ''
+  }
+
+  private getAlgorithmName() {
+    return this.strategy?.algorithm.name || ''
+  }
+
+  @Watch('strategy')
+  onStrategyChanged(newVal: IStrategyInfo, oldVal: IStrategyInfo) {
     this.resetForm()
 
-    if (this.strategy && this.strategy.algorithm.args) {
-      this.strategy.algorithm.args.forEach(arg => {
+    if (newVal && newVal.algorithm.args) {
+      newVal.algorithm.args.forEach(arg => {
         this.form.args.push({
           info: arg,
           value: ''
         })
       })
-    }    
+    }
   }
 
   private resetForm() {
@@ -100,8 +109,6 @@ export default class StrategyCreateForm extends Vue {
   }
 
   private async onOKClick() {
-    console.log(JSON.stringify(this.form))
-
     const args: {
       [key in string]: any
     } = {}

@@ -34,7 +34,7 @@ import { Component, Prop, Vue, Watch} from 'vue-property-decorator'
 })
 export default class extends Vue {
   @Prop({ required: true })
-  private visibled: boolean = true
+  private visibled: boolean = false
   @Prop({ required: true })
   private instance?: IInstanceInfo
 

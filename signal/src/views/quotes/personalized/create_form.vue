@@ -1,5 +1,5 @@
 <template>
-    <el-dialog :visible.sync="dlgVisable" title="Input the code..." width="45%">
+    <el-dialog :visible.sync="visibled" title="Input the code..." width="30%">
         <el-form :model="form">
             <el-form-item label="Code:">
                 <el-input v-model="form.code" />
@@ -7,7 +7,7 @@
         </el-form>
         <template>
             <div style="text-align:right; margin-top: 10px;">
-                <el-button @click="dlgVisable = false">Cancel</el-button>
+                <el-button @click="onCancel">Cancel</el-button>
                 <el-button type="primary" @click="onCreate">Create</el-button>
             </div>
         </template>
@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Prop } from 'vue-property-decorator'
 import { creatPersonalized } from '@/api/quotes'
 
 @Component({
@@ -23,7 +23,9 @@ import { creatPersonalized } from '@/api/quotes'
 })
 
 export default class extends Vue {
-    private dlgVisable: boolean = false
+    @Prop({ required: true})
+    private visibled: boolean = false
+
     private form = { code: ''}
 
     private async onCreate() {
@@ -32,12 +34,11 @@ export default class extends Vue {
             code: form.code
         })
 
-        this.dlgVisable = false;
-        (<any>this.$parent).loadPersonalized()
+        this.$emit('closed', { code: 0 })
     }
 
-    private init() {
-        this.dlgVisable = true        
+    private onCancel() {
+        this.$emit('closed', { code: 1 })
     }
 }
 

@@ -36,6 +36,7 @@ export interface IInstanceInfo {
     lastUpdated: string,
     duration:string,
     result: {
-        [key: string]: string | number
+        items: any[] 
+        
     }   
 }

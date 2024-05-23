@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Watch, Vue } from 'vue-property-decorator'
 import KLineChart from '@/components/ChartsCustomize/KLineChart.vue'
 
 import { getStockHistory } from '@/api/data/stock'
@@ -24,9 +24,9 @@ import { getStockHistory } from '@/api/data/stock'
 })
 
 export default class extends Vue {
-  // @Prop({ default: '000001' }) private stockSymbol!: string
+  @Prop({ required: true})
+  private stockSymbol?: string
 
-  private stockSymbol: string = '000001'
   private showYear: number = (new Date()).getFullYear()
   private years: number[] = []
   private showStart?:string
@@ -35,14 +35,16 @@ export default class extends Vue {
   
   private chartData = {}
 
+  @Watch('stockSymbol')
+  onStockSymbolChanged(newVal: string, oldVal: string) {
+    this.loadStock(this.stockSymbol!)
+  }
+
   created() {
     for(var i=2004; i<=(new Date()).getFullYear(); i++){
       this.years.push(i)
     }
-    // console.log(this.stockSymbol)
-    // if(this.stockSymbol){
-    this.loadStock(this.stockSymbol)
-    // }
+    this.loadStock(this.stockSymbol!)
   }
 
   private async loadStock(symbol: string) {
@@ -67,7 +69,7 @@ export default class extends Vue {
   }
 
   private yearChange(index: number){
-    this.loadStock(this.stockSymbol)
+    this.loadStock(this.stockSymbol!)
   }
 }
 </script>

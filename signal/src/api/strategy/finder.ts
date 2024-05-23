@@ -34,3 +34,17 @@ export const getResultByInstance = (data: any) =>
         method: 'post',
         data
     })
+
+export const removeInstance = (data: any) =>
+    request({
+        url: '/strategy/finder/remove',
+        method: 'post',
+        data
+    })
+
+export const runInstance = (data: any) =>
+    request({
+        url: '/strategy/finder/run',
+        method: 'post',
+        data
+    })    
