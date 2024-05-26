@@ -22,7 +22,7 @@
         </el-table-column>
         <el-table-column label="命中" width="60">
           <template slot-scope="{row}">
-            {{  row.result.items.length }}
+            {{  row.result ? row.result.items.length : 0 }}
           </template>
         </el-table-column>
         <el-table-column label="更新时间" align="center" prop="lastUpdated" width="170"/>

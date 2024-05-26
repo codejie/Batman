@@ -18,8 +18,8 @@
         </el-form-item>        
       </el-form>
       <div style="text-align:right; margin-top:15px;">
-          <el-button type="primary" @click="onOKClick">确认</el-button>
           <el-button @click="onCancelClick">取消</el-button>
+          <el-button type="primary" @click="onOKClick">确认</el-button>          
       </div>
     </el-dialog>
 </template>

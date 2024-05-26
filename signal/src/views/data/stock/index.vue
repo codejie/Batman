@@ -1,6 +1,7 @@
 <template>
   <div style="padding:30px;">
-    <div>{{ stockSymbol }}</div>
+    <stock-info-panel :symbol="stockSymbol" />
+    <!-- <div>{{ stockSymbol }}</div> -->
     <div>
       <label>
         stock symbol:
@@ -15,11 +16,13 @@
 <script lang="ts">
 import { Component, Prop, Watch, Vue } from 'vue-property-decorator'
 import StockDetail from './components/stockdetail.vue'
+import StockInfoPanel from '@/views/components/StockInfoPanel.vue'
 
 @Component({
   name: 'DataStock',
   components: {
-    StockDetail
+    StockDetail,
+    StockInfoPanel
   }
 })
 export default class extends Vue {

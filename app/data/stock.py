@@ -1,5 +1,6 @@
 """
 Local股票数据相关的函数集合
+(should not use those functions directly)
 """
 import pandas
 from pandas import DataFrame
