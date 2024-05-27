@@ -8,7 +8,7 @@ from app.dbengine import engine, text
 from app.data import stock
 from app.data.local_db import stock as local
 
-from app.task.item_updated import DataItem, get_item_start_end, set_item_latest
+from app.task.fetch.item_updated import DataItem, get_item_start_end, set_item_latest
 
 
 def fetch_data(**kwargs):

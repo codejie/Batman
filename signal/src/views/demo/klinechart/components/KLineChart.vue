@@ -84,7 +84,7 @@ export default class extends mixins(ResizeMixin) {
               top: 10
             };
             obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
-            console.log(obj)
+            // console.log(obj)
             return obj;
           }
           // extraCssText: 'width: 170px'
@@ -263,7 +263,7 @@ export default class extends mixins(ResizeMixin) {
           }
         ]
       }
-      console.log(chartOption)
+      // console.log(chartOption)
       this.chart.setOption(chartOption);
       //设置默认选中
       if(this.selectStart && this.selectEnd){
@@ -301,7 +301,7 @@ export default class extends mixins(ResizeMixin) {
       values: values,
       volumes: volumes
     }
-    console.log(result)
+    // console.log(result)
     return result;
   }
 

@@ -65,10 +65,15 @@ class Scheduler:
 
     def remove_job(self, id: str):
         self.scheduler.remove_job(id)
+        self.scheduler.modify
 
     def reschedule_job(self, id: str, trigger: dict) -> str:
         trig = self.make_trigger(trigger)
-        self._cheduler.reschedule_job(job_id=id, trigger=trig)
+        self.scheduler.reschedule_job(job_id=id, trigger=trig)
+        return id
+    
+    def run_job(self, id: str) -> str:
+        self.scheduler.modify_job(id, next_run_time=datetime.now())
         return id
     
     def jobs(self) -> list:
@@ -79,7 +84,6 @@ class Scheduler:
                 'trigger': f'{job.trigger}',
                 'next run at': f'{job.next_run_time}'
             })
-        
         return ret
 
 """
@@ -154,21 +158,27 @@ class TaskManager:
     def get(self, id: str) -> Task | None:
         return self.taskList.get(id, None)
     
-    def get_type(self, type: TaskType, id: str | None) -> Task | list[Task] | None:
-        if id is None:
-            ret: list[Task] = []
+    def get_with_type(self, type: TaskType, id: str | None = None, attach: tuple[str, ...] | None = None) -> Task | list[Task] | None:
+        ret: list[Task] = []
+        if id is None and attach is None:
             for k, v in self.taskList.items():
                 if v.type == type or v.type == TaskType.All:
                     ret.append(v)
-            return ret
+        elif id is None and attach:
+            for k, v in self.taskList.items():
+                if v.type == type or v.type == TaskType.All:
+                    if v.attach:
+                        if attach[0] in v.attach and attach[1] == v.attach[attach[0]]:
+                            ret.append(v)
         else:
-            return self.get(id)
+            ret = self.get(id)
+        return ret
         
-    def get_finder_strategy(self, id: str | None) -> Task | list[Task] | None:
-        return self.get_type(TaskType.FinderStrategyInstance, id)
+    def get_finder_strategy(self, id: str | None, attach: tuple[str, ...] | None = None) -> Task | list[Task] | None:
+        return self.get_with_type(TaskType.FinderStrategyInstance, id, attach)
     
     def get_pipe_finder_strategy(self, id: str | None) -> Task | list[Task] | None:
-        return self.get_type(TaskType.PipeFinderStrategyInstance, id)
+        return self.get_with_type(TaskType.PipeFinderStrategyInstance, id)
 
     def set_result(self, id: str, result: any, duration: timedelta = None) -> str | None:
         task = self.taskList.get(id, None)
@@ -188,6 +198,9 @@ class TaskManager:
         self.scheduler.reschedule_job(id, trigger)
         task.trigger = trigger
         return self.update_task(task)
+    
+    def run_job(self, id: str) -> str | None:
+        return self.scheduler.run_job(id)
 
     def create_finder_strategy(self, title: str, func: callable, trigger: dict, strategy: str, args: dict = None) -> str:
         id =  self.create(TaskType.FinderStrategyInstance, trigger, func, args, {

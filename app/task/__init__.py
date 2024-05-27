@@ -3,8 +3,8 @@ register daily_data_check function
 """
 from app import logger
 from app.task_manager import taskManager, TaskType
-from app.task.fetch_init_data import init_check
-from app.task.fetch_daily_data import fetch_data as fetch_daily_data
+from app.task.fetch.fetch_init_data import init_check
+from app.task.fetch.fetch_daily_data import fetch_data as fetch_daily_data
 
 def register_daily_data_check():
     # trigger = {

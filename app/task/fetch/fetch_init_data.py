@@ -8,7 +8,7 @@ from app.dbengine import engine, text
 
 from app.data.local_db import TableName, stock as local
 from app.data import stock
-from app.task.item_updated import DataItem, HISTORY_START, insert_item_latest
+from app.task.fetch.item_updated import DataItem, HISTORY_START, insert_item_latest
 
 def init_check(**kwargs) -> bool:
     if not check(**kwargs):

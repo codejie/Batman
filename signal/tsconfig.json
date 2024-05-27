@@ -11,6 +11,7 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
+    "allowJs": true,
     "types": [
       "node",
       "jest",
@@ -34,7 +35,7 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx"
-  ],
+, "src/views/quotes/personalized/index.vue.keep", "src/views/data/stock/components/stockdetail.vue"  ],
   "exclude": [
     "node_modules"
   ],

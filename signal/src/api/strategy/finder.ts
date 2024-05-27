@@ -1,8 +1,8 @@
 import request from '@/utils/request'
 
-export const getInfo = (data: any) =>
+export const getInfos = (data: any) =>
     request({
-        url: '/strategy/finder/info',
+        url: '/strategy/finder/infos',
         method: 'post',
         data
     })
@@ -12,6 +12,13 @@ export const schedule = (data: any) =>
         url: '/strategy/finder/schedule',
         method: 'post',
         data        
+    })
+
+export const reschedule = (data: any) =>
+    request({
+        url: '/strategy/finder/reschedule',
+        method: 'post',
+        data
     })
 
 export const getInstanceByStategy = (data: any) =>
@@ -27,3 +34,17 @@ export const getResultByInstance = (data: any) =>
         method: 'post',
         data
     })
+
+export const removeInstance = (data: any) =>
+    request({
+        url: '/strategy/finder/remove',
+        method: 'post',
+        data
+    })
+
+export const runInstance = (data: any) =>
+    request({
+        url: '/strategy/finder/run',
+        method: 'post',
+        data
+    })    
