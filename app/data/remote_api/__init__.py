@@ -13,4 +13,3 @@ class DataSource(Enum):
     """
     UNKNOWN = 'ukn'
     AKSHARE = 'akshare'
-    LOCAL = 'local'

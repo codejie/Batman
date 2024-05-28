@@ -7,9 +7,8 @@ from pandas import DataFrame
 from typing import List
 import akshare
 
-from app import logger, AppException
+from app.exception import AppDataException
 from app.data.remote_api import DataSource, DATA_SOURCE_REQUEST_TIMEOUT
-from app.toolkit import adapter
 
 DATA_SOURCE = DataSource.AKSHARE
 
@@ -40,9 +39,9 @@ def get_a_code(market: str | None = None) -> DataFrame:
             else:
                 return akshare.stock_info_a_code_name()
         else:
-            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+            raise AppDataException(message=f'unknown data source - {DATA_SOURCE.name}')
     except Exception as e:
-        raise AppException(e)
+        raise AppDataException(e)
 
 """
 获取股票个股信息
@@ -53,9 +52,9 @@ def get_individual_info(symbol: str) -> DataFrame:
         if DATA_SOURCE == DataSource.AKSHARE:
             return akshare.stock_individual_info_em(symbol=symbol, timeout=DATA_SOURCE_REQUEST_TIMEOUT)
         else:
-            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+            raise AppDataException(message=f'unknown data source - {DATA_SOURCE.name}')
     except Exception as e:
-        raise AppException(e)
+        raise AppDataException(e)
 
 """
 获取个股历史数据
@@ -63,15 +62,11 @@ def get_individual_info(symbol: str) -> DataFrame:
 def get_history(symbol: str, start_date: str, end_date: str, period: str = 'daily', adjust: str = 'qfq') -> DataFrame:
     try:
         if DATA_SOURCE == DataSource.AKSHARE:
-            # logger.debug(f'{start_date} - {end_date} - {period} - {adjust} - {symbol}')
             return  akshare.stock_zh_a_hist(symbol=symbol, period=period, start_date=start_date, end_date=end_date, adjust=adjust, timeout=DATA_SOURCE_REQUEST_TIMEOUT)
-            # cols = adapter.columns_akshare2standard(df.columns)
-            # return df.rename(columns=cols)
         else:
-            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+            raise AppDataException(message=f'unknown data source - {DATA_SOURCE.name}')
     except Exception as e:
-        raise AppException(e)
-
+        raise AppDataException(e)
 """
 获取A股实时行情数据
 """
@@ -84,9 +79,9 @@ def get_spot(symbols: List[str] | None = None) -> DataFrame:
                 df = df[df['代码'].isin(symbols)]
             return df.head()
         else:
-            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+            raise AppDataException(message=f'unknown data source - {DATA_SOURCE.name}')
     except Exception as e:
-        raise AppException(e)
+        raise AppDataException(e)
     
 """
 获取个股深沪港股通持股数据
@@ -95,13 +90,10 @@ def get_individual_hsgt(symbol: str) -> DataFrame:
     try:
         if DATA_SOURCE == DataSource.AKSHARE:
             return akshare.stock_hsgt_individual_em(stock=symbol)
-            # print(df)
-            # cols = adapter.columns_akshare2standard(df.columns)
-            # return df.rename(columns=cols)
         else:
-            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+            raise AppDataException(message=f'unknown data source - {DATA_SOURCE.name}')
     except Exception as e:
-        raise AppException(e)
+        raise AppDataException(e)
     
 """
 获取单日融资融券数据
@@ -110,9 +102,7 @@ def get_margin(date: str, symbol: str = None) -> DataFrame:
     try:
         if DATA_SOURCE == DataSource.AKSHARE:
             return akshare.stock_margin_detail_szse(date=date)
-            # cols = adapter.columns_akshare2standard(df.columns)
-            # return df.rename(columns=cols)
         else:
-            raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
+            raise AppDataException(message=f'unknown data source - {DATA_SOURCE.name}')
     except Exception as e:
-        raise AppException(e)    
+        raise AppDataException(e)    

@@ -5,15 +5,15 @@ import os
 from enum import Enum
 from datetime import datetime, timedelta
 import pickle
+from typing import overload
 
-from app.dbengine import engine, text
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.base import BaseTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.triggers.combining import AndTrigger
 
-from app import AppException, logger
+from app.database.dbengine import dbEngine, TableBase, Column, String, DateTime, DefaultNow, select, delete, update
+from app.exception import AppException
 
 """
 Scheduler
@@ -82,7 +82,7 @@ class Scheduler:
             ret.append({
                 'id': job.id,
                 'trigger': f'{job.trigger}',
-                'next run at': f'{job.next_run_time}'
+                'next_run': f'{job.next_run_time}'
             })
         return ret
 
@@ -92,26 +92,54 @@ TaskManager
 
 PATH_TASK_INSTANCE = './app/db/instance' # 'app\\db\\instance'
 TABLE_TASK_INSTANCE = 'sys_task_instance'
+class TaskInstanceTable(TableBase):
+    __tablename__ = 'sys_task_instance'
+
+    id = Column(String, primary_key=True)
+    version = Column(String, default='1')
+    updated = Column(DateTime(timezone=True), server_default=DefaultNow())
 
 class TaskType(Enum):
     All = 0
-    FinderStrategyInstance = 1
-    PipeFinderStrategyInstance = 2
-    SysDataInstance = 3
-    SysWatchInstance = 4
-    FetchDataInstance = 5
+    FetchData = 1
+    StrategyInstance = 20
+    PipeStrategyInstance = 21
+
+class TaskStatus(Enum):
+    Normal = 0
+    Paused = 1
 
 class Task:
-    def __init__(self, type: TaskType, id: str, trigger: dict, func: callable, attach: dict = None) -> None:
+    def __init__(self, type: TaskType, trigger: dict, func: callable, args: dict | None = None) -> None:
+        self.id = None
+        self.status = TaskStatus.Normal
         self.type = type
-        self.id = id
         self.trigger = trigger
         self.func = func
-        # self.args = args
-        self.attach = attach
+        self.args = args
         self.runTimes = 0
         self.lastUpdated = None
         self.duration = None
+
+    def set_id(self, id: str) -> None:
+        self.id = id
+
+class DataTask(Task):
+    def __init__(self, trigger: dict, func: callable, args: dict | None = None) -> None:
+        super().__init__(TaskType.FetchData, None, trigger, func, args)
+
+class StrategyTask(Task):
+    def __init__(self, trigger: dict, title: str, strategy: str, func: callable, args: dict | None = None) -> None:
+        super().__init__(TaskType.StrategyInstance, None, trigger, func, args)
+        self.title = title
+        self.strategy = strategy
+        self.result = None
+
+class PipeStrategyTask(Task):
+    def __init__(self, id: str, title: str, strategies: list[str], trigger: dict, func: callable, args: dict | None = None) -> None:
+        super().__init__(TaskType.PipeStrategyInstance, id, trigger, func, args)
+        self.title = title
+        self.strategies = strategies
         self.result = None
 
 class TaskManager:
@@ -120,176 +148,119 @@ class TaskManager:
         self.scheduler = Scheduler()
     
     def start(self) -> None:
+        self.__load_tasks()
         self.scheduler.start()
-        self.load_tasks()
     
     def shutdown(self) -> None:
-        # self.save()
         self.scheduler.shutdown()
 
-    def create(self, type: TaskType, trigger: dict, func: callable, args: dict = None, attach: dict = None) -> str:
-        id = self.scheduler.make_job(trigger=trigger, func=func, args=args)
-        if attach is None:
-            attach = {}
-        attach['args'] = args
-        self.taskList[id] = Task(type, id, trigger, func, attach)
-
-        # self.save_task(self.taskList[id])
-        return id
+    def push(self, task: Task) -> str:
+        id = self.scheduler.make_job(trigger=task.trigger, func=task.func, args=task.args)
+        task.set_id(id)
+        self.taskList[task.id] = task
+        return self.__update_task(task)
     
-    def create_task(self, task: Task) -> str:
-        args = task.attach['args']
-        id = args['id']
-        self.scheduler.restore_job(id=id, trigger=task.trigger, func=task.func, args=args)
-        self.taskList[id] = task
-
-        return id
-
-    def remove(self, id) -> str:
+    def pop(self, id: str) -> str | None:
         self.scheduler.remove_job(id)
         self.taskList.pop(id, None)
-
-        self.delete_task(id)
-        return id
+        return self.__remove_task(id)
     
-    def get_jobs(self) -> list:
-        return self.scheduler.jobs()
-
+    @overload
     def get(self, id: str) -> Task | None:
         return self.taskList.get(id, None)
     
-    def get_with_type(self, type: TaskType, id: str | None = None, attach: tuple[str, ...] | None = None) -> Task | list[Task] | None:
+    @overload
+    def get(self, type: TaskType, **kwargs) -> list[Task]:
         ret: list[Task] = []
-        if id is None and attach is None:
-            for k, v in self.taskList.items():
-                if v.type == type or v.type == TaskType.All:
-                    ret.append(v)
-        elif id is None and attach:
-            for k, v in self.taskList.items():
-                if v.type == type or v.type == TaskType.All:
-                    if v.attach:
-                        if attach[0] in v.attach and attach[1] == v.attach[attach[0]]:
-                            ret.append(v)
-        else:
-            ret = self.get(id)
-        return ret
-        
-    def get_finder_strategy(self, id: str | None, attach: tuple[str, ...] | None = None) -> Task | list[Task] | None:
-        return self.get_with_type(TaskType.FinderStrategyInstance, id, attach)
+        for key, value in self.taskList.items():
+            if value.type == type or value.type == TaskType.All:
+                match = True
+                for k, v in kwargs.items():
+                    if getattr(value, k) != v:
+                        match = False
+                        break
+                if match:
+                    ret.append(value)
+        return ret      
+
+    def run(self, id: str) -> str | None:
+        return self.scheduler.run_job(id)
+
+    def pause(self, id) -> str | None:
+        task = self.get(id)
+        if task:
+            self.scheduler.remove_job(id)
+            task.status = TaskStatus.Paused
+            return self.__update_task(task)
+        return None
     
-    def get_pipe_finder_strategy(self, id: str | None) -> Task | list[Task] | None:
-        return self.get_with_type(TaskType.PipeFinderStrategyInstance, id)
-
-    def set_result(self, id: str, result: any, duration: timedelta = None) -> str | None:
-        task = self.taskList.get(id, None)
-        if task is None:
+    def resume(self, id) -> str | None:
+        task = self.get(id)
+        if not task:
             return None
-        task.result = result
-        task.runTimes += 1
-        task.lastUpdated = datetime.now()
-        task.duration = duration
-
-        return self.update_task(task)
-
+        if task.status == TaskStatus.Paused:
+            return task.id
+        self.scheduler.restore_job(task.id, task.trigger, task.func, task.args)
+        return self.__update_task(task)
+    
+    def set_result(self, id: str, duration: timedelta = 0, result: any = None, ) -> str | None:
+        task = self.get(id)
+        if task:
+            task.runTimes += 1
+            task.lastUpdated = datetime.now()
+            task.duration = duration
+            task.result = result
+        return self.__update_task(task)
+    
     def set_trigger(self, id: str, trigger: dict) -> str | None:
         task = self.taskList.get(id, None)
         if task is None:
             return None        
         self.scheduler.reschedule_job(id, trigger)
         task.trigger = trigger
-        return self.update_task(task)
-    
-    def run_job(self, id: str) -> str | None:
-        return self.scheduler.run_job(id)
+        return self.__update_task(task)
 
-    def create_finder_strategy(self, title: str, func: callable, trigger: dict, strategy: str, args: dict = None) -> str:
-        id =  self.create(TaskType.FinderStrategyInstance, trigger, func, args, {
-            'title': title,
-            'strategy': strategy,           
-        })
+    def jobs(self) -> list:
+        return self.scheduler.jobs()
+    
+    def __make_task_local(self, id: str) -> str:
+        return f'{PATH_TASK_INSTANCE}\\{id}.i'
 
-        self.save_task(self.taskList[id])
-        return id
-    
-    def create_pipe_finder_strategy(self, title: str, func: callable, trigger: dict, strategies: list) -> str:
-        args = {
-            'strategies': strategies
-        }
-        id = self.create(TaskType.PipeFinderStrategyInstance, trigger, func, args, {
-            'title': title,       
-        })
-        self.save_task(self.taskList[id])
-        return id
-    
-    def create_fetch_data(self, func: callable, args: dict = None, seconds=2) -> str:
-        trigger = {
-            'mode': 'delay',
-            'seconds': seconds 
-        }
-        id = self.create(TaskType.FetchDataInstance, trigger, func, args)
-        self.save_task(self.taskList[id])
-        return id
+    def __load_tasks(self) -> None:
+        try:
+            stmt = select(TaskInstanceTable)
+            results = dbEngine.select(stmt)
+            for result in results:
+                self.__load_task(result.id)
+        except Exception as e:
+            raise AppException(e)
 
     def __load_task(self, id: str) -> str:
         file = self.__make_task_local(id)
         with open(file, 'rb') as input:
             task = pickle.load(input)
-            return self.create_task(task)
-
-    def load_tasks(self) -> None:
-        try:
-            stmt = text(f'SELECT id FROM {TABLE_TASK_INSTANCE}') # select(TABLE_TASK_INSTANCE)
-            with engine.connect() as conn:
-                results = conn.execute(stmt)
-                for row in results:
-                    self.__load_task(row.id)
-        except Exception as e:
-            raise AppException(e)
-
-    def __make_task_local(self, id: str) -> str:
-        return f'{PATH_TASK_INSTANCE}\\{id}.i'
-
-    def save_task(self, task: Task) -> str:
-        try:
-            file = self.__make_task_local(task.id)
-            with open(file, 'wb') as output:
-                pickle.dump(task, output)
-
-            data = {
-                "id": task.id
-            }
-
-            stmt = text(f'INSERT INTO {TABLE_TASK_INSTANCE}(id) VALUES(:id)')
-            with engine.connect() as conn:
-                conn.execute(stmt, data)
-                conn.commit()
-            
+            self.scheduler.restore_job(task.id, task.trigger, task.func, task.args)
+            self.taskList[task.id] = task
             return task.id
-        except Exception as e:
-            raise AppException(e)    
-
-    def delete_task(self, id: str) -> str:
+        
+    def __remove_task(self, id: str) -> str:
         try:
-            data = {
-                "id": id
-            }
-            stmt = text(f'DELETE FROM {TABLE_TASK_INSTANCE} WHERE id==:id')
-            with engine.connect() as conn:
-                conn.execute(stmt, data)
-                conn.commit()
+            stmt = delete(TaskInstanceTable).where(TaskInstanceTable.id.__eq__(id))
+            dbEngine.delete(stmt)
+
             file = self.__make_task_local(id)
             os.remove(file)
         except Exception as e:
             raise AppException(e)
-
-    def update_task(self, task: Task) -> str:
+        
+    def __update_task(self, task: Task) -> str:
         try:
             file = self.__make_task_local(task.id)
             with open(file, 'wb') as output:
                 pickle.dump(task, output)
             return task.id
         except Exception as e:
-            raise AppException(e)                  
+            raise AppException(e)                
 
 
 taskManager = TaskManager() 
