@@ -8,7 +8,8 @@ from fastapi.responses import JSONResponse, FileResponse
 
 from app.logger import logger
 from app.exception import AppException, AppRouterException
-from app.database.dbengine import dbEngine
+from app.database import dbEngine
+from app.data.task import update as data
 from app.task_manager import taskManager
 
 @asynccontextmanager
@@ -16,7 +17,11 @@ async def lifespan(app: FastAPI):
     try:
         logger.info('Service Startup.')
         logger.debug('========engine connect')
+
+        
+
         dbEngine.start()
+        data.init()
         # logger.info('system init data check, maybe take a long long time while fist run , please wait..')
         # init_check()
         # logger.info('system init data check end.')

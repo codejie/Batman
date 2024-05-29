@@ -12,7 +12,8 @@ from apscheduler.triggers.base import BaseTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from app.database.dbengine import dbEngine, TableBase, Column, String, DateTime, DefaultNow, select, delete, update
+from app.database import dbEngine, select, delete, insert
+from app.database.tables import TableBase, Column, String, DateTime, DefaultNow
 from app.exception import AppException
 
 """
@@ -92,6 +93,7 @@ TaskManager
 
 PATH_TASK_INSTANCE = './app/db/instance' # 'app\\db\\instance'
 TABLE_TASK_INSTANCE = 'sys_task_instance'
+
 class TaskInstanceTable(TableBase):
     __tablename__ = 'sys_task_instance'
 
@@ -148,7 +150,10 @@ class TaskManager:
         self.scheduler = Scheduler()
     
     def start(self) -> None:
-        self.__load_tasks()
+        def callback(task: Task) -> None:
+            self.taskList[task.id] = task
+
+        self.__load_tasks(callback=callback)
         self.scheduler.start()
     
     def shutdown(self) -> None:
@@ -158,7 +163,7 @@ class TaskManager:
         id = self.scheduler.make_job(trigger=task.trigger, func=task.func, args=task.args)
         task.set_id(id)
         self.taskList[task.id] = task
-        return self.__update_task(task)
+        return self.__save_task(task)
     
     def pop(self, id: str) -> str | None:
         self.scheduler.remove_job(id)
@@ -226,23 +231,32 @@ class TaskManager:
     def __make_task_local(self, id: str) -> str:
         return f'{PATH_TASK_INSTANCE}\\{id}.i'
 
-    def __load_tasks(self) -> None:
+    def __load_tasks(self, callback: callable) -> None:
         try:
             stmt = select(TaskInstanceTable)
             results = dbEngine.select(stmt)
             for result in results:
-                self.__load_task(result.id)
+                self.__load_task(result.id, callback)
         except Exception as e:
             raise AppException(e)
 
-    def __load_task(self, id: str) -> str:
+    def __load_task(self, id: str, callback: callable) -> str:
         file = self.__make_task_local(id)
         with open(file, 'rb') as input:
             task = pickle.load(input)
             self.scheduler.restore_job(task.id, task.trigger, task.func, task.args)
-            self.taskList[task.id] = task
+            callback(task)
+            # self.taskList[task.id] = task
             return task.id
-        
+
+    def __save_task(self, task: Task) -> str:
+        try:
+            stmt = insert(TaskInstanceTable(id=task.id))
+            dbEngine.insert(stmt)
+            return self.__update_task(task)
+        except Exception as e:
+            raise AppException(e)        
+
     def __remove_task(self, id: str) -> str:
         try:
             stmt = delete(TaskInstanceTable).where(TaskInstanceTable.id.__eq__(id))
