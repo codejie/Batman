@@ -13,8 +13,10 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from app.database import dbEngine, select, delete, insert
-from app.database.tables import TableBase, Column, String, DateTime, DefaultNow
+from app.database.tables import TableBase, Column, String, Integer, DateTime, func
 from app.exception import AppException
+
+from sqlalchemy.orm import Session
 
 """
 Scheduler
@@ -59,9 +61,8 @@ class Scheduler:
         return job.id
     
     def restore_job(self, id: str, trigger: dict, func: callable, args: dict = None) -> str:
-        id = args['id']
-        trig = self.make_trigger(trigger)
-        job = self.scheduler.add_job(id=id, trigger=trig, func=func, kwargs=args)
+        trigger = self.make_trigger(trigger)
+        job = self.scheduler.add_job(id=id, trigger=trigger, func=func, kwargs=args)
         return job.id        
 
     def remove_job(self, id: str):
@@ -98,12 +99,16 @@ class TaskInstanceTable(TableBase):
     __tablename__ = 'sys_task_instance'
 
     id = Column(String, primary_key=True)
-    version = Column(String, default='1')
-    updated = Column(DateTime(timezone=True), server_default=DefaultNow())
+    type = Column(Integer, nullable=False)
+    version = Column(String, default='1', nullable=False)
+    updated = Column(DateTime(timezone=True), server_default=func.now())
+
+    # def __str__(self) -> str:
+    #     return f'{self.id}'
 
 class TaskType(Enum):
     All = 0
-    FetchData = 1
+    DataCheck = 1
     StrategyInstance = 20
     PipeStrategyInstance = 21
 
@@ -159,11 +164,14 @@ class TaskManager:
     def shutdown(self) -> None:
         self.scheduler.shutdown()
 
-    def push(self, task: Task) -> str:
+    def push(self, task: Task, need_save: bool = True) -> str:
         id = self.scheduler.make_job(trigger=task.trigger, func=task.func, args=task.args)
         task.set_id(id)
         self.taskList[task.id] = task
-        return self.__save_task(task)
+        if need_save:
+            return self.__save_task(task)
+        else:
+            return task.id
     
     def pop(self, id: str) -> str | None:
         self.scheduler.remove_job(id)
@@ -229,7 +237,7 @@ class TaskManager:
         return self.scheduler.jobs()
     
     def __make_task_local(self, id: str) -> str:
-        return f'{PATH_TASK_INSTANCE}\\{id}.i'
+        return f'{PATH_TASK_INSTANCE}/{id}.i'
 
     def __load_tasks(self, callback: callable) -> None:
         try:
@@ -246,12 +254,11 @@ class TaskManager:
             task = pickle.load(input)
             self.scheduler.restore_job(task.id, task.trigger, task.func, task.args)
             callback(task)
-            # self.taskList[task.id] = task
             return task.id
 
     def __save_task(self, task: Task) -> str:
         try:
-            stmt = insert(TaskInstanceTable(id=task.id))
+            stmt = insert(TaskInstanceTable).values(id=task.id,type=task.type.value)
             dbEngine.insert(stmt)
             return self.__update_task(task)
         except Exception as e:

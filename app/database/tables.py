@@ -26,9 +26,6 @@ class TableName:
     def make_stock_margin_name(symbol: str) -> str:
         return f'stock_{symbol}_margin'
 
-def DefaultNow():
-    return func.now()
-
 class TableBase(DeclarativeBase):
     pass
 
@@ -37,7 +34,7 @@ class Version(TableBase):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     version = Column(String)
-    updated = Column(DateTime(timezone=True), server_default=DefaultNow())
+    updated = Column(DateTime(timezone=True), server_default=func.now())
 
 class StockAListTable(TableBase):
     __tablename__ = TableName.Stock_A_List

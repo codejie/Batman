@@ -13,19 +13,6 @@ from app.exception import AppDataException
 DATABASE_URL: str = 'sqlite:///./app/db/batman.db'
 SYSTEM_VERSION: str = '0.2'
 
-# def DefaultNow():
-#     return func.now()
-
-# class TableBase(DeclarativeBase):
-#     pass
-
-# class Version(TableBase):
-#     __tablename__ = 'sys_infos'
-    
-#     id = Column(Integer, primary_key=True, autoincrement=True)
-#     version = Column(String)
-#     updated = Column(DateTime(timezone=True), server_default=DefaultNow())
-
 class DBEngine:
     def __init__(self) -> None:
         self.engine = create_engine(DATABASE_URL, connect_args={'check_same_thread': False}) # .execution_options(isolation_level="AUTOCOMMIT")
@@ -36,6 +23,9 @@ class DBEngine:
 
     def shutdown(self) -> None:
         pass
+
+    def get_engine(self):
+        return self.engine
 
     def insert(self, stmt: object) -> bool:
         try:
@@ -49,7 +39,9 @@ class DBEngine:
     def select(self, stmt: object) -> list[any]:
         try:
             with Session(self.engine) as session:
-                ret = session.scalars(stmt)
+                ret = []
+                for r in session.scalars(stmt):
+                    ret.append(r)
                 return ret
         except Exception as e:
             raise AppDataException(e)
