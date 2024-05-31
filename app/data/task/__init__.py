@@ -14,7 +14,7 @@ def init() -> None:
 
 def daily_update_check(**kwargs) -> None:
     now = datetime.now()
-    if (now.hour > 9 and now.hour < 16) or now.weekday() > 4:
+    if (now.hour >= 9 and now.hour < 16) or now.weekday() > 4:
         logger.info('daily update check process skip..')
         return
     logger.info('daily update check start..')
@@ -33,5 +33,4 @@ def update_task() -> None:
                 func=daily_update_check,
                 args=None)
     id = taskManager.push(task=task, need_save=False)
-    print(id)
     logger.info(f'register daily update task - {id}')

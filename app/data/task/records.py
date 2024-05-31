@@ -11,6 +11,7 @@ HISTORY_START =  datetime(year=2024, month=1, day=1, hour=0, minute=0, second=0)
 class ItemUpdatedRecordTable(TableBase):
     __tablename__ = 'sys_item_updated_record'
 
+ 
     id = Column(Integer, primary_key=True, autoincrement=True)
     item = Column(Integer)
     code = Column(String, nullable=True)
@@ -47,7 +48,7 @@ def insert(item: Item, latest: datetime, code: str = None) -> bool:
 def update(item: Item, latest: datetime, code: str = None) -> int:
     stmt = db_update(ItemUpdatedRecordTable).values(latest=latest)
     if code:
-        stmt = stmt.where(item==item, code=code)
+        stmt = stmt.where(item==item, code==code)
     else:
         stmt = stmt.where(item==item)
     return dbEngine.update(stmt=stmt)
@@ -55,7 +56,7 @@ def update(item: Item, latest: datetime, code: str = None) -> int:
 def get_latest(item: Item, code: str = None) -> datetime | None:
     stmt = db_select(ItemUpdatedRecordTable).order_by(ItemUpdatedRecordTable.updated.desc())
     if code:
-        stmt = stmt.where(item==item, code=code)
+        stmt = stmt.where(item==item, code==code)
     else:
         stmt = stmt.where(item==item)
     
