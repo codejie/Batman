@@ -22,8 +22,8 @@ def init_check() -> None:
             init_list(start=start, end=end)
 
             symbols = get_list()
-            symbols = symbols.iloc[2:6]
-            print(f'=====\n{symbols}')
+            # symbols = symbols.iloc[2:6]
+            # print(f'=====\n{symbols}')
 
             init_daily_history(symbols=symbols, start=start, end=end)
             init_hsgt(symbols=symbols, start=start, end=end)

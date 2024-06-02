@@ -32,7 +32,7 @@ def get_a_list() -> DataFrame:
 获取股票历史数据
 """
 def fetch_history(code: str, start: datetime, end: datetime, period: str = 'daily', adjust: str = 'qfq', if_exists='replace') -> None:
-    logger.debug(f'{debug.__function__()}() called')
+    logger.debug(f'{code} - {debug.__function__()}() called')
     start = utils.date2String1(start)
     end = utils.date2String1(end)
     df = remote.get_history(code, start, end, period, adjust)
@@ -45,7 +45,7 @@ def fetch_history(code: str, start: datetime, end: datetime, period: str = 'dail
 个股深沪港股通持股数据（北向资金）
 """ 
 def fetch_hsgt(code: str, if_exists: str = 'replace') -> None:
-    logger.debug(f'{debug.__function__()}() called')
+    logger.debug(f'{code} - {debug.__function__()}() called')
     df = remote.get_individual_hsgt(code)
     if not df.empty:
         table = TableName.make_stock_hsgt_name(code)
@@ -57,12 +57,12 @@ def fetch_hsgt(code: str, if_exists: str = 'replace') -> None:
 个股融资融券数据
 """
 def fetch_margin(codes: list, start: datetime, end: datetime, if_exists: str = 'append') -> None:
-    logger.debug(f'{debug.__function__()}() called')
+    logger.debug(f'{utils.date2String2(start)} - {debug.__function__()}() called')
     delta = timedelta(days=1)
     while start <= end:
         try:
             df = remote.get_margin(utils.date2String1(start))
-            if not df.empty:
+            if not df.empty: 
                 df.insert(2, '日期', utils.date2String2(start))
                 for i in range(len(df)):
                     sdf = df.iloc[i:i+1]

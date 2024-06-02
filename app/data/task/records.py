@@ -6,7 +6,7 @@ from enum import Enum
 from app.database.tables import TableBase, Column, Integer, String, DateTime, func
 from app.database import dbEngine, insert as db_insert, select as db_select, update as db_update
 
-HISTORY_START =  datetime(year=2024, month=1, day=1, hour=0, minute=0, second=0)
+HISTORY_START =  datetime(year=2023, month=1, day=1, hour=0, minute=0, second=0)
 
 class ItemUpdatedRecordTable(TableBase):
     __tablename__ = 'sys_item_updated_record'
