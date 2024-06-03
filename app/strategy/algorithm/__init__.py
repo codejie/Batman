@@ -24,6 +24,10 @@ class Data:
     name: str
     desc: str
 
+class Result:
+    name: str
+    desc: str
+
 AlgorithmCallback: TypeAlias = Callable[..., bool]
 
 class Algorithm(ABCMeta):
@@ -31,6 +35,7 @@ class Algorithm(ABCMeta):
     desc: str = 'Algorithm Base'
     args: list[Argument] = []
     data: list[Data] = []
+    results: list[Result] = []
 
     def __init__(self) -> None:
         self.arg_values = {}

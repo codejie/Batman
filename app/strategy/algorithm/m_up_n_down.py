@@ -2,7 +2,7 @@
 选股策略一: 连续(N)的两个数据[(Close-Open) or (High-Low)]的比率大于U，再连续(M)个数据小于D
 """
 
-from app.strategy.algorithm import Algorithm, Argument, Data
+from app.strategy.algorithm import Algorithm, Argument, Data, Result
 
 
 class MUpNDownAlgorithem(Algorithm):
@@ -38,7 +38,7 @@ class MUpNDownAlgorithem(Algorithm):
             'default': -5.0
         }
     ]
-    args: list[Data] = {
+    data: list[Data] = {
         {
             'name': 'close',
             'desc': '收盘数据集'
@@ -48,6 +48,12 @@ class MUpNDownAlgorithem(Algorithm):
             'desc': '开盘数据集'
         }
     }
+    results: list[Result] = [
+        {
+            'name': 'position',
+            'desc': '命中索引点'
+        }
+    ]
 
     def __init__(self) -> None:
         super().__init__()
