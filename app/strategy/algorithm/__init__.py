@@ -17,7 +17,7 @@ class Argument:
     type: str
     unit: str | None = None
     desc: str | None = None
-    default: any | None = None
+    default: any = None
     required: bool = False
 
 class Data:
@@ -30,7 +30,7 @@ class Result:
 
 AlgorithmCallback: TypeAlias = Callable[..., bool]
 
-class Algorithm(ABCMeta):
+class Algorithm(metaclass=ABCMeta):
     name: str = 'Algorithm'
     desc: str = 'Algorithm Base'
     args: list[Argument] = []

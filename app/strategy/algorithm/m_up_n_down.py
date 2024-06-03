@@ -38,7 +38,7 @@ class MUpNDownAlgorithem(Algorithm):
             'default': -5.0
         }
     ]
-    data: list[Data] = {
+    data: list[Data] = [
         {
             'name': 'close',
             'desc': '收盘数据集'
@@ -47,7 +47,7 @@ class MUpNDownAlgorithem(Algorithm):
             'name': 'open',
             'desc': '开盘数据集'
         }
-    }
+    ]
     results: list[Result] = [
         {
             'name': 'position',
