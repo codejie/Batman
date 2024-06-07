@@ -16,8 +16,6 @@ from app.database import dbEngine, select, delete, insert
 from app.database.tables import TableBase, Column, String, Integer, DateTime, func
 from app.exception import AppException
 
-from sqlalchemy.orm import Session
-
 """
 Scheduler
 """

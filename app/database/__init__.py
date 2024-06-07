@@ -47,6 +47,7 @@ class DBEngine:
             raise AppDataException(e)
         
     def select_one(self, stmt: object) -> any:
+        
         try:
             with Session(self.engine) as session:
                 ret = session.scalar(stmt)

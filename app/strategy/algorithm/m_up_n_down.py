@@ -9,50 +9,60 @@ class MUpNDownAlgorithem(Algorithm):
     name: str = '速涨速跌'
     desc: str = '连续(N)的两个数据的差比率大于U，再连续(M)个数据小于D。'
     args: list[Argument] = [
-        {
-            'name': 'up_count',
-            'type': 'number',
-            'unit': '天',
-            'desc': '连续上涨天数',
-            'default': 3
-        },
-        {
-            'name': 'up_rate',
-            'type': 'number',
-            'unit': '%',
-            'desc': '每天上涨幅度',
-            'default': 9.0       
-        },
-        {
-            'name': 'down_count',
-            'type': 'number',
-            'unit': '天',
-            'desc': '连续下跌天数',
-            'default': 1
-        },
-        {
-            'name': 'down_rate',
-            'type': 'number',
-            'unit': '%',
-            'desc': '每天下跌幅度',
-            'default': -5.0
-        }
+        Argument('up_count', 'number', '天','连续上涨天数', 3),
+        Argument('up_rate', 'number', '%','每天上涨幅度', 9.0),
+        Argument('down_count', 'number', '天','连续下跌天数', 1),
+        Argument('down_rate', 'number', '%','每天下跌幅度', -5.0)
+        # {
+        #     'name': 'up_count',
+        #     'type': 'number',
+        #     'unit': '天',
+        #     'desc': '连续上涨天数',
+        #     'default': 3
+        # },
+        # {
+        #     'name': 'up_rate',
+        #     'type': 'number',
+        #     'unit': '%',
+        #     'desc': '每天上涨幅度',
+        #     'default': 9.0       
+        # },
+        # {
+        #     'name': 'down_count',
+        #     'type': 'number',
+        #     'unit': '天',
+        #     'desc': '连续下跌天数',
+        #     'default': 1
+        # },
+        # {
+        #     'name': 'down_rate',
+        #     'type': 'number',
+        #     'unit': '%',
+        #     'desc': '每天下跌幅度',
+        #     'default': -5.0
+        # }
     ]
     data: list[Data] = [
-        {
-            'name': 'close',
-            'desc': '收盘数据集'
-        },
-        {
-            'name': 'open',
-            'desc': '开盘数据集'
-        }
+        Data('close', 'list or series', '收盘数据集'),
+        Data('open', 'list or series', '开盘数据集')
+        # {
+        #     'name': 'close',
+        #     'type': 'list or series',
+        #     'desc': '收盘数据集'
+        # },
+        # {
+        #     'name': 'open',
+        #     'type': 'list or series',
+        #     'desc': '开盘数据集'
+        # }
     ]
     results: list[Result] = [
-        {
-            'name': 'position',
-            'desc': '命中索引点'
-        }
+        Result('pos', 'number', '命中索引点')
+        # {
+        #     'name': 'pos',
+        #     'type': 'number',
+        #     'desc': '命中索引点'
+        # }
     ]
 
     def __init__(self) -> None:
@@ -61,10 +71,18 @@ class MUpNDownAlgorithem(Algorithm):
         self.upCount = 0
         self.downCount = 0
 
-    def set_data(self, **kwargs) -> None:
-        super().set_data(**kwargs)
-        self.close = kwargs['close']
-        self.open = kwargs['open']
+    def set_args(self, values: dict) -> None:
+        super().set_args(values)
+        self.up_count = self.arg_values['up_count']
+        self.down_count = self.arg_values['down_count']
+        self.up_rate = self.arg_values['up_rate'] / 100
+        self.down_rate = self.arg_values['down_rate'] / 100
+    
+
+    def set_data(self, values: dict) -> None:
+        super().set_data(values)
+        self.close = self.data_values['close']
+        self.open = self.data_values['open']
         self.size = len(self.close)
 
     def next(self) -> bool:
@@ -75,13 +93,15 @@ class MUpNDownAlgorithem(Algorithm):
         elif rate <= self.down_rate:
             if self.upCount >= self.up_count:
                 self.downCount += 1
+            else:
+                self.upCount = 0
         else:
             self.upCount = 0
             self.downCount = 0
 
         if (self.upCount >= self.up_count) and (self.downCount >= self.down_count):
             if self.callback:
-                ret = self.callback({
+                ret = self.callback('hit', {
                     'pos': self.pos
                 })
                 if not ret:
