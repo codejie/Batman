@@ -1,8 +1,8 @@
 """
-选股策略一: 连续(N)的两个数据[(Close-Open) or (High-Low)]的比率大于U，再连续(M)个数据小于D
+算法描述: 连续(N)的两个数据[(Close-Open) or (High-Low)]的比率大于U，再连续(M)个数据小于D
 """
 
-from app.strategy.algorithm import Algorithm, Argument, Data, Result
+from app.strategy.algorithm import Algorithm, Argument, Data, Result, CallbackType
 
 
 class MUpNDownAlgorithem(Algorithm):
@@ -101,7 +101,7 @@ class MUpNDownAlgorithem(Algorithm):
 
         if (self.upCount >= self.up_count) and (self.downCount >= self.down_count):
             if self.callback:
-                ret = self.callback('hit', {
+                ret = self.callback(CallbackType.HIT.value, {
                     'pos': self.pos
                 })
                 if not ret:

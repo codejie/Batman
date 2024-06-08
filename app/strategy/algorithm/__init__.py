@@ -2,6 +2,7 @@
 算法类
 """
 from abc import ABCMeta, abstractmethod
+from enum import Enum
 from typing import Callable, TypeAlias
 from app.exception import AppException
 
@@ -57,6 +58,11 @@ return:
     - True: continue
     - False: break
 """
+class CallbackType(Enum):
+    START = 'start'
+    HIT = 'hit'
+    END = 'end'
+    
 AlgorithmCallback: TypeAlias = Callable[[str, dict], bool]
 
 class Algorithm(metaclass=ABCMeta):
@@ -96,7 +102,7 @@ class Algorithm(metaclass=ABCMeta):
         self.pos = start
 
         if self.callback:
-            self.callback('start', {
+            self.callback(CallbackType.START.value, {
                 'pos': self.pos,
                 'size': self.size
             })
@@ -109,7 +115,7 @@ class Algorithm(metaclass=ABCMeta):
             self.pos += 1
 
         if self.callback:
-            self.callback('end', {
+            self.callback(CallbackType.value, {
                 'broken': broken
             })            
 
