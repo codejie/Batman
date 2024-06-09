@@ -5,7 +5,7 @@ from datetime import datetime
 from app.logger import logger
 
 from app.data.task import stock
-from app.task_manager import Task, TaskType, taskManager
+from app.task_scheduler import Task, TaskType, taskManager
 
 def init() -> None:
     logger.info('system data init check, maybe would take a long time..')
