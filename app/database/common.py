@@ -32,7 +32,8 @@ def select(table: str, columns: list[str] = None, where: str = None, column_tran
                 if i < len(column_trans):
                     col_map[columns[i]] = column_trans[i]
             if len(col_map) > 0:
-                df = df.rename(columns=col_map, copy=False)
+                df = df.rename(columns=col_map,
+                                copy=False)
         return df
     except Exception as e:
         raise AppDataException(e)
