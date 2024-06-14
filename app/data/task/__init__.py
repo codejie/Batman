@@ -5,7 +5,7 @@ from datetime import datetime
 from app.logger import logger
 
 from app.data.task import stock
-from app.task_scheduler import Task, TaskType, taskManager
+from app.task_scheduler import taskScheduler
 
 def init() -> None:
     logger.info('system data init check, maybe would take a long time..')
@@ -28,9 +28,7 @@ def update_task() -> None:
         'seconds': 10800
     }
 
-    task = Task(type=TaskType.DataCheck,
-                trigger=trigger,
-                func=daily_update_check,
-                args=None)
-    id = taskManager.push(task=task, need_save=False)
+    id = taskScheduler.make_id()
+    taskScheduler.make_job(id=id, trigger=trigger, func=daily_update_check, args=None)
+
     logger.info(f'register daily update task - {id}')
