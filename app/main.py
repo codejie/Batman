@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from app.logger import logger
 from app.exception import AppException, AppRouterException
 from app.database import dbEngine
-from app.task_scheduler import taskManager
+from app.task_scheduler import taskScheduler
 from app.data import task as dataTask
 
 @asynccontextmanager
@@ -25,15 +25,15 @@ async def lifespan(app: FastAPI):
         # init_check()
         # logger.info('system init data check end.')
 
-        logger.debug('========taskManager startup')
-        taskManager.start()
+        logger.debug('========taskScheduler startup')
+        taskScheduler.start()
         # register_system_check()
     except Exception as e:
         logger.error(f'service start error - {e}')
     yield
     try:
-        taskManager.shutdown()
-        logger.debug('========taskManager shutdown.')
+        taskScheduler.shutdown()
+        logger.debug('========taskScheduler shutdown.')
         dbEngine.shutdown()
         logger.debug('========engine shutdown.')
         logger.info('Service Stop.')
