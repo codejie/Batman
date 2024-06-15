@@ -18,16 +18,16 @@ class AppStrategyException(AppException):
         super().__init__(message)
 
 class Type(Enum):
-    FILTER = 0,
-    TRADE = 1
+    FILTER: int = 0
+    TRADE: int = 1
 
 class Argument:
-    def __init__(self, name: str, type: str, unit: str = None, desc: str = None, values:list[tuple[any, str]] = None, default: any = None, required: bool = True) -> None:
+    def __init__(self, name: str, type: str, unit: str = None, desc: str = None, value:list[dict[str, any]] = None, default: str = None, required: bool = True) -> None:
         self.name = name
         self.type = type
         self.unit = unit
         self.desc = desc
-        self.value = values
+        self.value = value
         self.default = default
         self.required = required
     
@@ -94,10 +94,10 @@ class State(Enum):
 
 class StrategyInstance:
     def __init__(self, id: str, name: str, strategy: str, trigger: dict) -> None:
-        self.id: str = None
-        self.name: str = None
-        self.strategy: str = None # strategy.id
-        self.trigger: dict = None
+        self.id: str = id
+        self.name: str = name
+        self.strategy: str = strategy # strategy.id
+        self.trigger: dict = trigger
 
         self.state = State.READY
         self.arg_values: dict = {}

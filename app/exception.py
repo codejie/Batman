@@ -8,7 +8,7 @@ class AppException(Exception):
         self.message = message
 
     def __init__(self, e: Exception) -> None:
-        self.message(f'{e}')
+        self.message(str(e))
 
 class AppRouterException(AppException):
     code: int = 0

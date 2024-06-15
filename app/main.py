@@ -9,8 +9,10 @@ from fastapi.responses import JSONResponse, FileResponse
 from app.logger import logger
 from app.exception import AppException, AppRouterException
 from app.database import dbEngine
+from app.routers import register_routers
 from app.task_scheduler import taskScheduler
 from app.data import task as dataTask
+from app.strategy.manager import strategyInstanceManager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,19 +21,26 @@ async def lifespan(app: FastAPI):
         logger.debug('========engine connect')
         dbEngine.start()
 
+        logger.debug('========taskScheduler startup')
+        taskScheduler.start()
+
+        logger.debug('========dataTask init')
         dataTask.init()
         dataTask.update_task()
+
+        logger.debug('========strategyInstanceManager startup')
+        strategyInstanceManager.start()
+
         # logger.info('system init data check, maybe take a long long time while fist run , please wait..')
         # init_check()
         # logger.info('system init data check end.')
 
-        logger.debug('========taskScheduler startup')
-        taskScheduler.start()
         # register_system_check()
     except Exception as e:
         logger.error(f'service start error - {e}')
     yield
     try:
+        strategyInstanceManager.shutdown()
         taskScheduler.shutdown()
         logger.debug('========taskScheduler shutdown.')
         dbEngine.shutdown()
@@ -86,5 +95,4 @@ async def root():
 async def favicon():
     return FileResponse(os.path.dirname(os.path.realpath(__file__)) + '/favicon.ico')
 
-# for router in routers.routers:
-#     app.include_router(router)
+register_routers(app)

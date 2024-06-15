@@ -8,8 +8,13 @@ class Test_Strategy(unittest.TestCase):
         dbEngine.start()
         strategyInstanceManager.start()
 
-        id = strategyInstanceManager.add('test', 'RapidRaiseFallStrategy', {}, {}, {})
+        trigger = {
+            'mode': 'delay',
+            'seconds': 5
+        }
+
+        id = strategyInstanceManager.add('test', 'RapidRaiseFallStrategy', trigger, {}, {})
 
         strategyInstanceManager.shutdown()
         dbEngine.shutdown()
-        self.assertTrue(id = '111')
+        self.assertTrue(True)

@@ -29,12 +29,12 @@ class RapidRaiseFallStrategy(Strategy):
     algorithms: list = [MUpNDownAlgorithem]
     args: list[Argument] = [
         Argument(name='symbols',
-                 type='list',
+                 type='option',
                  desc='筛选范围',
-                 values=[
-                     ('all', '所有A股股票'),
-                     ('list', '指定股票代码列表')
-                     ],
+                 value=[
+                     { 'value': 'all', 'desc' : '所有A股股票'},
+                     { 'value': 'list', 'desc': '指定股票代码列表'}
+                    ],
                  default='all',
                  required=False),
         Argument(name='codes',
@@ -42,19 +42,19 @@ class RapidRaiseFallStrategy(Strategy):
                  desc='指定的股票代码列表',
                  required=False),
         Argument(name='item',
-                 type='list',
+                 type='option',
                  desc='指定行情数据项',
-                 values=[
-                     ('open/close', '开盘与收盘'),
-                     ('low/high', '最低与最高')
-                 ],
+                 value=[
+                     { 'value': 'open/close', 'desc': '开盘与收盘'},
+                     { 'value': 'low/high', 'desc': '最低与最高'}
+                    ],
                  default='open/close',
                  required=False),
         Argument(name='days',
                  type='number',
                  desc='最近天数',
                  unit='天',                
-                 default=18,
+                 default='18',
                  required=False)
     ]
     results: list[Result] = [
@@ -71,7 +71,7 @@ class RapidRaiseFallStrategy(Strategy):
         try:
             id = kwargs['id']
             arg_values = kwargs['values']
-            algo_values = kwargs['argo_values']
+            algo_values = kwargs['algo_values']
 
             # arg_values
             codes = arg_values['codes'] if 'codes' in arg_values else None

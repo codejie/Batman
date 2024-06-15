@@ -28,9 +28,9 @@ class StrategyManager:
     @staticmethod
     def get_list(type: Type = None) -> list[Strategy]:
         ret: list = []
-        for k, v in StrategyManager.listStrategy:
+        for k, v in StrategyManager.listStrategy.items():
             if type == None or type == v.type:
-                list.append(v)
+                ret.append(v)
         return ret
     
 StrategyManager.add(RapidRaiseFallStrategy)
@@ -40,6 +40,7 @@ Strategy Instance Manager
 """
 
 PATH_STRATEGY_INSTANCE = './app/db/instance' # 'app\\db\\instance'
+# PATH_STRATEGY_INSTANCE = 'app\\db\\instance'
 
 class StategyInstanceTable(TableBase):
     __tablename__ = 'sys_strategy_instance'
@@ -86,21 +87,24 @@ class StrategyInstanceManager:
             raise AppStrategyException(f'strategy \'{instance.strategy}\' not found.')
         
     def __save(self, instance: StrategyInstance) -> str:
-        stmt = insert(StategyInstanceTable).values(id=instance.id)
-        dbEngine.insert(stmt)
-
         file = self.__make_local_file(instance.id)
         with open(file, 'wb') as output:
             pickle.dump(instance, output)
+
+        stmt = insert(StategyInstanceTable).values(id=instance.id)
+        print(stmt)
+        dbEngine.insert(stmt)
+
         return instance.id
         
     def __update(self, instance: StrategyInstance) -> str:
-        stmt = update(StategyInstanceTable).where(StategyInstanceTable.id.__eq__(instance.id)).values(updated=func.now())
-        dbEngine.update(stmt)
-        
         file = self.__make_local_file(instance.id)
         with open(file, 'wb') as output:
             pickle.dump(instance, output)
+
+        stmt = update(StategyInstanceTable).where(StategyInstanceTable.id.__eq__(instance.id)).values(updated=func.now())
+        dbEngine.update(stmt)
+                    
         return instance.id
     
     def __remove(self, id: str) -> str:
