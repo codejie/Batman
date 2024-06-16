@@ -4,16 +4,12 @@
 import os
 from enum import Enum
 from datetime import datetime, timedelta
-import pickle
-from typing import overload
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.base import BaseTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from app.database import dbEngine, select, delete, insert
-from app.database.tables import TableBase, Column, String, Integer, DateTime, func
 from app.exception import AppException
 
 """
@@ -24,8 +20,14 @@ class TriggerMode(Enum):
     Delay = 'delay'
     Interval = 'interval'
 
-class Trigger:
-    pass
+# class Trigger:
+#     def __init__(self, mode: str, days: str = None, hour: int = 0, minute: int = 0, seconds: int = 0, period: bool = False) -> None:
+#         self.mode = mode
+#         self.days = days
+#         self.hour = hour
+#         self.minute = minute
+#         self.seconds = seconds
+#         self.period = period
 
 class Scheduler:
     def __init__(self) -> None:
@@ -35,7 +37,7 @@ class Scheduler:
         self.scheduler.start()
 
     def shutdown(self):
-        self.scheduler.shutdown(True)
+        self.scheduler.shutdown(False)
     
     def make_id(self) -> str:
         return datetime.today().strftime('%Y%m%d%H%M%S%f')
@@ -64,7 +66,6 @@ class Scheduler:
 
     def remove_job(self, id: str):
         self.scheduler.remove_job(id)
-        self.scheduler.modify
 
     def reschedule_job(self, id: str, trigger: dict) -> str:
         trig = self.make_trigger(trigger)

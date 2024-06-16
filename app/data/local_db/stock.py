@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 
 from app.utils import debug
 from app.logger import logger
-from app.exception import AppDataException
 from app.data.remote_api import stock as remote
 from app.database import dbEngine
 from app.database.tables import TableName

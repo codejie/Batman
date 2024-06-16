@@ -3,12 +3,12 @@ SQLAlchemy数据访问引擎
 """
 
 from sqlalchemy import create_engine, Engine
-from sqlalchemy import select, delete, update, insert, text
+from sqlalchemy import insert, select, delete, update
 from sqlalchemy.orm import Session
 
 from app.database.tables import TableBase, Version
 
-from app.exception import AppDataException
+from app.exception import AppException
 
 DATABASE_URL: str = 'sqlite:///./app/db/batman.db'
 SYSTEM_VERSION: str = '0.2'
@@ -34,7 +34,7 @@ class DBEngine:
                 session.commit()
                 return True
         except Exception as e:
-            raise AppDataException(e)
+            raise AppException(e)
         
     def select(self, stmt: object) -> list[any]:
         try:
@@ -44,7 +44,7 @@ class DBEngine:
                     ret.append(r)
                 return ret
         except Exception as e:
-            raise AppDataException(e)
+            raise AppException(e)
         
     def select_one(self, stmt: object) -> any:
         
@@ -53,7 +53,7 @@ class DBEngine:
                 ret = session.scalar(stmt)
                 return ret
         except Exception as e:
-            raise AppDataException(e)
+            raise AppException(e)
         
     def delete(self, stmt: object) -> int:
         try:
@@ -62,7 +62,7 @@ class DBEngine:
                 session.commit()
                 return result.rowcount
         except Exception as e:
-            raise AppDataException(e)
+            raise AppException(e)
         
     def update(self, stmt: object) -> int:
         try:
@@ -71,6 +71,6 @@ class DBEngine:
                 session.commit()
                 return result.rowcount
         except Exception as e:
-            raise AppDataException(e)
+            raise AppException(e)
                 
 dbEngine = DBEngine()

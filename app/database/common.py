@@ -5,8 +5,7 @@ import pandas
 from pandas import DataFrame
 
 from app.database import dbEngine
-from app.database.tables import TableName
-from app.exception import AppDataException
+from app.exception import AppException
 
 def make_sql_select(table: str, columns: list[str] = None, where: str = None) -> str:
     sql = 'SELECT '
@@ -36,4 +35,4 @@ def select(table: str, columns: list[str] = None, where: str = None, column_tran
                                 copy=False)
         return df
     except Exception as e:
-        raise AppDataException(e)
+        raise AppException(e)

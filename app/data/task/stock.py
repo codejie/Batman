@@ -4,7 +4,7 @@ Stock data init
 from datetime import datetime
 from pandas import DataFrame
 
-from app.exception import AppDataException
+from app.exception import AppException
 from app.database import dbEngine, select
 from app.database.tables import func, StockAListTable
 from app.data.local_db import stock as local
@@ -30,7 +30,7 @@ def init_check() -> None:
             init_margin(symbols=symbols, start=start, end=end)      
         
     except Exception as e:
-        raise AppDataException(e)
+        raise AppException(e)
 
 def exist_list_table() -> bool:
     stmt = select(func.count()).select_from(StockAListTable)
@@ -74,7 +74,7 @@ def update_daily() -> None:
         update_hsgt(symbols=symbols)
         update_margin(symbols=symbols)
     except Exception as e:
-        raise AppDataException(e)
+        raise AppException(e)
     
 def update_daily_history(symbols: DataFrame) -> None:
      for i, r in symbols.iterrows():

@@ -10,7 +10,7 @@ from app.strategy.algorithm import Algorithm
 # from app.database.tables import TableBase, Column, String, Integer, DateTime, func
 # from app.task_scheduler import taskScheduler
 
-class AppStrategyException(AppException):
+class AppException(AppException):
     def __init__(self, e: Exception) -> None:
         super().__init__(e)
 
@@ -106,7 +106,7 @@ class StrategyInstance:
     def set_args(self, strategy: Strategy, values: dict, algo_values: dict[str, dict] | None = None) -> None:
         # strategy = StrategyManager.get(self.strategy)
         # if not strategy:
-        #     raise AppStrategyException(f'{self.name} strategy \'{self.strategy}\' not found.')
+        #     raise AppException(f'{self.name} strategy \'{self.strategy}\' not found.')
         
         args = strategy.args
         for arg in args:
@@ -115,7 +115,7 @@ class StrategyInstance:
             elif not arg.required:
                 self.arg_values[arg.name] = arg.default
             else:
-                raise AppStrategyException(f'{self.name} missing argument {arg.name}')
+                raise AppException(f'{self.name} missing argument {arg.name}')
         self.algo_values = algo_values # todo: check algorithm args
 
     def set_trigger(self, trigger:dict) -> None:
@@ -151,7 +151,7 @@ class StrategyInstance:
 #             for result in results:
 #                 self.__load(result.id)
 #         except Exception as e:
-#             raise AppStrategyException(e)
+#             raise AppException(e)
         
 #     def __make_local_file(self, id: str) -> str:
 #         return f'{PATH_STRATEGY_INSTANCE}/{id}.i'
@@ -174,7 +174,7 @@ class StrategyInstance:
 
 #             return taskScheduler.make_job(instance.id, instance.trigger, strategy.func, kwargs)
 #         else:
-#             raise AppStrategyException(f'strategy \'{instance.strategy}\' not found.')
+#             raise AppException(f'strategy \'{instance.strategy}\' not found.')
         
 #     def __save(self, instance: StrategyInstance) -> str:
 #         stmt = insert(StategyInstanceTable).values(id=instance.id)
@@ -213,7 +213,7 @@ class StrategyInstance:
 #         if instance:
 #             return instance
 #         else:
-#             raise AppStrategyException(f'instance \'{id}\' not found.')
+#             raise AppException(f'instance \'{id}\' not found.')
         
 #     def list(self) -> list[StrategyInstance]:
 #         return list(self.instances.values())
@@ -230,7 +230,7 @@ class StrategyInstance:
 
 #             return instance.id
 #         except Exception as e:
-#             raise AppStrategyException(e)
+#             raise AppException(e)
         
 #     def remove(self, id: str) -> str:
 #         try:
@@ -239,7 +239,7 @@ class StrategyInstance:
 #             instance = self.instances.pop(id)
 #             return instance.id
 #         except Exception as e:
-#             raise AppStrategyException(e)
+#             raise AppException(e)
 
 #     def set_trigger(self, id: str, trigger: dict) -> str:
 #         try:
@@ -250,7 +250,7 @@ class StrategyInstance:
             
 #             return self.__update(instance)
 #         except Exception as e:
-#             raise AppStrategyException(e)
+#             raise AppException(e)
 
 #     def set_args(self, id: str, values: dict, algo_values: dict | None = None) -> str:
 #         try:
@@ -259,6 +259,6 @@ class StrategyInstance:
             
 #             return self.__update(instance)
 #         except Exception as e:
-#             raise AppStrategyException(e)
+#             raise AppException(e)
 
 # strategyInstanceManager = StrategyInstanceManager()

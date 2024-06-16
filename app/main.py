@@ -7,7 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, FileResponse
 
 from app.logger import logger
-from app.exception import AppException, AppRouterException
+from app.exception import AppException
 from app.database import dbEngine
 from app.routers import register_routers
 from app.task_scheduler import taskScheduler
@@ -65,21 +65,21 @@ async def app_exception_handler(request: Request, e: AppException):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=jsonable_encoder(
             {
-                'code': -99,
-                'message': e.message
-            }
-        ))
-
-@app.exception_handler(AppRouterException)
-async def app_exception_handler(request: Request, e: AppRouterException):
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(
-            {
                 'code': e.code,
                 'message': e.message
             }
         ))
+
+# @app.exception_handler([AppRouterException, AppException, AppException])
+# async def app_exception_handler(request: Request, e: AppRouterException):
+#     return JSONResponse(
+#         status_code=status.HTTP_200_OK,
+#         content=jsonable_encoder(
+#             {
+#                 'code': e.code,
+#                 'message': e.message
+#             }
+#         ))
 
 
 @app.get('/')

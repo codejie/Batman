@@ -10,7 +10,7 @@ Common models
 
 class TriggerModel(BaseModel):
     mode: str = 'daily' # delay
-    # days: str | None = None
+    days: str | None = None
     hour: int | None = None
     minute: int | None = None
     seconds: int | None = None
@@ -39,6 +39,14 @@ class StrategyModel(BaseModel):
     algorithms: list[str] = None
     results: list[ResultModel] = None
 
+class InstanceModel(BaseModel):
+    id: str
+    name: str
+    strategy: str
+    trigger: TriggerModel
+    arg_values: dict | None = None
+    algo_values: dict[str, dict] | None = None
+    state: int = 0
 """
 获取策略列表信息
 """
@@ -90,10 +98,53 @@ class CreateInstanceRequest(RequestModel):
     name: str
     trigger: TriggerModel
     strategy: str # strategy id
-    args_values: dict | None = None
+    arg_values: dict | None = None
     algo_values: dict | None = None
 
 class CreateInstanceResponse(ResponseModel):
     result: str # id
 
+@router.post('/create', response_model=CreateInstanceResponse, response_model_exclude_none=True)
+async def create(body: CreateInstanceRequest=Body()):
+    trigger = dict(body.trigger)
+    id = strategyInstanceManager.add(body.name, body.strategy, trigger, body.arg_values, body.algo_values)
+    return CreateInstanceResponse(result=id)
 
+"""
+获取策略实例
+"""
+class ListInstanceRequest(RequestModel):
+    strategy: str | None = None
+
+class ListInstanceResponse(ResponseModel):
+    result: list[InstanceModel]
+
+@router.post('/list', response_model=ListInstanceResponse, response_model_exclude_none=True)
+async def list(body: ListInstanceRequest=Body()):
+    ret = []
+    instances = strategyInstanceManager.list(body.strategy)
+    for inst in instances:
+        trigger = TriggerModel.model_validate(obj=inst.trigger)
+        ret.append(InstanceModel(id=inst.id,
+                                 name=inst.name,
+                                 strategy=inst.strategy,
+                                 trigger=trigger,
+                                 arg_values=inst.arg_values,
+                                 algo_values=inst.algo_values,
+                                 state=inst.state.value))
+        
+    return ListInstanceResponse(result=ret)
+
+"""
+删除策略实例
+"""
+class RemoveInstanceRequest(RequestModel):
+    id: str
+
+class RemoveInstanceResponse(ResponseModel):
+    result: str
+
+@router.post('/remove', response_model=RemoveInstanceResponse, response_model_exclude_none=True)
+async def remove(body: RemoveInstanceRequest=Body()):
+    id = strategyInstanceManager.remove(body.id)
+    return RemoveInstanceResponse(result=id)

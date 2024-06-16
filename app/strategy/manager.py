@@ -7,9 +7,10 @@ import os
 import pickle
 from app.database import dbEngine, select, delete, insert, update
 from app.database.tables import TableBase, Column, String, Integer, DateTime, func
+from app.exception import AppException
 from app.task_scheduler import taskScheduler
 from app.database.tables import TableBase
-from app.strategy import AppStrategyException, Strategy, StrategyInstance, Type
+from app.strategy import AppException, Strategy, StrategyInstance, Type
 
 from app.strategy.filter.rapid_raise_fall import RapidRaiseFallStrategy
 
@@ -61,7 +62,7 @@ class StrategyInstanceManager:
             for result in results:
                 self.__load(result.id)
         except Exception as e:
-            raise AppStrategyException(e)
+            raise AppException(e)
         
     def __make_local_file(self, id: str) -> str:
         return f'{PATH_STRATEGY_INSTANCE}/{id}.i'
@@ -84,7 +85,7 @@ class StrategyInstanceManager:
 
             return taskScheduler.make_job(instance.id, instance.trigger, strategy.func, kwargs)
         else:
-            raise AppStrategyException(f'strategy \'{instance.strategy}\' not found.')
+            raise AppException(f'strategy \'{instance.strategy}\' not found.')
         
     def __save(self, instance: StrategyInstance) -> str:
         file = self.__make_local_file(instance.id)
@@ -126,15 +127,24 @@ class StrategyInstanceManager:
         if instance:
             return instance
         else:
-            raise AppStrategyException(f'instance \'{id}\' not found.')
+            raise AppException(f'instance \'{id}\' not found.')
         
-    def list(self) -> list[StrategyInstance]:
-        return list(self.instances.values())
+    def list(self, strategy: str = None) -> list[StrategyInstance]:
+        if strategy:
+            ret = []
+            for i in self.instances.values():
+                if i.strategy == strategy:
+                    ret.append(i)
+            return ret
+        else:
+            return list(self.instances.values())
     
     def add(self, name: str, strategy: str, trigger: dict, values: dict, algo_values: dict | None = None) -> str:
+        print(strategy)
         stgy = StrategyManager.get(strategy)
+        print(stgy)
         if not stgy:
-            raise AppStrategyException(f'strategy \'{strategy}\' not found.')
+            raise AppException(f'strategy \'{strategy}\' not found.')
 
         try:
             id = taskScheduler.make_id()
@@ -147,16 +157,16 @@ class StrategyInstanceManager:
 
             return instance.id
         except Exception as e:
-            raise AppStrategyException(e)
+            raise AppException(e)
         
     def remove(self, id: str) -> str:
         try:
             taskScheduler.remove_job(id)
-            self.__remove(id)            
+            self.__remove(id)  
             instance = self.instances.pop(id)
             return instance.id
         except Exception as e:
-            raise AppStrategyException(e)
+            raise AppException(e)
 
     def set_trigger(self, id: str, trigger: dict) -> str:
         try:
@@ -167,7 +177,7 @@ class StrategyInstanceManager:
             
             return self.__update(instance)
         except Exception as e:
-            raise AppStrategyException(e)
+            raise AppException(e)
 
     def set_args(self, id: str, values: dict, algo_values: dict | None = None) -> str:
         try:
@@ -176,6 +186,6 @@ class StrategyInstanceManager:
             
             return self.__update(instance)
         except Exception as e:
-            raise AppStrategyException(e)
+            raise AppException(e)
 
 strategyInstanceManager = StrategyInstanceManager()    

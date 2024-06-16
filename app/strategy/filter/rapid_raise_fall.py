@@ -14,8 +14,9 @@ days:
     number
 """
 from datetime import datetime, timedelta
+from app.exception import AppException
 from app.logger import logger
-from app.strategy import AppStrategyException, Strategy, Type, Argument, Result
+from app.strategy import Strategy, Type, Argument, Result
 from app.strategy.algorithm.m_up_n_down import MUpNDownAlgorithem
 
 from app.database import stock
@@ -54,7 +55,7 @@ class RapidRaiseFallStrategy(Strategy):
                  type='number',
                  desc='最近天数',
                  unit='天',                
-                 default='18',
+                 default=18,
                  required=False)
     ]
     results: list[Result] = [
@@ -80,7 +81,7 @@ class RapidRaiseFallStrategy(Strategy):
                 df = stock.get_a_list()
                 codes = df['code'].to_list()
             if not codes:
-                raise AppStrategyException('codes list is empty.')
+                raise AppException('codes list is empty.')
 
             days = arg_values['days']
             start = (datetime.today() - timedelta(days)).strftime('%Y-%m-%d')
