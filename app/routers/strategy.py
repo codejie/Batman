@@ -148,3 +148,18 @@ class RemoveInstanceResponse(ResponseModel):
 async def remove(body: RemoveInstanceRequest=Body()):
     id = strategyInstanceManager.remove(body.id)
     return RemoveInstanceResponse(result=id)
+
+"""
+设置策略实例定时
+"""
+class RescheduleInstanceRequest(RequestModel):
+    id: str
+    trigger: TriggerModel
+
+class RescheduleInstanceResponse(ResponseModel):
+    result: str | None = None
+
+@router.post('/reschedule', response_model=RescheduleInstanceResponse, response_model_exclude_none=True)
+async def reschedule(body: RescheduleInstanceRequest=Body()):
+    id = strategyInstanceManager.set_trigger(body.id, dict(body.trigger))
+    return RescheduleInstanceResponse(result=id)

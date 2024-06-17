@@ -93,7 +93,6 @@ class StrategyInstanceManager:
             pickle.dump(instance, output)
 
         stmt = insert(StategyInstanceTable).values(id=instance.id)
-        print(stmt)
         dbEngine.insert(stmt)
 
         return instance.id
@@ -140,9 +139,7 @@ class StrategyInstanceManager:
             return list(self.instances.values())
     
     def add(self, name: str, strategy: str, trigger: dict, values: dict, algo_values: dict | None = None) -> str:
-        print(strategy)
         stgy = StrategyManager.get(strategy)
-        print(stgy)
         if not stgy:
             raise AppException(f'strategy \'{strategy}\' not found.')
 

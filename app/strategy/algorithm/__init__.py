@@ -6,13 +6,6 @@ from enum import Enum
 from typing import Callable, TypeAlias
 from app.exception import AppException
 
-class AlgorithmException(AppException):
-    def __init__(self, e: Exception) -> None:
-        super().__init__(e)
-
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
-
 class Argument:
     def __init__(self, name: str, type: str, unit: str = None, desc: str = None, default: any = None, required: bool = True) -> None:
         self.name = name
@@ -86,14 +79,14 @@ class Algorithm(metaclass=ABCMeta):
             elif not arg.required:
                 self.arg_values[arg.name] = arg.default
             else:
-                raise AlgorithmException(f'{self.name} missing argument {arg.name}')
-
-    def set_data(self, values) -> None:
+                raise AppException(f'{self.name} missing argument {arg.name}')
+                    
+    def set_data(self, values: dict) -> None:
         for data in self.data:
             if data.name in values:
                 self.data_values[data.name] = values[data.name]
             else:
-                raise AlgorithmException(f'{self.name} missing data {data.name}')
+                raise AppException(f'{self.name} missing data {data.name}')
 
     def set_callback(self, callback: AlgorithmCallback) -> None:
         self.callback = callback

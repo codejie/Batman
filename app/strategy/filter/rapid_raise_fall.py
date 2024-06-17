@@ -41,6 +41,7 @@ class RapidRaiseFallStrategy(Strategy):
         Argument(name='codes',
                  type='list',
                  desc='指定的股票代码列表',
+                 default=None,
                  required=False),
         Argument(name='item',
                  type='option',

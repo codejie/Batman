@@ -9,60 +9,17 @@ class MUpNDownAlgorithem(Algorithm):
     name: str = '速涨速跌'
     desc: str = '连续(N)的两个数据的差比率大于U，再连续(M)个数据小于D。'
     args: list[Argument] = [
-        Argument('up_count', 'number', '天','连续上涨天数', 3),
+        Argument('up_count', 'number', '天','连续上涨天数', 3, False),
         Argument('up_rate', 'number', '%','每天上涨幅度', 9.0),
-        Argument('down_count', 'number', '天','连续下跌天数', 1),
+        Argument('down_count', 'number', '天','连续下跌天数', 1, False),
         Argument('down_rate', 'number', '%','每天下跌幅度', -5.0)
-        # {
-        #     'name': 'up_count',
-        #     'type': 'number',
-        #     'unit': '天',
-        #     'desc': '连续上涨天数',
-        #     'default': 3
-        # },
-        # {
-        #     'name': 'up_rate',
-        #     'type': 'number',
-        #     'unit': '%',
-        #     'desc': '每天上涨幅度',
-        #     'default': 9.0       
-        # },
-        # {
-        #     'name': 'down_count',
-        #     'type': 'number',
-        #     'unit': '天',
-        #     'desc': '连续下跌天数',
-        #     'default': 1
-        # },
-        # {
-        #     'name': 'down_rate',
-        #     'type': 'number',
-        #     'unit': '%',
-        #     'desc': '每天下跌幅度',
-        #     'default': -5.0
-        # }
     ]
     data: list[Data] = [
         Data('close', 'list or series', '收盘数据集'),
         Data('open', 'list or series', '开盘数据集')
-        # {
-        #     'name': 'close',
-        #     'type': 'list or series',
-        #     'desc': '收盘数据集'
-        # },
-        # {
-        #     'name': 'open',
-        #     'type': 'list or series',
-        #     'desc': '开盘数据集'
-        # }
     ]
     results: list[Result] = [
         Result('pos', 'number', '命中索引点')
-        # {
-        #     'name': 'pos',
-        #     'type': 'number',
-        #     'desc': '命中索引点'
-        # }
     ]
 
     def __init__(self) -> None:
