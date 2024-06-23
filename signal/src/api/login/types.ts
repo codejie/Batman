@@ -25,7 +25,7 @@ export type UserResponse = {
 export type UserInfo = {
   account: string
   passwd: string
-  accessToken: string
+  accessToken?: string
   refreshToken?: string
   expired?: Date
 }

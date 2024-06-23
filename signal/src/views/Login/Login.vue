@@ -2,7 +2,7 @@
 import { LoginForm } from './components'
 import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { LocaleDropdown } from '@/components/LocaleDropdown'
-import { useI18n } from '@/hooks/web/useI18n'
+// import { useI18n } from '@/hooks/web/useI18n'
 import { getCssVar, underlineToHump } from '@/utils'
 import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
@@ -14,8 +14,6 @@ const { getPrefixCls } = useDesign()
 const prefixCls = getPrefixCls('login')
 
 const appStore = useAppStore()
-
-const { t } = useI18n()
 
 const isLogin = ref(true)
 
@@ -38,7 +36,7 @@ const themeChange = () => {
             class="flex justify-between items-center text-white at-2xl:justify-end at-xl:justify-end"
           >
             <div class="flex items-center at-2xl:hidden at-xl:hidden">
-              <img src="@/assets/imgs/logo.png" alt="" class="w-48px h-48px mr-10px" />
+              <!-- <img src="@/assets/imgs/logo.png" alt="" class="w-48px h-48px mr-10px" /> -->
               <span class="text-20px font-bold">{{ underlineToHump(appStore.getTitle) }}</span>
             </div>
 
@@ -47,16 +45,16 @@ const themeChange = () => {
               <LocaleDropdown class="lt-xl:text-white dark:text-white" />
             </div>
           </div>
-          <Transition appear enter-active-class="animate__animated animate__bounceInRight">
-            <div
-              class="h-full flex items-center m-auto w-[100%] at-2xl:max-w-500px at-xl:max-w-500px at-md:max-w-500px at-lg:max-w-500px"
-            >
-              <LoginForm
-                v-if="isLogin"
-                class="p-20px h-auto m-auto lt-xl:rounded-3xl lt-xl:light:bg-white"
-              />
-            </div>
-          </Transition>
+          <!-- <Transition appear enter-active-class="animate__animated animate__bounceInRight"> -->
+          <div
+            class="h-full flex items-center m-auto w-[100%] at-2xl:max-w-500px at-xl:max-w-500px at-md:max-w-500px at-lg:max-w-500px"
+          >
+            <LoginForm
+              v-if="isLogin"
+              class="p-20px h-auto m-auto lt-xl:rounded-3xl lt-xl:light:bg-white"
+            />
+          </div>
+          <!-- </Transition> -->
         </div>
       </div>
     </ElScrollbar>

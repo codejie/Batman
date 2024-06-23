@@ -26,7 +26,7 @@ export const loginOutApi = (): Promise<Response> => {
 
 export const apiLogin = (data: UserRequest): Promise<Response<UserResponse>> => {
   return request.post({
-    url: 'http://localhost:8000/account/login',
+    url: '/account/login',
     data
   })
 }

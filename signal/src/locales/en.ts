@@ -44,7 +44,8 @@ export default {
     refresh: 'Refresh',
     fullscreen: 'Fullscreen',
     size: 'Size',
-    columnSetting: 'Column setting'
+    columnSetting: 'Column setting',
+    create: 'Create'
   },
   lock: {
     lockScreen: 'Lock screen',
@@ -117,6 +118,12 @@ export default {
     codePlaceholder: 'Please input verification code'
   },
   router: {
+    // strategy: 'Strategy',
+    strategy: {
+      main: 'Strategy',
+      filter: 'Filter',
+      trader: 'Trader'
+    },
     login: 'Login',
     level: 'Multi level menu',
     menu: 'Menu',

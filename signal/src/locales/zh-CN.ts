@@ -44,7 +44,8 @@ export default {
     refresh: '刷新',
     fullscreen: '全屏',
     size: '尺寸',
-    columnSetting: '列设置'
+    columnSetting: '列设置',
+    create: '新建'
   },
   lock: {
     lockScreen: '锁定屏幕',
@@ -117,6 +118,11 @@ export default {
     codePlaceholder: '请输入验证码'
   },
   router: {
+    strategy: {
+      main: '策略',
+      filter: '筛选策略',
+      trader: '交易策略'
+    },
     login: '登录',
     level: '多级菜单',
     menu: '菜单',

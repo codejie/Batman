@@ -85,7 +85,6 @@
     "eslint-plugin-vue": "^9.21.1",
     "esno": "^4.0.0",
     "fs-extra": "^11.2.0",
-    "husky": "^9.0.10",
     "inquirer": "^9.2.14",
     "less": "^4.2.0",
     "lint-staged": "^15.2.2",

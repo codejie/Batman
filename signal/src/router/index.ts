@@ -3,6 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import type { App } from 'vue'
 import { Layout, getParentLayout } from '@/utils/routerHelper'
 import { useI18n } from '@/hooks/web/useI18n'
+import LayoutRadioPicker from '@/components/Setting/src/components/LayoutRadioPicker.vue'
 
 const { t } = useI18n()
 
@@ -10,7 +11,7 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
   {
     path: '/',
     component: Layout,
-    redirect: '/level',
+    redirect: '/dashboard',
     name: 'Root',
     meta: {
       hidden: true
@@ -56,6 +57,59 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
 ]
 
 export const asyncRouterMap: AppRouteRecordRaw[] = [
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Layout,
+    meta: {
+      title: t('router.dashboard'),
+      icon: 'carbon:dashboard'
+    }
+  },
+  {
+    path: '/strategy',
+    component: Layout,
+    name: 'Strategy',
+    meta: {
+      title: t('router.strategy.main'),
+      icon: 'carbon:network-4-reference'
+    },
+    children: [
+      {
+        path: 'filter',
+        name: 'Filter',
+        component: () => import('@/views/Strategy/Filter/index.vue'),
+        meta: {
+          title: t('router.strategy.filter'),
+          icon: 'carbon:chart-logistic-regression'
+        },
+        children: [
+          {
+            path: 'create',
+            name: 'Create',
+            component: () => import('@/views/Strategy/Filter/Create.vue'),
+            meta: {
+              title: t('router.strategy.filter_create'),
+              noTagsView: true,
+              noCache: true,
+              hidden: true,
+              canTo: true,
+              activeMenu: '/strategy/filter'
+            }
+          }
+        ]
+      },
+      {
+        path: 'trader',
+        name: '',
+        component: () => '/strategy/trader',
+        meta: {
+          title: t('router.strategy.trader'),
+          icon: 'carbon:pricing-traditional'
+        }
+      }
+    ]
+  },
   {
     path: '/level',
     component: Layout,
