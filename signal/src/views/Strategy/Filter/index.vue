@@ -2,10 +2,8 @@
 import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Table, TableColumn } from '@/components/Table'
-import { useTable } from '@/hooks/web/useTable'
 import { apiList, apiRemove } from '@/api/strategy'
-import { PropType, ref, unref } from 'vue'
+import { PropType, onMounted, ref, unref } from 'vue'
 import { ElTable, ElTableColumn } from 'element-plus'
 
 defineOptions({
@@ -15,14 +13,21 @@ defineOptions({
 const { t } = useI18n()
 const { push } = useRouter()
 
-const listInstance = [
-  {
-    id: '0',
-    name: 'name'
-  }
-]
+const listInstance = ref<any[]>([])
 
-const onCreate = () => {
+const fetchInstanceList = async () => {
+  const ret = await apiList({})
+  for (const i of ret.result) {
+    listInstance.value.push(i)
+  }
+  console.log(unref(listInstance))
+}
+
+onMounted(() => {
+  fetchInstanceList()
+})
+
+const onBtnCreate = () => {
   push('/strategy/filter/create')
 }
 </script>
@@ -30,11 +35,12 @@ const onCreate = () => {
 <template>
   <ContentWrap>
     <div class="mb-10px">
-      <BaseButton type="primary" @click="onCreate">{{ t('common.create') }}</BaseButton>
+      <BaseButton type="primary" @click="onBtnCreate">{{ t('common.create') }}</BaseButton>
     </div>
-    <ElTable :data="listInstance" border style="width: 100%">
+    <ElTable :data="unref(listInstance)" border style="width: 100%">
       <ElTableColumn prop="id" label="ID" width="100" />
       <ElTableColumn prop="name" label="Name" width="180" />
+      <ElTableColumn prop="strategy" label="Strategy" width="200" />
     </ElTable>
   </ContentWrap>
 </template>

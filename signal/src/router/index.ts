@@ -3,7 +3,6 @@ import type { RouteRecordRaw } from 'vue-router'
 import type { App } from 'vue'
 import { Layout, getParentLayout } from '@/utils/routerHelper'
 import { useI18n } from '@/hooks/web/useI18n'
-import LayoutRadioPicker from '@/components/Setting/src/components/LayoutRadioPicker.vue'
 
 const { t } = useI18n()
 

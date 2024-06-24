@@ -45,7 +45,8 @@ export default {
     fullscreen: 'Fullscreen',
     size: 'Size',
     columnSetting: 'Column setting',
-    create: 'Create'
+    create: 'Create',
+    submit: 'Submit'
   },
   lock: {
     lockScreen: 'Lock screen',
@@ -122,7 +123,8 @@ export default {
     strategy: {
       main: 'Strategy',
       filter: 'Filter',
-      trader: 'Trader'
+      trader: 'Trader',
+      filter_create: '创建实例'
     },
     login: 'Login',
     level: 'Multi level menu',

@@ -45,7 +45,8 @@ export default {
     fullscreen: '全屏',
     size: '尺寸',
     columnSetting: '列设置',
-    create: '新建'
+    create: '新建',
+    submit: '提交'
   },
   lock: {
     lockScreen: '锁定屏幕',
@@ -121,7 +122,8 @@ export default {
     strategy: {
       main: '策略',
       filter: '筛选策略',
-      trader: '交易策略'
+      trader: '交易策略',
+      filter_create: '创建实例'
     },
     login: '登录',
     level: '多级菜单',
