@@ -1,3 +1,29 @@
+export type ArgumentModel = {
+  name: string
+  type?: string
+  unit?: string
+  desc?: string
+  value?: any[]
+  default?: any
+  required: boolean
+}
+
+export type ResultModel = {
+  name: string
+  type?: string
+  desc?: string  
+}
+
+export type StrategyModel = {
+  id: string
+  type: number
+  name: string
+  desc: string
+  args?: ArgumentModel[]
+  algorithms?: string[]
+  results?: ResultModel[]
+}
+
 export type TriggerModel = {
     mode: string
     days?: string
@@ -17,6 +43,13 @@ export type InstanceModel = {
     state: number
 }
 
+// Request & Response
+export type InfosRequest = {
+  type?: number
+  name?: string
+}
+
+export type InfosResponse = StrategyModel[]
 
 export type ListInstanceRequest = {
     strategy?: string

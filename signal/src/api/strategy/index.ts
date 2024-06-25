@@ -1,10 +1,19 @@
 import request from '@/axios'
 import {
+  InfosRequest,
+  InfosResponse,
   ListInstanceRequest,
   ListInstanceResponse,
   RemoveInstanceRequest,
   RemoveInstanceResponse
 } from './types'
+
+export const apiInfos = (data: InfosRequest): Promise<Response<InfosResponse>> => {
+  return request.post({
+    url: '/strategy/infos',
+    data
+  })
+}
 
 export const apiList = (data: ListInstanceRequest): Promise<Response<ListInstanceResponse>> => {
   return request.post({

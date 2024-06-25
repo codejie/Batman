@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import { ContentDetailWrap } from '@/components/ContentDetailWrap'
+import CreateForm from './components/CreateForm.vue'
 
 const { t } = useI18n()
 const { push, go } = useRouter()
@@ -17,5 +19,6 @@ const onBtnSubmit = async () => {}
         {{ t('common.submit') }}
       </BaseButton>
     </template>
+    <CreateForm />
   </ContentDetailWrap>
 </template>
