@@ -1,6 +1,15 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, unref, watch } from 'vue'
-import { ElForm, ElFormItem, ElInput, ElOption, ElSelect, ElTable, ElText } from 'element-plus'
+import { onMounted, ref, unref, watch } from 'vue'
+import {
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElOption,
+  ElSelect,
+  ElTable,
+  ElTableColumn,
+  ElText
+} from 'element-plus'
 import { apiInfos } from '@/api/strategy'
 import { StrategyModel } from '@/api/strategy/types'
 
@@ -25,7 +34,10 @@ onMounted(() => {
 watch(
   () => unref(form).strategy,
   (value) => {
-    console.log(value)
+    for (let i = 0; i < value.args.length; ++i) {
+      value.args[i]['arg_value'] = undefined
+    }
+    return value
   }
 )
 </script>
@@ -36,7 +48,7 @@ watch(
     </ElFormItem>
     <ElFormItem label="Strategy" required>
       <ElSelect v-model="form.strategy" placeholder="select a strategy">
-        <ElOption v-for="item in strategyList" :key="item.id" :label="item.name" :value="item" />
+        <ElOption v-for="s in strategyList" :key="s.id" :label="s.name" :value="s" />
       </ElSelect>
     </ElFormItem>
     <div v-if="form.strategy">
@@ -44,17 +56,26 @@ watch(
         <ElText>{{ form.strategy.desc }}</ElText>
       </ElFormItem>
       <ElFormItem label="Strategy Arguments">
-        <ElTable />
+        <ElTable :data="form.strategy.args" border style="width: 100%">
+          <ElTableColumn prop="name" label="Name" width="100" />
+          <ElTableColumn prop="unit" label="Unit" width="100" />
+          <ElTableColumn prop="arg_values" label="Value" width="150">
+            <template v-slot="{ row }">
+              {{ row }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="desc" label="desc" width="100" />
+        </ElTable>
       </ElFormItem>
       <ElFormItem label="Strategy Algorithms">
         <ElText>{{ form.strategy }}</ElText>
-        <div v-for="item in form.strategy.algorithms" :key="item">
-          <ElText>{{ item }}</ElText>
-          <ElForm v-for="item in form.strategy.algorithms" :key="item.name">
+        <div v-for="a in form.strategy.algorithms" :key="a">
+          <ElText>{{ a }}</ElText>
+          <!-- <ElForm v-for="item in form.strategy.algorithms" :key="item.name">
             <ElFormItem>
               <ElInput />
             </ElFormItem>
-          </ElForm>
+          </ElForm> -->
         </div>
       </ElFormItem>
     </div>

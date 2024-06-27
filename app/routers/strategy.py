@@ -5,9 +5,8 @@ from app.strategy.manager import StrategyManager, strategyInstanceManager
 router: APIRouter = APIRouter(prefix='/strategy', tags=['strategy'], dependencies=[Depends(verify_token)])
 
 """
-Common models
+Common Strategy models
 """
-
 class TriggerModel(BaseModel):
     mode: str = 'daily' # delay
     days: str | None = None

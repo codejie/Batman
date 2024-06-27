@@ -5,13 +5,6 @@ from enum import Enum
 from app.exception import AppException
 from app.strategy.algorithm import Algorithm
 
-class AppException(AppException):
-    def __init__(self, e: Exception) -> None:
-        super().__init__(e)
-
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
-
 class Type(Enum):
     FILTER: int = 0
     TRADE: int = 1
