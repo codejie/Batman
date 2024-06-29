@@ -12,6 +12,7 @@ import {
 } from 'element-plus'
 import { apiInfos } from '@/api/strategy'
 import { StrategyModel } from '@/api/strategy/types'
+import ArgumentForm from '../../components/ArgumentForm.vue'
 
 const strategyList = ref<StrategyModel[]>([])
 const form = ref<any>({
@@ -52,7 +53,10 @@ watch(
       </ElSelect>
     </ElFormItem>
     <div v-if="form.strategy">
-      <ElFormItem label="Strategy Description">
+      <ElFormItem label="Strategy Arguments">
+        <ArgumentForm :args="form.strategy.args" />
+      </ElFormItem>
+      <!-- <ElFormItem label="Strategy Description">
         <ElText>{{ form.strategy.desc }}</ElText>
       </ElFormItem>
       <ElFormItem label="Strategy Arguments">
@@ -71,13 +75,13 @@ watch(
         <ElText>{{ form.strategy }}</ElText>
         <div v-for="a in form.strategy.algorithms" :key="a">
           <ElText>{{ a }}</ElText>
-          <!-- <ElForm v-for="item in form.strategy.algorithms" :key="item.name">
+          <ElForm v-for="item in form.strategy.algorithms" :key="item.name">
             <ElFormItem>
               <ElInput />
             </ElFormItem>
-          </ElForm> -->
+          </ElForm>
         </div>
-      </ElFormItem>
+      </ElFormItem> -->
     </div>
   </ElForm>
 </template>
