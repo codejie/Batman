@@ -7,11 +7,12 @@ from typing import Callable, TypeAlias
 from app.exception import AppException
 
 class Argument:
-    def __init__(self, name: str, type: str, unit: str = None, desc: str = None, default: any = None, required: bool = True) -> None:
+    def __init__(self, name: str, type: str, unit: str = None, desc: str = None, value: list[any] = None, default: any = None, required: bool = True) -> None:
         self.name = name
         self.type = type
         self.unit = unit
         self.desc = desc
+        self.value = value # option while type is list, { value: any, desc: ''}
         self.default = default
         self.required = required
 

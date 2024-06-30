@@ -11,6 +11,7 @@ class ArgumentModel(BaseModel):
     type: str | None
     unit: str | None
     desc: str | None
+    value: list | None
     default: str | int | float | list | dict | None = None
     required: bool = True
 
@@ -33,14 +34,14 @@ class AlgorithmModel(BaseModel):
 
 
 class InfosRequest(RequestModel):
-    name: str | None = None
+    name: str | list[str] | None = None
 
 class InfosResponse(ResponseModel):
     result: list[AlgorithmModel] | AlgorithmModel | None = None
 
 @router.post('/infos', response_model=InfosResponse, response_model_exclude_none=True)
 async def infos(body: InfosRequest=Body()):
-  if body.name:
+  if body.name and (type(body.name) is str):
       ret = AlgorithmManager.get(body.name)
       if ret:
         args: list[ArgumentModel] = []
@@ -49,6 +50,7 @@ async def infos(body: InfosRequest=Body()):
                                       type=a.type,
                                       unit=a.unit,
                                       desc=a.desc,
+                                      value=a.value,
                                       default=a.default,
                                       required=a.required))
         data: list[DataModel] = []
@@ -71,7 +73,7 @@ async def infos(body: InfosRequest=Body()):
         return InfosResponse(result=None)
   else:
       rs: list[ArgumentModel] = []
-      rets = AlgorithmManager.get_list()
+      rets = AlgorithmManager.get_list(body.name)
       for ret in rets:
         args: list[ArgumentModel] = []
         for a in ret.args:
@@ -79,6 +81,7 @@ async def infos(body: InfosRequest=Body()):
                                       type=a.type,
                                       unit=a.unit,
                                       desc=a.desc,
+                                      value=a.value,
                                       default=a.default,
                                       required=a.required))
         data: list[DataModel] = []

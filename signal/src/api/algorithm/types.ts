@@ -3,6 +3,7 @@ export type ArgumentModel = {
   type?: string
   unit?: string
   desc?: string
+  value?: any[]
   default?: any
   required: boolean
 }

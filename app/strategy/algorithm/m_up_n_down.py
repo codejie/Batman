@@ -9,10 +9,10 @@ class MUpNDownAlgorithem(Algorithm):
     name: str = '速涨速跌'
     desc: str = '连续(N)的两个数据的差比率大于U，再连续(M)个数据小于D。'
     args: list[Argument] = [
-        Argument('up_count', 'number', '天','连续上涨天数', 3, False),
-        Argument('up_rate', 'number', '%','每天上涨幅度', 9.0),
-        Argument('down_count', 'number', '天','连续下跌天数', 1, False),
-        Argument('down_rate', 'number', '%','每天下跌幅度', -5.0)
+        Argument('up_count', 'number', '天','连续上涨天数', None, 3, False),
+        Argument('up_rate', 'number', '%','每天上涨幅度', None, 9.0),
+        Argument('down_count', 'number', '天','连续下跌天数', None, 1, False),
+        Argument('down_rate', 'number', '%','每天下跌幅度', None, -5.0)
     ]
     data: list[Data] = [
         Data('close', 'list or series', '收盘数据集'),

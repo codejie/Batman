@@ -33,6 +33,16 @@ export type TriggerModel = {
     period: boolean
 }
 
+export type ArgumentValuesModel = {
+  [key in string]: any
+}
+
+export type AlgorithValuesModel = {
+  [key in string]: {
+    [key in string]: any
+  }
+}
+
 export type InstanceModel = {
     id: string
     name: string
@@ -62,3 +72,12 @@ export type RemoveInstanceRequest = {
 }
 
 export type RemoveInstanceResponse = string
+
+export type CreateInstanceRequest = {
+  name: string
+  trigger: TriggerModel
+  arg_values?: ArgumentValuesModel
+  algo_values?: AlgorithValuesModel
+}
+
+export type CreateInstanceResponse = string

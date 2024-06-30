@@ -17,8 +17,15 @@ class AlgorithmManager:
     return AlgorithmManager.listAlgorithm.get(name, None)
   
   @staticmethod
-  def get_list() -> list[Algorithm]:
-    return AlgorithmManager.listAlgorithm.values()
+  def get_list(names: list[str] | None = None) -> list[Algorithm]:
+    if names:
+      ret = []
+      for item in AlgorithmManager.listAlgorithm.values():
+        if item.name in names:
+          ret.append(item)
+      return ret
+    else:
+      return AlgorithmManager.listAlgorithm.values()
 
 
 AlgorithmManager.add(MUpNDownAlgorithem)

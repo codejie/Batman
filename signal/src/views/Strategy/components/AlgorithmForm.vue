@@ -1,7 +1,16 @@
 <script setup lang="ts">
-import { ArgumentModel } from '@/api/strategy/types'
+import { apiInfos } from '@/api/algorithm'
+import { AlgorithmModel, ArgumentModel, InfosRequest } from '@/api/algorithm/types'
+import { onMounted, ref } from 'vue'
 import { ElTable, ElTableColumn, ElInput, ElSelect, ElOption } from 'element-plus'
-import { PropType, onMounted, ref } from 'vue'
+
+const props = defineProps({
+  name: {
+    type: String
+  }
+})
+// const props = defineProps(['name'])
+const algorithm = ref<AlgorithmModel>()
 
 const data = ref<
   {
@@ -10,28 +19,25 @@ const data = ref<
   }[]
 >([])
 
-const props = defineProps({
-  args: {
-    type: Array as PropType<ArgumentModel[]>
-  }
-})
-
 defineExpose({
-  values: data
+  data
 })
 
-onMounted(() => {
-  data.value = []
-  props.args?.forEach((item) => {
+onMounted(async () => {
+  const ret = await apiInfos({
+    name: props.name
+  } as InfosRequest)
+  algorithm.value = ret.result as AlgorithmModel
+  algorithm.value.args?.forEach((item) => {
     data.value.push({
       arg: item,
-      value: item.default || null
+      value: item.default || undefined
     })
   })
 })
 </script>
 <template>
-  <!-- <div>{{ data }}</div> -->
+  <b>{{ algorithm?.name }}: {{ algorithm?.desc }}</b>
   <ElTable :data="data" border style="width: 100%">
     <ElTableColumn prop="arg.name" label="Name" width="120" />
     <ElTableColumn prop="arg.unit" label="Unit" width="100" />
@@ -52,7 +58,6 @@ onMounted(() => {
         </div>
       </template>
     </ElTableColumn>
-    <!-- <ElTableColumn prop="value" label="Value" width="100" /> -->
     <ElTableColumn prop="arg.desc" label="Description" width="300" />
   </ElTable>
 </template>

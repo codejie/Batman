@@ -1,46 +1,42 @@
 <script setup lang="ts">
-import { onMounted, ref, unref, watch } from 'vue'
-import {
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElOption,
-  ElSelect,
-  ElTable,
-  ElTableColumn,
-  ElText
-} from 'element-plus'
+import { onMounted, ref } from 'vue'
+import { ElForm, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus'
 import { apiInfos } from '@/api/strategy'
 import { StrategyModel } from '@/api/strategy/types'
-import ArgumentForm from '../../components/ArgumentForm.vue'
+import ArgumentForm from '@/views/Strategy/components/ArgumentForm.vue'
+import ResultForm from '@/views/Strategy/components/ResultForm.vue'
+import AlgorithmForm from '@/views/Strategy/components/AlgorithmForm.vue'
+import TriggerForm from '@/views/Strategy/components/TriggerForm.vue'
 
 const strategyList = ref<StrategyModel[]>([])
-const form = ref<any>({
+const form = ref<{
+  name: string
+  strategy?: StrategyModel
+}>({
   name: '',
   strategy: undefined
 })
-// const algorithm = ref<>()
 
 const getStrategyList = async () => {
   const ret = await apiInfos({})
   strategyList.value = ret.result
 }
-// const getAlgorithm = async() => {
-// }
 
 onMounted(() => {
   getStrategyList()
 })
 
-watch(
-  () => unref(form).strategy,
-  (value) => {
-    for (let i = 0; i < value.args.length; ++i) {
-      value.args[i]['arg_value'] = undefined
-    }
-    return value
+const result = ref<any>(null)
+const argument = ref<any>(null)
+const algorithms = ref<any>(null)
+defineExpose({
+  data: {
+    form,
+    result,
+    argument,
+    algorithms
   }
-)
+})
 </script>
 <template>
   <ElForm v-model="form" label-width="auto">
@@ -52,36 +48,27 @@ watch(
         <ElOption v-for="s in strategyList" :key="s.id" :label="s.name" :value="s" />
       </ElSelect>
     </ElFormItem>
+    <!-- <ElFormItem label="temp">
+      {{ form.strategy }}
+    </ElFormItem> -->
     <div v-if="form.strategy">
-      <ElFormItem label="Strategy Arguments">
-        <ArgumentForm :args="form.strategy.args" />
-      </ElFormItem>
-      <!-- <ElFormItem label="Strategy Description">
-        <ElText>{{ form.strategy.desc }}</ElText>
+      <ElFormItem label="Strategy Results">
+        <ResultForm ref="result" :results="form.strategy.results" />
       </ElFormItem>
       <ElFormItem label="Strategy Arguments">
-        <ElTable :data="form.strategy.args" border style="width: 100%">
-          <ElTableColumn prop="name" label="Name" width="100" />
-          <ElTableColumn prop="unit" label="Unit" width="100" />
-          <ElTableColumn prop="arg_values" label="Value" width="150">
-            <template v-slot="{ row }">
-              {{ row }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="desc" label="desc" width="100" />
-        </ElTable>
+        <ArgumentForm ref="argument" :args="form.strategy.args" />
       </ElFormItem>
-      <ElFormItem label="Strategy Algorithms">
-        <ElText>{{ form.strategy }}</ElText>
-        <div v-for="a in form.strategy.algorithms" :key="a">
-          <ElText>{{ a }}</ElText>
-          <ElForm v-for="item in form.strategy.algorithms" :key="item.name">
-            <ElFormItem>
-              <ElInput />
-            </ElFormItem>
-          </ElForm>
-        </div>
-      </ElFormItem> -->
+      <ElFormItem label="Algorithms">
+        <AlgorithmForm
+          ref="algorithms"
+          v-for="item in form.strategy.algorithms"
+          :name="item"
+          :key="item"
+        />
+      </ElFormItem>
     </div>
+    <ElFormItem label="Trigger">
+      <TriggerForm />
+    </ElFormItem>
   </ElForm>
 </template>

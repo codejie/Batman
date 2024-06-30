@@ -1,5 +1,7 @@
 import request from '@/axios'
 import {
+  CreateInstanceRequest,
+  CreateInstanceResponse,
   InfosRequest,
   InfosResponse,
   ListInstanceRequest,
@@ -27,6 +29,15 @@ export const apiRemove = (
 ): Promise<Response<RemoveInstanceResponse>> => {
   return request.post({
     url: '/strategy/remove',
+    data
+  })
+}
+
+export const apiCreate = (
+  data: CreateInstanceRequest
+): Promise<Response<CreateInstanceResponse>> => {
+  return request.post({
+    url: '/strategy/create',
     data
   })
 }

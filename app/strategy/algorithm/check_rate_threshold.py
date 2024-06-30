@@ -7,8 +7,8 @@ class CheckRateThresholdAlgorithm(Algorithm):
     name: str = '比率阈值检查'
     desc: str = '连续数据,后一与前一的比率大于(rate)'
     args: list[Argument] = [
-        Argument('days', 'number', '天', '连续天数(<=15days)', 5),
-        Argument('rate', 'number', '%', '变化比率', 10)
+        Argument('days', 'number', '天', '连续天数(<=15days)', None, 5),
+        Argument('rate', 'number', '%', '变化比率', None, 10)
     ]
     data: list[Data] = [
         Data('data', 'list or series', '连续序列数据')
