@@ -17,7 +17,7 @@ const props = defineProps({
 })
 
 defineExpose({
-  values: data
+  data
 })
 
 onMounted(() => {

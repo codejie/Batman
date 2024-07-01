@@ -29,13 +29,13 @@ onMounted(() => {
 const result = ref<any>(null)
 const argument = ref<any>(null)
 const algorithms = ref<any>(null)
+const trigger = ref<any>(null)
 defineExpose({
-  data: {
-    form,
-    result,
-    argument,
-    algorithms
-  }
+  form,
+  result,
+  argument,
+  algorithms,
+  trigger
 })
 </script>
 <template>
@@ -68,7 +68,7 @@ defineExpose({
       </ElFormItem>
     </div>
     <ElFormItem label="Trigger">
-      <TriggerForm />
+      <TriggerForm ref="trigger" />
     </ElFormItem>
   </ElForm>
 </template>

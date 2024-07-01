@@ -48,7 +48,7 @@ class Scheduler:
             return CronTrigger(day_of_week=trigger['days'], hour=trigger['hour'], minute=trigger['minute'])
         elif mode == TriggerMode.Delay.value:
             t = datetime.now() + timedelta(seconds=int(trigger['seconds']))
-            return CronTrigger(year=t.year, month=t.month, day=t.day, hour=t.hour, minute=t.minute, second=t.second)
+            return CronTrigger(year=t.year, month=t.month, day=t.day, hour=t.hour, minute=t.minute, second=0)
         elif mode == TriggerMode.Interval.value:
             return IntervalTrigger(seconds=int(trigger['seconds']))
         else:

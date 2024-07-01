@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, unref } from 'vue'
 import { ElRow, ElCol, ElSelect, ElOption, ElInput, ElTimePicker } from 'element-plus'
 
 const data = ref<{
@@ -16,6 +16,11 @@ const data = ref<{
   minute: 0,
   seconds: 30,
   period: false
+})
+
+defineExpose({
+  mode: unref(data).mode,
+  days: unref(data).days
 })
 
 const modeOptions = [
@@ -43,7 +48,11 @@ const daysOptions = [
     label: '全周'
   }
 ]
-const dailyTime = ref<string>('00:00')
+const dailyTime = ref<Date>()
+const onTimerChanged = (value) => {
+  data.value.hour = unref(value)?.getHours() || 0
+  data.value.minute = unref(value)?.getMinutes() || 0
+}
 </script>
 <template>
   <!-- <ElTable :data="data" border style="width: 100%">
@@ -87,7 +96,12 @@ const dailyTime = ref<string>('00:00')
       <ElRow :gutter="12" style="width: 100%">
         <ElCol :span="4" style="text-align: right">Hour</ElCol>
         <ElCol :span="20">
-          <ElTimePicker v-model="dailyTime" placeholder="select time" />
+          <ElTimePicker
+            v-model="dailyTime"
+            placeholder="select time"
+            format="HH:mm"
+            @change="onTimerChanged"
+          />
         </ElCol>
       </ElRow>
     </ElCol>
@@ -100,6 +114,7 @@ const dailyTime = ref<string>('00:00')
       </ElRow>
     </ElCol>
   </ElRow>
+  {{ dailyTime }}
 </template>
 
 <style>
