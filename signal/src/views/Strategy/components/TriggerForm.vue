@@ -19,8 +19,7 @@ const data = ref<{
 })
 
 defineExpose({
-  mode: unref(data).mode,
-  days: unref(data).days
+  data
 })
 
 const modeOptions = [
@@ -48,7 +47,7 @@ const daysOptions = [
     label: '全周'
   }
 ]
-const dailyTime = ref<Date>()
+const dailyTime = ref<Date>(new Date())
 const onTimerChanged = (value) => {
   data.value.hour = unref(value)?.getHours() || 0
   data.value.minute = unref(value)?.getMinutes() || 0
@@ -75,7 +74,7 @@ const onTimerChanged = (value) => {
         </ElCol>
       </ElRow>
     </ElCol>
-    <ElCol :span="12">
+    <ElCol :span="12" v-if="data.mode == 'daily'">
       <ElRow :gutter="12" style="width: 100%">
         <ElCol :span="4" style="text-align: right">Days</ElCol>
         <ElCol :span="20">

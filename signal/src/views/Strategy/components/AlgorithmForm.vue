@@ -20,6 +20,7 @@ const data = ref<
 >([])
 
 defineExpose({
+  name: props.name,
   data
 })
 

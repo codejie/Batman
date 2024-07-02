@@ -110,7 +110,7 @@ async def create(body: CreateInstanceRequest=Body()):
     return CreateInstanceResponse(result=id)
 
 """
-获取策略实例
+获取策略实例列表
 """
 class ListInstanceRequest(RequestModel):
     strategy: str | None = None
@@ -133,6 +133,28 @@ async def list(body: ListInstanceRequest=Body()):
                                  state=inst.state.value))
         
     return ListInstanceResponse(result=ret)
+"""
+获取策略实例详情
+"""
+class GetInstanceRequest(RequestModel):
+    id: str
+
+class GetInstanceResponse(ResponseModel):
+    result: InstanceModel
+
+@router.post('/get', response_model=GetInstanceResponse, response_model_exclude_none=True)
+async def get(body: GetInstanceRequest=Body()):
+    instance = strategyInstanceManager.get(id=body.id)
+    trigger = TriggerModel.model_validate(obj=instance.trigger)
+    return GetInstanceResponse(result=InstanceModel(
+        id=instance.id,
+        name=instance.name,
+        strategy=instance.strategy,
+        trigger=trigger,
+        arg_values=instance.arg_values,
+        algo_values=instance.algo_values,
+        state=instance.state.value        
+    ))
 
 """
 删除策略实例

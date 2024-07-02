@@ -1,38 +1,72 @@
 <script setup lang="ts">
-import { ref, unref } from 'vue'
+import { computed, ref, unref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { ContentDetailWrap } from '@/components/ContentDetailWrap'
-import CreateForm from '@/views/Strategy/filter/components/CreateForm.vue'
-import { CreateInstanceRequest } from '@/api/strategy/types'
+import CreateForm from '@/views/Strategy/Filter/components/CreateForm.vue'
+import { CreateInstanceRequest, TriggerModel } from '@/api/strategy/types'
+import { apiCreate } from '@/api/strategy'
 
 const { t } = useI18n()
 const { push, go } = useRouter()
 
 const form = ref<any>(null)
+const submitEnabled = computed(() => {
+  return unref(form)?.form.name && unref(form)?.form.strategy
+})
+
+function makeTrigger(): TriggerModel {
+  const trigger = unref(form).trigger.data
+  return {
+    mode: trigger.mode,
+    days: trigger.days,
+    hour: trigger.hour,
+    minute: trigger.minute,
+    seconds: trigger.seconds,
+    period: trigger.peroid
+  }
+}
+
+function makeArgValues(): any {
+  const data = unref(form).argument.data
+  const ret = {}
+  for (const item of data) {
+    ret[item.arg.name] = item.value
+  }
+  return ret
+}
+
+function makeAlgoValues(): any {
+  const algos = unref(form).algorithms
+  const ret = {}
+  for (const algo of algos) {
+    ret[algo.name] = {}
+    for (const item of algo.data) {
+      ret[algo.name][item.arg.name] = item.value
+    }
+  }
+  return ret
+}
 
 const loading = ref<boolean>(false)
 const onBtnSubmit = async () => {
+  console.log('submit')
   const req: CreateInstanceRequest = {
-    name: '',
-    trigger: {
-      mode: '',
-      days: undefined,
-      hour: undefined,
-      minute: undefined,
-      seconds: undefined,
-      period: false
-    },
-    arg_values: undefined,
-    algo_values: undefined
+    name: unref(form).form.name,
+    strategy: unref(form).form.strategy.id,
+    trigger: makeTrigger(),
+    arg_values: makeArgValues(),
+    algo_values: makeAlgoValues()
   }
+  const ret = await apiCreate(req)
+  console.log(ret)
 }
 </script>
 <template>
   <ContentDetailWrap :title="t('common.create')" @back="push('/strategy/filter')">
     <template #header>
       <BaseButton @click="go(-1)">{{ t('common.back') }}</BaseButton>
-      <BaseButton type="primary" :loading="loading" @click="onBtnSubmit">
+      <BaseButton type="primary" :disabled="!submitEnabled" :loading="loading" @click="onBtnSubmit">
         {{ t('common.submit') }}
       </BaseButton>
     </template>
@@ -40,5 +74,6 @@ const onBtnSubmit = async () => {
   </ContentDetailWrap>
   <div>
     {{ form }}
+    {{ submitEnabled }}
   </div>
 </template>

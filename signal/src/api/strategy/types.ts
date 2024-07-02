@@ -75,6 +75,7 @@ export type RemoveInstanceResponse = string
 
 export type CreateInstanceRequest = {
   name: string
+  strategy: string
   trigger: TriggerModel
   arg_values?: ArgumentValuesModel
   algo_values?: AlgorithValuesModel

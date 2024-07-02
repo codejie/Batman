@@ -10,7 +10,7 @@ import TriggerForm from '@/views/Strategy/components/TriggerForm.vue'
 
 const strategyList = ref<StrategyModel[]>([])
 const form = ref<{
-  name: string
+  name: String
   strategy?: StrategyModel
 }>({
   name: '',

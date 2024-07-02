@@ -80,9 +80,14 @@ class StrategyInstance:
             else:
                 raise AppException(f'strategy \'{self.name}\' missing argument \'{arg.name}\'')
         for algorithm in strategy.algorithms:
+            self.algo_values[algorithm.name] = {}
             vs = algo_values[algorithm.name] if algorithm.name in algo_values else {}
-            for args in algorithm.args:
-                if (not (args.name in vs)) and args.required:
+            for arg in algorithm.args:
+                if arg.name in vs:
+                    self.algo_values[algorithm.name][arg.name] = vs[arg.name]
+                elif not arg.required:
+                    self.algo_values[algorithm.name][arg.name] = arg.default
+                else:
                     raise AppException(f'algorithm \'{algorithm.name}\' missing argument \'{args.name}\'')
 
         # self.algo_values = algo_values # todo: check algorithm args
