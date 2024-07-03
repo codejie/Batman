@@ -20,7 +20,6 @@ const fetchInstanceList = async () => {
   for (const i of ret.result) {
     listInstance.value.push(i)
   }
-  console.log(unref(listInstance))
 }
 
 onMounted(() => {

@@ -6,6 +6,7 @@ import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import CreateForm from '@/views/Strategy/Filter/components/CreateForm.vue'
 import { CreateInstanceRequest, TriggerModel } from '@/api/strategy/types'
 import { apiCreate } from '@/api/strategy'
+import { ElMessage } from 'element-plus'
 
 const { t } = useI18n()
 const { push, go } = useRouter()
@@ -50,7 +51,7 @@ function makeAlgoValues(): any {
 
 const loading = ref<boolean>(false)
 const onBtnSubmit = async () => {
-  console.log('submit')
+  loading.value = true
   const req: CreateInstanceRequest = {
     name: unref(form).form.name,
     strategy: unref(form).form.strategy.id,
@@ -59,11 +60,18 @@ const onBtnSubmit = async () => {
     algo_values: makeAlgoValues()
   }
   const ret = await apiCreate(req)
-  console.log(ret)
+  loading.value = false
+  if (ret.code == 0) {
+    ElMessage({
+      message: `Strategy create successfully - ${ret.result}.`,
+      type: 'success'
+    })
+  }
+  push('/strategy/filter')
 }
 </script>
 <template>
-  <ContentDetailWrap :title="t('common.create')" @back="push('/strategy/filter')">
+  <ContentDetailWrap :title="t('common.create')">
     <template #header>
       <BaseButton @click="go(-1)">{{ t('common.back') }}</BaseButton>
       <BaseButton type="primary" :disabled="!submitEnabled" :loading="loading" @click="onBtnSubmit">
