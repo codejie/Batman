@@ -9,10 +9,13 @@ import AlgorithmForm from '@/views/Strategy/components/AlgorithmForm.vue'
 import TriggerForm from '@/views/Strategy/components/TriggerForm.vue'
 
 const strategyList = ref<StrategyModel[]>([])
-const form = ref<{
-  name: String
+
+interface Props {
+  name: string
   strategy?: StrategyModel
-}>({
+}
+
+const form = ref<Props>({
   name: '',
   strategy: undefined
 })

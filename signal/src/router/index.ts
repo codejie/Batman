@@ -92,7 +92,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
               noTagsView: true,
               noCache: true,
               hidden: true,
-              canTo: true,
+              showMainRoute: true,
               activeMenu: '/strategy/filter'
             }
           }

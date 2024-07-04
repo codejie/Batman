@@ -2,14 +2,16 @@
 import { ref, unref } from 'vue'
 import { ElRow, ElCol, ElSelect, ElOption, ElInput, ElTimePicker } from 'element-plus'
 
-const data = ref<{
-  mode: String
-  days: String
-  hour: Number
-  minute: Number
-  seconds: Number
-  period: Boolean
-}>({
+interface Props {
+  mode: string
+  days: string
+  hour: number
+  minute: number
+  seconds: number
+  period: boolean
+}
+
+const data = ref<Props>({
   mode: 'daily',
   days: '0-4',
   hour: 0,
