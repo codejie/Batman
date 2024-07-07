@@ -16,8 +16,8 @@ days:
 from datetime import datetime, timedelta
 from app.exception import AppException
 from app.logger import logger
-from app.strategy import Strategy, Type, Argument, Result
-from app.strategy.algorithm.m_up_n_down import MUpNDownAlgorithem
+from app.strategy import Strategy, Type, Argument, ResultField
+from app.strategy.algorithm.m_up_n_down import MUpNDownAlgorithem, CallbackType
 
 from app.database import stock
 
@@ -59,11 +59,26 @@ class RapidRaiseFallStrategy(Strategy):
                  default=18,
                  required=False)
     ]
-    results: list[Result] = [
-        Result(name='items',
-               type='list',
-               desc='结果集合'
-               )
+    """
+    result item: {
+        code
+        pos
+        date
+    }
+    """
+    result: list[ResultField] = [
+        ResultField(name='code',
+               type='string',
+               desc='代码'
+               ),
+         ResultField(name='position',
+               type='number',
+               desc='位置'
+               ),              
+        ResultField(name='date',
+               type='string',
+               desc='日期'
+               ),
     ]
 
     @staticmethod
@@ -71,6 +86,7 @@ class RapidRaiseFallStrategy(Strategy):
         logger.debug(f'Strategy \'{RapidRaiseFallStrategy.name}\' start.')
 
         try:
+            manager = kwargs['manager']
             id = kwargs['id']
             arg_values = kwargs['values']
             algo_values = kwargs['algo_values']
@@ -88,9 +104,13 @@ class RapidRaiseFallStrategy(Strategy):
             start = (datetime.today() - timedelta(days)).strftime('%Y-%m-%d')
             end = datetime.today().strftime('%Y-%m-%d')
 
-            # algorithm
+            # algorithm, only one algorithm in this strategy
+            results = []
             for code in codes:
-                RapidRaiseFallStrategy.__exec_algorithm(code, start, end, arg_values, algo_values)
+                RapidRaiseFallStrategy.__exec_algorithm(results, code, start, end, arg_values, algo_values)
+            
+            print(results)
+            manager.set_results(id, results)
 
         except Exception as e:
             logger.error(f'Strategy \'{RapidRaiseFallStrategy.name}\' failed - {e}')
@@ -98,10 +118,17 @@ class RapidRaiseFallStrategy(Strategy):
         logger.debug(f'Strategy \'{RapidRaiseFallStrategy.name}\' end.')
 
     @staticmethod
-    def __exec_algorithm(code: str, start: str, end: str, arg_values: dict, algo_values) -> None:
+    def __exec_algorithm(results: list, code: str, start: str, end: str, arg_values: dict, algo_values: dict) -> None:
 
         def callback(event: str, result: dict) -> bool:
-            logger.debug(f'{code} - {event} - {result}')
+            # logger.debug(f'{code} - {event} - {result}')
+            if event == CallbackType.HIT:
+                logger.debug(f'{code} - {event} - {result}')
+                results.append({
+                    'code': code,
+                    'position': result.pos,
+                    'date': df[columns[0]][result.pos]
+                })
             return True
 
         item = arg_values['item']
@@ -109,7 +136,7 @@ class RapidRaiseFallStrategy(Strategy):
         df = stock.get_history(code, start, end, columns)
 
         algorithm = MUpNDownAlgorithem()
-        algorithm.set_args(algo_values)
+        algorithm.set_args(algo_values[algorithm.name])
         algorithm.set_data({
             'open': df[columns[1]],
             'close': df[columns[2]]

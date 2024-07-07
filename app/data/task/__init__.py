@@ -22,6 +22,11 @@ def daily_update_check(**kwargs) -> None:
     logger.info('daily update check end.')
 
 def update_task() -> None:
+    # FOR TEST
+    # logger.info('daily update check start..')
+    # stock.update_daily()
+    # logger.info('daily update check end.')
+
     # daily update task
     trigger = {
         'mode': 'interval',

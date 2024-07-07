@@ -48,18 +48,17 @@ def insert(item: Item, latest: datetime, code: str = None) -> bool:
 def update(item: Item, latest: datetime, code: str = None) -> int:
     stmt = db_update(ItemUpdatedRecordTable).values(latest=latest)
     if code:
-        stmt = stmt.where(item==item, code==code)
+        stmt = stmt.where(ItemUpdatedRecordTable.item.__eq__(item.value), ItemUpdatedRecordTable.code.__eq__(code))
     else:
-        stmt = stmt.where(item==item)
+        stmt = stmt.where(ItemUpdatedRecordTable.item.__eq__(item.value))
     return dbEngine.update(stmt=stmt)
 
 def get_latest(item: Item, code: str = None) -> datetime | None:
     stmt = db_select(ItemUpdatedRecordTable).order_by(ItemUpdatedRecordTable.updated.desc())
     if code:
-        stmt = stmt.where(item==item, code==code)
+        stmt = stmt.where(ItemUpdatedRecordTable.item.__eq__(item.value), ItemUpdatedRecordTable.code.__eq__(code))
     else:
-        stmt = stmt.where(item==item)
-    
+        stmt = stmt.where(ItemUpdatedRecordTable.item.__eq__(item.value))
     result = dbEngine.select_one(stmt)
     if result:
         return result.latest

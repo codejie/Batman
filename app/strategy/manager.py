@@ -3,14 +3,16 @@
 Strategy Manger
 """
 
+from datetime import datetime
 import os
 import pickle
 from app.database import dbEngine, select, delete, insert, update
 from app.database.tables import TableBase, Column, String, Integer, DateTime, func
 from app.exception import AppException
-from app.task_scheduler import taskScheduler
+from app.task_scheduler import taskScheduler #, EVENT_JOB_REMOVED, EVENT_JOB_ADDED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
+from apscheduler.events import EVENT_JOB_REMOVED, EVENT_JOB_ADDED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
 from app.database.tables import TableBase
-from app.strategy import AppException, Strategy, StrategyInstance, Type
+from app.strategy import AppException, Strategy, StrategyInstance, Type, State
 
 from app.strategy.filter.rapid_raise_fall import RapidRaiseFallStrategy
 
@@ -54,6 +56,25 @@ class StategyInstanceTable(TableBase):
 class StrategyInstanceManager:
     def __init__(self) -> None:
         self.instances: dict[str, StrategyInstance] = {} # id + strategy instance
+        taskScheduler.register_listener(self.__on_scheduler_event)
+
+    def __on_scheduler_event(self, event: int, id: str) -> None:
+        instance = self.instances.get(id, None)
+        if not instance:
+            return None
+        if event == EVENT_JOB_ADDED:
+            instance.set_state(State.READY)
+        elif event == EVENT_JOB_EXECUTED:
+            instance.set_state(State.EXECUTED)
+        elif event == EVENT_JOB_ERROR:
+            instance.set_state(State.ERROR)
+        elif event == EVENT_JOB_MISSED:
+            instance.set_state(State.MISSED)
+        elif event == EVENT_JOB_REMOVED:
+            instance.set_state(State.REMOVED)
+            instance.set_removed(True)
+        else:
+            pass
 
     def __load_instances(self) -> None:
         try:
@@ -71,13 +92,15 @@ class StrategyInstanceManager:
         file = self.__make_local_file(id)
         with open(file, 'rb') as input:
             instance = pickle.load(input)
-            id = self.__schedule(instance)
+            if not instance.is_removed:
+                self.__schedule(instance)
             self.instances[id] = instance
 
     def __schedule(self, instance: StrategyInstance) -> str:
         strategy = StrategyManager.get(instance.strategy)
         if strategy:
             kwargs = {
+                'manager': self,
                 'id': instance.id,
                 'values': instance.arg_values,
                 'algo_values': instance.algo_values
@@ -128,13 +151,19 @@ class StrategyInstanceManager:
         else:
             raise AppException(f'instance \'{id}\' not found.')
         
-    def list(self, strategy: str = None) -> list[StrategyInstance]:
+    def list(self, strategy: str = None, type: Type = None) -> list[StrategyInstance]:
         if strategy:
             ret = []
             for i in self.instances.values():
                 if i.strategy == strategy:
                     ret.append(i)
             return ret
+        elif type:
+            ret = []
+            for i in self.instances.values():
+                if i.type == type:
+                    ret.append(i)
+            return ret            
         else:
             return list(self.instances.values())
     
@@ -145,7 +174,7 @@ class StrategyInstanceManager:
 
         try:
             id = taskScheduler.make_id()
-            instance = StrategyInstance(id, name, strategy, trigger)
+            instance = StrategyInstance(stgy.type, id, name, strategy, trigger)
             instance.set_args(stgy, values, algo_values)
             
             self.__schedule(instance)
@@ -158,9 +187,10 @@ class StrategyInstanceManager:
         
     def remove(self, id: str) -> str:
         try:
-            taskScheduler.remove_job(id)
-            self.__remove(id)  
             instance = self.instances.pop(id)
+            self.__remove(id)  
+            if instance and not instance.is_removed:
+                taskScheduler.remove_job(id)
             return instance.id
         except Exception as e:
             raise AppException(e)
@@ -184,5 +214,15 @@ class StrategyInstanceManager:
             return self.__update(instance)
         except Exception as e:
             raise AppException(e)
+        
+    def set_results(self, id: str, results: list) -> str:
+        try:
+            instance = self.get(id)
+            instance.results = results
+            instance.latest_updated = datetime.now()    
+            
+            return self.__update(instance)
+        except Exception as e:
+            raise AppException(e)
 
-strategyInstanceManager = StrategyInstanceManager()    
+strategyInstanceManager = StrategyInstanceManager() 

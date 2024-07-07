@@ -48,9 +48,11 @@ export type InstanceModel = {
     name: string
     strategy: string
     trigger: TriggerModel
-    arg_values?: any
-    algo_values?: any
+    arg_values?: ArgumentValuesModel
+    algo_values?: AlgorithValuesModel
+    results?: Array<any>
     state: number
+    is_remove: boolean
 }
 
 // Request & Response

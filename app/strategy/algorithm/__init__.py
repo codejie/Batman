@@ -109,7 +109,7 @@ class Algorithm(metaclass=ABCMeta):
             self.pos += 1
 
         if self.callback:
-            self.callback(CallbackType.value, {
+            self.callback(CallbackType.END.value, {
                 'broken': broken
             })            
 

@@ -31,11 +31,6 @@ async def lifespan(app: FastAPI):
         logger.debug('========strategyInstanceManager startup')
         strategyInstanceManager.start()
 
-        # logger.info('system init data check, maybe take a long long time while fist run , please wait..')
-        # init_check()
-        # logger.info('system init data check end.')
-
-        # register_system_check()
     except Exception as e:
         logger.error(f'service start error - {e}')
     yield

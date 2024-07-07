@@ -38,7 +38,7 @@ def fetch_history(code: str, start: datetime, end: datetime, period: str = 'dail
     if not df.empty:
         table = TableName.make_stock_history_name(code, period, adjust)
         df.to_sql(name=table, con=dbEngine.get_engine(), if_exists=if_exists, index=False)
-    logger.debug(f'{debug.__function__()}() called end')
+    logger.debug(f'{code} - {debug.__function__()}() called end')
 
 """
 个股深沪港股通持股数据（北向资金）
@@ -50,7 +50,7 @@ def fetch_hsgt(code: str, if_exists: str = 'replace') -> None:
         table = TableName.make_stock_hsgt_name(code)
         df = df[::-1]
         df.to_sql(name=table, con=dbEngine.get_engine(), if_exists=if_exists, index=False)
-    logger.debug(f'{debug.__function__()}() called end')
+    logger.debug(f'{code} - {debug.__function__()}() called end')
 
 """
 个股融资融券数据
@@ -73,4 +73,4 @@ def fetch_margin(codes: list, start: datetime, end: datetime, if_exists: str = '
         except Exception as e:
             logger.warn(f'{utils.date2String2(start)} fetch_margin() fail - {e}')
         start += delta
-    logger.debug(f'{debug.__function__()}() called end')
+    logger.debug(f'{utils.date2String2(start)} - {debug.__function__()}() called end')

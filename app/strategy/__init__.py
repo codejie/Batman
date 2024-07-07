@@ -1,6 +1,7 @@
 """
 策略基类
 """
+from datetime import datetime
 from enum import Enum
 from app.exception import AppException
 from app.strategy.algorithm import Algorithm
@@ -19,7 +20,7 @@ class Argument:
         self.default = default
         self.required = required
     
-class Result:
+class ResultField:
     def __init__(self, name: str, type: str, desc: str = None) -> None:
         self.name = name
         self.type = type
@@ -38,7 +39,7 @@ class Strategy:
     desc: str
     args: list[Argument] = None
     algorithms: list[Algorithm] = None
-    results: list[Result] = None
+    result: list[ResultField] = None
     
     @staticmethod
     def func(**kwargs) -> None:
@@ -56,19 +57,28 @@ Strategy Instance
 class State(Enum):
     INIT = 0
     READY = 1
-    RUNNING = 2
-    PAUSED = 3
+    EXECUTED = 2
+    ERROR = 3
+    MISSED = 4
+    REMOVED = 5
+    PAUSED = 6
 
 class StrategyInstance:
-    def __init__(self, id: str, name: str, strategy: str, trigger: dict) -> None:
+    def __init__(self, type: Type, id: str, name: str, strategy: str, trigger: dict) -> None:
+        self.type = type
         self.id: str = id
         self.name: str = name
         self.strategy: str = strategy # strategy.id
         self.trigger: dict = trigger
 
-        self.state = State.READY
         self.arg_values: dict = {}
         self.algo_values: dict[str, dict] = {}
+        self.results: list = None
+        self.latest_updated: datetime = None
+        
+        self.state = State.READY
+        self.is_removed = False
+
 
     def set_args(self, strategy: Strategy, values: dict, algo_values: dict[str, dict] | None = None) -> None:
         args = strategy.args
@@ -96,7 +106,11 @@ class StrategyInstance:
         self.trigger = trigger
 
     def set_state(self, state: State) -> None:
-        self.state = state
+        if not self.is_removed:
+            self.state = state
+
+    def set_removed(self, removed: bool) -> None:
+        self.is_removed = removed
 
     def get_func() -> callable:
         pass

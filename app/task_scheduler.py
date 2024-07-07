@@ -9,6 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.base import BaseTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.events import EVENT_JOB_REMOVED, EVENT_JOB_ADDED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
 
 from app.exception import AppException
 
@@ -32,12 +33,21 @@ class TriggerMode(Enum):
 class Scheduler:
     def __init__(self) -> None:
         self.scheduler = BackgroundScheduler()
+        self.listListener = []
+        self.scheduler.add_listener(callback=self.job_listener, mask=EVENT_JOB_ADDED | EVENT_JOB_REMOVED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR | EVENT_JOB_MISSED)
+
+    def job_listener(self, event: any):
+        for listener in self.listListener:
+            listener(event.code, event.job_id)
 
     def start(self):
         self.scheduler.start()
 
     def shutdown(self):
         self.scheduler.shutdown(False)
+
+    def register_listener(self, callback: callable) -> None:
+        self.listListener.append(callback)
     
     def make_id(self) -> str:
         return datetime.today().strftime('%Y%m%d%H%M%S%f')
@@ -48,7 +58,7 @@ class Scheduler:
             return CronTrigger(day_of_week=trigger['days'], hour=trigger['hour'], minute=trigger['minute'])
         elif mode == TriggerMode.Delay.value:
             t = datetime.now() + timedelta(seconds=int(trigger['seconds']))
-            return CronTrigger(year=t.year, month=t.month, day=t.day, hour=t.hour, minute=t.minute, second=0)
+            return CronTrigger(year=t.year, month=t.month, day=t.day, hour=t.hour, minute=t.minute, second=t.second)
         elif mode == TriggerMode.Interval.value:
             return IntervalTrigger(seconds=int(trigger['seconds']))
         else:

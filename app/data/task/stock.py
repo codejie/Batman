@@ -80,6 +80,7 @@ def update_daily_history(symbols: DataFrame) -> None:
      for i, r in symbols.iterrows():
         code = r['code']
         start, end, is_update = records.get_start_end(records.Item.STOCK_DAILY_HISTORY, code)
+        # print(f'{code} - {start} - {end} - {is_update} ------ update daily_history')        
         if start < end:
             local.fetch_history(code, start, end, if_exists='append')
             records.set_latest(records.Item.STOCK_DAILY_HISTORY, end, code, is_update)

@@ -1,5 +1,5 @@
 from app.routers.definition import BaseModel, RequestModel, ResponseModel, APIRouter, Depends, Body, verify_token
-from app.strategy import Type, Argument, Result
+from app.strategy import Type
 from app.strategy.manager import StrategyManager, strategyInstanceManager
 
 router: APIRouter = APIRouter(prefix='/strategy', tags=['strategy'], dependencies=[Depends(verify_token)])
@@ -24,7 +24,7 @@ class ArgumentModel(BaseModel):
     default: str | int | float | list | dict | None = None
     required: bool = True
 
-class ResultModel(BaseModel):
+class ResultFieldModel(BaseModel):
     name: str
     type: str
     desc: str 
@@ -36,7 +36,7 @@ class StrategyModel(BaseModel):
     desc: str
     args: list[ArgumentModel] = None
     algorithms: list[str] = None
-    results: list[ResultModel] = None
+    result: list[ResultFieldModel] = None
 
 class InstanceModel(BaseModel):
     id: str
@@ -45,7 +45,10 @@ class InstanceModel(BaseModel):
     trigger: TriggerModel
     arg_values: dict | None = None
     algo_values: dict[str, dict] | None = None
+    results: list | None = None
+    latest_updated: str | None = None
     state: int = 0
+    is_removed: bool = False
 """
 获取策略列表信息
 """
@@ -70,9 +73,9 @@ async def infos(body: InfosRequest=Body()):
                                       value=a.value,
                                       default=a.default,
                                       required=a.required))
-        rs: list[ResultModel] = []    
-        for r in s.results:
-            rs.append(ResultModel(name=r.name,
+        rs: list[ResultFieldModel] = []    
+        for r in s.result:
+            rs.append(ResultFieldModel(name=r.name,
                                   type=r.type,
                                   desc=r.desc))
 
@@ -86,7 +89,7 @@ async def infos(body: InfosRequest=Body()):
                               desc=s.desc,
                               args=args,
                               algorithms=algos,
-                              results=rs))
+                              result=rs))
 
     return InfosResponse(result=ret)
 
@@ -114,14 +117,23 @@ async def create(body: CreateInstanceRequest=Body()):
 """
 class ListInstanceRequest(RequestModel):
     strategy: str | None = None
+    type: str | None = None
 
 class ListInstanceResponse(ResponseModel):
     result: list[InstanceModel]
 
 @router.post('/list', response_model=ListInstanceResponse, response_model_exclude_none=True)
 async def list(body: ListInstanceRequest=Body()):
+    type = None
+    if body.type:
+        if body.type.upper() == Type.FILTER.name:
+            type = Type.FILTER
+        elif body.type.upper() == Type.TRADE.name:
+            type = Type.TRADE
+        else:
+            type = None
     ret = []
-    instances = strategyInstanceManager.list(body.strategy)
+    instances = strategyInstanceManager.list(body.strategy, type)
     for inst in instances:
         trigger = TriggerModel.model_validate(obj=inst.trigger)
         ret.append(InstanceModel(id=inst.id,
@@ -130,7 +142,10 @@ async def list(body: ListInstanceRequest=Body()):
                                  trigger=trigger,
                                  arg_values=inst.arg_values,
                                  algo_values=inst.algo_values,
-                                 state=inst.state.value))
+                                 results=inst.results,
+                                 latest_updated=inst.latest_updated,
+                                 state=inst.state.value,
+                                 is_removed=inst.is_removed))
         
     return ListInstanceResponse(result=ret)
 """
@@ -153,7 +168,10 @@ async def get(body: GetInstanceRequest=Body()):
         trigger=trigger,
         arg_values=instance.arg_values,
         algo_values=instance.algo_values,
-        state=instance.state.value        
+        results=instance.results,
+        latest_updated=instance.latest_updated,        
+        state=instance.state.value,
+        is_removed=instance.is_removed    
     ))
 
 """

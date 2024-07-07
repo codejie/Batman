@@ -57,6 +57,7 @@ class MUpNDownAlgorithem(Algorithm):
             self.downCount = 0
 
         if (self.upCount >= self.up_count) and (self.downCount >= self.down_count):
+            print(f'=======================HIT {self.pos}')
             if self.callback:
                 ret = self.callback(CallbackType.HIT.value, {
                     'pos': self.pos
