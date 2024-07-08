@@ -3,6 +3,8 @@
 """
 from datetime import datetime, timedelta
 from enum import Enum
+
+from sqlalchemy.sql import and_
 from app.database.tables import TableBase, Column, Integer, String, DateTime, func
 from app.database import dbEngine, insert as db_insert, select as db_select, update as db_update
 
@@ -48,17 +50,17 @@ def insert(item: Item, latest: datetime, code: str = None) -> bool:
 def update(item: Item, latest: datetime, code: str = None) -> int:
     stmt = db_update(ItemUpdatedRecordTable).values(latest=latest)
     if code:
-        stmt = stmt.where(ItemUpdatedRecordTable.item.__eq__(item.value), ItemUpdatedRecordTable.code.__eq__(code))
+        stmt = stmt.where(and_(ItemUpdatedRecordTable.item == item.value, ItemUpdatedRecordTable.code == code))
     else:
-        stmt = stmt.where(ItemUpdatedRecordTable.item.__eq__(item.value))
+        stmt = stmt.where(ItemUpdatedRecordTable.item == item.value)
     return dbEngine.update(stmt=stmt)
 
 def get_latest(item: Item, code: str = None) -> datetime | None:
     stmt = db_select(ItemUpdatedRecordTable).order_by(ItemUpdatedRecordTable.updated.desc())
     if code:
-        stmt = stmt.where(ItemUpdatedRecordTable.item.__eq__(item.value), ItemUpdatedRecordTable.code.__eq__(code))
+        stmt = stmt.where(and_(ItemUpdatedRecordTable.item == item.value, ItemUpdatedRecordTable.code == code))
     else:
-        stmt = stmt.where(ItemUpdatedRecordTable.item.__eq__(item.value))
+        stmt = stmt.where(ItemUpdatedRecordTable.item == item.value)  
     result = dbEngine.select_one(stmt)
     if result:
         return result.latest

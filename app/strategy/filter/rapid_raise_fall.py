@@ -107,9 +107,7 @@ class RapidRaiseFallStrategy(Strategy):
             # algorithm, only one algorithm in this strategy
             results = []
             for code in codes:
-                RapidRaiseFallStrategy.__exec_algorithm(results, code, start, end, arg_values, algo_values)
-            
-            print(results)
+                results.extend(RapidRaiseFallStrategy.__exec_algorithm(code, start, end, arg_values, algo_values))
             manager.set_results(id, results)
 
         except Exception as e:
@@ -118,16 +116,16 @@ class RapidRaiseFallStrategy(Strategy):
         logger.debug(f'Strategy \'{RapidRaiseFallStrategy.name}\' end.')
 
     @staticmethod
-    def __exec_algorithm(results: list, code: str, start: str, end: str, arg_values: dict, algo_values: dict) -> None:
+    def __exec_algorithm(code: str, start: str, end: str, arg_values: dict, algo_values: dict) -> list:
+        results = []
 
-        def callback(event: str, result: dict) -> bool:
+        def callback(event: CallbackType, result: dict) -> bool:
             # logger.debug(f'{code} - {event} - {result}')
             if event == CallbackType.HIT:
-                logger.debug(f'{code} - {event} - {result}')
                 results.append({
                     'code': code,
-                    'position': result.pos,
-                    'date': df[columns[0]][result.pos]
+                    'position': result['pos'],
+                    'date': df[columns[0]][result['pos']]
                 })
             return True
 
@@ -143,3 +141,5 @@ class RapidRaiseFallStrategy(Strategy):
         })
         algorithm.set_callback(callback)
         algorithm.run()
+
+        return results

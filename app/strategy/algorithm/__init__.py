@@ -57,7 +57,7 @@ class CallbackType(Enum):
     HIT = 'hit'
     END = 'end'
     
-AlgorithmCallback: TypeAlias = Callable[[str, dict], bool]
+AlgorithmCallback: TypeAlias = Callable[[CallbackType, dict], bool]
 
 class Algorithm(metaclass=ABCMeta):
     name: str = 'Algorithm'
@@ -95,23 +95,23 @@ class Algorithm(metaclass=ABCMeta):
     def run(self, start: int = 0) -> None:
         self.pos = start
 
-        if self.callback:
-            self.callback(CallbackType.START.value, {
-                'pos': self.pos,
-                'size': self.size
-            })
+        # if self.callback:
+        #     self.callback(CallbackType.START, {
+        #         'pos': self.pos,
+        #         'size': self.size
+        #     })
 
-        broken: bool = False
+        # broken: bool = False
         while self.pos < self.size:
             if not self.next():
-                broken = True
+                # broken = True
                 break
             self.pos += 1
 
-        if self.callback:
-            self.callback(CallbackType.END.value, {
-                'broken': broken
-            })            
+        # if self.callback:
+        #     self.callback(CallbackType.END, {
+        #         'broken': broken
+        #     })            
 
     @abstractmethod
     def next(self) -> bool:

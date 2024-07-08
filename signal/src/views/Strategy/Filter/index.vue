@@ -41,8 +41,8 @@ const onBtnCreate = () => {
   push('/strategy/filter/create')
 }
 
-function onDetail(id: string) {
-  console.log(id)
+function onDetail(instance: InstanceModel) {
+  
 }
 
 function makeState(instance: InstanceModel): string {
@@ -67,6 +67,19 @@ function makeState(instance: InstanceModel): string {
     default:
       return 'Unknown'
   }
+}
+
+function makeUpdated(str: string): string {
+  const date = new Date(str)
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+}
+
+function makeResult(instance: InstanceModel): string {
+  const results = instance.results
+  if (!results) {
+    return '-'
+  }
+  return `${results.length}`
 }
 
 async function onDelete(id: string) {
@@ -112,10 +125,20 @@ async function onDelete(id: string) {
         </template>
       </ElTableColumn>
       <ElTableColumn prop="strategy" label="Strategy" width="200" />
+      <ElTableColumn label="Hit Results" width="120">
+        <template #default="scope">
+          {{ makeResult(scope.row) }}
+        </template>
+      </ElTableColumn>
+      <ElTableColumn prop="latest_updated" label="Updated" width="200">
+        <template #default="scope">
+          {{ makeUpdated(scope.row.latest_updated) }}
+        </template>
+      </ElTableColumn>
       <ElTableColumn prop="id" label="ID" width="200" />
       <ElTableColumn fixed="right" label="Operations" min-width="120">
         <template #default="scope">
-          <ElButton link type="primary" size="small" @click="onDetail(scope.row.id)">Detail</ElButton>
+          <ElButton link type="primary" size="small" @click="onDetail(scope.row)">Detail</ElButton>
           <ElButton link type="primary" size="small" @click="onDelete(scope.row.id)">Delete</ElButton>
         </template>
       </ElTableColumn>

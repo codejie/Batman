@@ -1,3 +1,4 @@
+from datetime import datetime
 from app.routers.definition import BaseModel, RequestModel, ResponseModel, APIRouter, Depends, Body, verify_token
 from app.strategy import Type
 from app.strategy.manager import StrategyManager, strategyInstanceManager
@@ -46,7 +47,7 @@ class InstanceModel(BaseModel):
     arg_values: dict | None = None
     algo_values: dict[str, dict] | None = None
     results: list | None = None
-    latest_updated: str | None = None
+    latest_updated: datetime | None = None
     state: int = 0
     is_removed: bool = False
 """
