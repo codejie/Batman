@@ -2,11 +2,10 @@
 import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { apiList, apiRemove } from '@/api/strategy'
+import { apiList, apiRemove, apiReset } from '@/api/strategy'
 import { onMounted, ref, unref } from 'vue'
-import { ElTable, ElTableColumn, ElButton, ElMessageBox, ElMessage } from 'element-plus'
+import { ElTable, ElTableColumn, ElButton, ElMessageBox, ElMessage, ElDialog } from 'element-plus'
 import { InstanceModel } from '@/api/strategy/types'
-// import { useEmitt } from '@/hooks/event/useEmitt'
 
 // defineOptions({
 //   name: 'Filter'
@@ -22,7 +21,8 @@ const { push } = useRouter()
 //     console.log('back.....')
 //   }
 // })
-
+const detailDialogVisible = ref(false)
+const selectInstance = ref<InstanceModel>()
 const listInstance = ref<InstanceModel[]>([])
 
 const fetchInstanceList = async () => {
@@ -42,11 +42,12 @@ const onBtnCreate = () => {
 }
 
 function onDetail(instance: InstanceModel) {
-  
+  selectInstance.value = instance
+  detailDialogVisible.value = true
 }
 
 function makeState(instance: InstanceModel): string {
-  if (instance.is_remove) {
+  if (instance.is_removed) {
     return 'Removed'
   }
   switch(instance.state) {
@@ -70,8 +71,12 @@ function makeState(instance: InstanceModel): string {
 }
 
 function makeUpdated(str: string): string {
-  const date = new Date(str)
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+  if (str) {
+    const date = new Date(str)
+    return `${date.getFullYear()}-${date.getMonth()}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+  } else {
+    return '-'
+  }
 }
 
 function makeResult(instance: InstanceModel): string {
@@ -110,12 +115,42 @@ async function onDelete(id: string) {
     await fetchInstanceList()
   }
 }
+
+async function onReset(id: string) {
+  const ret = await ElMessageBox.confirm(
+    `reset strategy instance '${id}'?`,
+    'Information', 
+    {
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No',
+      type: 'info'
+    }
+  )
+  if (ret === 'confirm') {
+    const r = await apiReset({
+      id: id
+    })
+    if (r.code == 0) {
+      ElMessage({
+        type: 'success',
+        message: 'strategy instance be reseted.'
+      })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: 'reset strategy instance failed.'
+      })
+    }
+    await fetchInstanceList()
+  }
+}
 </script>
 
 <template>
   <ContentWrap title="Filter Strategy Instance">
     <div class="mb-10px">
-      <BaseButton type="primary" @click="onBtnCreate">{{ t('common.create') }}</BaseButton>
+      <!-- <BaseButton type="primary" @click="onBtnCreate">{{ t('common.create') }}</BaseButton> -->
+      <ElButton type="primary" @click="onBtnCreate">{{ t('common.create') }}</ElButton>
     </div>
     <ElTable :data="unref(listInstance)" border style="width: 100%">
       <ElTableColumn prop="name" label="Name" width="180" />
@@ -138,10 +173,12 @@ async function onDelete(id: string) {
       <ElTableColumn prop="id" label="ID" width="200" />
       <ElTableColumn fixed="right" label="Operations" min-width="120">
         <template #default="scope">
-          <ElButton link type="primary" size="small" @click="onDetail(scope.row)">Detail</ElButton>
-          <ElButton link type="primary" size="small" @click="onDelete(scope.row.id)">Delete</ElButton>
+          <ElButton link type="primary" @click="onDetail(scope.row)">Detail</ElButton>
+          <ElButton link type="info" :disabled="scope.row.is_removed == false" @click="onReset(scope.row.id)">Reset</ElButton>          
+          <ElButton link type="danger" @click="onDelete(scope.row.id)">Delete</ElButton>
         </template>
       </ElTableColumn>
     </ElTable>
+    <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" />
   </ContentWrap>
 </template>

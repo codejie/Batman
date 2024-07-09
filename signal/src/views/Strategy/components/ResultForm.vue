@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ResultModel } from '@/api/strategy/types'
+import { ResultFieldModel } from '@/api/strategy/types'
 import { PropType } from 'vue'
 import { ElTable, ElTableColumn } from 'element-plus'
 
 const props = defineProps({
   results: {
-    type: Array as PropType<ResultModel[]>
+    type: Array as PropType<ResultFieldModel[]>
   }
 })
 </script>

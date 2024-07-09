@@ -37,7 +37,7 @@ class StrategyModel(BaseModel):
     desc: str
     args: list[ArgumentModel] = None
     algorithms: list[str] = None
-    result: list[ResultFieldModel] = None
+    result_fields: list[ResultFieldModel] = None
 
 class InstanceModel(BaseModel):
     id: str
@@ -75,7 +75,7 @@ async def infos(body: InfosRequest=Body()):
                                       default=a.default,
                                       required=a.required))
         rs: list[ResultFieldModel] = []    
-        for r in s.result:
+        for r in s.result_fields:
             rs.append(ResultFieldModel(name=r.name,
                                   type=r.type,
                                   desc=r.desc))
@@ -90,7 +90,7 @@ async def infos(body: InfosRequest=Body()):
                               desc=s.desc,
                               args=args,
                               algorithms=algos,
-                              result=rs))
+                              result_fields=rs))
 
     return InfosResponse(result=ret)
 
@@ -203,3 +203,17 @@ class RescheduleInstanceResponse(ResponseModel):
 async def reschedule(body: RescheduleInstanceRequest=Body()):
     id = strategyInstanceManager.set_trigger(body.id, dict(body.trigger))
     return RescheduleInstanceResponse(result=id)
+
+"""
+重置被删除的实例
+"""
+class ResetInstanceRequest(RequestModel):
+    id: str
+
+class ResetInstanceResponse(ResponseModel):
+    result: str | None = None
+
+@router.post('/reset', response_model=ResetInstanceResponse, response_model_exclude_none=True)
+async def reschedule(body: ResetInstanceRequest=Body()):
+    id = strategyInstanceManager.reset(body.id)
+    return ResetInstanceResponse(result=id)

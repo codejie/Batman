@@ -39,7 +39,7 @@ class Strategy:
     desc: str
     args: list[Argument] = None
     algorithms: list[Algorithm] = None
-    result: list[ResultField] = None
+    result_fields: list[ResultField] = None
     
     @staticmethod
     def func(**kwargs) -> None:
@@ -75,6 +75,7 @@ class StrategyInstance:
         self.algo_values: dict[str, dict] = {}
         self.results: list = None
         self.latest_updated: datetime = None
+        self.run_times = 0
         
         self.state = State.READY
         self.is_removed = False
@@ -106,6 +107,8 @@ class StrategyInstance:
         self.trigger = trigger
 
     def set_state(self, state: State) -> None:
+        if state == State.REMOVED:
+            self.is_removed = True
         if not self.is_removed:
             self.state = state
 

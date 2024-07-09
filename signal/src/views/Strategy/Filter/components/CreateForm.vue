@@ -56,7 +56,7 @@ defineExpose({
     </ElFormItem> -->
     <div v-if="form.strategy">
       <ElFormItem label="Strategy Results">
-        <ResultForm ref="result" :results="form.strategy.results" />
+        <ResultForm ref="result" :results="form.strategy.result_fields" />
       </ElFormItem>
       <ElFormItem label="Strategy Arguments">
         <ArgumentForm ref="argument" :args="form.strategy.args" />

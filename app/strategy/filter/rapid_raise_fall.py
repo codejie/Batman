@@ -6,13 +6,14 @@ symbols:
     - all stock
     - special stock list
 codes:
-    - list[code]
+    - dataframe([code,name])
 item:
     - open/close
     - low/high
 days:
     number
 """
+from pandas import DataFrame
 from datetime import datetime, timedelta
 from app.exception import AppException
 from app.logger import logger
@@ -34,12 +35,12 @@ class RapidRaiseFallStrategy(Strategy):
                  desc='筛选范围',
                  value=[
                      { 'value': 'all', 'desc' : '所有A股股票'},
-                     { 'value': 'list', 'desc': '指定股票代码列表'}
+                     { 'value': 'list', 'desc': '指定股票代码列表(code,name)'}
                     ],
                  default='all',
                  required=False),
         Argument(name='codes',
-                 type='list',
+                 type='dataframe',
                  desc='指定的股票代码列表',
                  default=None,
                  required=False),
@@ -66,11 +67,15 @@ class RapidRaiseFallStrategy(Strategy):
         date
     }
     """
-    result: list[ResultField] = [
+    result_fields: list[ResultField] = [
         ResultField(name='code',
                type='string',
                desc='代码'
                ),
+        ResultField(name='name',
+               type='string',
+               desc='名称'
+               ),               
          ResultField(name='position',
                type='number',
                desc='位置'
@@ -92,22 +97,22 @@ class RapidRaiseFallStrategy(Strategy):
             algo_values = kwargs['algo_values']
 
             # arg_values
-            codes = arg_values['codes'] if 'codes' in arg_values else None
             symbols = arg_values['symbols']
+            codes: DataFrame = DataFrame(arg_values['codes']) if 'codes' in arg_values else None
             if symbols == 'all':
                 df = stock.get_a_list()
-                codes = df['code'].to_list()
-            if not codes:
+                # codes = df['code'].to_list()
+                codes = df[['code', 'name']]
+            if codes.empty:
                 raise AppException('codes list is empty.')
-
             days = arg_values['days']
             start = (datetime.today() - timedelta(days)).strftime('%Y-%m-%d')
             end = datetime.today().strftime('%Y-%m-%d')
 
             # algorithm, only one algorithm in this strategy
             results = []
-            for code in codes:
-                results.extend(RapidRaiseFallStrategy.__exec_algorithm(code, start, end, arg_values, algo_values))
+            for _, row in codes.iterrows():
+                results.extend(RapidRaiseFallStrategy.__exec_algorithm(row['code'], row['name'], start, end, arg_values, algo_values))
             manager.set_results(id, results)
 
         except Exception as e:
@@ -116,7 +121,7 @@ class RapidRaiseFallStrategy(Strategy):
         logger.debug(f'Strategy \'{RapidRaiseFallStrategy.name}\' end.')
 
     @staticmethod
-    def __exec_algorithm(code: str, start: str, end: str, arg_values: dict, algo_values: dict) -> list:
+    def __exec_algorithm(code: str, name: str, start: str, end: str, arg_values: dict, algo_values: dict) -> list:
         results = []
 
         def callback(event: CallbackType, result: dict) -> bool:
@@ -124,6 +129,7 @@ class RapidRaiseFallStrategy(Strategy):
             if event == CallbackType.HIT:
                 results.append({
                     'code': code,
+                    'name': name,
                     'position': result['pos'],
                     'date': df[columns[0]][result['pos']]
                 })

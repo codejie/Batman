@@ -57,11 +57,22 @@ app.add_middleware(
 @app.exception_handler(AppException)
 async def app_exception_handler(request: Request, e: AppException):
     return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        status_code=status.HTTP_200_OK,
         content=jsonable_encoder(
             {
                 'code': e.code,
                 'message': e.message
+            }
+        ))
+
+@app.exception_handler(Exception)
+async def app_exception_handler(request: Request, e: Exception):
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content=jsonable_encoder(
+            {
+                'code': -99,
+                'message': str(e)
             }
         ))
 

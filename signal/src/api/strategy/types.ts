@@ -8,7 +8,7 @@ export type ArgumentModel = {
   required: boolean
 }
 
-export type ResultModel = {
+export type ResultFieldModel = {
   name: string
   type?: string
   desc?: string  
@@ -21,7 +21,7 @@ export type StrategyModel = {
   desc: string
   args?: ArgumentModel[]
   algorithms?: string[]
-  results?: ResultModel[]
+  result_fields?: ResultFieldModel[]
 }
 
 export type TriggerModel = {
@@ -53,7 +53,7 @@ export type InstanceModel = {
     results?: Array<any>
     latest_updated?: Date
     state: number
-    is_remove: boolean
+    is_removed: boolean
 }
 
 // Request & Response
@@ -85,3 +85,9 @@ export type CreateInstanceRequest = {
 }
 
 export type CreateInstanceResponse = string
+
+export type ResetInstanceRequest = {
+  id: string
+}
+
+export type ResetInstanceResponse = string

@@ -59,22 +59,20 @@ class StrategyInstanceManager:
         taskScheduler.register_listener(self.__on_scheduler_event)
 
     def __on_scheduler_event(self, event: int, id: str) -> None:
-        instance = self.instances.get(id, None)
-        if not instance:
-            return None
+        state = State.INIT
         if event == EVENT_JOB_ADDED:
-            instance.set_state(State.READY)
+            state = State.READY
         elif event == EVENT_JOB_EXECUTED:
-            instance.set_state(State.EXECUTED)
+            state = State.EXECUTED
         elif event == EVENT_JOB_ERROR:
-            instance.set_state(State.ERROR)
+            state = State.ERROR
         elif event == EVENT_JOB_MISSED:
-            instance.set_state(State.MISSED)
+            state = State.MISSED
         elif event == EVENT_JOB_REMOVED:
-            instance.set_state(State.REMOVED)
-            instance.set_removed(True)
+            state = State.REMOVED
         else:
-            pass
+            pass          
+        self.set_state(id, state)
 
     def __load_instances(self) -> None:
         try:
@@ -125,7 +123,7 @@ class StrategyInstanceManager:
         with open(file, 'wb') as output:
             pickle.dump(instance, output)
 
-        stmt = update(StategyInstanceTable).where(StategyInstanceTable.id.__eq__(instance.id)).values(updated=func.now())
+        stmt = update(StategyInstanceTable).where(StategyInstanceTable.id == instance.id).values(updated=func.now())
         dbEngine.update(stmt)
                     
         return instance.id
@@ -194,6 +192,18 @@ class StrategyInstanceManager:
             return instance.id
         except Exception as e:
             raise AppException(e)
+        
+    def reset(self, id: str) -> str:
+        instance = self.get(id)
+        print(instance.is_removed)
+        if instance.is_removed:
+          instance.state = State.INIT
+          instance.is_removed = False
+
+          self.__schedule(instance)
+          return self.__update(instance)
+        else:
+          raise AppException('instance is ready, can not be reseted.')         
 
     def set_trigger(self, id: str, trigger: dict) -> str:
         try:
@@ -224,5 +234,13 @@ class StrategyInstanceManager:
             return self.__update(instance)
         except Exception as e:
             raise AppException(e)
+      
+    def set_state(self, id: str, state: int) -> str | None:
+        instance = self.instances.get(id, None)
+        if instance:
+          instance.set_state(state)
+          return self.__update(instance)
+        else:
+            return None
 
 strategyInstanceManager = StrategyInstanceManager() 

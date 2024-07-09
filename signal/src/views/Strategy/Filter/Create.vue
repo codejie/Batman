@@ -6,7 +6,7 @@ import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import CreateForm from '@/views/Strategy/Filter/components/CreateForm.vue'
 import { CreateInstanceRequest, TriggerModel } from '@/api/strategy/types'
 import { apiCreate } from '@/api/strategy'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElButton } from 'element-plus'
 // import { useEmitt } from '@/hooks/event/useEmitt'
 
 const { t } = useI18n()
@@ -75,10 +75,10 @@ const onBtnSubmit = async () => {
 <template>
   <ContentDetailWrap :title="t('common.create')">
     <template #header>
-      <BaseButton @click="go(-1)">{{ t('common.back') }}</BaseButton>
-      <BaseButton type="primary" :disabled="!submitEnabled" :loading="loading" @click="onBtnSubmit">
+      <ElButton @click="go(-1)">{{ t('common.back') }}</ElButton>
+      <ElButton type="primary" :disabled="!submitEnabled" :loading="loading" @click="onBtnSubmit">
         {{ t('common.submit') }}
-      </BaseButton>
+      </ElButton>
     </template>
     <CreateForm ref="form" />
   </ContentDetailWrap>

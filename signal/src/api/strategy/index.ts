@@ -7,7 +7,9 @@ import {
   ListInstanceRequest,
   ListInstanceResponse,
   RemoveInstanceRequest,
-  RemoveInstanceResponse
+  RemoveInstanceResponse,
+  ResetInstanceRequest,
+  ResetInstanceResponse
 } from './types'
 
 export const apiInfos = (data: InfosRequest): Promise<Response<InfosResponse>> => {
@@ -38,6 +40,15 @@ export const apiCreate = (
 ): Promise<Response<CreateInstanceResponse>> => {
   return request.post({
     url: '/strategy/create',
+    data
+  })
+}
+
+export const apiReset = (
+  data: ResetInstanceRequest
+): Promise<Response<ResetInstanceResponse>> => {
+  return request.post({
+    url: '/strategy/reset',
     data
   })
 }
