@@ -6,6 +6,8 @@ import { apiList, apiRemove, apiReset } from '@/api/strategy'
 import { onMounted, ref, unref } from 'vue'
 import { ElTable, ElTableColumn, ElButton, ElMessageBox, ElMessage, ElDialog } from 'element-plus'
 import { InstanceModel } from '@/api/strategy/types'
+import DetailForm from '@/views/Strategy/Filter/components/DetailForm.vue'
+import ResultForm from '@/views/Strategy/Filter/components/ResultForm.vue'
 
 // defineOptions({
 //   name: 'Filter'
@@ -22,6 +24,8 @@ const { push } = useRouter()
 //   }
 // })
 const detailDialogVisible = ref(false)
+const resultDialogVisible = ref(false)
+
 const selectInstance = ref<InstanceModel>()
 const listInstance = ref<InstanceModel[]>([])
 
@@ -44,6 +48,11 @@ const onBtnCreate = () => {
 function onDetail(instance: InstanceModel) {
   selectInstance.value = instance
   detailDialogVisible.value = true
+}
+
+function onResult(instance: InstanceModel) {
+  selectInstance.value = instance
+  resultDialogVisible.value = true
 }
 
 function makeState(instance: InstanceModel): string {
@@ -162,7 +171,9 @@ async function onReset(id: string) {
       <ElTableColumn prop="strategy" label="Strategy" width="200" />
       <ElTableColumn label="Hit Results" width="120">
         <template #default="scope">
-          {{ makeResult(scope.row) }}
+          <ElButton link type="primary" @click="onResult(scope.row)">
+            {{ makeResult(scope.row) }}
+          </ElButton> 
         </template>
       </ElTableColumn>
       <ElTableColumn prop="latest_updated" label="Updated" width="200">
@@ -179,6 +190,14 @@ async function onReset(id: string) {
         </template>
       </ElTableColumn>
     </ElTable>
-    <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" />
+    <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`">
+      <DetailForm :instance="selectInstance" />
+    </ElDialog>
+    <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`">
+      <ResultForm :instance="selectInstance" />
+      <template #footer>
+        <ElButton type="primary" @click="resultDialogVisible=false">Close</ElButton>
+      </template>
+    </ElDialog>
   </ContentWrap>
 </template>

@@ -52,6 +52,7 @@ export type InstanceModel = {
     algo_values?: AlgorithValuesModel
     results?: Array<any>
     latest_updated?: Date
+    run_times: number
     state: number
     is_removed: boolean
 }

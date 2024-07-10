@@ -229,7 +229,8 @@ class StrategyInstanceManager:
         try:
             instance = self.get(id)
             instance.results = results
-            instance.latest_updated = datetime.now()    
+            instance.latest_updated = datetime.now()
+            instance.run_times =+ 1
             
             return self.__update(instance)
         except Exception as e:

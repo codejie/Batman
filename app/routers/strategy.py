@@ -48,6 +48,7 @@ class InstanceModel(BaseModel):
     algo_values: dict[str, dict] | None = None
     results: list | None = None
     latest_updated: datetime | None = None
+    run_times: int = 0
     state: int = 0
     is_removed: bool = False
 """
@@ -145,6 +146,7 @@ async def list(body: ListInstanceRequest=Body()):
                                  algo_values=inst.algo_values,
                                  results=inst.results,
                                  latest_updated=inst.latest_updated,
+                                 run_times = inst.run_times,
                                  state=inst.state.value,
                                  is_removed=inst.is_removed))
         
@@ -170,7 +172,8 @@ async def get(body: GetInstanceRequest=Body()):
         arg_values=instance.arg_values,
         algo_values=instance.algo_values,
         results=instance.results,
-        latest_updated=instance.latest_updated,        
+        latest_updated=instance.latest_updated,
+        run_times=instance.run_times,   
         state=instance.state.value,
         is_removed=instance.is_removed    
     ))
