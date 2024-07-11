@@ -110,6 +110,23 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     ]
   },
   {
+    path: '/test',
+    component: Layout,
+    name: 'Test',
+    meta:{},
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/Test/Test.vue'),
+        name: 'TestDemo',
+        meta: {
+          title: 'Test',
+          icon: 'carbon:test-tool'
+        }        
+      }
+    ]
+  },
+  {
     path: '/level',
     component: Layout,
     redirect: '/level/menu1/menu1-1/menu1-1-1',
