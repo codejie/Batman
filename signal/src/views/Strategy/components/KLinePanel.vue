@@ -1,17 +1,26 @@
 <script setup lang="ts">
+import { ref, PropType, watch, computed, unref } from 'vue'
+import { Echart, EChartsOption } from '@/components/Echart'
 import { historyApi } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
-import { ContentWrap } from '@/components/ContentWrap'
-import { Echart, EChartsOption } from '@/components/Echart'
-import { onMounted, ref, unref } from 'vue';
 
-// const data = ref<HistoryDataModel[]>()
-const upColor = '#ec0000';
-const downColor = '#00da3c';
+export type Param = {
+  code: string,
+  start: string,
+  end: string,
+  period?: string,
+  adjust?: string
+}
 
-// const xData = ref<string[]>([])
+const props = defineProps({
+  param: {
+    type: Object as PropType<Param>
+  }
+})
 
-const barOptions = ref<EChartsOption>({
+const upColor = '#ec0000'
+const downColor = '#00da3c'
+const options = ref<EChartsOption>({
   title: [],
   grid: [
     {
@@ -90,7 +99,6 @@ const barOptions = ref<EChartsOption>({
       },
       xAxisIndex: 0,
       yAxisIndex: 0,
-      // data: data.map(({open, close, low, high}) => ([open, close, low, high]))
       data: []
     },
     {
@@ -144,35 +152,63 @@ const barOptions = ref<EChartsOption>({
     label: {
       backgroundColor: '#777'
     }
-  },    
+  }  
 })
+
+// const param = computed(() => {
+//   console.log('===============computeed()')
+//   return unref(props.param)
+// })
+
+// const xData = computed(async () => await historyApi(props.param!))
+// {
+//   console.log('==========computed()')
+//   if (props.param) {
+//     historyApi(props.param!).then(ret => {
+//       if (ret.code == 0) {
+//         return ret.result as HistoryDataModel[]
+//       } else {
+//         return undefined
+//       }
+//     }).catch(() => {
+//       return undefined
+//     })
+//   } else {
+//     return undefined
+//   }
+// })
+
+watch(
+  () => props.param,
+  async (value) => {
+    console.log(`============={value}`)
+    if (value) {
+      const ret = await historyApi(unref(value)!)
+      updateOpt(ret.result as HistoryDataModel[])
+    }
+  }
+)
+
+// watch(
+//   () => param,
+//   async (value) => {
+//     console.log(`============={value}`)
+//     if (value) {
+//       const ret = await historyApi(unref(value)!)
+//       updateOpt(ret.result as HistoryDataModel[])
+//     }
+//   }
+// )
 
 function updateOpt(data: HistoryDataModel[]) {
   const xData = data.map(item => item.date)
-  barOptions.value.xAxis![0].data = xData
-  barOptions.value.xAxis![1].data = xData
-  barOptions.value.series![0].data = data.map(({open, close, low, high}) => ([open, close, low, high]))
-  barOptions.value.series![1].data = data.map(item => [item.date, item.volume, item.open < item.close ? 1 : -1])
+  options.value.xAxis![0].data = xData
+  options.value.xAxis![1].data = xData
+  options.value.series![0].data = data.map(({open, close, low, high}) => ([open, close, low, high]))
+  options.value.series![1].data = data.map(item => [item.date, item.volume, item.open < item.close ? 1 : -1])
 }
 
-onMounted(async () => {
-  const ret = await historyApi({
-    code: '002236',
-    start: '2023-10-01',
-    end: '2024-01-01'
-  })
-  // data.value = ret.result
-  // const x =  ret.result.map(item => [item.volume, -1])
-  // console.log(x)
-  updateOpt(ret.result)
-  // xa.value = unref(data)?.map(item => item.date)
-  // y.value = unref(data)?.map(({open, close, low, high}) => ([open, close, low, high]))
-})
 </script>
 <template>
-  <ContentWrap title="Test">
-    <div>
-      <Echart :options="barOptions" />
-    </div>
-  </ContentWrap>
+  <Echart :options="options" />
 </template>

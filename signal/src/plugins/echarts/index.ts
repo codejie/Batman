@@ -17,7 +17,8 @@ import {
   PolarComponent,
   AriaComponent,
   ParallelComponent,
-  LegendComponent
+  LegendComponent,
+  VisualMapComponent
 } from 'echarts/components'
 
 import { CanvasRenderer } from 'echarts/renderers'
@@ -30,6 +31,7 @@ echarts.use([
   PolarComponent,
   AriaComponent,
   ParallelComponent,
+  VisualMapComponent,
   BarChart,
   LineChart,
   PieChart,
