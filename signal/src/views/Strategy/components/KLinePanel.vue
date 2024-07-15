@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, PropType, watch, computed, unref } from 'vue'
+import { ref, PropType, watch, unref } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
 import { historyApi } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
@@ -66,7 +66,7 @@ const options = ref<EChartsOption>({
       show: true,
       gridIndex: 0,
       position: 'left',
-      nameGap: 15,
+      nameGap: 30,
       // inverse: true
       scale: true
     },
@@ -77,7 +77,7 @@ const options = ref<EChartsOption>({
       show: true,
       gridIndex: 1,
       position: 'left',
-      nameGap: 15,
+      nameGap: 30,
       // inverse: true
       scale: true,
       splitNumber: 1,
@@ -155,50 +155,16 @@ const options = ref<EChartsOption>({
   }  
 })
 
-// const param = computed(() => {
-//   console.log('===============computeed()')
-//   return unref(props.param)
-// })
-
-// const xData = computed(async () => await historyApi(props.param!))
-// {
-//   console.log('==========computed()')
-//   if (props.param) {
-//     historyApi(props.param!).then(ret => {
-//       if (ret.code == 0) {
-//         return ret.result as HistoryDataModel[]
-//       } else {
-//         return undefined
-//       }
-//     }).catch(() => {
-//       return undefined
-//     })
-//   } else {
-//     return undefined
-//   }
-// })
-
 watch(
   () => props.param,
   async (value) => {
-    console.log(`============={value}`)
+    console.log(value)
     if (value) {
       const ret = await historyApi(unref(value)!)
       updateOpt(ret.result as HistoryDataModel[])
     }
   }
 )
-
-// watch(
-//   () => param,
-//   async (value) => {
-//     console.log(`============={value}`)
-//     if (value) {
-//       const ret = await historyApi(unref(value)!)
-//       updateOpt(ret.result as HistoryDataModel[])
-//     }
-//   }
-// )
 
 function updateOpt(data: HistoryDataModel[]) {
   const xData = data.map(item => item.date)
@@ -210,5 +176,6 @@ function updateOpt(data: HistoryDataModel[]) {
 
 </script>
 <template>
+  <!-- <Echart v-if="param != undefined" :options="options" /> -->
   <Echart :options="options" />
 </template>

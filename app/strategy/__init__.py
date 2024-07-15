@@ -74,6 +74,7 @@ class StrategyInstance:
         self.arg_values: dict = {}
         self.algo_values: dict[str, dict] = {}
         self.results: list = None
+        self.result_params: dict  = None
         self.latest_updated: datetime = None
         self.run_times = 0
         

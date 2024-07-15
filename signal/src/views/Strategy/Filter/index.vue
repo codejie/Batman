@@ -193,7 +193,7 @@ async function onReset(id: string) {
     <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`">
       <DetailForm :instance="selectInstance" />
     </ElDialog>
-    <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`">
+    <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="70%">
       <ResultForm :instance="selectInstance" />
       <template #footer>
         <ElButton type="primary" @click="resultDialogVisible=false">Close</ElButton>

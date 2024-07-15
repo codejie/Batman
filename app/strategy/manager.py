@@ -195,7 +195,6 @@ class StrategyInstanceManager:
         
     def reset(self, id: str) -> str:
         instance = self.get(id)
-        print(instance.is_removed)
         if instance.is_removed:
           instance.state = State.INIT
           instance.is_removed = False
@@ -216,7 +215,7 @@ class StrategyInstanceManager:
         except Exception as e:
             raise AppException(e)
 
-    def set_args(self, id: str, values: dict, algo_values: dict | None = None) -> str:
+    def set_args(self, id: str, values: dict, algo_values: dict = None) -> str:
         try:
             instance = self.get(id)
             instance.set_args(values, algo_values)            
@@ -225,10 +224,11 @@ class StrategyInstanceManager:
         except Exception as e:
             raise AppException(e)
         
-    def set_results(self, id: str, results: list) -> str:
+    def set_results(self, id: str, results: list, params: dict = None) -> str:
         try:
             instance = self.get(id)
             instance.results = results
+            instance.result_params = params
             instance.latest_updated = datetime.now()
             instance.run_times =+ 1
             

@@ -30,10 +30,10 @@ class MUpNDownAlgorithem(Algorithm):
 
     def set_args(self, values: dict) -> None:
         super().set_args(values)
-        self.up_count: int = self.arg_values['up_count']
-        self.down_count: int = self.arg_values['down_count']
-        self.up_rate: float = self.arg_values['up_rate'] / 100
-        self.down_rate: float = self.arg_values['down_rate'] / 100
+        self.up_count: int = int(self.arg_values['up_count'])
+        self.down_count: int = int(self.arg_values['down_count'])
+        self.up_rate: float = float(self.arg_values['up_rate']) / 100
+        self.down_rate: float = float(self.arg_values['down_rate']) / 100
     
 
     def set_data(self, values: dict) -> None:

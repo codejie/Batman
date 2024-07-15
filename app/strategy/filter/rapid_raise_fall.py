@@ -105,7 +105,7 @@ class RapidRaiseFallStrategy(Strategy):
                 codes = df[['code', 'name']]
             if codes.empty:
                 raise AppException('codes list is empty.')
-            days = arg_values['days']
+            days: int = int(arg_values['days'])
             start = (datetime.today() - timedelta(days)).strftime('%Y-%m-%d')
             end = datetime.today().strftime('%Y-%m-%d')
 
@@ -113,7 +113,11 @@ class RapidRaiseFallStrategy(Strategy):
             results = []
             for _, row in codes.iterrows():
                 results.extend(RapidRaiseFallStrategy.__exec_algorithm(row['code'], row['name'], start, end, arg_values, algo_values))
-            manager.set_results(id, results)
+            manager.set_results(id, results, {
+                'days': days,
+                'start': start,
+                'end': end
+            })
 
         except Exception as e:
             logger.error(f'Strategy \'{RapidRaiseFallStrategy.name}\' failed - {e}')
