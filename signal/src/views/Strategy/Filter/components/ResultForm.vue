@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PropType, defineProps, ref, unref, watch } from 'vue'
 import { InstanceModel } from '@/api/strategy/types'
-import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption } from 'element-plus'
+import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption, ElButton } from 'element-plus'
 import KLinePanel, { Param } from '@/views/Strategy/components/KLinePanel.vue'
 
 const props = defineProps({
@@ -21,15 +21,15 @@ const extRanges = [
   },
   {
     value: 14,
-    label: '+14days'
+    label: '+14 days'
   },
   {
     value: 28,
-    label: '+28days'
+    label: '+28 days'
   },
   {
     value: 60,
-    label: '+60days'
+    label: '+60 days'
   }  
 ]
 
@@ -43,28 +43,28 @@ function getDateString(date: string, days: number): string {
 
 const chartParam = ref<Param>()
 const dateRange = ref<number>(0)
-let selectCode = undefined
+let selectRow: any = ref<any>()
 
 function updateChartParam(days: number) {
   const start = getDateString(props.instance?.result_params.start, -days)
   const end = getDateString(props.instance?.result_params.end, days)
 
   chartParam.value = {
-    code: selectCode!,
+    code: selectRow.value?.code,
     start: start,
     end: end
   }
 }
 
 function onRowClick(row: any) {
-  selectCode = row.code
+  selectRow.value = row
   updateChartParam(unref(dateRange))
 }
 
 watch(
   () => dateRange.value,
   (value) => {
-    if (selectCode)
+    if (selectRow.value)
       updateChartParam(unref(value))
   }
 )
@@ -77,20 +77,38 @@ watch(
     </ElFormItem>
     <ElFormItem label="Results">
       <ElRow :gutter="24" style="width: 100%">
-        <ElCol :span="8">
-          <ElTable :data="instance?.results" @row-click="onRowClick" border height="500">
+        <ElCol :span="7">
+          <ElTable :data="instance?.results" @row-click="onRowClick" border height="500" highlight-current-row>
             <ElTableColumn prop="code" label="Code" width="100" />
             <ElTableColumn prop="name" label="Name" width="100" />
             <ElTableColumn prop="date" label="Date" />
           </ElTable>
         </ElCol>
-        <ElCol :span="16">
-          <ElSelect v-model="dateRange" size="small" style="width: 30%">
-            <ElOption v-for="item in extRanges" :key="item.value" :label="item.label" :value="item.value" />
-          </ElSelect>
+        <ElCol :span="17">
+          <ElRow v-if="selectRow" :gutter="24" sytle="width: 100%">
+            <ElCol :span="12">
+              <div class="bold">
+                {{ selectRow?.code }}({{ selectRow?.name }})
+              </div>
+            </ElCol>
+            <ElCol :span="6">
+              <ElButton size="small" style="float: right">{{ selectRow?.code }}</ElButton>
+              <ElButton size="small" style="float: right; margin-right: 12px">{{ selectRow?.name }}</ElButton>
+            </ElCol>
+            <ElCol :span="6">
+              <ElSelect v-model="dateRange" size="small" style="width: 80%; float: right">
+                <ElOption v-for="item in extRanges" :key="item.value" :label="item.label" :value="item.value" />
+              </ElSelect>
+            </ElCol>
+          </ElRow>
           <KLinePanel :param="chartParam" />
         </ElCol>
       </ElRow>
     </ElFormItem>
   </ElForm>
 </template>
+<style lang="css">
+.bold {
+  font-weight: bold;
+}
+</style>

@@ -82,7 +82,7 @@ function makeState(instance: InstanceModel): string {
 function makeUpdated(str: string): string {
   if (str) {
     const date = new Date(str)
-    return `${date.getFullYear()}-${date.getMonth()}-${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+    return `${date.toISOString().slice(0, 10)} ${date.toISOString().slice(11, 19)}` // `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
   } else {
     return '-'
   }
@@ -193,7 +193,7 @@ async function onReset(id: string) {
     <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`">
       <DetailForm :instance="selectInstance" />
     </ElDialog>
-    <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="70%">
+    <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="70%" destroy-on-close>
       <ResultForm :instance="selectInstance" />
       <template #footer>
         <ElButton type="primary" @click="resultDialogVisible=false">Close</ElButton>

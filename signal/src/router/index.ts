@@ -66,6 +66,23 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     }
   },
   {
+    path: '/customized',
+    component: Layout,
+    name: '自选',
+    meta:{},
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/Customized/index.vue'),
+        name: 'Customized',
+        meta: {
+          title: '自选',
+          icon: 'carbon:chart-custom'
+        }        
+      }
+    ]
+  },  
+  {
     path: '/strategy',
     component: Layout,
     name: 'Strategy',
