@@ -1,6 +1,6 @@
 import request from '@/axios'
 // import type { UserType } from './types'
-import type { UserRequest, UserResponse } from './types'
+import type { LoginRequest, LoginResponse, LogoutRequest, LogoutResponse } from './types'
 
 // interface RoleParams {
 //   roleName: string
@@ -10,8 +10,11 @@ import type { UserRequest, UserResponse } from './types'
 //   return request.post({ url: '/mock/user/login', data })
 // }
 
-export const loginOutApi = (): Promise<Response> => {
-  return request.get({ url: '/mock/user/loginOut' })
+export const apiLogout = (data?: LogoutRequest): Promise<Response<LogoutResponse>> => {
+  return request.post({ 
+    url: '/account/logout',
+    data
+   })
 }
 
 // export const getAdminRoleApi = (
@@ -24,7 +27,7 @@ export const loginOutApi = (): Promise<Response> => {
 //   return request.get({ url: '/mock/role/list2', params })
 // }
 
-export const apiLogin = (data: UserRequest): Promise<Response<UserResponse>> => {
+export const apiLogin = (data: LoginRequest): Promise<Response<LoginResponse>> => {
   return request.post({
     url: '/account/login',
     data

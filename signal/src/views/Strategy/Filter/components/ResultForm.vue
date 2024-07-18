@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { PropType, defineProps, ref, unref, watch } from 'vue'
 import { InstanceModel } from '@/api/strategy/types'
-import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption, ElButton } from 'element-plus'
+import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption, ElButton, ElMessage } from 'element-plus'
 import KLinePanel, { Param } from '@/views/Strategy/components/KLinePanel.vue'
+import { apiCreate } from '@/api/customized';
 
 const props = defineProps({
   instance: {
@@ -69,6 +70,19 @@ watch(
   }
 )
 
+async function onCustomizedClick() {
+  const ret = await apiCreate({
+    code: unref(selectRow).code,
+    type: 1
+  })
+  if (ret.code == 0) {
+    ElMessage({
+        type: 'success',
+        message: `${unref(selectRow).code} added to customized list.`
+      })    
+  }
+}
+
 </script>
 <template>
   <ElForm label-width="auto">
@@ -89,11 +103,12 @@ watch(
             <ElCol :span="12">
               <div class="bold">
                 {{ selectRow?.code }}({{ selectRow?.name }})
+                <ElButton size="small" style="margin-left: 12px" @click="onCustomizedClick">Add to Customized</ElButton>
               </div>
             </ElCol>
             <ElCol :span="6">
-              <ElButton size="small" style="float: right">{{ selectRow?.code }}</ElButton>
-              <ElButton size="small" style="float: right; margin-right: 12px">{{ selectRow?.name }}</ElButton>
+              <ElButton size="small" style="float: left">Add to Customized</ElButton>
+              <!-- <ElButton size="small" style="float: right; margin-right: 12px">{{ selectRow?.name }}</ElButton> -->
             </ElCol>
             <ElCol :span="6">
               <ElSelect v-model="dateRange" size="small" style="width: 80%; float: right">

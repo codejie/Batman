@@ -5,8 +5,8 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ElCheckbox } from 'element-plus'
 import { useForm } from '@/hooks/web/useForm'
 // import { loginApi, getTestRoleApi, getAdminRoleApi } from '@/api/login'
-import { UserRequest } from '@/api/login/types'
-import { apiLogin } from '@/api/login'
+import { LoginRequest } from '@/api/account/types'
+import { apiLogin } from '@/api/account'
 import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useRouter } from 'vue-router'
@@ -155,7 +155,7 @@ const signIn = async () => {
   await formRef?.validate(async (isValid) => {
     if (isValid) {
       loading.value = true
-      const formData = await getFormData<UserRequest>()
+      const formData = await getFormData<LoginRequest>()
 
       try {
         // const res = await loginApi(formData)
@@ -172,11 +172,13 @@ const signIn = async () => {
           }
           userStore.setRememberMe(unref(remember))
           userStore.setUserInfo({
-            account: formData.account,
-            passwd: formData.account,
+            // account: formData.account,
+            // passwd: formData.account,
             accessToken: res.result.accessToken,
             refreshToken: res.result.refreshToken,
-            expired: res.result.expired
+            expired: res.result.expired,
+            // uid: res.result.uid,
+            avatar: res.result.avatar
           })
           userStore.setToken(res.result.accessToken)
           // 是否使用动态路由

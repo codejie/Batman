@@ -3,15 +3,17 @@ SQLAlchemy数据访问引擎
 """
 
 from sqlalchemy import create_engine, Engine
-from sqlalchemy import insert, select, delete, update
-from sqlalchemy.orm import Session
-
-from app.database.tables import TableBase, Version
+from sqlalchemy import insert as sql_insert, select as sql_select, delete as sql_delete, update as sql_update, and_, or_
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.sql import func
+from sqlalchemy.orm import DeclarativeBase, Session
 
 from app.exception import AppException
 
 DATABASE_URL: str = 'sqlite:///./app/db/batman.db'
-SYSTEM_VERSION: str = '0.2'
+
+class TableBase(DeclarativeBase):
+    pass
 
 class DBEngine:
     def __init__(self) -> None:
@@ -19,7 +21,7 @@ class DBEngine:
     
     def start(self) -> bool:
         TableBase.metadata.create_all(self.engine)
-        self.insert(insert(Version).values(version='0.2'))
+        # self.insert(sql_insert(Version).values(version='0.2'))
 
     def shutdown(self) -> None:
         pass

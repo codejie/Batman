@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, FileResponse
 
+from app.database import system
 from app.logger import logger
 from app.exception import AppException
 from app.database import dbEngine
@@ -31,6 +32,7 @@ async def lifespan(app: FastAPI):
         logger.debug('========strategyInstanceManager startup')
         strategyInstanceManager.start()
 
+        system.insert_info()
     except Exception as e:
         logger.error(f'service start error - {e}')
     yield

@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { ElTable, ElTableColumn, ElButton } from 'element-plus'
+
+function onCreateClick() {
+  
+}
 </script>
 <template>
   <ContentWrap title="Customized">
+    <div>
+      <ElButton class="btn" type="primary" @click="onCreateClick">Create</ElButton>
+    </div>
     <ElTable :data="tableData" :stripe="true" :border="true" style="width: 100%;" @selection-change="onSelectionChange">
-      <ElTableColumn type="selection" fixed width="50" />
+      <!-- <ElTableColumn type="selection" fixed width="50" /> -->
       <ElTableColumn prop="code" label="代码" width="80">
         <template #default="{row}">
           <el-button type="text" @click="onCodeClick(row.code)">
@@ -29,3 +36,8 @@ import { ElTable, ElTableColumn, ElButton } from 'element-plus'
 	</ElTable>
   </ContentWrap>
 </template>
+<style lang="css">
+.btn {
+  margin: 12px;
+}
+</style>

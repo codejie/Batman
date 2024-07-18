@@ -11,21 +11,28 @@ export type UserType = {
   permissions: string | string[]
 }
 
-export type UserRequest = {
+export type LoginRequest = {
   account: string
   passwd: string
 }
 
-export type UserResponse = {
+export type LoginResponse = {
   accessToken: string
   refreshToken?: string
   expired?: Date
+  // uid: number
+  avatar?: string
 }
 
+export type LogoutRequest = {}
+export type LogoutResponse = {}
+
 export type UserInfo = {
-  account: string
-  passwd: string
+  // account: string
+  // passwd: string
   accessToken?: string
   refreshToken?: string
   expired?: Date
+  // uid?: number
+  avatar?: string
 }

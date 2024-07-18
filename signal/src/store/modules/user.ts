@@ -1,10 +1,9 @@
 import { defineStore } from 'pinia'
 import { store } from '../index'
-import { UserLoginType, UserType } from '@/api/login/types'
-import { UserRequest, UserInfo } from '@/api/login/types'
+import { LoginRequest, UserInfo } from '@/api/account/types'
 import { ElMessageBox } from 'element-plus'
 import { useI18n } from '@/hooks/web/useI18n'
-import { loginOutApi } from '@/api/login'
+import { apiLogout } from '@/api/account'
 import { useTagsViewStore } from './tagsView'
 import router from '@/router'
 
@@ -15,7 +14,7 @@ interface UserState {
   roleRouters?: string[] | AppCustomRouteRecordRaw[]
   rememberMe: boolean
   // loginInfo?: UserLoginType
-  loginInfo?: UserRequest
+  loginInfo?: LoginRequest
 }
 
 export const useUserStore = defineStore('user', {
@@ -46,7 +45,7 @@ export const useUserStore = defineStore('user', {
     getRememberMe(): boolean {
       return this.rememberMe
     },
-    getLoginInfo(): UserRequest | undefined {
+    getLoginInfo(): LoginRequest | undefined {
       return this.loginInfo
     }
   },
@@ -71,7 +70,8 @@ export const useUserStore = defineStore('user', {
         type: 'warning'
       })
         .then(async () => {
-          const res = await loginOutApi().catch(() => {})
+          const res = await apiLogout().catch(() => {})
+          console.log(res)
           if (res) {
             this.reset()
           }
@@ -92,7 +92,7 @@ export const useUserStore = defineStore('user', {
     setRememberMe(rememberMe: boolean) {
       this.rememberMe = rememberMe
     },
-    setLoginInfo(loginInfo: UserRequest | undefined) {
+    setLoginInfo(loginInfo: LoginRequest | undefined) {
       this.loginInfo = loginInfo
     }
   },

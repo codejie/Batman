@@ -1,10 +1,7 @@
 """
 All Table definitions
 """
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.sql import func
-from sqlalchemy.orm import DeclarativeBase
-
+from app.database import TableBase, Column, String
 
 class TableName:
     Stock_A_List = 'stock_a_list'
@@ -26,15 +23,9 @@ class TableName:
     def make_stock_margin_name(symbol: str) -> str:
         return f'stock_{symbol}_margin'
 
-class TableBase(DeclarativeBase):
-    pass
+# class TableBase(DeclarativeBase):
+#     pass
 
-class Version(TableBase):
-    __tablename__ = 'sys_infos'
-    
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    version = Column(String)
-    updated = Column(DateTime(timezone=True), server_default=func.now())
 
 class StockAListTable(TableBase):
     __tablename__ = TableName.Stock_A_List

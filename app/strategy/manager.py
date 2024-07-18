@@ -6,8 +6,8 @@ Strategy Manger
 from datetime import datetime
 import os
 import pickle
-from app.database import dbEngine, select, delete, insert, update
-from app.database.tables import TableBase, Column, String, Integer, DateTime, func
+from app.database import dbEngine, sql_select, sql_delete, sql_insert, sql_update
+from app.database import TableBase, Column, String, Integer, DateTime, func
 from app.exception import AppException
 from app.task_scheduler import taskScheduler #, EVENT_JOB_REMOVED, EVENT_JOB_ADDED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
 from apscheduler.events import EVENT_JOB_REMOVED, EVENT_JOB_ADDED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
@@ -76,7 +76,7 @@ class StrategyInstanceManager:
 
     def __load_instances(self) -> None:
         try:
-            stmt = select(StategyInstanceTable)
+            stmt = sql_select(StategyInstanceTable)
             results = dbEngine.select(stmt)
             for result in results:
                 self.__load(result.id)
@@ -113,7 +113,7 @@ class StrategyInstanceManager:
         with open(file, 'wb') as output:
             pickle.dump(instance, output)
 
-        stmt = insert(StategyInstanceTable).values(id=instance.id)
+        stmt = sql_insert(StategyInstanceTable).values(id=instance.id)
         dbEngine.insert(stmt)
 
         return instance.id
@@ -123,13 +123,13 @@ class StrategyInstanceManager:
         with open(file, 'wb') as output:
             pickle.dump(instance, output)
 
-        stmt = update(StategyInstanceTable).where(StategyInstanceTable.id == instance.id).values(updated=func.now())
+        stmt = sql_update(StategyInstanceTable).where(StategyInstanceTable.id == instance.id).values(updated=func.now())
         dbEngine.update(stmt)
                     
         return instance.id
     
     def __remove(self, id: str) -> str:
-        stmt = delete(StategyInstanceTable).where(StategyInstanceTable.id.__eq__(id))
+        stmt = sql_delete(StategyInstanceTable).where(StategyInstanceTable.id.__eq__(id))
         dbEngine.delete(stmt)
 
         file = self.__make_local_file(id)

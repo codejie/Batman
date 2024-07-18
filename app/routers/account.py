@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Depends, Header
 from pydantic import BaseModel
 from datetime import datetime
 
-from app.routers.definition import RequestModel, ResponseModel
+from app.routers.definition import RequestModel, ResponseModel, verify_token
 
 router = APIRouter(prefix='/account', tags=['account'])
 
@@ -14,7 +14,9 @@ class LoginResult(BaseModel):
     accessToken: str
     refreshToken: str | None = None
     expired: datetime | None = None
-
+    # uid: int
+    avatar: str | None = None
+    # role
 
 class LoginResponse(ResponseModel):
     result: LoginResult | None = None
@@ -25,6 +27,22 @@ async def login(body: LoginRequest = Body()):
     resp = LoginResponse(code=0, result=result)
     return resp
 
+"""
+Logout
+"""
+class LogoutRequest(RequestModel):
+    pass
+
+class LogoutResponse(ResponseModel):
+    pass
+
+@router.post('/logout', response_model=LogoutResponse, response_model_exclude_unset=True, dependencies=[Depends(verify_token)])
+async def logout(token: str=Header()):
+    print(f'logout() with {token}')
+    return LogoutResponse(code=0)
+"""
+Info
+"""
 class InfoRequest(RequestModel):
     token: str
 
@@ -38,6 +56,6 @@ class InfoResult(BaseModel):
 class InfoResponse(ResponseModel):
     result: InfoResult
 
-@router.post('/info', response_model=InfoResponse, response_model_exclude_none=True)
+@router.post('/info', response_model=InfoResponse, response_model_exclude_unset=True)
 async def info(body: InfoRequest = Body()):
     return InfoResponse(result=InfoResult())

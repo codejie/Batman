@@ -5,8 +5,8 @@ from datetime import datetime
 from pandas import DataFrame
 
 from app.exception import AppException
-from app.database import dbEngine, select
-from app.database.tables import func, StockAListTable
+from app.database import dbEngine, sql_select, func
+from app.database.tables import StockAListTable
 from app.data.local_db import stock as local
 from app.data.task import records
 from app.logger import logger
@@ -33,7 +33,7 @@ def init_check() -> None:
         raise AppException(e)
 
 def exist_list_table() -> bool:
-    stmt = select(func.count()).select_from(StockAListTable)
+    stmt = sql_select(func.count()).select_from(StockAListTable)
     result = dbEngine.select_one(stmt)
     return result > 0
 

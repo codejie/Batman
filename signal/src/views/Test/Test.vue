@@ -3,6 +3,7 @@ import { historyApi } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
 import { ContentWrap } from '@/components/ContentWrap'
 import { Echart, EChartsOption } from '@/components/Echart'
+import { useUserStoreWithOut } from '@/store/modules/user';
 import { onMounted, ref, unref } from 'vue';
 
 // const data = ref<HistoryDataModel[]>()
@@ -10,6 +11,7 @@ const upColor = '#ec0000';
 const downColor = '#00da3c';
 
 // const xData = ref<string[]>([])
+const userStore = useUserStoreWithOut()
 
 const barOptions = ref<EChartsOption>({
   title: [],
@@ -171,6 +173,7 @@ onMounted(async () => {
 </script>
 <template>
   <ContentWrap title="Test">
+    <!-- {{  userStore.getUserInfo?.uid }} -->
     <div>
       <Echart :options="barOptions" />
     </div>

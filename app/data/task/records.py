@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 from sqlalchemy.sql import and_
-from app.database.tables import TableBase, Column, Integer, String, DateTime, func
-from app.database import dbEngine, insert as db_insert, select as db_select, update as db_update
+from app.database import TableBase, Column, Integer, String, DateTime, func
+from app.database import dbEngine, sql_insert, sql_select, sql_update
 
 HISTORY_START =  datetime(year=2023, month=1, day=1, hour=0, minute=0, second=0)
 
@@ -18,7 +18,7 @@ class ItemUpdatedRecordTable(TableBase):
     item = Column(Integer)
     code = Column(String, nullable=True)
     latest = Column(DateTime)
-    updated = Column(DateTime(timezone=True), server_default=func.now())
+    updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.current_timestamp())
 
 class Item(Enum):
     STOCK_LIST = 1
@@ -27,7 +27,7 @@ class Item(Enum):
     STOCK_DAILY_MARGIN = 4
 
 def insert(item: Item, latest: datetime, code: str = None) -> bool:
-    stmt = db_insert(ItemUpdatedRecordTable).values(
+    stmt = sql_insert(ItemUpdatedRecordTable).values(
         item=item.value,
         latest=latest,
         code=code
@@ -36,7 +36,7 @@ def insert(item: Item, latest: datetime, code: str = None) -> bool:
     return ret
 
 # def upsert(item: Item, latest: datetime, code: str = None) -> bool:
-#     stmt = db_insert(ItemUpdatedRecordTable).values(
+#     stmt = sql_insert(ItemUpdatedRecordTable).values(
 #         item=item.value,
 #         latest=latest,
 #         code=code
@@ -48,7 +48,7 @@ def insert(item: Item, latest: datetime, code: str = None) -> bool:
 #     return dbEngine.insert(stmt=stmt)
 
 def update(item: Item, latest: datetime, code: str = None) -> int:
-    stmt = db_update(ItemUpdatedRecordTable).values(latest=latest)
+    stmt = sql_update(ItemUpdatedRecordTable).values(latest=latest)
     if code:
         stmt = stmt.where(and_(ItemUpdatedRecordTable.item == item.value, ItemUpdatedRecordTable.code == code))
     else:
@@ -56,7 +56,7 @@ def update(item: Item, latest: datetime, code: str = None) -> int:
     return dbEngine.update(stmt=stmt)
 
 def get_latest(item: Item, code: str = None) -> datetime | None:
-    stmt = db_select(ItemUpdatedRecordTable).order_by(ItemUpdatedRecordTable.updated.desc())
+    stmt = sql_select(ItemUpdatedRecordTable).order_by(ItemUpdatedRecordTable.updated.desc())
     if code:
         stmt = stmt.where(and_(ItemUpdatedRecordTable.item == item.value, ItemUpdatedRecordTable.code == code))
     else:
