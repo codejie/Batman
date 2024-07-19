@@ -1,6 +1,8 @@
 
 from app.database import TableBase, Column, Integer, String, DateTime, func
-from app.database import dbEngine, sql_insert, sql_delete, sql_update, and_
+from app.database import dbEngine, sql_insert, sql_delete, sql_update, sql_select, and_
+from app.database import stock
+from app.database.tables import StockAListTable
 
 class CustomizedRecordTable(TableBase):
   __tablename__ = 'user_customized_record'
@@ -12,7 +14,7 @@ class CustomizedRecordTable(TableBase):
   comment = Column(String, nullable=True)
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.current_timestamp())
 
-def insert(code: str, uid: int = 99, type: int = 1, comment: str = None) -> bool:
+def insert(uid:int, code: str, type: int = 1, comment: str = None) -> bool:
   stmt = sql_insert(CustomizedRecordTable).values(
     uid=uid,
     type=type,
@@ -21,13 +23,30 @@ def insert(code: str, uid: int = 99, type: int = 1, comment: str = None) -> bool
   )
   return dbEngine.insert(stmt=stmt)
 
-def delete(code: str, uid: int = 99, type: int = 1) -> int:
-  stmt = sql_delete(CustomizedRecordTable).where(and_(
-    CustomizedRecordTable.uid == uid,
-    CustomizedRecordTable.code == code,
-    CustomizedRecordTable.type == type))
+def delete(id: int) -> int:
+  stmt = sql_delete(CustomizedRecordTable).where(CustomizedRecordTable.id == id)
   return dbEngine.delete(stmt=stmt)
 
 def update_comment(id: int, comment: str = None) -> int:
   stmt = sql_update(CustomizedRecordTable).values(comment=comment).where(CustomizedRecordTable.id == id)
   return dbEngine.update(stmt=stmt)
+
+def get_list(uid: int, type: int = 1) -> list:
+  stmt = sql_select(CustomizedRecordTable, StockAListTable.name).join(
+      StockAListTable, CustomizedRecordTable.code == StockAListTable.code
+    ).filter(
+      CustomizedRecordTable.uid == uid
+    )
+  results = dbEngine.select(stmt=stmt)
+  ret = []
+  for item in results:
+    print(item)
+    ret.append({
+      'id': item.id,
+      'type': item.type,
+      'code': item.code,
+      'name': item.name,
+      'comment': item.comment,
+      'updated': item.updated
+    })
+  return ret

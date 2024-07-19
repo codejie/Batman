@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ElTable, ElTableColumn, ElButton } from 'element-plus'
 
+async function fetchList() {
+  const ret = await apiL
+}
+
+
 function onCreateClick() {
   
 }
