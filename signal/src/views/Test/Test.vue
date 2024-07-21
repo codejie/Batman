@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { historyApi } from '@/api/data/stock';
+import { apiHistory } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
 import { ContentWrap } from '@/components/ContentWrap'
 import { Echart, EChartsOption } from '@/components/Echart'
@@ -158,7 +158,7 @@ function updateOpt(data: HistoryDataModel[]) {
 }
 
 onMounted(async () => {
-  const ret = await historyApi({
+  const ret = await apiHistory({
     code: '002236',
     start: '2023-10-01',
     end: '2024-01-01'

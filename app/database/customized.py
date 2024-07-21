@@ -1,6 +1,6 @@
 
 from app.database import TableBase, Column, Integer, String, DateTime, func
-from app.database import dbEngine, sql_insert, sql_delete, sql_update, sql_select, and_
+from app.database import dbEngine, Bundle, sql_insert, sql_delete, sql_update, sql_select, and_
 from app.database import stock
 from app.database.tables import StockAListTable
 
@@ -23,6 +23,11 @@ def insert(uid:int, code: str, type: int = 1, comment: str = None) -> bool:
   )
   return dbEngine.insert(stmt=stmt)
 
+def find(uid: int, code: str, type: int = 1) -> bool:
+  stmt = sql_select(func.count(CustomizedRecordTable.code)).where(CustomizedRecordTable.uid==uid).where(and_(CustomizedRecordTable.code==code,CustomizedRecordTable.type==type))
+  ret = dbEngine.select_one(stmt=stmt)
+  return ret > 0
+
 def delete(id: int) -> int:
   stmt = sql_delete(CustomizedRecordTable).where(CustomizedRecordTable.id == id)
   return dbEngine.delete(stmt=stmt)
@@ -37,16 +42,21 @@ def get_list(uid: int, type: int = 1) -> list:
     ).filter(
       CustomizedRecordTable.uid == uid
     )
-  results = dbEngine.select(stmt=stmt)
+  # stmt = sql_select(StockAListTable.name, CustomizedRecordTable).select_from(CustomizedRecordTable).join(
+  #     StockAListTable, CustomizedRecordTable.code == StockAListTable.code
+  #   ).filter(
+  #     CustomizedRecordTable.uid == uid
+  #   )  
+  results = dbEngine.select_with_execute(stmt=stmt)
+
   ret = []
-  for item in results:
-    print(item)
+  for row in results:
     ret.append({
-      'id': item.id,
-      'type': item.type,
-      'code': item.code,
-      'name': item.name,
-      'comment': item.comment,
-      'updated': item.updated
+      'id': row[0].id,
+      'type': row[0].type,
+      'code': row[0].code,
+      'name': row[1],
+      'comment': row[0].comment,
+      'updated': row[0].updated
     })
   return ret

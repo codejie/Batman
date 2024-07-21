@@ -9,6 +9,10 @@ router: APIRouter = APIRouter(prefix='/data/stock', tags=['data', 'stock'], depe
 """
 Data Model
 """
+class AListModel(BaseModel):
+  code: str
+  name: str
+
 class HistoryDataModel(BaseModel):
   date: str
   price: float
@@ -38,14 +42,32 @@ def history_data2model(row: Series) -> HistoryDataModel:
     turnover=row['成交额'],
     rate=row['换手率']    
   )
+
+"""
+AList
+"""
+class AListResponse(ResponseModel):
+  result: list[AListModel]
+
+@router.post('/alist', response_model=AListResponse, response_model_exclude_none=True)
+async def alist():
+  df = stock.get_a_list()
+  ret: list[AListModel] = []
+  for _, row in df.iterrows():
+    ret.append({
+      'code': row['code'],
+      'name': row['name']
+    })
+  return AListResponse(result=ret)
+
 """
 History
 """
 class HistoryRequest(RequestModel):
   code: str
   period: str | None = Field(default='daily', description='daily/weekly/monthly')
-  start: str
-  end: str
+  start: str | None = None
+  end: str | None = None
   adjust: str | None = Field(default='qfq', description='qfq/hfq')
 
 class HistoryResponse(ResponseModel):

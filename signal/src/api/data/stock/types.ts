@@ -1,3 +1,8 @@
+export type AListModel = {
+  code: string
+  name: string
+}
+
 export type HistoryDataModel = {
   date: string
   price: number
@@ -14,12 +19,13 @@ export type HistoryDataModel = {
 }
 
 // Request & Response
+export type AListResponse = AListModel[]
+
 export type HistoryRequest = {
   code: string
   period?: string
-  start: string
-  end: string
+  start?: string
+  end?: string
   adjust?: string
 }
-
 export type HistoryResponse = HistoryDataModel[]

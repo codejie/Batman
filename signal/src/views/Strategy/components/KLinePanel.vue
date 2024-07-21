@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, PropType, watch, unref } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
-import { historyApi } from '@/api/data/stock';
+import { apiHistory } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
 
 export type Param = {
@@ -160,7 +160,7 @@ watch(
   async (value) => {
     console.log(value)
     if (value) {
-      const ret = await historyApi(unref(value)!)
+      const ret = await apiHistory(unref(value)!)
       updateOpt(ret.result as HistoryDataModel[])
     }
   }

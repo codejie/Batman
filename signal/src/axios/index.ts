@@ -12,6 +12,7 @@ const request = (option: AxiosConfig) => {
     data,
     responseType: responseType,
     headers: {
+      'Access-Control-Allow-Origin': '*',
       'Content-Type': CONTENT_TYPE,
       [userStore.getTokenKey ?? 'Authorization']: userStore.getToken ?? '',
       ...headers

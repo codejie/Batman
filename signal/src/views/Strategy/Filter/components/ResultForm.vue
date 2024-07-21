@@ -92,7 +92,7 @@ async function onCustomizedClick() {
     <ElFormItem label="Results">
       <ElRow :gutter="24" style="width: 100%">
         <ElCol :span="7">
-          <ElTable :data="instance?.results" @row-click="onRowClick" border height="500" highlight-current-row>
+          <ElTable :data="instance?.results" @row-click="onRowClick" :border="true" height="500" highlight-current-row>
             <ElTableColumn prop="code" label="Code" width="100" />
             <ElTableColumn prop="name" label="Name" width="100" />
             <ElTableColumn prop="date" label="Date" />

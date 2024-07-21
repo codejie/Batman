@@ -47,6 +47,7 @@ declare global {
 
   declare interface Response<T = any> {
     code: number
+    message?: string
     result: T extends any ? T : T & any
   }
 

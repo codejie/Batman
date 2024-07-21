@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, Engine
 from sqlalchemy import insert as sql_insert, select as sql_select, delete as sql_delete, update as sql_update, and_, or_
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
-from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy.orm import DeclarativeBase, Session, Bundle
 
 from app.exception import AppException
 
@@ -43,20 +43,30 @@ class DBEngine:
             with Session(self.engine) as session:
                 ret = []
                 for r in session.scalars(stmt):
+                    # print(f'=========select() - {r}')
                     ret.append(r)
                 return ret
         except Exception as e:
             raise AppException(e)
         
     def select_one(self, stmt: object) -> any:
-        
         try:
             with Session(self.engine) as session:
                 ret = session.scalar(stmt)
                 return ret
         except Exception as e:
             raise AppException(e)
-        
+    
+    def select_with_execute(self, stmt: object) -> list[any]:
+        try:
+            with Session(self.engine) as session:
+                ret = []
+                for r in session.execute(stmt):
+                    ret.append(r)
+                return ret
+        except Exception as e:
+            raise AppException(e)
+                
     def delete(self, stmt: object) -> int:
         try:
             with Session(self.engine) as session:

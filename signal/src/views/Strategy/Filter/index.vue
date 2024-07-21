@@ -161,7 +161,7 @@ async function onReset(id: string) {
       <!-- <BaseButton type="primary" @click="onBtnCreate">{{ t('common.create') }}</BaseButton> -->
       <ElButton type="primary" @click="onBtnCreate">{{ t('common.create') }}</ElButton>
     </div>
-    <ElTable :data="unref(listInstance)" border style="width: 100%">
+    <ElTable :data="unref(listInstance)" :border="true" style="width: 100%">
       <ElTableColumn prop="name" label="Name" width="180" />
       <ElTableColumn prop="state" label="State" width="100">
         <template #default="scope">

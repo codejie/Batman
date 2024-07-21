@@ -16,7 +16,7 @@ def make_sql_select(table: str, columns: list[str] = None, where: str = None) ->
         sql += '*'
     sql += f' FROM {table}'
     if where:
-        sql += f' WHERE {where}'
+        sql += f' {where}'
     
     # print(f'sql={sql}')
     return sql
