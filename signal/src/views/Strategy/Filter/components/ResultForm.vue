@@ -2,7 +2,8 @@
 import { PropType, defineProps, ref, unref, watch } from 'vue'
 import { InstanceModel } from '@/api/strategy/types'
 import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption, ElButton, ElMessage } from 'element-plus'
-import KLinePanel, { Param } from '@/views/Strategy/components/KLinePanel.vue'
+// import KLinePanel, { Param } from '@/views/Strategy/components/KLinePanel.vue'
+import KLinePanel, { DataParam, ShowParam } from '@/components/KLine/src/KLinePanel.vue';
 import { apiCreate } from '@/api/customized';
 
 const props = defineProps({
@@ -42,7 +43,10 @@ function getDateString(date: string, days: number): string {
   return tmp.toISOString().slice(0, 10)
 }
 
-const chartParam = ref<Param>()
+const showParam = ref<ShowParam>({
+  maLines: [5, 10, 12, 24]
+})
+const dataParam = ref<DataParam>()
 const dateRange = ref<number>(0)
 let selectRow: any = ref<any>()
 
@@ -50,7 +54,7 @@ function updateChartParam(days: number) {
   const start = getDateString(props.instance?.result_params.start, -days)
   const end = getDateString(props.instance?.result_params.end, days)
 
-  chartParam.value = {
+  dataParam.value = {
     code: selectRow.value?.code,
     start: start,
     end: end
@@ -116,7 +120,7 @@ async function onCustomizedClick() {
               </ElSelect>
             </ElCol>
           </ElRow>
-          <KLinePanel :param="chartParam" />
+          <KLinePanel :data="dataParam" :show="showParam" />
         </ElCol>
       </ElRow>
     </ElFormItem>

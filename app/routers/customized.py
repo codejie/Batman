@@ -40,7 +40,7 @@ async def create(body: CreateRequest=Body()):
     customized.insert(uid=uid, code=body.code, type=body.type, comment=body.comment)
     return CreateResponse(code=0, result=True)
   else:
-    return CreateResponse(code=-1, message='exist', result=False)
+    return CreateResponse(code=-1, message=f'{body.code} existed in comstomized list.', result=False)
 
 """
 infos

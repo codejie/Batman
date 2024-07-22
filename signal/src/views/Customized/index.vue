@@ -5,7 +5,7 @@ import { InfoModel } from '@/api/customized/types';
 import { apiAList, apiHistory } from '@/api/data/stock';
 import { AListModel, HistoryDataModel } from '@/api/data/stock/types';
 import { ElTable, ElTableColumn, ElButton, ElMessageBox, ElSelect, ElOption, ElMessage } from 'element-plus'
-import { onMounted, ref, unref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 type item = {
   info: InfoModel
@@ -15,6 +15,7 @@ const tableData = ref<item[]>([])
 const alistData = ref<AListModel[]>([])
 // const filterListData = ref<AListModel[]>([])
 const selectCode = ref<string>('')
+const listHolder = ref<string>('loading..')
 // const loading = ref(false)
 
 
@@ -50,7 +51,6 @@ async function fetchHistoryData(code: string): Promise<HistoryDataModel | undefi
 
 async function fetchInfos() {
   const ret = await apiInfos({})
-  console.log(ret)
   tableData.value = []
   for (const item of ret.result) {
     tableData.value.push({
@@ -72,12 +72,6 @@ async function onCreateClick() {
       message: `${selectCode.value} added successfully.`
     })
     await fetchInfos()
-  } else {
-    console.log(ret.code)
-    ElMessage({
-      type: 'error',
-      message: `${selectCode.value} added failed.`
-    })    
   }
 }
 
@@ -104,6 +98,7 @@ async function onDelete(info: InfoModel) {
 async function fetchAList() {
   const ret = await apiAList()
   alistData.value = ret.result
+  listHolder.value = 'please choose code..'
 }
 
 onMounted(async () => {
@@ -115,7 +110,7 @@ onMounted(async () => {
 <template>
   <ContentWrap title="Customized">
     <div>
-      <ElSelect v-model="selectCode" :disabled="alistData.length==0" filterable clearable placeholder="choose code.." style="width: 240px;">
+      <ElSelect v-model="selectCode" :disabled="alistData.length==0" filterable clearable :placeholder="listHolder" style="width: 240px;">
         <ElOption v-for="item in alistData" :key="item.code" :value="item.code" :label="`${item.code} ${item.name}`" />
       </ElSelect>
       <!-- <ElSelectV2
@@ -135,7 +130,7 @@ onMounted(async () => {
       <!-- <ElTableColumn type="selection" fixed width="50" /> -->
       <ElTableColumn prop="info.code" label="代码" width="80">
         <template #default="{row}">
-          <el-button type="text">
+          <el-button link>
             {{ row.info.code }}
           </el-button>
         </template>

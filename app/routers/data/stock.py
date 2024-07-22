@@ -1,6 +1,7 @@
 from app.routers.definition import BaseModel, RequestModel, ResponseModel, APIRouter, Depends, Body, verify_token
 from pydantic.fields import Field
 from pandas import DataFrame, Series
+from datetime import datetime
 
 from app.exception import AppException
 from app.database import stock
@@ -53,11 +54,13 @@ class AListResponse(ResponseModel):
 async def alist():
   df = stock.get_a_list()
   ret: list[AListModel] = []
+  print(datetime.now())
   for _, row in df.iterrows():
     ret.append({
       'code': row['code'],
       'name': row['name']
     })
+  print(datetime.now())
   return AListResponse(result=ret)
 
 """
