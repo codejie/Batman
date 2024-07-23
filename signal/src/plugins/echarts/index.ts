@@ -18,7 +18,8 @@ import {
   AriaComponent,
   ParallelComponent,
   LegendComponent,
-  VisualMapComponent
+  VisualMapComponent,
+  MarkLineComponent,
 } from 'echarts/components'
 
 import { CanvasRenderer } from 'echarts/renderers'
@@ -32,6 +33,7 @@ echarts.use([
   AriaComponent,
   ParallelComponent,
   VisualMapComponent,
+  MarkLineComponent,
   BarChart,
   LineChart,
   PieChart,

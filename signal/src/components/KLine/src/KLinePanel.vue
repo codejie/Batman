@@ -3,56 +3,53 @@ import { ref, PropType, watch, unref } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
 import { apiHistory } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
-
-export type DataParam = {
-  code: string,
-  start: string,
-  end: string,
-  period?: string,
-  adjust?: string
-}
-
-export type ShowParam = {
-  maLines: number[],
-}
+import { DataParam, ShowParam } from '..';
 
 const props = defineProps({
   data: {
     type: Object as PropType<DataParam>,
-    required: true
+    required: false
   },
   show: {
     type: Object as PropType<ShowParam>,
     required: false,
     default() {
       return {
-        maLines: []
+        maLines: [],
+        markLines: false,
+        hideVolume: false,
+        hideKLine: false
       }
     }
   }
 })
 
+let xData: string[] = []
+let klineData: any[] = []
+let volumeData: any[] = []
+
 const upColor = '#ec0000'
 const downColor = '#00da3c'
+
 const options = ref<EChartsOption>({
   title: [],
   grid: [
     {
       left: '10%',
       right: '8%',
-      height: '50%',
-      top: '5%'
+      height: '60%',
+      top: '0%'
     },
     {
       left: '10%',
       right: '8%',
-      top: '60%',
-      height: '30%'
+      bottom: '10%',
+      height: '25%'
     }     
   ],
   legend: {
-    left: 'true',
-    orient: 'vertical',
+    bottom: 0,
+    // orient: 'vertical',
     data: [],
     icon: 'circle'
   },
@@ -83,24 +80,30 @@ const options = ref<EChartsOption>({
       type: 'value',
       name: 'Value',
       nameLocation : 'middle',
-      show: true,
+      show: false,
       gridIndex: 0,
       position: 'left',
       nameGap: 30,
       // inverse: true
-      scale: true
+      scale: true,
+      splitArea: {
+        show: true
+      }
     },
     {
       type: 'value',
       name: 'Volume',
       nameLocation : 'middle',
-      show: true,
+      show: false,
       gridIndex: 1,
       position: 'left',
       nameGap: 30,
       // inverse: true
       scale: true,
-      splitNumber: 1,
+      splitArea: {
+        show: true
+      },
+      splitNumber: 8,
       axisLabel: { show: false },
       axisLine: { show: false },
       axisTick: { show: false },
@@ -109,8 +112,9 @@ const options = ref<EChartsOption>({
   ],
   series: [
     {
-      name: 'Stock Data',
+      name: 'KLine',
       type: 'candlestick',
+      data: [],
       itemStyle: {
         color: upColor,
         color0: downColor,
@@ -119,11 +123,14 @@ const options = ref<EChartsOption>({
       },
       xAxisIndex: 0,
       yAxisIndex: 0,
-      data: []
+      markLine: {
+        symbol: ['none', 'none'],
+        data: []
+      }
     },
     {
       name: 'Volume',
-      type: 'bar',
+      type: 'bar',    
       xAxisIndex: 1,
       yAxisIndex: 1,
       data: []
@@ -181,38 +188,81 @@ watch(
     if (value) {
       const ret = await apiHistory(unref(value)!)
       updateData(ret.result as HistoryDataModel[])
+      updateOptions()
     }
   }
 )
 
-function updateData(data: HistoryDataModel[]) {
-  const xData = data.map(item => item.date)
-  options.value.xAxis![0].data = xData
-  options.value.xAxis![1].data = xData
-  options.value.series![0].data = data.map(({open, close, low, high}) => ([open, close, low, high]))
-  options.value.series![1].data = data.map(item => [item.date, item.volume, item.open < item.close ? 1 : -1])
-
-  options.value.series = options.value.series!.slice(0, 1)
-  const closeData = data.map(({close}) => close)
-  const ma = props.show.maLines;
-  for (const d of ma) {
-    makeMASeries(d, closeData)
+watch(
+  () => props.show,
+  async () => {
+    updateOptions()
   }
+)
+
+function updateData(data: HistoryDataModel[]) {
+  xData = data.map(item => item.date)
+  klineData = data.map(({open, close, low, high}) => ([open, close, low, high]))
+  volumeData = data.map(item => [item.date, item.volume, item.open > item.close ? 1 : -1])
 }
 
-function makeMASeries(ma: number, data: number[]) {
-  options.value.series!.push({
-    name: `MA-${ma}`,
-    type: 'line',
-    xAxisIndex: 0,
-    yAxisIndex: 0,
-    showSymbol: false,
-    lineStyle: {
-      width: 1
-    },
-    data: calcMAData(ma, data)
-  })
-  options.value.legend!.data.push(`MA-${ma}`)
+function updateOptions() {
+  options.value.series = (options.value.series! as Array<any>).slice(0, 2)
+  options.value.series![0].markLine.data = []
+
+  if (props.show.hideKLine) {
+    options.value.series![0].itemStyle.color = '#777'
+    options.value.series![0].itemStyle.color0 = '#777'
+    // upColor = '#777'
+    // downColor = '#777'
+  } else {
+    options.value.series![0].itemStyle.color = upColor
+    options.value.series![0].itemStyle.color0 = downColor
+  }
+
+  if (props.show.markLines) {
+    options.value.series![0].markLine.data.push({
+      name: 'min',
+      type: 'min',
+      valueDim: 'close'
+    })
+    options.value.series![0].markLine.data.push({
+      name: 'max',
+      type: 'max',
+      valueDim: 'close'
+    })
+  }
+
+  if (props.show.hideVolume) {
+    options.value.grid![0].height = '90%'
+    options.value.grid![1].height = '0%'
+  } else {
+    options.value.grid![0].height = '60%'
+    options.value.grid![1].height = '25%'    
+  }
+
+  options.value.xAxis![0].data = xData
+  options.value.xAxis![1].data = xData
+  options.value.series![0].data = klineData
+  options.value.series![1].data = volumeData  
+
+  if (props.show.maLines.length > 0) {
+    const closeData = klineData.map(item => item[1])
+    for (const ma of props.show.maLines) {
+      options.value.series!.push({
+        name: `MA${ma}`,
+        type: 'line',
+        xAxisIndex: 0,
+        yAxisIndex: 0,
+        showSymbol: false,
+        lineStyle: {
+          width: 1
+        },
+        data: calcMAData(ma, closeData)
+      })
+      options.value.legend!.data.push(`MA${ma}`)
+    }
+  }
 }
 
 function calcMAData(ma: number, data: number[]) {

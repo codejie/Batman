@@ -2,8 +2,7 @@
 import { PropType, defineProps, ref, unref, watch } from 'vue'
 import { InstanceModel } from '@/api/strategy/types'
 import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption, ElButton, ElMessage } from 'element-plus'
-// import KLinePanel, { Param } from '@/views/Strategy/components/KLinePanel.vue'
-import KLinePanel, { DataParam, ShowParam } from '@/components/KLine/src/KLinePanel.vue';
+import { DataParam, KLinePanel, ShowParam } from '@/components/KLine'
 import { apiCreate } from '@/api/customized';
 
 const props = defineProps({
@@ -19,7 +18,7 @@ const extRanges = [
   // },  
   {
     value: 0,
-    label: 'current'
+    label: '+0 days'
   },
   {
     value: 14,
@@ -44,7 +43,9 @@ function getDateString(date: string, days: number): string {
 }
 
 const showParam = ref<ShowParam>({
-  maLines: [5, 10, 12, 24]
+  maLines: [5, 12, 30 ],
+  hideVolume: false,
+  markLines: true
 })
 const dataParam = ref<DataParam>()
 const dateRange = ref<number>(0)
@@ -87,6 +88,14 @@ async function onCustomizedClick() {
   }
 }
 
+function onZoomClick() {
+  showParam.value = {
+    maLines: showParam.value.maLines,
+    hideVolume: !showParam.value.hideVolume,
+    markLines: true
+  }
+}
+
 </script>
 <template>
   <ElForm label-width="auto">
@@ -104,20 +113,15 @@ async function onCustomizedClick() {
         </ElCol>
         <ElCol :span="17">
           <ElRow v-if="selectRow" :gutter="24" sytle="width: 100%">
-            <ElCol :span="12">
+            <ElCol :span="24">
               <div class="bold">
                 {{ selectRow?.code }}({{ selectRow?.name }})
                 <ElButton size="small" style="margin-left: 12px" @click="onCustomizedClick">Add to Customized</ElButton>
+                <ElSelect v-model="dateRange" size="small" style="width: 15%; float: right">
+                  <ElOption v-for="item in extRanges" :key="item.value" :label="item.label" :value="item.value" />
+                </ElSelect>
+                <ElButton size="small" style="margin-left: 12px; float: right; margin-right: 12px;" @click="onZoomClick">Zoom</ElButton>
               </div>
-            </ElCol>
-            <ElCol :span="6">
-              <ElButton size="small" style="float: left">Add to Customized</ElButton>
-              <!-- <ElButton size="small" style="float: right; margin-right: 12px">{{ selectRow?.name }}</ElButton> -->
-            </ElCol>
-            <ElCol :span="6">
-              <ElSelect v-model="dateRange" size="small" style="width: 80%; float: right">
-                <ElOption v-for="item in extRanges" :key="item.value" :label="item.label" :value="item.value" />
-              </ElSelect>
             </ElCol>
           </ElRow>
           <KLinePanel :data="dataParam" :show="showParam" />

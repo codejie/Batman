@@ -111,7 +111,7 @@ onMounted(async () => {
   <ContentWrap title="Customized">
     <div>
       <ElSelect v-model="selectCode" :disabled="alistData.length==0" filterable clearable :placeholder="listHolder" style="width: 240px;">
-        <ElOption v-for="item in alistData" :key="item.code" :value="item.code" :label="`${item.code} ${item.name}`" />
+        <ElOption v-for="i in alistData" :key="i.code" :value="i.code" :label="`${i.code} ${i.name}`" />
       </ElSelect>
       <!-- <ElSelectV2
         v-model="selectCode"
