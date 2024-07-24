@@ -29,12 +29,17 @@ class StrategyManager:
         return StrategyManager.listStrategy.get(id, None)
     
     @staticmethod
-    def get_list(type: Type = None) -> list[Strategy]:
-        ret: list = []
-        for k, v in StrategyManager.listStrategy.items():
-            if type == None or type == v.type:
-                ret.append(v)
-        return ret
+    def get_list(id: str = None, type: Type = None) -> list[Strategy]:
+          ret: list = []
+          if id:
+            s = StrategyManager.listStrategy.get(id, None)
+            if s:
+                ret.append(s)
+          else:
+            for k, v in StrategyManager.listStrategy.items():
+                if type == None or type == v.type:
+                    ret.append(v)
+          return ret
     
 StrategyManager.add(RapidRaiseFallStrategy)
     

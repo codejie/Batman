@@ -61,7 +61,7 @@ export type InstanceModel = {
 // Request & Response
 export type InfosRequest = {
   type?: number
-  name?: string
+  id?: string
 }
 
 export type InfosResponse = StrategyModel[]

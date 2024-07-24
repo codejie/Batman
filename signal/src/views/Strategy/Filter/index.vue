@@ -169,7 +169,7 @@ async function onReset(id: string) {
         </template>
       </ElTableColumn>
       <ElTableColumn prop="strategy" label="Strategy" width="200" />
-      <ElTableColumn label="Hit Results" width="120">
+      <ElTableColumn label="Hits" width="60">
         <template #default="scope">
           <ElButton link type="primary" @click="onResult(scope.row)">
             {{ makeResult(scope.row) }}
@@ -190,8 +190,11 @@ async function onReset(id: string) {
         </template>
       </ElTableColumn>
     </ElTable>
-    <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`">
-      <DetailForm :instance="selectInstance" />
+    <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="45%">
+      <DetailForm :instance="selectInstance!" />
+      <template #footer>
+        <ElButton type="primary" @click="detailDialogVisible=false">Close</ElButton>
+      </template>       
     </ElDialog>
     <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="70%" destroy-on-close>
       <ResultForm :instance="selectInstance" />

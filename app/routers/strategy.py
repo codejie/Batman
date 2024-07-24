@@ -57,14 +57,14 @@ class InstanceModel(BaseModel):
 """
 class InfosRequest(RequestModel):
     type: int | None = None
-    name: str = None
+    id: str = None
 
 class InfosResponse(ResponseModel):
     result: list[StrategyModel] = None
 
 @router.post('/infos', response_model=InfosResponse, response_model_exclude_none=True)
 async def infos(body: InfosRequest=Body()):
-    results = StrategyManager.get_list(None if body.type is None else Type(body.type))
+    results = StrategyManager.get_list(id=body.id, type=None if body.type is None else Type(body.type))
     ret: list[StrategyModel] = []
     for s in results:
         args: list[ArgumentModel] = []

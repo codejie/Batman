@@ -47,7 +47,7 @@ defineExpose({
       <ElInput v-model="form.name" />
     </ElFormItem>
     <ElFormItem label="Strategy" required>
-      <ElSelect v-model="form.strategy" placeholder="select a strategy">
+      <ElSelect v-model="form.strategy" placeholder="choose a strategy">
         <ElOption v-for="s in strategyList" :key="s.id" :label="s.name" :value="s" />
       </ElSelect>
     </ElFormItem>
