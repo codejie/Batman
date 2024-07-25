@@ -161,7 +161,7 @@ onMounted(async () => {
       <ElRow class="row" :gutter="24">
         <ElCol :span="6">状态</ElCol>
         <ElCol :span="18">{{ makeState() }}</ElCol>
-      </ElRow>      
+      </ElRow>
       <ElRow class="row" :gutter="24">
         <ElCol :span="6">定时器</ElCol>
         <ElCol :span="18">{{ makeTrigger() }}</ElCol>

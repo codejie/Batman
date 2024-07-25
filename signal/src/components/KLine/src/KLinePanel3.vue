@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { ref, PropType, watch, unref } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
-import { apiHistory } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
-import { DataParam, ShowParam } from '..';
+import { ShowParam } from '..';
+
+
 
 const props = defineProps({
-  dataParam: {
-    type: Object as PropType<DataParam>,
-    required: false
+  data: {
+    type: Array as PropType<HistoryDataModel[]>,
+    required: true,
+    default: () => []
   },
   showParam: {
     type: Object as PropType<ShowParam>,
@@ -183,11 +185,10 @@ const options = ref<EChartsOption>({
 })
 
 watch(
-  () => props.dataParam,
+  () => props.data,
   async (value) => {
     if (value) {
-      const ret = await apiHistory(unref(value)!)
-      updateData(ret.result as HistoryDataModel[])
+      updateData(props.data)
       updateOptions()
     }
   }

@@ -78,8 +78,22 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         meta: {
           title: '自选',
           icon: 'carbon:chart-custom'
-        }        
-      }
+        }
+      },
+      {
+        path: 'summary',
+        name: 'Summary',
+        component: () => import('@/views/Customized/Summary.vue'),
+        props: route => ({ code: route.query.code }),
+        meta: {
+          title: 'Summary',
+          noTagsView: true,
+          noCache: true,
+          hidden: true,
+          // showMainRoute: true,
+          activeMenu: '/customized/index'
+        }
+      }        
     ]
   },  
   {

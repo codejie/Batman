@@ -124,7 +124,7 @@ function onZoomClick() {
               </div>
             </ElCol>
           </ElRow>
-          <KLinePanel :data="dataParam" :show="showParam" />
+          <KLinePanel :dataParam="dataParam" :showParam="showParam" />
         </ElCol>
       </ElRow>
     </ElFormItem>

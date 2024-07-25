@@ -52,6 +52,6 @@ function onTestClick() {
 <template>
   <ContentWrap title="Test">
     <div><ElButton @click="onTestClick">Test</ElButton></div>
-    <KLinePanel :data="chartData" :show="showParam" />
+    <KLinePanel :dataParam="chartData" :showParam="showParam" />
   </ContentWrap>
 </template>

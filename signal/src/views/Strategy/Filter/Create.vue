@@ -7,7 +7,6 @@ import CreateForm from '@/views/Strategy/Filter/components/CreateForm.vue'
 import { CreateInstanceRequest, TriggerModel } from '@/api/strategy/types'
 import { apiCreate } from '@/api/strategy'
 import { ElMessage, ElButton } from 'element-plus'
-// import { useEmitt } from '@/hooks/event/useEmitt'
 
 const { t } = useI18n()
 const { push, go } = useRouter()

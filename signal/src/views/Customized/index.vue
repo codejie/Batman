@@ -6,6 +6,9 @@ import { apiAList, apiHistory } from '@/api/data/stock';
 import { AListModel, HistoryDataModel } from '@/api/data/stock/types';
 import { ElTable, ElTableColumn, ElButton, ElMessageBox, ElSelect, ElOption, ElMessage } from 'element-plus'
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const { push } = useRouter()
 
 type item = {
   info: InfoModel
@@ -15,7 +18,7 @@ const tableData = ref<item[]>([])
 const alistData = ref<AListModel[]>([])
 // const filterListData = ref<AListModel[]>([])
 const selectCode = ref<string>('')
-const listHolder = ref<string>('loading..')
+const listHolder = ref<string>('click load button to fetch..')
 // const loading = ref(false)
 
 
@@ -75,8 +78,8 @@ async function onCreateClick() {
   }
 }
 
-function onRowClick() {
-
+function onRowClick(row: any) {
+  push(`/customized/summary?code=${row.info.code}`)
 }
 
 async function onDelete(info: InfoModel) {
@@ -96,6 +99,7 @@ async function onDelete(info: InfoModel) {
 }
 
 async function fetchAList() {
+  listHolder.value = 'loading..'
   const ret = await apiAList()
   alistData.value = ret.result
   listHolder.value = 'please choose code..'
@@ -103,7 +107,7 @@ async function fetchAList() {
 
 onMounted(async () => {
   await fetchInfos()
-  await fetchAList()
+  // await fetchAList()
 })
 
 </script>
@@ -124,6 +128,7 @@ onMounted(async () => {
         placeholder="choose code.."
         style="width: 240px;"
       /> -->
+      <ElButton class="btn" @click="fetchAList" style="margin-right: 8px">Load</ElButton>
       <ElButton class="btn" type="primary" :disabled="selectCode===''" @click="onCreateClick">Add</ElButton>
     </div>
     <ElTable :data="tableData" :stripe="true" :border="true" style="width: 100%;" @row-click="onRowClick">
