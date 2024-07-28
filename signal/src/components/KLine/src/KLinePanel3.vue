@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { ref, PropType, watch, unref } from 'vue'
+import { ref, PropType, watch } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
 import { HistoryDataModel } from '@/api/data/stock/types';
 import { ShowParam } from '..';
-
-
 
 const props = defineProps({
   data: {
@@ -282,8 +280,9 @@ function calcMAData(ma: number, data: number[]) {
   return result
 }
 
+
 </script>
 <template>
   <!-- <Echart v-if="param != undefined" :options="options" /> -->
-  <Echart :options="options" />
+  <Echart :options="options" autosize />
 </template>

@@ -40,7 +40,7 @@ const toDocument = () => {
   <ElDropdown class="custom-hover" :class="prefixCls" trigger="click">
     <div class="flex items-center">
       <img
-        src="@/assets/imgs/avatar.jpg"
+        src="https://media.stickerswiki.app/batman_by_mahdi/2915852.512.webp"
         alt=""
         class="w-[calc(var(--logo-height)-25px)] rounded-[50%]"
       />

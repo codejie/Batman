@@ -160,7 +160,7 @@ onMounted(async () => {
       </ElTableColumn>
       <ElTableColumn fixed="right" label="操作" min-width="100">
         <template #default="{row}">   
-          <ElButton link type="danger" @click="onDelete(row.info)">删除</ElButton>
+          <ElButton link type="danger" @click.stop="onDelete(row.info)">删除</ElButton>
         </template>
       </ElTableColumn>      
     </ElTable>

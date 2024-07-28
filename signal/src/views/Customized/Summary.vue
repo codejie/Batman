@@ -60,10 +60,24 @@ function makeTitle() {
 }
 
 function onTestClick() {
-  colSpan.value = {
-    left: 0,
-    middle: 20,
-    right: 4
+  if (colSpan.value.left == 0) {
+    colSpan.value = {
+      left: 3,
+      middle: 17,
+      right: 4      
+    }
+  } else {
+    colSpan.value = {
+      left: 0,
+      middle: 20,
+      right: 4
+    }
+  }
+
+  showParam.value = {
+    maLines: [5, 12, 30 ],
+    hideVolume: false,
+    markLines: true
   }
 }
 
@@ -80,18 +94,22 @@ async function onCustomizedClick(row: any) {
     </template>
     <ElRow :gutter="24">
       <ElCol class="middle-col" :span="colSpan.left">
-        <ElTable :data="customizedList" @row-click="onCustomizedClick" :border="true" height="auto" width="auto" highlight-current-row>
-          <ElTableColumn prop="code" label="Code" width="100" />
+        <ElTable :data="customizedList" @row-click="onCustomizedClick" :border="true" max-height="800" width="auto" highlight-current-row>
+          <ElTableColumn prop="code" label="Code" width="90" />
           <ElTableColumn prop="name" label="Name" />
         </ElTable>
       </ElCol>
       <ElCol class="middle-col" :span="colSpan.middle">
-        <ElRow :gutter="24" />
         <ElRow :gutter="24">
-          <KLinePanel3 :data="historyData" :showParam="showParam" />
+          <div>Tools</div>
+        </ElRow>
+        <ElRow :gutter="24">
+          <div style="width: 100%; height: 100%;">
+            <KLinePanel3 :data="historyData" :showParam="showParam" />
+          </div>
         </ElRow>
         <ElRow class="middle-col" :gutter="24">
-          <ElTable :data="historyData" :stripe="true" :border="true" max-height="240" style="width: 100%;">
+          <ElTable :data="historyData" :stripe="true" :border="true" max-height="300" style="width: 100%;">
             <ElTableColumn prop="date" label="日期" width="120" />            
             <ElTableColumn prop="price" label="现价" width="100" />
             <ElTableColumn prop="percentage" label="涨跌幅%" width="100" />
@@ -116,8 +134,6 @@ async function onCustomizedClick(row: any) {
 <style lang="css">
 .middle-col {
   padding: 8px;
-  /* padding-left: 4px;
-  padding-right: 4px; */
   outline: 1px solid gainsboro;
   outline-offset:-4px;   
 }
