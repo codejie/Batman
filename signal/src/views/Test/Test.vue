@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { ContentWrap } from '@/components/ContentWrap'
-import { DataParam, KLinePanel, ShowParam } from '@/components/KLine'
+import { DataParam, KLinePanel4, ShowParam } from '@/components/KLine'
 import { ElButton } from 'element-plus'
 
 
@@ -52,6 +52,6 @@ function onTestClick() {
 <template>
   <ContentWrap title="Test">
     <div><ElButton @click="onTestClick">Test</ElButton></div>
-    <KLinePanel :dataParam="chartData" :showParam="showParam" />
+    <KLinePanel4 :code="'002236'" />
   </ContentWrap>
 </template>

@@ -11,6 +11,7 @@ routers: list[APIRouter] = []
 
 def register_routers(app: FastAPI):
     app.include_router(data.stock.router)
+    app.include_router(data.stock_third.router)
     app.include_router(strategy.router)
     app.include_router(account.router)
     app.include_router(algorithm.router)

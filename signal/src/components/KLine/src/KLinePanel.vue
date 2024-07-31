@@ -8,7 +8,13 @@ import { DataParam, ShowParam } from '..';
 const props = defineProps({
   dataParam: {
     type: Object as PropType<DataParam>,
-    required: false
+    required: false,
+    default() {
+      return {
+        code: '000001',
+        start: '2023-01-01'
+      }
+    }
   },
   showParam: {
     type: Object as PropType<ShowParam>,
@@ -184,12 +190,10 @@ const options = ref<EChartsOption>({
 
 watch(
   () => props.dataParam,
-  async (value) => {
-    if (value) {
-      const ret = await apiHistory(unref(value)!)
-      updateData(ret.result as HistoryDataModel[])
-      updateOptions()
-    }
+  async () => {
+    const ret = await apiHistory(props.dataParam)
+    updateData(ret.result as HistoryDataModel[])
+    updateOptions()
   }
 )
 

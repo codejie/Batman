@@ -105,4 +105,4 @@ def get_margin(date: str, symbol: str = None) -> DataFrame:
         else:
             raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
     except Exception as e:
-        raise AppException(e)    
+        raise AppException(e)
