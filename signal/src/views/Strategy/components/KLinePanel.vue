@@ -158,7 +158,7 @@ const options = ref<EChartsOption>({
 watch(
   () => props.param,
   async (value) => {
-    console.log(value)
+    // console.log(value)
     if (value) {
       const ret = await apiHistory(unref(value)!)
       updateOpt(ret.result as HistoryDataModel[])

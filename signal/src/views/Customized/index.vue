@@ -68,7 +68,6 @@ async function onCreateClick() {
     type: 1,
     code: selectCode.value
   })
-  console.log(ret)
   if (ret.code == 0) {
     ElMessage({
       type: 'success',

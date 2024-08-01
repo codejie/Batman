@@ -15,7 +15,7 @@ import { ElButton } from 'element-plus'
 
 const chartData = ref<DataParam>()
 const showParam = ref<ShowParam>({
-  maLines: [5, 10, 12],
+  maLines: [],
   markLines: true,
   hideKLine: false,
   hideVolume: false
@@ -36,6 +36,11 @@ onMounted(() => {
   updateChartParam()
 })
 
+const param = ref<any>({
+  code: '002236',
+  name: '一二三四'
+})
+
 function onTestClick() {
   console.log('click')
   // showParam.value.hideVolume = true
@@ -52,6 +57,6 @@ function onTestClick() {
 <template>
   <ContentWrap title="Test">
     <div><ElButton @click="onTestClick">Test</ElButton></div>
-    <KLinePanel4 :code="'002236'" />
+    <KLinePanel4 :param="param" />
   </ContentWrap>
 </template>

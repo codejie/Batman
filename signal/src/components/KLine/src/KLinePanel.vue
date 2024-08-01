@@ -5,6 +5,8 @@ import { apiHistory } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
 import { DataParam, ShowParam } from '..';
 
+const DEFAULT_START: string = '2023-01-01'
+
 const props = defineProps({
   dataParam: {
     type: Object as PropType<DataParam>,
@@ -84,9 +86,9 @@ const options = ref<EChartsOption>({
   yAxis: [
     {
       type: 'value',
-      name: 'Value',
+      // name: 'Value',
       nameLocation : 'middle',
-      show: false,
+      show: true,
       gridIndex: 0,
       position: 'left',
       nameGap: 30,
@@ -98,9 +100,9 @@ const options = ref<EChartsOption>({
     },
     {
       type: 'value',
-      name: 'Volume',
+      // name: 'Volume',
       nameLocation : 'middle',
-      show: false,
+      show: true,
       gridIndex: 1,
       position: 'left',
       nameGap: 30,
@@ -140,7 +142,7 @@ const options = ref<EChartsOption>({
       xAxisIndex: 1,
       yAxisIndex: 1,
       data: []
-    }      
+    }
   ],
   visualMap: {
     show: false,
@@ -191,7 +193,11 @@ const options = ref<EChartsOption>({
 watch(
   () => props.dataParam,
   async () => {
-    const ret = await apiHistory(props.dataParam)
+    const ret = await apiHistory({
+      code: props.dataParam.code,
+      start: props.dataParam.start || DEFAULT_START,
+      end: props.dataParam.end
+    })
     updateData(ret.result as HistoryDataModel[])
     updateOptions()
   }
@@ -212,7 +218,9 @@ function updateData(data: HistoryDataModel[]) {
 
 function updateOptions() {
   options.value.series = (options.value.series! as Array<any>).slice(0, 2)
+
   options.value.series![0].markLine.data = []
+  options.value.legend!.data = []
 
   if (props.showParam.hideKLine) {
     options.value.series![0].itemStyle.color = '#777'
@@ -248,11 +256,12 @@ function updateOptions() {
   options.value.xAxis![0].data = xData
   options.value.xAxis![1].data = xData
   options.value.series![0].data = klineData
-  options.value.series![1].data = volumeData  
-
+  options.value.series![1].data = volumeData
+  
   if (props.showParam.maLines.length > 0) {
     const closeData = klineData.map(item => item[1])
     for (const ma of props.showParam.maLines) {
+      console.log(`series = ${options.value.series.length}`)
       options.value.series!.push({
         name: `MA${ma}`,
         type: 'line',

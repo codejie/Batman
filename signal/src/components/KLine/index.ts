@@ -14,7 +14,7 @@ export type DataParam = {
 }
 
 export type ShowParam = {
-  maLines?: number[],
+  maLines: number[],
   markLines?: boolean,
   hideVolume?: boolean,  
   hideKLine?: boolean

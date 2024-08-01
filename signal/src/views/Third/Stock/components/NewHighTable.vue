@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { apiNewHigh } from '@/api/third/stock';
-import { DataFrameSetModel } from '@/api/third/stock/types';
 import { onMounted, ref } from 'vue';
-import { ElTable, ElTableColumn } from 'element-plus';
+import { ElTable, ElTableColumn, ElDialog, ElButton } from 'element-plus';
+import { KLinePanel4 } from '@/components/KLine'
 
 const props = defineProps({
   category: {
@@ -23,6 +23,14 @@ const columnWidths = [90, 90, 80, 80, 80, 90, 120]
 
 const data = ref<any[]>([]) // ref<DataFrameSetModel>()
 const columns = ref<Column[]>([])
+
+const klineDialogVisible = ref<boolean>(false)
+const klineParam = ref<any>({
+  type: 1,
+  code: '',
+  name: ''
+})
+const dialogTitle = ref<string>()
 
 async function fetchNewHigh() {
   const ret = await apiNewHigh({
@@ -47,7 +55,14 @@ async function fetchNewHigh() {
 }
 
 function onRowClick(row: any) {
-
+  console.log(row)
+  dialogTitle.value = `${row['股票代码']}(${row['股票简称']})`
+  klineParam.value = {
+    code: row['股票代码'],
+    name: row['股票简称'],
+    type: 1
+  }
+  klineDialogVisible.value = true
 }
 
 onMounted(async () => {
@@ -59,6 +74,12 @@ onMounted(async () => {
   <ElTable class="table" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
     <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
   </ElTable>
+  <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%">
+    <KLinePanel4 :param="klineParam" />
+    <template #footer>
+        <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
+      </template>    
+  </ElDialog>
 </template>
 <style lang="css">
 .title {

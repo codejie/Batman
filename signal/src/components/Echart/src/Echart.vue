@@ -56,7 +56,7 @@ const styles = computed(() => {
 const initChart = () => {
   if (unref(elRef) && props.options) {
     echartRef = echarts.init(unref(elRef) as HTMLElement)
-    echartRef?.setOption(unref(options))
+    echartRef?.setOption(unref(options), {notMerge: true})
   }
 }
 
@@ -64,7 +64,7 @@ watch(
   () => options.value,
   (options) => {
     if (echartRef) {
-      echartRef?.setOption(options)
+      echartRef?.setOption(options, {notMerge: true})
     }
   },
   {
