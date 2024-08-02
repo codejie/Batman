@@ -19,3 +19,9 @@ export type ShowParam = {
   hideVolume?: boolean,  
   hideKLine?: boolean
 }
+
+export type ReqParam = {
+  type?: number
+  code: string,
+  name: string
+}

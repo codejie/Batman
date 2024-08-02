@@ -7,7 +7,7 @@ import { HistoryDataModel } from '@/api/data/stock/types';
 import { onMounted, ref } from 'vue';
 import { ElRow, ElCol, ElButton, ElTable, ElTableColumn } from 'element-plus'
 import { useRouter } from 'vue-router';
-import { ShowParam, KLinePanel5, ReqParam } from '@/components/KLine';
+import { ShowParam, KLinePanel3 } from '@/components/KLine';
 
 const { go } = useRouter()
 
@@ -16,10 +16,6 @@ const DEFAULT_END = undefined
 
 const props = defineProps({
   code: {
-    type: String,
-    required: true
-  },
-  name: {
     type: String,
     required: true
   }
@@ -89,12 +85,6 @@ async function onCustomizedClick(row: any) {
   selectCode.value = row.code
   await fetchHistory(selectCode.value)
 }
-
-const param = ref<ReqParam>({
-  code: props.code,
-  name: props.name
-})
-
 </script>
 <template>
   <ContentDetailWrap :title="makeTitle()">
@@ -115,8 +105,7 @@ const param = ref<ReqParam>({
         </ElRow>
         <ElRow :gutter="24">
           <div style="width: 100%; height: 100%;">
-            <!-- <KLinePanel3 :data="historyData" :showParam="showParam" /> -->
-            <KLinePanel4 :param="param" />
+            <KLinePanel3 :data="historyData" :showParam="showParam" />
           </div>
         </ElRow>
         <ElRow class="middle-col" :gutter="24">

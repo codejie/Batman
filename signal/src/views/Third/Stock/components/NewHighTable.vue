@@ -55,7 +55,6 @@ async function fetchNewHigh() {
 }
 
 function onRowClick(row: any) {
-  console.log(row)
   dialogTitle.value = `${row['股票代码']}(${row['股票简称']})`
   klineParam.value = {
     code: row['股票代码'],

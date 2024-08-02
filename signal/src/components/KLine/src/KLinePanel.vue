@@ -261,7 +261,6 @@ function updateOptions() {
   if (props.showParam.maLines.length > 0) {
     const closeData = klineData.map(item => item[1])
     for (const ma of props.showParam.maLines) {
-      console.log(`series = ${options.value.series.length}`)
       options.value.series!.push({
         name: `MA${ma}`,
         type: 'line',

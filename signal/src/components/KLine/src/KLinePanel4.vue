@@ -2,14 +2,14 @@
 import { onMounted, PropType, ref, watch } from 'vue';
 import { ElRow, ElCol, ElButton, ElCheckboxGroup, ElCheckboxButton, ElRadioGroup, ElRadioButton, ElMessage } from 'element-plus';
 import KLinePanel from './KLinePanel.vue';
-import { DataParam, ShowParam } from '..';
+import { DataParam, ReqParam, ShowParam } from '..';
 import { apiCreate } from '@/api/customized';
 
-type ReqParam = {
-  type?: number
-  code: string,
-  name: string
-}
+// type ReqParam = {
+//   type?: number
+//   code: string,
+//   name: string
+// }
 
 const props = defineProps({
   param: {
