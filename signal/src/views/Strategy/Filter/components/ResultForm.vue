@@ -2,7 +2,7 @@
 import { PropType, defineProps, ref, unref, watch } from 'vue'
 import { InstanceModel } from '@/api/strategy/types'
 import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption, ElButton, ElMessage } from 'element-plus'
-import { DataParam, KLinePanel, ShowParam } from '@/components/KLine'
+import { ReqParam, KLinePanel, ShowParam } from '@/components/KLine'
 import { apiCreate } from '@/api/customized';
 
 const props = defineProps({
@@ -47,7 +47,7 @@ const showParam = ref<ShowParam>({
   hideVolume: false,
   markLines: true
 })
-const dataParam = ref<DataParam>()
+const reqParam = ref<ReqParam>()
 const dateRange = ref<number>(0)
 let selectRow: any = ref<any>()
 
@@ -55,7 +55,7 @@ function updateChartParam(days: number) {
   const start = getDateString(props.instance?.result_params.start, -days)
   const end = getDateString(props.instance?.result_params.end, days)
 
-  dataParam.value = {
+  reqParam.value = {
     code: selectRow.value?.code,
     start: start,
     end: end
@@ -124,7 +124,7 @@ function onZoomClick() {
               </div>
             </ElCol>
           </ElRow>
-          <KLinePanel :dataParam="dataParam" :showParam="showParam" />
+          <KLinePanel :reqParam="reqParam" :showParam="showParam" />
         </ElCol>
       </ElRow>
     </ElFormItem>

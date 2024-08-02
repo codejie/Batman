@@ -78,7 +78,7 @@ async function onCreateClick() {
 }
 
 function onRowClick(row: any) {
-  push(`/customized/summary?code=${row.info.code}`)
+  push(`/customized/summary?code=${row.info.code}&name=${row.info.name}`)
 }
 
 async function onDelete(info: InfoModel) {

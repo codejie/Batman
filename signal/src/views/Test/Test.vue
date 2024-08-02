@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { ContentWrap } from '@/components/ContentWrap'
-import { DataParam, KLinePanel4, ShowParam } from '@/components/KLine'
+import { ReqParam, KLinePanel, ShowParam } from '@/components/KLine'
 import { ElButton } from 'element-plus'
 
 
@@ -13,7 +13,7 @@ import { ElButton } from 'element-plus'
 //   return tmp.toISOString().slice(0, 10)
 // }
 
-const chartData = ref<DataParam>()
+const chartData = ref<ReqParam>()
 const showParam = ref<ShowParam>({
   maLines: [],
   markLines: true,
@@ -57,6 +57,6 @@ function onTestClick() {
 <template>
   <ContentWrap title="Test">
     <div><ElButton @click="onTestClick">Test</ElButton></div>
-    <KLinePanel4 :param="param" />
+    <KLinePanel :param="param" :show-table="true" />
   </ContentWrap>
 </template>

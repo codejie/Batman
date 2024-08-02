@@ -1,12 +1,14 @@
+import { HistoryDataModel } from '@/api/data/stock/types'
+import KLineChart from './src/KLineChart.vue'
+import KLineChart2 from './src/KLineChart2.vue'
 import KLinePanel from './src/KLinePanel.vue'
-import KLinePanel2 from './src/KLinePanel2.vue'
-import KLinePanel3 from './src/KLinePanel3.vue'
-import KLinePanel4 from './src/KLinePanel4.vue'
 
-export { KLinePanel, KLinePanel2, KLinePanel3, KLinePanel4 }
+export { KLineChart, KLineChart2, KLinePanel }
 
-export type DataParam = {
+export type ReqParam = {
+  type?: number,
   code: string,
+  name?: string,
   start?: string,
   end?: string,
   period?: string,
@@ -20,8 +22,10 @@ export type ShowParam = {
   hideKLine?: boolean
 }
 
-export type ReqParam = {
-  type?: number
-  code: string,
-  name: string
-}
+export type DataParam = HistoryDataModel[]
+
+// export type ReqParam = {
+//   type?: number
+//   code: string,
+//   name?: string
+// }

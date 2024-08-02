@@ -2,17 +2,15 @@
 import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { apiInfos } from '@/api/customized';
 import { InfoModel } from '@/api/customized/types';
-import { apiHistory } from '@/api/data/stock';
-import { HistoryDataModel } from '@/api/data/stock/types';
 import { onMounted, ref } from 'vue';
 import { ElRow, ElCol, ElButton, ElTable, ElTableColumn } from 'element-plus'
 import { useRouter } from 'vue-router';
-import { ShowParam, KLinePanel5, ReqParam } from '@/components/KLine';
+import { ShowParam, KLinePanel, ReqParam } from '@/components/KLine';
 
 const { go } = useRouter()
 
-const DEFAULT_START = '2024-01-01'
-const DEFAULT_END = undefined
+// const DEFAULT_START = '2024-01-01'
+// const DEFAULT_END = undefined
 
 const props = defineProps({
   code: {
@@ -30,37 +28,37 @@ const colSpan = ref<any>({
   middle: 17,
   right: 4
 })
-const selectCode = ref<string>(props.code)
+// const selectCode = ref<string>(props.code)
 const customizedList = ref<InfoModel[]>()
-const historyData = ref<HistoryDataModel[]>([])
-const showParam = ref<ShowParam>({
-  maLines: [5, 12, 30 ],
-  hideVolume: false,
-  markLines: true
-})
+// const historyData = ref<HistoryDataModel[]>([])
+// const showParam = ref<ShowParam>({
+//   maLines: [5, 12, 30 ],
+//   hideVolume: false,
+//   markLines: true
+// })
 
 async function fetchCustomized() {
   const ret = await apiInfos({})
   customizedList.value = ret.result
 }
 
-async function fetchHistory(code: string) {
-  const ret = await apiHistory({
-    code: code,
-    start: DEFAULT_START,
-    end: DEFAULT_END
-  })
-  historyData.value = ret.result
-}
+// async function fetchHistory(code: string) {
+//   const ret = await apiHistory({
+//     code: code,
+//     start: DEFAULT_START,
+//     end: DEFAULT_END
+//   })
+//   historyData.value = ret.result
+// }
 
 onMounted(async () => {
     await fetchCustomized()
-    await fetchHistory(props.code)
+    // await fetchHistory(props.code)
   }
 )
 
 function makeTitle() {
-  return `${props.code}`
+  return `${props.code}(${props.name})`
 }
 
 function onTestClick() {
@@ -78,16 +76,20 @@ function onTestClick() {
     }
   }
 
-  showParam.value = {
-    maLines: [5, 12, 30 ],
-    hideVolume: false,
-    markLines: true
-  }
+  // showParam.value = {
+  //   maLines: [5, 12, 30 ],
+  //   hideVolume: false,
+  //   markLines: true
+  // }
 }
 
 async function onCustomizedClick(row: any) {
-  selectCode.value = row.code
-  await fetchHistory(selectCode.value)
+  // selectCode.value = row.code
+  // await fetchHistory(selectCode.value)
+  param.value = {
+    code: row.code,
+    name: row.name
+  }
 }
 
 const param = ref<ReqParam>({
@@ -97,7 +99,7 @@ const param = ref<ReqParam>({
 
 </script>
 <template>
-  <ContentDetailWrap :title="makeTitle()">
+  <ContentDetailWrap>
     <template #header>
       <ElButton @click="go(-1)">Back</ElButton>
       <ElButton @click="onTestClick">Test</ElButton>
@@ -111,15 +113,12 @@ const param = ref<ReqParam>({
       </ElCol>
       <ElCol class="middle-col" :span="colSpan.middle">
         <ElRow :gutter="24">
-          <div>Tools</div>
-        </ElRow>
-        <ElRow :gutter="24">
           <div style="width: 100%; height: 100%;">
             <!-- <KLinePanel3 :data="historyData" :showParam="showParam" /> -->
-            <KLinePanel4 :param="param" />
+            <KLinePanel :param="param" :show-table="true"/>
           </div>
         </ElRow>
-        <ElRow class="middle-col" :gutter="24">
+        <!-- <ElRow class="middle-col" :gutter="24">
           <ElTable :data="historyData" :stripe="true" :border="true" max-height="300" style="width: 100%;">
             <ElTableColumn prop="date" label="日期" width="120" />            
             <ElTableColumn prop="price" label="现价" width="100" />
@@ -134,10 +133,10 @@ const param = ref<ReqParam>({
             <ElTableColumn prop="turnover" label="成交额" width="140" />
             <ElTableColumn prop="rate" label="换手率%" width="100" />
           </ElTable>          
-        </ElRow>
+        </ElRow> -->
       </ElCol>
       <ElCol class="middle-col" :span="colSpan.right">
-        {{ selectCode }}
+        {{ code }}
       </ElCol>      
     </ElRow>
   </ContentDetailWrap>

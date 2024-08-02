@@ -84,7 +84,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         path: 'summary',
         name: 'Summary',
         component: () => import('@/views/Customized/Summary.vue'),
-        props: route => ({ code: route.query.code }),
+        props: route => ({ code: route.query.code, name: route.query.name }),
         meta: {
           title: 'Summary',
           noTagsView: true,

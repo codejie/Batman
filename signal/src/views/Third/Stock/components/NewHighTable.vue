@@ -2,7 +2,7 @@
 import { apiNewHigh } from '@/api/third/stock';
 import { onMounted, ref } from 'vue';
 import { ElTable, ElTableColumn, ElDialog, ElButton } from 'element-plus';
-import { KLinePanel4 } from '@/components/KLine'
+import { KLinePanel } from '@/components/KLine'
 
 const props = defineProps({
   category: {
@@ -74,7 +74,7 @@ onMounted(async () => {
     <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
   </ElTable>
   <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%">
-    <KLinePanel4 :param="klineParam" />
+    <KLinePanel :param="klineParam" />
     <template #footer>
         <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
       </template>    

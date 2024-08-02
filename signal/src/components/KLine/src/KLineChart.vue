@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { ref, PropType, watch } from 'vue'
+import { ref, PropType, watch, unref } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
-import { HistoryDataModel } from '@/api/data/stock/types';
-import { ShowParam } from '..';
+import { apiHistory } from '@/api/data/stock';
+import { DataParam, ReqParam, ShowParam } from '..';
+
+const DEFAULT_START: string = '2023-01-01'
 
 const props = defineProps({
-  data: {
-    type: Array as PropType<HistoryDataModel[]>,
-    required: true,
-    default: () => []
+  reqParam: {
+    type: Object as PropType<ReqParam>,
+    required: false,
+    default() {
+      return {
+        code: '000001',
+        start: '2023-01-01'
+      }
+    }
   },
   showParam: {
     type: Object as PropType<ShowParam>,
@@ -22,6 +29,12 @@ const props = defineProps({
       }
     }
   }
+})
+
+const originData = ref<DataParam>([])
+
+defineExpose({
+  originData
 })
 
 let xData: string[] = []
@@ -78,9 +91,9 @@ const options = ref<EChartsOption>({
   yAxis: [
     {
       type: 'value',
-      name: 'Value',
+      // name: 'Value',
       nameLocation : 'middle',
-      show: false,
+      show: true,
       gridIndex: 0,
       position: 'left',
       nameGap: 30,
@@ -92,9 +105,9 @@ const options = ref<EChartsOption>({
     },
     {
       type: 'value',
-      name: 'Volume',
+      // name: 'Volume',
       nameLocation : 'middle',
-      show: false,
+      show: true,
       gridIndex: 1,
       position: 'left',
       nameGap: 30,
@@ -134,7 +147,7 @@ const options = ref<EChartsOption>({
       xAxisIndex: 1,
       yAxisIndex: 1,
       data: []
-    }      
+    }
   ],
   visualMap: {
     show: false,
@@ -183,12 +196,16 @@ const options = ref<EChartsOption>({
 })
 
 watch(
-  () => props.data,
-  async (value) => {
-    if (value) {
-      updateData(props.data)
-      updateOptions()
-    }
+  () => props.reqParam,
+  async () => {
+    const ret = await apiHistory({
+      code: props.reqParam.code,
+      start: props.reqParam.start || DEFAULT_START,
+      end: props.reqParam.end
+    })
+    originData.value = (ret.result as DataParam)
+    updateData(unref(originData))
+    updateOptions()
   }
 )
 
@@ -199,7 +216,7 @@ watch(
   }
 )
 
-function updateData(data: HistoryDataModel[]) {
+function updateData(data: DataParam) {
   xData = data.map(item => item.date)
   klineData = data.map(({open, close, low, high}) => ([open, close, low, high]))
   volumeData = data.map(item => [item.date, item.volume, item.open > item.close ? 1 : -1])
@@ -207,7 +224,9 @@ function updateData(data: HistoryDataModel[]) {
 
 function updateOptions() {
   options.value.series = (options.value.series! as Array<any>).slice(0, 2)
+
   options.value.series![0].markLine.data = []
+  options.value.legend!.data = []
 
   if (props.showParam.hideKLine) {
     options.value.series![0].itemStyle.color = '#777'
@@ -243,8 +262,8 @@ function updateOptions() {
   options.value.xAxis![0].data = xData
   options.value.xAxis![1].data = xData
   options.value.series![0].data = klineData
-  options.value.series![1].data = volumeData  
-
+  options.value.series![1].data = volumeData
+  
   if (props.showParam.maLines.length > 0) {
     const closeData = klineData.map(item => item[1])
     for (const ma of props.showParam.maLines) {
@@ -280,9 +299,8 @@ function calcMAData(ma: number, data: number[]) {
   return result
 }
 
-
 </script>
 <template>
   <!-- <Echart v-if="param != undefined" :options="options" /> -->
-  <Echart :options="options" autosize />
+  <Echart :options="options" />
 </template>

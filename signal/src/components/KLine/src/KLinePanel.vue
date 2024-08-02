@@ -1,300 +1,169 @@
 <script setup lang="ts">
-import { ref, PropType, watch, unref } from 'vue'
-import { Echart, EChartsOption } from '@/components/Echart'
-import { apiHistory } from '@/api/data/stock';
-import { HistoryDataModel } from '@/api/data/stock/types';
-import { DataParam, ShowParam } from '..';
-
-const DEFAULT_START: string = '2023-01-01'
+import { computed, onMounted, PropType, ref, unref, watch } from 'vue';
+import { ElRow, ElCol, ElButton, ElCheckboxGroup, ElCheckboxButton, ElRadioGroup, ElRadioButton, ElMessage, ElTable, ElTableColumn } from 'element-plus';
+import { ReqParam, ShowParam } from '..';
+import { apiCreate } from '@/api/customized';
+import KLineChart from './KLineChart.vue';
 
 const props = defineProps({
-  dataParam: {
-    type: Object as PropType<DataParam>,
-    required: false,
-    default() {
-      return {
-        code: '000001',
-        start: '2023-01-01'
-      }
-    }
+  param: {
+    type: Object as PropType<ReqParam>,
+    required: true
   },
-  showParam: {
-    type: Object as PropType<ShowParam>,
+  showTable: {
+    type: Boolean,
     required: false,
-    default() {
-      return {
-        maLines: [],
-        markLines: false,
-        hideVolume: false,
-        hideKLine: false
-      }
-    }
+    default: () => false
   }
 })
+const startGroup: string[] = ['两年', '一年', '半年']
+const maGroup: number[] = [5, 7, 9, 12, 17, 22, 26, 30, 45, 60]
+const klineGroup: string[] = ['KLine', 'Zoom']
+let start: string = '2023-01-01'
+let zoom: boolean = false
+let kline: boolean = true
 
-let xData: string[] = []
-let klineData: any[] = []
-let volumeData: any[] = []
+const title = ref<string>('')
+const startRange = ref<string>('一年')
+const maLines = ref<number[]>([7, 9, 12])
+const zoom_kline = ref<string[]>(['KLine'])
 
-const upColor = '#ec0000'
-const downColor = '#00da3c'
+const showParam = ref<ShowParam>({
+  maLines: maLines.value,
+  hideVolume: zoom,
+  markLines: true,
+  hideKLine: !kline  
+})
+const reqParam = ref<ReqParam>()
 
-const options = ref<EChartsOption>({
-  title: [],
-  grid: [
-    {
-      left: '10%',
-      right: '8%',
-      height: '60%',
-      top: '0%'
-    },
-    {
-      left: '10%',
-      right: '8%',
-      bottom: '10%',
-      height: '25%'
-    }     
-  ],
-  legend: {
-    bottom: 0,
-    // orient: 'vertical',
-    data: [],
-    icon: 'circle'
-  },
-  xAxis:[
-    {
-      type: 'category',
-      gridIndex: 0,
-      // name: 'Date',
-      // inverse: true,
-      data: []
-    },
-    {
-      type: 'category',
-      gridIndex: 1,
-      // name: 'Date',
-      data: [],
-      boundaryGap: false,
-      axisLine: { onZero: false },
-      axisTick: { show: false },
-      splitLine: { show: false },
-      axisLabel: { show: false },
-      // min: 'dataMin',
-      // max: 'dataMax'
-    }        
-  ],
-  yAxis: [
-    {
-      type: 'value',
-      // name: 'Value',
-      nameLocation : 'middle',
-      show: true,
-      gridIndex: 0,
-      position: 'left',
-      nameGap: 30,
-      // inverse: true
-      scale: true,
-      splitArea: {
-        show: true
-      }
-    },
-    {
-      type: 'value',
-      // name: 'Volume',
-      nameLocation : 'middle',
-      show: true,
-      gridIndex: 1,
-      position: 'left',
-      nameGap: 30,
-      // inverse: true
-      scale: true,
-      splitArea: {
-        show: true
-      },
-      splitNumber: 8,
-      axisLabel: { show: false },
-      axisLine: { show: false },
-      axisTick: { show: false },
-      splitLine: { show: false }
-    }     
-  ],
-  series: [
-    {
-      name: 'KLine',
-      type: 'candlestick',
-      data: [],
-      itemStyle: {
-        color: upColor,
-        color0: downColor,
-        borderColor: undefined,
-        borderColor0: undefined
-      },
-      xAxisIndex: 0,
-      yAxisIndex: 0,
-      markLine: {
-        symbol: ['none', 'none'],
-        data: []
-      }
-    },
-    {
-      name: 'Volume',
-      type: 'bar',    
-      xAxisIndex: 1,
-      yAxisIndex: 1,
-      data: []
-    }
-  ],
-  visualMap: {
-    show: false,
-    seriesIndex: 1,
-    dimension: 2,
-    pieces: [
-      {
-        value: 1,
-        color: downColor
-      },
-      {
-        value: -1,
-        color: upColor
-      }
-    ]
-  },
-  tooltip: {
-    trigger: 'axis',
-    axisPointer: {
-      type: 'cross'
-    },
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    textStyle: {
-      color: '#000'
-    },
-    position: function (pos, params, el, elRect, size) {
-      const obj = {
-        top: 10
-      };
-      obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
-      return obj;
-    }
-  },  
-  axisPointer: {
-    link: [
-      {
-        xAxisIndex: [0, 1]
-      }
-    ],
-    label: {
-      backgroundColor: '#777'
-    }
-  }  
+function updateDataParam(code: string) {
+  reqParam.value = {
+    code: code,
+    start: start
+  }
+}
+
+function updateShowParam() {
+  showParam.value = {
+    maLines: maLines.value,
+    hideVolume: zoom,
+    markLines: true,
+    hideKLine: !kline      
+  }
+}
+
+function updateTitle() {
+  title.value = `${props.param.code}(${props.param.name})`
+}
+
+watch(
+  () => props.param,
+  () => {
+    updateDataParam(props.param.code)
+    updateTitle()
 })
 
-watch(
-  () => props.dataParam,
-  async () => {
-    const ret = await apiHistory({
-      code: props.dataParam.code,
-      start: props.dataParam.start || DEFAULT_START,
-      end: props.dataParam.end
-    })
-    updateData(ret.result as HistoryDataModel[])
-    updateOptions()
-  }
-)
+onMounted(() =>{
+  const date: Date = new Date()
+  date.setFullYear(date.getFullYear() - 1)
+  start = date.toISOString().slice(0, 10)
 
-watch(
-  () => props.showParam,
-  async () => {
-    updateOptions()
-  }
-)
+  updateDataParam(props.param.code)
+  updateTitle()
+})
 
-function updateData(data: HistoryDataModel[]) {
-  xData = data.map(item => item.date)
-  klineData = data.map(({open, close, low, high}) => ([open, close, low, high]))
-  volumeData = data.map(item => [item.date, item.volume, item.open > item.close ? 1 : -1])
-}
-
-function updateOptions() {
-  options.value.series = (options.value.series! as Array<any>).slice(0, 2)
-
-  options.value.series![0].markLine.data = []
-  options.value.legend!.data = []
-
-  if (props.showParam.hideKLine) {
-    options.value.series![0].itemStyle.color = '#777'
-    options.value.series![0].itemStyle.color0 = '#777'
-    // upColor = '#777'
-    // downColor = '#777'
-  } else {
-    options.value.series![0].itemStyle.color = upColor
-    options.value.series![0].itemStyle.color0 = downColor
-  }
-
-  if (props.showParam.markLines) {
-    options.value.series![0].markLine.data.push({
-      name: 'min',
-      type: 'min',
-      valueDim: 'close'
-    })
-    options.value.series![0].markLine.data.push({
-      name: 'max',
-      type: 'max',
-      valueDim: 'close'
-    })
-  }
-
-  if (props.showParam.hideVolume) {
-    options.value.grid![0].height = '90%'
-    options.value.grid![1].height = '0%'
-  } else {
-    options.value.grid![0].height = '60%'
-    options.value.grid![1].height = '25%'    
-  }
-
-  options.value.xAxis![0].data = xData
-  options.value.xAxis![1].data = xData
-  options.value.series![0].data = klineData
-  options.value.series![1].data = volumeData
-  
-  if (props.showParam.maLines.length > 0) {
-    const closeData = klineData.map(item => item[1])
-    for (const ma of props.showParam.maLines) {
-      options.value.series!.push({
-        name: `MA${ma}`,
-        type: 'line',
-        xAxisIndex: 0,
-        yAxisIndex: 0,
-        showSymbol: false,
-        lineStyle: {
-          width: 1
-        },
-        data: calcMAData(ma, closeData)
-      })
-      options.value.legend!.data.push(`MA${ma}`)
-    }
+async function onCustomizedClick() {
+  const ret = await apiCreate({
+    code: props.param.code,
+    type: 1
+  })
+  if (ret.code == 0) {
+    ElMessage({
+        type: 'success',
+        message: `${props.param.code} added to customized list.`
+      })    
   }
 }
 
-function calcMAData(ma: number, data: number[]) {
-  var result: any[] = [];
-  for (var i = 0, len = data.length; i < len; i++) {
-    if (i < ma) {
-      result.push('-')
-      continue;
-    }
-    var sum = 0;
-    for (var j = 0; j < ma; j++) {
-      sum += +data[i - j]
-    }
-    result.push((sum / ma).toFixed(2))
-  }
-  return result
+function onKLineChanged() {
+  console.log(zoom_kline.value)
+  zoom = zoom_kline.value.includes('Zoom')
+  kline = zoom_kline.value.includes('KLine')
+  updateShowParam()
 }
+
+function onMaGroupChanged() {
+  // maLines.value = values
+  // console.log(maLines.value)
+  updateShowParam()
+}
+
+function onStartChanged() {
+  const date: Date = new Date()
+  switch(startRange.value) {
+    case '两年':
+      date.setFullYear(date.getFullYear() - 2)
+      break
+    case '半年':
+      date.setMonth(date.getMonth() - 6)
+      break
+    case '一年':
+    default:
+      date.setFullYear(date.getFullYear() - 1)
+  }
+  start = date.toISOString().slice(0, 10)
+  updateDataParam(props.param.code)
+}
+
+const kc = ref(null)
+const originData = computed(() => unref(kc)?.originData)
 
 </script>
 <template>
-  <!-- <Echart v-if="param != undefined" :options="options" /> -->
-  <Echart :options="options" />
+  <ElRow :gutter="24">
+    <ElCol :span="4">
+      <div style="float: right;">
+        <!-- {{ title }} -->
+        <ElButton size="small" @click="onCustomizedClick">Add to Customized</ElButton>
+      </div>
+    </ElCol>
+    <ElCol :span="6">
+      <ElRadioGroup v-model="startRange" size="small" style="float: right;" @change="onStartChanged">
+        <ElRadioButton v-for="item in startGroup" :key="item" :value="item" :label="item" />
+      </ElRadioGroup>
+    </ElCol>
+    <ElCol :span="10">
+      <ElCheckboxGroup v-model="maLines" size="small" style="float: center; margin-right: 12px;" @change="onMaGroupChanged">
+        <ElCheckboxButton v-for="item in maGroup" :key="item" :value="item" :label="item" :checked="item in maLines" />
+      </ElCheckboxGroup>
+    </ElCol>
+    <ElCol :span="4">
+      <ElCheckboxGroup v-model="zoom_kline" size="small" style="float: ceneter;" @change="onKLineChanged">
+        <ElCheckboxButton v-for="item in klineGroup" :key="item" :value="item" :label="item" :checked="item in zoom_kline" />
+      </ElCheckboxGroup>        
+    </ElCol>
+  </ElRow>
+  <ElRow :gutter="24" style="margin-top: 12px;">
+    <KLineChart ref="kc" :reqParam="reqParam" :showParam="showParam" />
+    <!-- {{ kc }} -->
+    <!-- {{ data }} -->
+  </ElRow>
+  <ElRow v-if="showTable" :utter="24">
+    <ElTable :data="originData" :stripe="true" :border="true" max-height="300" style="width: 100%;">
+      <ElTableColumn prop="date" label="日期" width="120" />            
+      <ElTableColumn prop="price" label="现价" width="100" />
+      <ElTableColumn prop="percentage" label="涨跌幅%" width="100" />
+      <ElTableColumn prop="amount" label="涨跌额" width="100" />
+      <ElTableColumn prop="volatility" label="振幅%" width="100" />          
+      <ElTableColumn prop="open" label="今开" width="100" />
+      <ElTableColumn prop="close" label="昨收" width="100" />
+      <ElTableColumn prop="high" label="最高" width="100" />
+      <ElTableColumn prop="low" label="最低" width="100" />
+      <ElTableColumn prop="volume" label="成交量" width="120" />
+      <ElTableColumn prop="turnover" label="成交额" width="140" />
+      <ElTableColumn prop="rate" label="换手率%" width="100" />
+    </ElTable>
+  </ElRow>    
 </template>
+<style lang="css">
+</style>
