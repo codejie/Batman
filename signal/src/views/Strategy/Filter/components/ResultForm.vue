@@ -2,7 +2,7 @@
 import { PropType, defineProps, ref, unref, watch } from 'vue'
 import { InstanceModel } from '@/api/strategy/types'
 import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption, ElButton, ElMessage } from 'element-plus'
-import { ReqParam, KLinePanel, ShowParam } from '@/components/KLine'
+import { ReqParam, KLineChart, ShowParam } from '@/components/KLine'
 import { apiCreate } from '@/api/customized';
 
 const props = defineProps({
@@ -124,7 +124,7 @@ function onZoomClick() {
               </div>
             </ElCol>
           </ElRow>
-          <KLinePanel :reqParam="reqParam" :showParam="showParam" />
+          <KLineChart :reqParam="reqParam" :showParam="showParam" />
         </ElCol>
       </ElRow>
     </ElFormItem>

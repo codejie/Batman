@@ -82,7 +82,7 @@ def get_spot(symbols: List[str] | None = None) -> DataFrame:
             raise AppException(message=f'unknown data source - {DATA_SOURCE.name}')
     except Exception as e:
         raise AppException(e)
-    
+     
 """
 获取个股深沪港股通持股数据
 """

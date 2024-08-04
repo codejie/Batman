@@ -116,7 +116,7 @@ function onStartChanged() {
 }
 
 const kc = ref(null)
-const originData = computed(() => unref(kc)?.originData)
+const originData = computed(() => unref(kc)?.originData.reverse())
 
 </script>
 <template>
@@ -145,8 +145,6 @@ const originData = computed(() => unref(kc)?.originData)
   </ElRow>
   <ElRow :gutter="24" style="margin-top: 12px;">
     <KLineChart ref="kc" :reqParam="reqParam" :showParam="showParam" />
-    <!-- {{ kc }} -->
-    <!-- {{ data }} -->
   </ElRow>
   <ElRow v-if="showTable" :utter="24">
     <ElTable :data="originData" :stripe="true" :border="true" max-height="300" style="width: 100%;">

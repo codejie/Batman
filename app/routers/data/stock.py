@@ -44,6 +44,7 @@ def history_data2model(row: Series) -> HistoryDataModel:
     rate=row['换手率']    
   )
 
+
 """
 AList
 """
@@ -86,3 +87,14 @@ async def history(body: HistoryRequest=Body()):
     return HistoryResponse(result=ret)
   except Exception as e:
     raise AppException(e)
+
+"""
+Margin
+"""
+class MarginRequest(RequestModel):
+  code: str
+  start: str | None = None
+  end: str | None = None
+
+class MarginResponse(ResponseModel):
+  pass

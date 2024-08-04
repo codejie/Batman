@@ -29,3 +29,4 @@ export type HistoryRequest = {
   adjust?: string
 }
 export type HistoryResponse = HistoryDataModel[]
+

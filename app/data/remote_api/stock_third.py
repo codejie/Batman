@@ -18,6 +18,5 @@ https://data.10jqka.com.cn/rank/cxg/
 def new_high(category: int = 0) -> DataFrame:
   symbol = '创月新高' if category == 0 else '半年新高' if category == 1 else '一年新高' if category == 2 else '历史新高'
   df = akshare.stock_rank_cxg_ths(symbol=symbol)
-  print(df)
   return df
   
