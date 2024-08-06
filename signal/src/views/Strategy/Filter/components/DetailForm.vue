@@ -140,19 +140,19 @@ onMounted(async () => {
       <ElRow class="row" :gutter="24">
         <ElCol :span="2" />
         <ElCol :span="22">
-          <div class="row">
-            <ElRadioGroup v-model="algorithm" @change="onAlgorithmChange">
-              <ElRadioButton size="small" v-for="item in strategy?.algorithms" :key="item" :label="item" :value="item" />
-            </ElRadioGroup>
+            <div class="row">
+              <ElRadioGroup v-model="algorithm" @change="onAlgorithmChange">
+                <ElRadioButton size="small" v-for="item in strategy?.algorithms" :key="item" :label="item" :value="item" />
+              </ElRadioGroup>
+            </div>
+            <div class="row">{{ algorithm_desc }}</div>
+            <div class="row">
+              <ElTable :data="algorithmArgs" :border="true">
+                <ElTableColumn prop="label" label="Item" width="120" />
+                <ElTableColumn prop="value" label="Value" width="100" />
+                <ElTableColumn prop="desc" label="Desc" />
+              </ElTable>
           </div>
-          <div class="row">{{ algorithm_desc }}</div>
-          <div class="row">
-            <ElTable :data="algorithmArgs" :border="true">
-              <ElTableColumn prop="label" label="Item" width="120" />
-              <ElTableColumn prop="value" label="Value" width="100" />
-              <ElTableColumn prop="desc" label="Desc" />
-            </ElTable>
-        </div>
         </ElCol>
       </ElRow>           
     </ElCol>

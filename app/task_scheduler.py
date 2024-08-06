@@ -66,7 +66,7 @@ class Scheduler:
 
     def make_job(self, id: str, trigger: dict, func: callable, args: dict = None) -> str:
         trig = self.make_trigger(trigger)
-        job = self.scheduler.add_job(id=id, trigger=trig, func=func, kwargs=args)
+        job = self.scheduler.add_job(id=id, trigger=trig, func=func, kwargs=args, max_instances=1, misfire_grace_time=None)
         return job.id
     
     # def restore_job(self, id: str, trigger: dict, func: callable, args: dict = None) -> str:

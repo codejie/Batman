@@ -36,7 +36,8 @@ def fetch_history(code: str, start: datetime, end: datetime, period: str = 'dail
     end = utils.date2String1(end)
     df = remote.get_history(code, start, end, period, adjust)
     if not df.empty:
-        df = df.drop(columns=['股票代码'], axis=1)
+        if '股票代码' in df.columns:
+          df = df.drop(columns=['股票代码'], axis=1)
         table = TableName.make_stock_history_name(code, period, adjust)
         df.to_sql(name=table, con=dbEngine.get_engine(), if_exists=if_exists, index=False)
     logger.debug(f'{code} - {debug.__function__()}() called end')

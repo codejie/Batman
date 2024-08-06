@@ -1,3 +1,6 @@
+<!--
+KLine that have to apply data
+-->
 <script setup lang="ts">
 import { ref, PropType, watch } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
@@ -34,13 +37,13 @@ const options = ref<EChartsOption>({
   title: [],
   grid: [
     {
-      left: '10%',
+      left: '8%',
       right: '8%',
       height: '60%',
       top: '0%'
     },
     {
-      left: '10%',
+      left: '8%',
       right: '8%',
       bottom: '10%',
       height: '25%'

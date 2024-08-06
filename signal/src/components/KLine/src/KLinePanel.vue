@@ -17,7 +17,7 @@ const props = defineProps({
   }
 })
 const startGroup: string[] = ['两年', '一年', '半年']
-const maGroup: number[] = [5, 7, 9, 12, 17, 22, 26, 30, 45, 60]
+const maGroup: number[] = [5, 7, 9, 10, 12, 15, 17, 20, 26, 30, 45, 60]
 const klineGroup: string[] = ['KLine', 'Zoom']
 let start: string = '2023-01-01'
 let zoom: boolean = false

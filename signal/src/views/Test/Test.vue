@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { ContentWrap } from '@/components/ContentWrap'
-import { ReqParam, KLinePanel, ShowParam } from '@/components/KLine'
+import { ReqParam, KLineChart3, ShowParam } from '@/components/KLine'
 import { ElButton } from 'element-plus'
 
 
@@ -45,18 +45,22 @@ function onTestClick() {
   console.log('click')
   // showParam.value.hideVolume = true
   // showParam.value.hideKLine = true
-  showParam.value = {
-    maLines: [5, 10, 12],
-    markLines: true,
-    hideKLine: !showParam.value.hideKLine,
-    hideVolume: !showParam.value.hideVolume
-  }
+  // showParam.value = {
+  //   maLines: [5, 10, 12],
+  //   markLines: true,
+  //   hideKLine: !showParam.value.hideKLine,
+  //   hideVolume: !showParam.value.hideVolume
+  // }
+  klc3.value?.setDateData(['2023-01-01', '2023-01-02'])
 }
+
+const klc3 = ref(null)
 
 </script>
 <template>
   <ContentWrap title="Test">
     <div><ElButton @click="onTestClick">Test</ElButton></div>
-    <KLinePanel :param="param" :show-table="true" />
+    <!-- <KLinePanel :param="param" :show-table="true" /> -->
+     <KLineChart3 ref="klc3"/>
   </ContentWrap>
 </template>

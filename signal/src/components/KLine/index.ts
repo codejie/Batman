@@ -1,9 +1,10 @@
 import { HistoryDataModel } from '@/api/data/stock/types'
 import KLineChart from './src/KLineChart.vue'
 import KLineChart2 from './src/KLineChart2.vue'
+import KLineChart3 from './src/KLineChart3.vue'
 import KLinePanel from './src/KLinePanel.vue'
 
-export { KLineChart, KLineChart2, KLinePanel }
+export { KLineChart, KLineChart2, KLineChart3, KLinePanel }
 
 export type ReqParam = {
   type?: number,
