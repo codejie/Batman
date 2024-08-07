@@ -3,64 +3,94 @@ import { onMounted, ref } from 'vue';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLineChart3, ShowParam } from '@/components/KLine'
 import { ElButton } from 'element-plus'
+import { apiHistory } from '@/api/data/stock';
+import { HistoryDataModel } from '@/api/data/stock/types';
 
+const klc3 = ref(null)
 
-// function getDateString(date: string, days: number): string {
-//   if (days == 0)
-//     return date
-//   const tmp = new Date(Date.parse(date))
-//   tmp.setDate(tmp.getDate() + days)
-//   return tmp.toISOString().slice(0, 10)
-// }
+let historyData: HistoryDataModel[]
+let xData
+let klineData
+let volumeData
 
-const chartData = ref<ReqParam>()
-const showParam = ref<ShowParam>({
-  maLines: [],
-  markLines: true,
-  hideKLine: false,
-  hideVolume: false
+let history2: HistoryDataModel[]
+let xData2
+let klineData2
+let volumeData2
+
+onMounted(async () => {
+  const ret = await apiHistory({
+    code: '002236',
+    start: '2024-01-01'
+  })
+  historyData = ret.result
+
+  const ret2 = await apiHistory({
+    code: '002025',
+    start: '2024-01-01'    
+  })
+  history2 = ret2.result
+  updateData(historyData, history2)
 })
 
-function updateChartParam() {
-  const start = '2023-06-01'
-  const end = '2023-10-01'
+function updateData(data: HistoryDataModel[], data2: HistoryDataModel[]) {
+  xData = data.map(item => item.date)
+  klineData = data.map(({open, close, low, high}) => ([open, close, low, high]))
+  volumeData = data.map(item => [item.date, item.volume, item.open > item.close ? 1 : -1])
 
-  chartData.value = {
-    code: '002236',
-    start: start,
-    end: end
-  }
+  xData2 = data2.map(item => item.date)
+  klineData2 = data2.map(({open, close, low, high}) => ([open, close, low, high]))
+  volumeData2 = data2.map(item => [item.date, item.volume, item.open > item.close ? 1 : -1])
 }
 
-onMounted(() => {
-  updateChartParam()
-})
-
-const param = ref<any>({
-  code: '002236',
-  name: '一二三四'
-})
+function calcMAData(ma: number, data: number[]) {
+  var result: any[] = [];
+  for (var i = 0, len = data.length; i < len; i++) {
+    if (i < ma) {
+      result.push('-')
+      continue;
+    }
+    var sum = 0;
+    for (var j = 0; j < ma; j++) {
+      sum += +data[i - j]
+    }
+    result.push((sum / ma).toFixed(2))
+  }
+  return result
+}
 
 function onTestClick() {
   console.log('click')
-  // showParam.value.hideVolume = true
-  // showParam.value.hideKLine = true
-  // showParam.value = {
-  //   maLines: [5, 10, 12],
-  //   markLines: true,
-  //   hideKLine: !showParam.value.hideKLine,
-  //   hideVolume: !showParam.value.hideVolume
-  // }
-  klc3.value?.setDateData(['2023-01-01', '2023-01-02'])
+
+  klc3.value?.setDate(xData)
+  klc3.value.setKLine(klineData, true, true)
 }
 
-const klc3 = ref(null)
+function onTest1Click() {
+  const closeData = klineData.map(item => item[1])
+  // const data = calcMAData(5, closeData)
+  // klc3.value?.addLine('ma5', data, true)
+  const data9 = calcMAData(9, closeData)
+  klc3.value?.addLine('ma9', data9, true)
+}
+
+function onTest2Click() {
+  // klc3.value?.removeLine('ma5')
+  const closeData2 = klineData2.map(item => item[1])  
+  const data92 = calcMAData(9, closeData2)
+  klc3.value?.addLine('ma9', data92, true)    
+}
+
 
 </script>
 <template>
   <ContentWrap title="Test">
-    <div><ElButton @click="onTestClick">Test</ElButton></div>
+    <div>
+      <ElButton @click="onTestClick">Test</ElButton>
+      <ElButton @click="onTest1Click">Test1</ElButton>
+      <ElButton @click="onTest2Click">Test2</ElButton>
+    </div>
     <!-- <KLinePanel :param="param" :show-table="true" /> -->
-     <KLineChart3 ref="klc3"/>
+     <KLineChart3 ref="klc3" />
   </ContentWrap>
 </template>
