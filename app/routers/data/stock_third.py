@@ -5,12 +5,13 @@ from datetime import datetime, date
 from app.exception import AppException
 from app.routers.definition import BaseModel, RequestModel, ResponseModel, APIRouter, Depends, Body, verify_token
 from app.data.remote_api import stock_third as third
+from app.routers.common_model import DataFrameSetModel
 
 router: APIRouter = APIRouter(prefix='/data/third/stock', tags=['data', 'stock', 'third'], dependencies=[Depends(verify_token)])
 
-class DataFrameSetModel(BaseModel):
-  columns: list[str]
-  data: list[list[str | int | float | datetime | date | None]]
+# class DataFrameSetModel(BaseModel):
+#   columns: list[str]
+#   data: list[list[str | int | float | datetime | date | None]]
 
 """
 创新高

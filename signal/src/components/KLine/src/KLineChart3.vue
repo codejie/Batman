@@ -70,6 +70,8 @@ function test() {
 }
 
 function reset() {
+  yMin = -1,
+  yMax = -1
   options.value.xAxis![0].data = []
 }
 
@@ -114,17 +116,25 @@ function setKLine(data: any[], markLine: boolean = true, legend: boolean = false
   }
 }
 
-function addLine(name: string, data: number[], legend: boolean = true, fit: boolean = false, asBase: boolean = false) {
-  if (asBase) {
-    yMax = Math.max(...data)
-    yMin = Math.min(...data)
-  }
+function arrayMin(arr) {
+  return arr.reduce(function (p, v) {
+    if (isNaN(p)) return v
+    if (isNaN(v)) return p
+    return ( p < v ? p : v );
+  });
+}
 
-  if (fit) {
-    if (yMin !== -1 && yMax !== -1) {
-      
-    }
-  }
+function arrayMax(arr) {
+  return arr.reduce(function (p, v) {
+    if (isNaN(p)) return v
+    if (isNaN(v)) return p    
+    return ( p > v ? p : v );
+  });
+}
+
+function addLine(name: string, data: number[], legend: boolean = true) {
+  yMax = arrayMax(data)
+  yMin = arrayMin(data)
 
   const option = {
     name: name,
@@ -135,7 +145,7 @@ function addLine(name: string, data: number[], legend: boolean = true, fit: bool
     lineStyle: {
       width: 1
     },
-    data: data
+    data: data.map(item => isNaN(item) ? item : item.toFixed(2))
   }
   options.value.series!.push(option)
   if (legend) {
@@ -143,7 +153,42 @@ function addLine(name: string, data: number[], legend: boolean = true, fit: bool
   }
 }
 
-function removeLine(name: string) {
+function addFitLine(name: string, data: number[], legend: boolean = true) {
+  if (yMin !== -1 && yMax !== -1) {
+    const diff1 = yMax - yMin
+    const max2 = arrayMax(data)
+    const min2 = arrayMin(data)
+    const diff2 = max2 - min2
+    const arg1 = diff1 / diff2
+    const arg2 = arg1 * min2 - yMin
+    data = data.map(item => (arg1 * item - arg2))
+    name = name + '(f)'
+  } else {
+    yMax = arrayMax(data)
+    yMin = arrayMin(data)    
+  }
+
+  console.log(data)
+
+  const option = {
+    name: name,
+    type: 'line',
+    xAxisIndex: 0,
+    yAxisIndex: 0,
+    showSymbol: false,
+    lineStyle: {
+      width: 1
+    },
+    data: data.map(item => isNaN(item) ? item : item.toFixed(2))
+  }
+  options.value.series!.push(option)
+  if (legend) {
+    options.value.legend!.data.push(name)
+  }
+}
+
+function removeLine(name: string, fit: boolean = false) {
+  if (fit) name = name + '(f)'
   options.value.series = options.value.series!.filter( item => item.name != name)
 }
 
@@ -153,6 +198,7 @@ defineExpose({
   setDate,
   setKLine,
   addLine,
+  addFitLine,
   removeLine
 })
 

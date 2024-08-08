@@ -47,14 +47,14 @@ function calcMAData(ma: number, data: number[]) {
   var result: any[] = [];
   for (var i = 0, len = data.length; i < len; i++) {
     if (i < ma) {
-      result.push('-')
+      result.push(Number.NaN)
       continue;
     }
     var sum = 0;
     for (var j = 0; j < ma; j++) {
       sum += +data[i - j]
     }
-    result.push((sum / ma).toFixed(2))
+    result.push(sum / ma)
   }
   return result
 }
@@ -63,7 +63,7 @@ function onTestClick() {
   console.log('click')
 
   klc3.value?.setDate(xData)
-  klc3.value.setKLine(klineData, true, true)
+  // klc3.value.setKLine(klineData, true, true)
 }
 
 function onTest1Click() {
@@ -71,14 +71,14 @@ function onTest1Click() {
   // const data = calcMAData(5, closeData)
   // klc3.value?.addLine('ma5', data, true)
   const data9 = calcMAData(9, closeData)
-  klc3.value?.addLine('ma9', data9, true)
+  klc3.value?.addFitLine('ma9', data9, true)
 }
 
 function onTest2Click() {
   // klc3.value?.removeLine('ma5')
   const closeData2 = klineData2.map(item => item[1])  
   const data92 = calcMAData(9, closeData2)
-  klc3.value?.addLine('ma9', data92, true)    
+  klc3.value?.addFitLine('ma9', data92, true)
 }
 
 
@@ -91,6 +91,6 @@ function onTest2Click() {
       <ElButton @click="onTest2Click">Test2</ElButton>
     </div>
     <!-- <KLinePanel :param="param" :show-table="true" /> -->
-     <KLineChart3 ref="klc3" />
+    <KLineChart3 ref="klc3" />
   </ContentWrap>
 </template>

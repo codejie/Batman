@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter
 
+from app.routers import libs
 from app.routers import strategy
 from app.routers import account
 from app.routers import algorithm
@@ -10,6 +11,7 @@ from app.routers import customized
 routers: list[APIRouter] = []
 
 def register_routers(app: FastAPI):
+    app.include_router(libs.talib.router)
     app.include_router(data.stock.router)
     app.include_router(data.stock_third.router)
     app.include_router(strategy.router)
