@@ -5,6 +5,7 @@ import { ReqParam, KLineChart3, ShowParam } from '@/components/KLine'
 import { ElButton } from 'element-plus'
 import { apiHistory } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
+import { apiMACD } from '@/api/libs/talib';
 
 const klc3 = ref(null)
 
@@ -59,6 +60,13 @@ function calcMAData(ma: number, data: number[]) {
   return result
 }
 
+async function calcMACDData(data: number[]) {
+  const ret = await apiMACD({
+    value: data    
+  })
+  console.log(ret.result)
+}
+
 function onTestClick() {
   console.log('click')
 
@@ -81,6 +89,11 @@ function onTest2Click() {
   klc3.value?.addFitLine('ma9', data92, true)
 }
 
+function onTest3Click() {
+  const closeData2 = klineData2.map(item => item[1])
+  console.log(closeData2)
+  calcMACDData(closeData2)
+}
 
 </script>
 <template>
@@ -89,6 +102,7 @@ function onTest2Click() {
       <ElButton @click="onTestClick">Test</ElButton>
       <ElButton @click="onTest1Click">Test1</ElButton>
       <ElButton @click="onTest2Click">Test2</ElButton>
+      <ElButton @click="onTest3Click">Test3</ElButton>
     </div>
     <!-- <KLinePanel :param="param" :show-table="true" /> -->
     <KLineChart3 ref="klc3" />
