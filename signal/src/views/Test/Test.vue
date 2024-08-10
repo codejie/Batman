@@ -60,12 +60,40 @@ function calcMAData(ma: number, data: number[]) {
   return result
 }
 
-async function calcMACDData(data: number[]) {
+async function fetchMACDData(data: number[]) {
   const ret = await apiMACD({
     value: data    
   })
   console.log(ret.result)
+  const arrayData = ret.result.data
+  const macd = arrayData.map(item => item[0])
+  const signal = arrayData.map(item => item[1])
+  const history = arrayData.map(item => item[2])
+  // console.log(macd)
+  klc3.value?.addLine('DIF', macd)
+  klc3.value?.addLine('DEA', signal)
+  klc3.value?.addBar('MACD', history)
 }
+
+async function fetchMACDData2(data: number[]) {
+  const ret = await apiMACD({
+    value: data,
+    fast: 12,
+    slow: 26,
+    period: 7
+  })
+  console.log(ret.result)
+  const arrayData = ret.result.data
+  const macd = arrayData.map(item => item[0])
+  const signal = arrayData.map(item => item[1])
+  const history = arrayData.map(item => item[2])
+  // console.log(macd)
+  klc3.value?.addLine('DIF2', macd)
+  klc3.value?.addLine('DEA2', signal)
+  klc3.value?.addBar('MACD2', history)
+}
+
+
 
 function onTestClick() {
   console.log('click')
@@ -79,20 +107,26 @@ function onTest1Click() {
   // const data = calcMAData(5, closeData)
   // klc3.value?.addLine('ma5', data, true)
   const data9 = calcMAData(9, closeData)
-  klc3.value?.addFitLine('ma9', data9, true)
+  klc3.value?.addLine('ma9', data9, true)
 }
 
 function onTest2Click() {
   // klc3.value?.removeLine('ma5')
-  const closeData2 = klineData2.map(item => item[1])  
+  const closeData2 = klineData2.map(item => item[1])
   const data92 = calcMAData(9, closeData2)
-  klc3.value?.addFitLine('ma9', data92, true)
+  klc3.value?.addLine('ma9', data92, true)
 }
 
 function onTest3Click() {
-  const closeData2 = klineData2.map(item => item[1])
-  console.log(closeData2)
-  calcMACDData(closeData2)
+  const closeData = klineData.map(item => item[1])
+  console.log(closeData)
+  fetchMACDData(closeData)
+}
+
+function onTest4Click() {
+  const closeData = klineData.map(item => item[1])
+  console.log(closeData)
+  fetchMACDData2(closeData)
 }
 
 </script>
@@ -103,6 +137,7 @@ function onTest3Click() {
       <ElButton @click="onTest1Click">Test1</ElButton>
       <ElButton @click="onTest2Click">Test2</ElButton>
       <ElButton @click="onTest3Click">Test3</ElButton>
+      <ElButton @click="onTest4Click">Test4</ElButton>
     </div>
     <!-- <KLinePanel :param="param" :show-table="true" /> -->
     <KLineChart3 ref="klc3" />

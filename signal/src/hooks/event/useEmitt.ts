@@ -14,7 +14,7 @@ export const useEmitt = (option?: Option) => {
 
     onBeforeUnmount(() => {
       emitter.off(option.name)
-      console.log(`mitt onBeforeUnmount() = ${option.name}`)
+      // console.log(`mitt onBeforeUnmount() = ${option.name}`)
     })
   }
 

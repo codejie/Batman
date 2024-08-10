@@ -132,9 +132,40 @@ function arrayMax(arr) {
   });
 }
 
-function addLine(name: string, data: number[], legend: boolean = true) {
-  yMax = arrayMax(data)
-  yMin = arrayMin(data)
+function getArrayRange(array: number[]) {
+  return {
+    max: 
+      array.reduce(function (p, v) {
+          if (isNaN(p)) return v
+          if (isNaN(v)) return p
+          return ( p > v ? p : v );
+        }),
+    min: 
+      array.reduce(function (p, v) {
+          if (isNaN(p)) return v
+          if (isNaN(v)) return p
+          return ( p < v ? p : v );
+        })        
+  }
+}
+
+function setYRange(min: number, max: number) {
+  yMax = max
+  yMin = min
+}
+
+function addLine(name: string, data: number[], fit: boolean = true, legend: boolean = true) {
+  if (fit) {
+    if (yMin !== -1 && yMax !== -1) {
+      const diff1 = yMax - yMin
+      const { min, max } = getArrayRange(data)
+      const diff2 = max - min
+      const arg1 = diff1 / diff2
+      const arg2 = arg1 * min - yMin
+      data = data.map(item => (arg1 * item - arg2))
+      name = name + '(f)'
+    }    
+  }
 
   const option = {
     name: name,
@@ -145,6 +176,9 @@ function addLine(name: string, data: number[], legend: boolean = true) {
     lineStyle: {
       width: 1
     },
+    // itemStyle: {
+    //   color: '#ec0000'
+    // },
     data: data.map(item => isNaN(item) ? item : item.toFixed(2))
   }
   options.value.series!.push(option)
@@ -153,53 +187,89 @@ function addLine(name: string, data: number[], legend: boolean = true) {
   }
 }
 
-function addFitLine(name: string, data: number[], legend: boolean = true) {
-  if (yMin !== -1 && yMax !== -1) {
-    const diff1 = yMax - yMin
-    const max2 = arrayMax(data)
-    const min2 = arrayMin(data)
-    const diff2 = max2 - min2
-    const arg1 = diff1 / diff2
-    const arg2 = arg1 * min2 - yMin
-    data = data.map(item => (arg1 * item - arg2))
-    name = name + '(f)'
-  } else {
-    yMax = arrayMax(data)
-    yMin = arrayMin(data)    
-  }
+// function addFitLine(name: string, data: number[], legend: boolean = true) {
+//   if (yMin !== -1 && yMax !== -1) {
+//     const diff1 = yMax - yMin
+//     const { min, max } = getArrayRange(data)
+//     // const max2 = arrayMax(data)
+//     // const min2 = arrayMin(data)
+//     const diff2 = max - min
+//     const arg1 = diff1 / diff2
+//     const arg2 = arg1 * min - yMin
+//     data = data.map(item => (arg1 * item - arg2))
+//     name = name + '(f)'
+//   } else {
+//     yMax = arrayMax(data)
+//     yMin = arrayMin(data)    
+//   }
 
-  console.log(data)
+//   console.log(data)
 
-  const option = {
-    name: name,
-    type: 'line',
-    xAxisIndex: 0,
-    yAxisIndex: 0,
-    showSymbol: false,
-    lineStyle: {
-      width: 1
-    },
-    data: data.map(item => isNaN(item) ? item : item.toFixed(2))
-  }
-  options.value.series!.push(option)
-  if (legend) {
-    options.value.legend!.data.push(name)
-  }
-}
+//   const option = {
+//     name: name,
+//     type: 'line',
+//     xAxisIndex: 0,
+//     yAxisIndex: 0,
+//     showSymbol: false,
+//     lineStyle: {
+//       width: 1
+//     },
+//     data: data.map(item => isNaN(item) ? item : item.toFixed(2))
+//   }
+//   options.value.series!.push(option)
+//   if (legend) {
+//     options.value.legend!.data.push(name)
+//   }
+// }
 
-function removeLine(name: string, fit: boolean = false) {
+function remove(name: string, fit: boolean = false) {
   if (fit) name = name + '(f)'
   options.value.series = options.value.series!.filter( item => item.name != name)
+}
+
+function addBar(name: string, data: number[], fit: boolean = true, legend: boolean = true) {
+  if (fit) {
+    if (yMin !== -1 && yMax !== -1) {
+      const diff1 = yMax - yMin
+      const { min, max } = getArrayRange(data)
+      const diff2 = max - min
+      const arg1 = diff1 / diff2
+      const arg2 = arg1 * min - yMin
+      data = data.map(item => (arg1 * item - arg2))
+      name = name + '(f)'
+    }    
+  }
+
+  const option = {
+    name: name,
+    type: 'bar',
+    xAxisIndex: 0,
+    yAxisIndex: 0,
+    showSymbol: false,
+    itemStyle: {
+      color: (item) => {
+        return item.value > 0 ? upColor : downColor
+      }
+    },
+    data: data.map(item => isNaN(item) ? item : item.toFixed(2))
+  }
+  options.value.series!.push(option)
+  if (legend) {
+    options.value.legend!.data.push(name)
+  } 
 }
 
 defineExpose({
   test,
   reset,
+  getArrayRange,
   setDate,
   setKLine,
   addLine,
-  addFitLine,
-  removeLine
+  addBar,
+  // addFitLine,
+  remove,
+
 })
 
 </script>
