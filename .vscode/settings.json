@@ -1,17 +1,4 @@
 {
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        ".",
-        "-p",
-        "test_*.py"
-    ],
-    "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true,
-    "python.testing.pytestArgs": [
-        "."
-    ],
-
     "typescript.tsdk": "node_modules/typescript/lib",
     "prettier.enable": true,
     "editor.codeActionsOnSave": {
@@ -29,5 +16,11 @@
     "i18n-ally.displayLanguage": "zh-CN",
     "i18n-ally.enabledFrameworks": ["vue", "react"],
     "god.tsconfig": "./tsconfig.json",
-    "python.REPL.enableREPLSmartSend": false
+    "python.REPL.enableREPLSmartSend": false,
+    "python.testing.pytestArgs": [
+      "app",
+      "-s"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }

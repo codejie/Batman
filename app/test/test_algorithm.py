@@ -1,6 +1,9 @@
 import unittest
 
 from app.database import common
+from app.database.tables import TableName
+from app.libs.talib.momentum_indicators import MACD
+from app.strategy.algorithm.line_cross import LineCrossAlgorithm
 from app.strategy.algorithm.m_up_n_down import MUpNDownAlgorithem
 
 
@@ -32,7 +35,7 @@ class Test_Algorithm(unittest.TestCase):
             print(f'============{code}===========')
             # if code != '873001':
             #     continue
-            table = common.TableName.make_stock_history_name(code)
+            table = TableName.make_stock_history_name(code)
             df = common.select(table, ['日期', '收盘', '开盘']) #, '"日期" > "2024-04-01"')
             # print(df)
             algorithm.set_data({
@@ -42,3 +45,25 @@ class Test_Algorithm(unittest.TestCase):
             algorithm.run()
         # print('==================end')
         self.assertTrue(True)
+
+    def test_line_cross(self):
+        def callback(event: str, result: dict) -> bool:
+            print(event)
+            print(result)
+            print(df['日期'][result['pos']])
+
+        table = TableName.make_stock_history_name('002236')
+        df = common.select(table=table, columns=['日期', '收盘'])
+
+        calcDf = MACD(df['收盘'])
+
+        algorithm = LineCrossAlgorithm()
+        algorithm.set_data({
+            'seriesA': calcDf['dif'],
+            'seriesB': calcDf['dea']
+        })
+        algorithm.set_callback(callback=callback)
+        algorithm.run()
+
+        self.assertTrue(True)
+        

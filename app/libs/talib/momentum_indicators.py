@@ -14,7 +14,7 @@ def MACD(value: Series, fast_period: int = 12, slow_period: int = 26, signal_per
     """
     try:
         ret = DataFrame()
-        ret[f'{value.name}_macd'], ret[f'{value.name}_signal'], ret[f'{value.name}_history'] = ta.MACD(value, fast_period, slow_period, signal_period)
+        ret['dif'], ret['dea'], ret['macd'] = ta.MACD(value, fast_period, slow_period, signal_period)
         return ret
     except Exception as e:
         raise AppException(-1, repr(e))    
@@ -27,7 +27,7 @@ def MACD_turbo(df: DataFrame, columns: list[str] | None = None, fast_period: int
     try:
         ret = DataFrame()
         for col in df.columns.values:
-            ret[f'{col}_macd'], ret[f'{col}_signal'], ret[f'{col}_history'] = ta.MACD(df[col], fast_period, slow_period, signal_period)
+            ret[f'{col}_dif'], ret[f'{col}_dea'], ret[f'{col}_macd'] = ta.MACD(df[col], fast_period, slow_period, signal_period)
         return ret
     except Exception as e:
         raise AppException(-1, repr(e))

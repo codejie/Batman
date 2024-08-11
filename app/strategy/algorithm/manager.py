@@ -3,6 +3,7 @@ Algorithm Manager
 """
 from app.strategy.algorithm import Algorithm
 from app.strategy.algorithm.check_rate_threshold import CheckRateThresholdAlgorithm
+from app.strategy.algorithm.line_cross import LineCrossAlgorithm
 from app.strategy.algorithm.m_up_n_down import MUpNDownAlgorithem
 
 class AlgorithmManager:
@@ -30,3 +31,4 @@ class AlgorithmManager:
 
 AlgorithmManager.add(MUpNDownAlgorithem)
 AlgorithmManager.add(CheckRateThresholdAlgorithm)
+AlgorithmManager.add(LineCrossAlgorithm)
