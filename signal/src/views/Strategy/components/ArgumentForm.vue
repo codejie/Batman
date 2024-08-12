@@ -25,7 +25,7 @@ onMounted(() => {
   props.args?.forEach((item) => {
     data.value.push({
       arg: item,
-      value: item.default || null
+      value: item.default
     })
   })
 })
@@ -53,6 +53,6 @@ onMounted(() => {
       </template>
     </ElTableColumn>
     <!-- <ElTableColumn prop="value" label="Value" width="100" /> -->
-    <ElTableColumn prop="arg.desc" label="Description" width="300" />
+    <ElTableColumn prop="arg.desc" label="Description" />
   </ElTable>
 </template>

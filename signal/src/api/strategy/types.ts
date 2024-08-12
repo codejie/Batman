@@ -3,8 +3,8 @@ export type ArgumentModel = {
   type?: string
   unit?: string
   desc?: string
-  value?: any[]
-  default?: any
+  // value?: any[]
+  default?: string | number | boolean
   required: boolean
 }
 

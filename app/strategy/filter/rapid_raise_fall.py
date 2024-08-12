@@ -118,11 +118,10 @@ class RapidRaiseFallStrategy(Strategy):
                 'start': start,
                 'end': end
             })
+            logger.debug(f'Strategy \'{RapidRaiseFallStrategy.name}\' end.')
 
         except Exception as e:
             logger.error(f'Strategy \'{RapidRaiseFallStrategy.name}\' failed - {e}')
-
-        logger.debug(f'Strategy \'{RapidRaiseFallStrategy.name}\' end.')
 
     @staticmethod
     def __exec_algorithm(code: str, name: str, start: str, end: str, arg_values: dict, algo_values: dict) -> list:

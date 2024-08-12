@@ -30,14 +30,13 @@ class LineCrossAlgorithm(Algorithm):
     self.A = self.data_values['seriesA']
     self.B = self.data_values['seriesB']
     self.size = len(self.A)
-    print(self.A)
 
   def next(self) -> bool:
     def hitCallback(pos, direction):
       if self.callback:
-        self.callback(CallbackType.HIT.value, {
+        self.callback(CallbackType.HIT, {
           'pos': pos,
-          'dirction': direction
+          'direction': direction
         })
 
     if (self.pos + 1) >= self.size:

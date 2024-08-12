@@ -9,6 +9,7 @@ import pickle
 from app.database import dbEngine, sql_select, sql_delete, sql_insert, sql_update
 from app.database import TableBase, Column, String, Integer, DateTime, func
 from app.exception import AppException
+from app.strategy.filter.macd_indicator import MACDIndicatorStrategy
 from app.task_scheduler import taskScheduler #, EVENT_JOB_REMOVED, EVENT_JOB_ADDED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
 from apscheduler.events import EVENT_JOB_REMOVED, EVENT_JOB_ADDED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_MISSED
 from app.database.tables import TableBase
@@ -42,6 +43,7 @@ class StrategyManager:
           return ret
     
 StrategyManager.add(RapidRaiseFallStrategy)
+StrategyManager.add(MACDIndicatorStrategy)
     
 """
 Strategy Instance Manager

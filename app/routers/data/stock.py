@@ -55,13 +55,11 @@ class AListResponse(ResponseModel):
 async def alist():
   df = stock.get_a_list()
   ret: list[AListModel] = []
-  print(datetime.now())
   for _, row in df.iterrows():
     ret.append({
       'code': row['code'],
       'name': row['name']
     })
-  print(datetime.now())
   return AListResponse(result=ret)
 
 """

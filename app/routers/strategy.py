@@ -21,7 +21,7 @@ class ArgumentModel(BaseModel):
     type: str | None
     unit: str | None
     desc: str | None
-    value: list[dict[str, str]] | None = None
+    value: list[dict[str, str | int | float | dict | list]] | None = None
     default: str | int | float | list | dict | None = None
     required: bool = True
 

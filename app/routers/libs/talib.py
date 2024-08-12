@@ -20,17 +20,12 @@ class MACDResponse(ResponseModel):
 
 @router.post('/macd', response_model=MACDResponse, response_model_exclude_none=True)
 async def macd(body: MACDRequest=Body()):
-  print(body.value)
   series = Series(body.value)
   # if type(body.value) == 'dict':
   #   series = Series(body.value)
-  print(series)
   df = MACD(value=series, fast_period=body.fast, slow_period=body.slow, signal_period=body.period)
-  print(df)
   df = df.fillna('-')
-  print(df)
   result = df.to_dict(orient='tight', index=False)
-  print(result)
   return MACDResponse(result=DataFrameSetModel(
     columns=result['columns'],
     data=result['data']

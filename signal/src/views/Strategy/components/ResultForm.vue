@@ -13,6 +13,6 @@ const props = defineProps({
   <ElTable :data="props.results" border style="width: 100%">
     <ElTableColumn prop="name" label="Name" width="120" />
     <ElTableColumn prop="type" label="Type" width="100" />
-    <ElTableColumn prop="desc" label="Description" width="300" />
+    <ElTableColumn prop="desc" label="Description" />
   </ElTable>
 </template>
