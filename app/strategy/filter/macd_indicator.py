@@ -139,6 +139,7 @@ class MACDIndicatorStrategy(Strategy):
       for _, row in codes.iterrows():
         code = row['code']
         name = row['name']
+        # print(f'{code} - {name}')
         
         table = TableName.make_stock_history_name(code)
         df = common.select(table=table, columns=['日期', '收盘'], where=f'where 日期 > "{start}" ORDER BY 日期')
@@ -171,7 +172,7 @@ class MACDIndicatorStrategy(Strategy):
               })
             results.append(r)  
       
-      print(results)
+      # print(results)
       manager.set_results(id, results, {
         'days': days,
         'start': start   
@@ -200,9 +201,10 @@ class MACDIndicatorStrategy(Strategy):
 
     algorithm = LineCrossAlgorithm()
     algorithm.set_data({
-        'seriesA': df['dif'].iloc[-(days - 1)],
-        'seriesB': df['dea'].iloc[-(days - 1)]
+        'seriesA': (df['dif'].iloc[-(days - 1):]).reset_index(drop=True),
+        'seriesB': (df['dea'].iloc[-(days - 1):]).reset_index(drop=True)
     })
+
     algorithm.set_callback(callback)
     algorithm.run()
 

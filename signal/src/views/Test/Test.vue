@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { ContentWrap } from '@/components/ContentWrap'
-import { ReqParam, KLineChart3, ShowParam } from '@/components/KLine'
+import { ReqParam, KLineChart4, ShowParam } from '@/components/KLine'
 import { ElButton } from 'element-plus'
 import { apiHistory } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
@@ -98,8 +98,9 @@ async function fetchMACDData2(data: number[]) {
 function onTestClick() {
   console.log('click')
 
-  klc3.value?.setDate(xData)
+  // klc3.value?.setDate(xData)
   // klc3.value.setKLine(klineData, true, true)
+  klc3.value?.setLayout(1)
 }
 
 function onTest1Click() {
@@ -140,6 +141,6 @@ function onTest4Click() {
       <ElButton @click="onTest4Click">Test4</ElButton>
     </div>
     <!-- <KLinePanel :param="param" :show-table="true" /> -->
-    <KLineChart3 ref="klc3" />
+    <KLineChart4 ref="klc3" />
   </ContentWrap>
 </template>

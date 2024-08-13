@@ -41,7 +41,7 @@ class LineCrossAlgorithm(Algorithm):
 
     if (self.pos + 1) >= self.size:
       return True
-    
+
     if (self.A[self.pos] > self.B[self.pos]) and (self.A[self.pos + 1] < self.B[self.pos + 1]):
         # -1, down
       hitCallback(self.pos, -1)

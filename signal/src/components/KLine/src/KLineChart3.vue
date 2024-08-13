@@ -78,7 +78,7 @@ function reset() {
 function setDate(data: string[]) {
   // console.log(data)
   options.value.xAxis![0].data = data
-  options.value.title.push({ text: "4444" })
+  // options.value.title.push({ text: "4444" })
 }
 
 function setKLine(data: any[], markLine: boolean = true, legend: boolean = false) {
