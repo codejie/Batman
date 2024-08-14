@@ -100,28 +100,38 @@ function onTestClick() {
 
   // klc3.value?.setDate(xData)
   // klc3.value.setKLine(klineData, true, true)
-  klc3.value?.setLayout(1)
+  klc3.value?.addGrid(0, '2%', '2%', '2%', '50%')
+  klc3.value?.addGrid(1, '2%', '60%', '2%', '8%')
+  klc3.value?.addAxis(0, xData, true)
+  klc3.value?.addKLine(0, 'K', klineData, true, true)
+  klc3.value?.addAxis(1, xData, false)
 }
 
 function onTest1Click() {
   const closeData = klineData.map(item => item[1])
+  klc3.value?.addLine(0, 'close', closeData)
+  klc3.value?.addBar(1, 'volumn', volumeData)
   // const data = calcMAData(5, closeData)
   // klc3.value?.addLine('ma5', data, true)
-  const data9 = calcMAData(9, closeData)
-  klc3.value?.addLine('ma9', data9, true)
+  // const data9 = calcMAData(9, closeData)
+  // klc3.value?.addLine('ma9', data9, true)
+  // klc3.value?.setLayout(3)
 }
 
 function onTest2Click() {
   // klc3.value?.removeLine('ma5')
-  const closeData2 = klineData2.map(item => item[1])
-  const data92 = calcMAData(9, closeData2)
-  klc3.value?.addLine('ma9', data92, true)
+  // const closeData2 = klineData2.map(item => item[1])
+  // const data92 = calcMAData(9, closeData2)
+  // klc3.value?.addLine('ma9', data92, true)
+  klc3.value?.reset()
 }
 
 function onTest3Click() {
-  const closeData = klineData.map(item => item[1])
-  console.log(closeData)
-  fetchMACDData(closeData)
+  klc3.value?.remove('volumn')
+  // const closeData = klineData.map(item => item[1])
+  // console.log(closeData)
+  // fetchMACDData(closeData)
+
 }
 
 function onTest4Click() {
