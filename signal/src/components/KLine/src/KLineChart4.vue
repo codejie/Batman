@@ -123,29 +123,67 @@ function addGrid(id: number, left: number | string, top: number | string, right:
   })
 }
 
+function addAxisPointer(grids: number[]) {
+  options.value['axisPointer'] = {
+    link: [
+      {
+        xAxisIndex: grids
+      }
+    ],
+    label: {
+      backgroundColor: '#777'
+    }    
+  }
+  options.value['tooltip'] = {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'cross'
+    },
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    textStyle: {
+      color: '#000'
+    },
+    // position: function (pos, params, el, elRect, size) {
+    //   const obj = {
+    //     top: 10
+    //   };
+    //   obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+    //   return obj;
+    // }    
+  }
+  console.log(options.value)
+}
+
 function addAxis(grid: number, xdata: number[] | string[], showTick: boolean = true) {
   options.value.xAxis!.push({
     type: 'category',
     gridIndex: grid,
-    data: xdata
+    data: xdata,
+    boundaryGap: false,
+    axisLine: { onZero: false },
+    axisTick: { show: true },
+    splitLine: { show: false },
+    axisLabel: { show: showTick },    
   })
   options.value.yAxis!.push({
     type: 'value',
-        // name: 'Volume',
-        // nameLocation : 'middle',
-        show: true,
-        gridIndex: grid,
-        position: 'left',
-        nameGap: 30,
-        scale: true,
-        splitArea: {
-          show: true
-        },
-        splitNumber: 8,
-        axisLabel: { show: showTick },
-        axisLine: { show: showTick },
-        axisTick: { show: showTick },
-        splitLine: { show: false }       
+    // name: 'Volume',
+    // nameLocation : 'middle',
+    show: true,
+    gridIndex: grid,
+    position: 'left',
+    nameGap: 30,
+    scale: true,
+    splitArea: {
+      show: true
+    },
+    splitNumber: 8,
+    axisLabel: { show: showTick },
+    axisLine: { show: showTick },
+    axisTick: { show: showTick },
+    splitLine: { show: false }       
   })  
 }
 
@@ -184,6 +222,7 @@ function remove(name: string) {
 defineExpose({
   reset,
   addGrid,
+  addAxisPointer,
   addAxis,
   addKLine,
   addLine,

@@ -4,8 +4,9 @@ import KLineChart2 from './src/KLineChart2.vue'
 import KLineChart3 from './src/KLineChart3.vue'
 import KLineChart4 from './src/KLineChart4.vue'
 import KLinePanel from './src/KLinePanel.vue'
+import KLinePanel2 from './src/KLinePanel2.vue'
 
-export { KLineChart, KLineChart2, KLineChart3, KLineChart4, KLinePanel }
+export { KLineChart, KLineChart2, KLineChart3, KLineChart4, KLinePanel, KLinePanel2 }
 
 export type ReqParam = {
   type?: number,

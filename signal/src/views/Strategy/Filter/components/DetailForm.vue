@@ -152,7 +152,7 @@ onMounted(async () => {
               <ElTableColumn prop="value" label="Value" width="100" />
               <ElTableColumn prop="desc" label="Desc" />
             </ElTable>
-        </div>
+          </div>
         </ElCol>
       </ElRow>           
     </ElCol>
