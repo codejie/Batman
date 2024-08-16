@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, PropType, ref, unref, watch } from 'vue';
-import { ElRow, ElCol, ElButton, ElCheckboxGroup, ElCheckboxButton, ElRadioGroup, ElRadioButton, ElMessage } from 'element-plus';
+import { ElRow, ElCol, ElButton, ElCheckboxGroup, ElCheckboxButton, ElRadioGroup, ElRadioButton, ElMessage, ElDropdown, ElDropdownMenu, ElDropdownItem, ElIcon } from 'element-plus';
 import { apiCreate } from '../../../api/customized';
 import { apiHistory } from '../../../api/data/stock'
 import { KLineChart, KLineChart4, ReqParam, ShowParam } from '..';
 import { HistoryDataModel } from '../../../api/data/stock/types';
+import { apiMACD } from '@/api/libs/talib';
 
 const props = defineProps({
   param: {
@@ -27,19 +28,9 @@ const zoom_kline = ref<string[]>(['KLine'])
 const kchart = ref(null)
 
 let historyData: HistoryDataModel[] = []
-let xData
-let klineData
-let volumeData
-// let xData: string[] = []
-// let klineData: any[] = []
-// let volumeData
-
-// const showParam = ref<ShowParam>({
-//   maLines: maLines.value,
-//   hideVolume: zoom,
-//   markLines: true,
-//   hideKLine: !kline  
-// })
+let xData: string[] = []
+let klineData: any[] = []
+let volumeData: number[] = []
 
 function calcMAData(ma: number, data: number[]) {
   var result: any[] = [];
@@ -58,8 +49,8 @@ function calcMAData(ma: number, data: number[]) {
 }
 
 function initChartOptions() {
-  kchart.value?.addGrid(0, '4%', '0%', '4%', '40%')
-  kchart.value?.addGrid(1, '4%', '65%', '4%', '6%')
+  kchart.value?.addGrid(0, '4%', '4%', '4%', '40%')
+  kchart.value?.addGrid(1, '4%', '70%', '4%', '6%')
 }
 
 async function fetchHistoryData(code: string) {
@@ -94,6 +85,30 @@ function setVolumeData(data: any[]) {
   kchart.value?.addBar(1, 'Volume', data, true)  
 }
 
+async function setMACD(data: HistoryDataModel[]) {
+  const closeData = data.map(item => item.close)
+  const ret = await apiMACD({
+    value: closeData    
+  })
+  const arrayData = ret.result.data
+  const dif = arrayData.map(item => item[0])
+  const dea = arrayData.map(item => item[1])
+  const macd = arrayData.map(item => item[2])
+  kchart.value?.addLine(1, 'dif', dif)
+  kchart.value?.addLine(1, 'dea', dea)
+  kchart.value?.addLine(1, 'macd', macd)
+}
+
+function setGrid() {
+  kchart.value?.reset()
+  if (!zoom) {
+    kchart.value?.addGrid(0, '4%', '4%', '4%', '6%')
+  } else {
+    kchart.value?.addGrid(0, '4%', '4%', '4%', '40%')
+    kchart.value?.addGrid(1, '4%', '70%', '4%', '6%')
+  }
+}
+
 function updateChartOptions(data: HistoryDataModel[]) {
   xData = data.map(item => item.date)
   klineData = data.map(({open, close, low, high}) => ([open, close, low, high]))
@@ -117,9 +132,8 @@ onMounted(async () =>{
 
 watch(
   () => props.param,
-  () => {
-    fetchHistoryData(props.param.code)
-    // updateChartOptions()
+  async () => {
+    await fetchHistoryData(props.param.code)
 })
 
 
@@ -166,6 +180,10 @@ function onStartChanged() {
   // updateDataParam(props.param.code)
 }
 
+function onGridModeChanged(param) {
+  console.log(param)
+}
+
 </script>
 <template>
   <ElRow :gutter="24">
@@ -186,6 +204,15 @@ function onStartChanged() {
       </ElCheckboxGroup>
     </ElCol>
     <ElCol :span="4">
+      <ElDropdown size="small" @command="onGridModeChanged" @click="onGridModeChanged">
+        <ElButton size="small">123<ElIcon class="el-icon--right"><arrow-down /></ElIcon></ElButton>
+        <template #dropdown>
+          <ElDropdownMenu>
+            <ElDropdownItem>Volumn</ElDropdownItem>
+            <ElDropdownItem>MACD</ElDropdownItem>
+          </ElDropdownMenu>
+        </template>
+      </ElDropdown>
       <ElCheckboxGroup v-model="zoom_kline" size="small" style="float: right;" @change="onKLineChanged">
         <ElCheckboxButton v-for="item in klineGroup" :key="item" :value="item" :label="item" :checked="item in zoom_kline" />
       </ElCheckboxGroup>        
