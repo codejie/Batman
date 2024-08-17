@@ -8,18 +8,18 @@ import { Echart, EChartsOption } from '@/components/Echart';
 const upColor = '#ec0000'
 const downColor = '#00da3c'
 
-const blankOption = {
-  title: [],
-  grid: [],
-  xAxis: [],
-  yAxis: [],
-  series: [],
-  legend: {
-    bottom: '0%',
-    icon: 'circle',
-    data: []
-  }
-}
+// const blankOption = {
+//   title: [],
+//   grid: [],
+//   xAxis: [],
+//   yAxis: [],
+//   series: [],
+//   legend: {
+//     bottom: '0%',
+//     icon: 'circle',
+//     data: []
+//   }
+// }
 
 function makeKLineOption(grid: number, name: string, data: any) {
   return {
@@ -153,7 +153,6 @@ function addAxisPointer(grids: number[]) {
     //   return obj;
     // }    
   }
-  console.log(options.value)
 }
 
 function addAxis(grid: number, xdata: number[] | string[], showTick: boolean = true) {
@@ -169,7 +168,6 @@ function addAxis(grid: number, xdata: number[] | string[], showTick: boolean = t
   })
   options.value.yAxis!.push({
     type: 'value',
-    // name: 'Volume',
     // nameLocation : 'middle',
     show: true,
     gridIndex: grid,
@@ -215,8 +213,15 @@ function addBar(grid: number, name: string, data: number[], legend: boolean = tr
   }  
 }
 
-function remove(name: string) {
-  options.value.series = options.value.series!.filter( item => item.name != name)
+function remove(name: string, wildcard: boolean = false) {
+  if (!wildcard) {
+    options.value.legend!.data = options.value.legend!.data.filter( item => item != name)
+    options.value.series = options.value.series!.filter( item => item.name != name )
+  }
+  else {
+    options.value.legend!.data = options.value.legend!.data.filter( item => ! item.includes(name) )
+    options.value.series = options.value.series!.filter( item => ! item.name.includes(name) )
+  }
 }
 
 defineExpose({

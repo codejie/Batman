@@ -9,20 +9,10 @@ import { InstanceModel } from '@/api/strategy/types'
 import DetailForm from '@/views/Strategy/Filter/components/DetailForm.vue'
 import ResultForm from '@/views/Strategy/Filter/components/ResultForm.vue'
 
-// defineOptions({
-//   name: 'Filter'
-// })
 
 const { t } = useI18n()
 const { push } = useRouter()
-// const { emitter } = useEmitt()
 
-// useEmitt({
-//   name: 'back',
-//   callback: () => {
-//     console.log('back.....')
-//   }
-// })
 const detailDialogVisible = ref(false)
 const resultDialogVisible = ref(false)
 

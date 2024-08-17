@@ -86,7 +86,7 @@ async function onCustomizedClick() {
 }
 
 function onKLineChanged() {
-  console.log(zoom_kline.value)
+  // console.log(zoom_kline.value)
   zoom = zoom_kline.value.includes('Zoom')
   kline = zoom_kline.value.includes('KLine')
   updateShowParam()

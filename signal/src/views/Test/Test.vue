@@ -64,7 +64,7 @@ async function fetchMACDData(data: number[]) {
   const ret = await apiMACD({
     value: data    
   })
-  console.log(ret.result)
+  // console.log(ret.result)
   const arrayData = ret.result.data
   const macd = arrayData.map(item => item[0])
   const signal = arrayData.map(item => item[1])
@@ -82,7 +82,7 @@ async function fetchMACDData2(data: number[]) {
     slow: 26,
     period: 7
   })
-  console.log(ret.result)
+  // console.log(ret.result)
   const arrayData = ret.result.data
   const macd = arrayData.map(item => item[0])
   const signal = arrayData.map(item => item[1])
@@ -136,9 +136,12 @@ function onTest3Click() {
 }
 
 function onTest4Click() {
-  const closeData = klineData.map(item => item[1])
-  console.log(closeData)
-  fetchMACDData2(closeData)
+  // const closeData = klineData.map(item => item[1])
+  // console.log(closeData)
+  // fetchMACDData2(closeData)
+  param.value = {
+    code: '000001'
+  }
 }
 
 const param = ref<ReqParam>({
@@ -157,6 +160,6 @@ const param = ref<ReqParam>({
     </div>
     <!-- <KLinePanel :param="param" :show-table="true" /> -->
     <!-- <KLineChart4 ref="klc3" /> -->
-     <KLinePanel2 :param="param" />
+     <KLinePanel2 :req-param="param" />
   </ContentWrap>
 </template>

@@ -1,23 +1,14 @@
 <script setup lang="ts">
 import { PropType, defineProps, ref, unref, watch } from 'vue'
 import { InstanceModel } from '@/api/strategy/types'
-import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElMessage, makeList } from 'element-plus'
-import { KLinePanel2, ReqParam } from '@/components/KLine'
+import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption, ElButton, ElMessage } from 'element-plus'
+import { ReqParam, KLineChart, ShowParam } from '@/components/KLine'
 import { apiCreate } from '@/api/customized';
-import Volume from 'xgplayer/es/plugins/volume';
 
 const props = defineProps({
   instance: {
     type: Object as PropType<InstanceModel>
   }
-})
-
-const reqParam = ref<ReqParam>()
-const initParam = ref({
-  maGroup: [7, 9, 12, 17, 26, 30, 45],
-  maLines: [7, 12, 26],
-  zoom: false,
-  volume: true
 })
 
 const extRanges = [
@@ -51,6 +42,12 @@ function getDateString(date: string, days: number): string {
   return tmp.toISOString().slice(0, 10)
 }
 
+const showParam = ref<ShowParam>({
+  maLines: [5, 12, 30 ],
+  hideVolume: false,
+  markLines: true
+})
+const reqParam = ref<ReqParam>()
 const dateRange = ref<number>(0)
 let selectRow: any = ref<any>()
 
@@ -70,6 +67,35 @@ function onRowClick(row: any) {
   updateChartParam(unref(dateRange))
 }
 
+watch(
+  () => dateRange.value,
+  (value) => {
+    if (selectRow.value)
+      updateChartParam(unref(value))
+  }
+)
+
+async function onCustomizedClick() {
+  const ret = await apiCreate({
+    code: unref(selectRow).code,
+    type: 1
+  })
+  if (ret.code == 0) {
+    ElMessage({
+        type: 'success',
+        message: `${unref(selectRow).code} added to customized list.`
+      })    
+  }
+}
+
+function onZoomClick() {
+  showParam.value = {
+    maLines: showParam.value.maLines,
+    hideVolume: !showParam.value.hideVolume,
+    markLines: true
+  }
+}
+
 </script>
 <template>
   <ElForm label-width="auto">
@@ -86,7 +112,19 @@ function onRowClick(row: any) {
           </ElTable>
         </ElCol>
         <ElCol :span="17">
-          <KLinePanel2 :req-param="reqParam!" :init-param="initParam" />
+          <ElRow v-if="selectRow" :gutter="24" sytle="width: 100%">
+            <ElCol :span="24">
+              <div class="bold">
+                {{ selectRow?.code }}({{ selectRow?.name }})
+                <ElButton size="small" style="margin-left: 12px" @click="onCustomizedClick">Add to Customized</ElButton>
+                <ElSelect v-model="dateRange" size="small" style="width: 15%; float: right">
+                  <ElOption v-for="item in extRanges" :key="item.value" :label="item.label" :value="item.value" />
+                </ElSelect>
+                <ElButton size="small" style="margin-left: 12px; float: right; margin-right: 12px;" @click="onZoomClick">Zoom</ElButton>
+              </div>
+            </ElCol>
+          </ElRow>
+          <KLineChart :reqParam="reqParam" :showParam="showParam" />
         </ElCol>
       </ElRow>
     </ElFormItem>
