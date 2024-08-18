@@ -75,15 +75,18 @@ class RapidRaiseFallStrategy(Strategy):
         ResultField(name='name',
                type='string',
                desc='名称'
-               ),               
-         ResultField(name='position',
-               type='number',
-               desc='位置'
-               ),              
-        ResultField(name='date',
-               type='string',
-               desc='日期'
                ),
+        ResultField(name='results',
+                type='list',
+                desc='[position/交叉前位置,date/日期]')
+        #  ResultField(name='position',
+        #        type='number',
+        #        desc='位置'
+        #        ),              
+        # ResultField(name='date',
+        #        type='string',
+        #        desc='日期'
+        #        ),
     ]
 
     @staticmethod
@@ -112,7 +115,10 @@ class RapidRaiseFallStrategy(Strategy):
             # algorithm, only one algorithm in this strategy
             results = []
             for _, row in codes.iterrows():
-                results.extend(RapidRaiseFallStrategy.__exec_algorithm(row['code'], row['name'], start, end, arg_values, algo_values))
+                # results.extend(RapidRaiseFallStrategy.__exec_algorithm(row['code'], row['name'], start, end, arg_values, algo_values))
+                hits = RapidRaiseFallStrategy.__exec_algorithm(row['code'], row['name'], start, end, arg_values, algo_values)
+                RapidRaiseFallStrategy.__algorithm_hits_merge(results, hits)
+
             manager.set_results(id, results, {
                 'days': days,
                 'start': start,
@@ -126,7 +132,6 @@ class RapidRaiseFallStrategy(Strategy):
     @staticmethod
     def __exec_algorithm(code: str, name: str, start: str, end: str, arg_values: dict, algo_values: dict) -> list:
         results = []
-
         def callback(event: CallbackType, result: dict) -> bool:
             # logger.debug(f'{code} - {event} - {result}')
             if event == CallbackType.HIT:
@@ -152,3 +157,30 @@ class RapidRaiseFallStrategy(Strategy):
         algorithm.run()
 
         return results
+    
+    @staticmethod
+    def __algorithm_hits_merge(results: list, hits: list) -> None:
+        if len(hits) > 0:
+            code = hits[0].code
+            found = False
+            for r in results:
+                if r['code'] == code:
+                    for hit in hits:
+                        r['results'].append({
+                            'position': hit.position,
+                            'date': hit.date
+                        })
+                        found = True
+                        break
+            if not found:
+                r = {
+                    'code': code,
+                    'name': hits[0].name,
+                    'results': []
+                }
+                for hit in hits:
+                    r['results'].append({
+                        'position': hit.position,
+                        'date': hit.date
+                    })
+                results.append(r)

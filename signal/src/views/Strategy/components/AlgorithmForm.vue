@@ -32,7 +32,7 @@ onMounted(async () => {
   algorithm.value.args?.forEach((item) => {
     data.value.push({
       arg: item,
-      value: item.default || undefined
+      value: item.default == null ? undefined : item.default
     })
   })
 })

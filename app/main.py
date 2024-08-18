@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 
         logger.debug('========dataTask init')
         dataTask.init()
-        dataTask.update_task(True)
+        dataTask.update_task()
 
         logger.debug('========strategyInstanceManager startup')
         strategyInstanceManager.start()

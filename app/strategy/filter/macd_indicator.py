@@ -51,9 +51,9 @@ class MACDIndicatorStrategy(Strategy):
               required=False),
     Argument(name='days',
               type='number',
-              desc='最近天数范围',
+              desc='最近天数范围，小于180天',
               unit='天',                
-              default=26,
+              default=5,
               required=False),
     Argument(name='fast',
              type='number',
@@ -73,16 +73,21 @@ class MACDIndicatorStrategy(Strategy):
              unit='天',
              default=9,
              required=False),
-    Argument(name='direction',
-             type='option',
-             value=[
-               { 'value': 1, 'desc' : '上行交叉'},
-               { 'value': -1, 'desc': '下行交叉'},
-               { 'value': 0, 'desc': '全部交叉'}
-             ],
-             desc='交叉方向',
-             default=0,
-             required=False)
+    # Argument(name='direction',
+    #          type='option',
+    #          value=[
+    #            { 'value': 1, 'desc' : '上行交叉'},
+    #            { 'value': -1, 'desc': '下行交叉'},
+    #            { 'value': 0, 'desc': '全部交叉'}
+    #          ],
+    #          desc='交叉方向',
+    #          default=0,
+    #          required=False),
+    # Argument(name='macd',
+    #          type='number',
+    #          desc='MACD值条件，MACD >= |diff|',
+    #          default=0.0,
+    #          required=False)
   ]
   result_fields: list[ResultField] = [
     ResultField(name='code',
@@ -93,7 +98,7 @@ class MACDIndicatorStrategy(Strategy):
             desc='名称'),
     ResultField(name='results',
                 type='list',
-                desc='[position/交叉前位置,date/交叉前日期,direction/交叉方向]')
+                desc='[position/交叉前位置,date/交叉前日期,direction/交叉方向,macd值]')
     # ResultField(name='position',
     #         type='number',
     #         desc='交叉前位置'), 
@@ -130,7 +135,8 @@ class MACDIndicatorStrategy(Strategy):
       fast: int = int(arg_values['fast'])
       slow: int = int(arg_values['slow'])
       signal: int = int(arg_values['signal'])
-      direction: int = int(arg_values['direction'])
+      # direction: int = int(arg_values['direction'])
+      # diff: float = float(arg_values['macd'])
 
       code: str = None
       name: str = None
@@ -144,33 +150,35 @@ class MACDIndicatorStrategy(Strategy):
         table = TableName.make_stock_history_name(code)
         df = common.select(table=table, columns=['日期', '收盘'], where=f'where 日期 > "{start}" ORDER BY 日期')
         calc_df = MACD(df['收盘'], fast, slow, signal)
-          
-        hits = MACDIndicatorStrategy.__exec_algorithm(calc_df, direction, days)
-        if len(hits) > 0:
-          found = False
-          for r in results:
-            if r['code'] == code:
-              for hit in hits:
-                r['results'].append({
-                  'position': hit['pos'],
-                  'date': df['日期'][hit['pos']],
-                  'direction': hit['direction']
-                })
-                found = True
-                break
-          if not found:
-            r = {
-               'code': code,
-               'name': name,
-               'results': []
-            }
-            for hit in hits:
-              r['results'].append({
-                'position': hit['pos'],
-                'date': df['日期'][hit['pos']],
-                'direction': hit['direction']
-              })
-            results.append(r)  
+        hits = MACDIndicatorStrategy.__exec_algorithm(calc_df, days, algo_values[LineCrossAlgorithm.name])
+        MACDIndicatorStrategy.__algorithm_hits_merge(results, hits, code, name, df)
+        # if len(hits) > 0:
+        #   found = False
+        #   for r in results:
+        #     if r['code'] == code:
+        #       for hit in hits:
+        #         r['results'].append({
+        #           'position': hit['pos'],
+        #           'date': df['日期'][hit['pos']],
+        #           'direction': hit['direction'],
+        #           'macd': hit['diff']
+        #         })
+        #         found = True
+        #         break
+        #   if not found:
+        #     r = {
+        #        'code': code,
+        #        'name': name,
+        #        'results': []
+        #     }
+        #     for hit in hits:
+        #       r['results'].append({
+        #         'position': hit['pos'],
+        #         'date': df['日期'][hit['pos']],
+        #         'direction': hit['direction'],
+        #         'macd': hit['diff']
+        #       })
+        #     results.append(r)  
       
       # print(results)
       manager.set_results(id, results, {
@@ -189,17 +197,18 @@ class MACDIndicatorStrategy(Strategy):
   #   return MACD(df['收盘'], fast, slow, signal)
 
   @staticmethod
-  def __exec_algorithm(df: DataFrame, direction: int, days: int) -> list:
+  def __exec_algorithm(df: DataFrame, days: int, args: dict) -> list:
     results = []
     def callback(event: CallbackType, result: dict) -> bool:
       if event == CallbackType.HIT:
-        if direction == 0 or direction == result['direction']:
           results.append({
             'pos': result['pos'],
-            'direction': result['direction']
+            'direction': result['direction'],
+            'diff': result['diff']
           })
 
     algorithm = LineCrossAlgorithm()
+    algorithm.set_args(args)
     algorithm.set_data({
         'seriesA': (df['dif'].iloc[-(days - 1):]).reset_index(drop=True),
         'seriesB': (df['dea'].iloc[-(days - 1):]).reset_index(drop=True)
@@ -207,5 +216,34 @@ class MACDIndicatorStrategy(Strategy):
 
     algorithm.set_callback(callback)
     algorithm.run()
-
     return results
+  
+  @staticmethod
+  def __algorithm_hits_merge(results: list, hits: list, code: str, name: str, df: DataFrame) -> None:
+    if len(hits) > 0:
+      found = False
+      for r in results:
+        if r['code'] == code:
+          for hit in hits:
+            r['results'].append({
+              'position': hit['pos'],
+              'date': df['日期'][hit['pos']],
+              'direction': hit['direction'],
+              'macd': hit['diff']
+            })
+            found = True
+            break
+      if not found:
+        r = {
+            'code': code,
+            'name': name,
+            'results': []
+        }
+        for hit in hits:
+          r['results'].append({
+            'position': hit['pos'],
+            'date': df['日期'][hit['pos']],
+            'direction': hit['direction'],
+            'macd': hit['diff']
+          })
+        results.append(r)  
