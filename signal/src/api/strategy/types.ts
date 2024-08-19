@@ -43,14 +43,31 @@ export type AlgorithValuesModel = {
   }
 }
 
-export type InstanceModel = {
+export type InstanceListItemModel = {
+  id: string
+  name: string
+  strategy: string
+  trigger: TriggerModel
+  results?: number
+  latest_updated?: Date
+  run_times: number
+  state: number
+  is_removed: boolean
+}
+
+export type InstanceItemResult = {
+  code: string
+  name: string
+  results: any[]
+}
+export type InstanceItemModel = {
     id: string
     name: string
     strategy: string
     trigger: TriggerModel
     arg_values?: ArgumentValuesModel
     algo_values?: AlgorithValuesModel
-    results?: Array<any>
+    results?: InstanceItemResult[]
     result_params?: any
     latest_updated?: Date
     run_times: number
@@ -70,7 +87,13 @@ export type ListInstanceRequest = {
     strategy?: string
 }
 
-export type ListInstanceResponse = InstanceModel[]
+export type ListInstanceResponse = InstanceListItemModel[]
+
+export type GetInstanceRequest = {
+  id: string
+}
+
+export type GetInstanceResponse = InstanceItemModel
 
 export type RemoveInstanceRequest = {
     id: string

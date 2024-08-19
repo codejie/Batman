@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { PropType, defineProps, ref, unref, watch } from 'vue'
-import { InstanceModel } from '@/api/strategy/types'
+import { InstanceItemModel } from '@/api/strategy/types'
 import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElSelect, ElOption, ElButton, ElMessage } from 'element-plus'
 import { ReqParam, KLineChart, ShowParam } from '@/components/KLine'
 import { apiCreate } from '@/api/customized';
 
 const props = defineProps({
   instance: {
-    type: Object as PropType<InstanceModel>
+    type: Object as PropType<InstanceItemModel>
   }
 })
 

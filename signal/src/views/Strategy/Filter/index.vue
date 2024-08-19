@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router'
 import { apiList, apiRemove, apiReset } from '@/api/strategy'
 import { onMounted, ref, unref } from 'vue'
 import { ElTable, ElTableColumn, ElButton, ElMessageBox, ElMessage, ElDialog } from 'element-plus'
-import { InstanceModel } from '@/api/strategy/types'
+import { InstanceListItemModel } from '@/api/strategy/types'
 import DetailForm from '@/views/Strategy/Filter/components/DetailForm.vue'
 import ResultForm from '@/views/Strategy/Filter/components/ResultForm.vue'
 
@@ -16,36 +16,35 @@ const { push } = useRouter()
 const detailDialogVisible = ref(false)
 const resultDialogVisible = ref(false)
 
-const selectInstance = ref<InstanceModel>()
-const listInstance = ref<InstanceModel[]>([])
+const selectInstance = ref<InstanceListItemModel>()
+const listInstance = ref<InstanceListItemModel[]>([])
 
 const fetchInstanceList = async () => {
   listInstance.value = []
   const ret = await apiList({})
-  for (const i of ret.result) {
-    listInstance.value.push(i)
-  }
+  listInstance.value = ret.result
 }
 
-onMounted(() => {
-  fetchInstanceList()
+onMounted(async () => {
+  await fetchInstanceList()
 })
 
 const onBtnCreate = () => {
   push('/strategy/filter/create')
 }
 
-function onDetail(instance: InstanceModel) {
-  selectInstance.value = instance
+function onDetail(row: any) {
+  selectInstance.value = row
+  console.log(selectInstance.value?.id)
   detailDialogVisible.value = true
 }
 
-function onResult(instance: InstanceModel) {
-  selectInstance.value = instance
+function onResult(row: any) {
+  selectInstance.value = row
   resultDialogVisible.value = true
 }
 
-function makeState(instance: InstanceModel): string {
+function makeState(instance: InstanceListItemModel): string {
   if (instance.is_removed) {
     return 'Removed'
   }
@@ -78,12 +77,12 @@ function makeUpdated(str: string): string {
   }
 }
 
-function makeResult(instance: InstanceModel): string {
+function makeResult(instance: InstanceListItemModel): string {
   const results = instance.results
   if (!results) {
     return '-'
   }
-  return `${results.length}`
+  return `${results}`
 }
 
 async function onDelete(id: string) {
@@ -115,9 +114,9 @@ async function onDelete(id: string) {
   }
 }
 
-async function onReset(id: string) {
+async function onReset(id: string, name: string) {
   const ret = await ElMessageBox.confirm(
-    `reset strategy instance '${id}'?`,
+    `reset strategy instance '${name}'?`,
     'Information', 
     {
       confirmButtonText: 'Yes',
@@ -175,19 +174,19 @@ async function onReset(id: string) {
       <ElTableColumn fixed="right" label="Operations" min-width="120">
         <template #default="scope">
           <ElButton link type="primary" @click="onDetail(scope.row)">Detail</ElButton>
-          <ElButton link type="info" :disabled="scope.row.is_removed == false" @click="onReset(scope.row.id)">Reset</ElButton>          
+          <ElButton link type="info" :disabled="scope.row.is_removed == false" @click="onReset(scope.row.id, scope.row.name)">Reset</ElButton>          
           <ElButton link type="danger" @click="onDelete(scope.row.id)">Delete</ElButton>
         </template>
       </ElTableColumn>
     </ElTable>
-    <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="45%">
-      <DetailForm :instance="selectInstance!" />
+    <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="50%">
+      <DetailForm :instance-id="selectInstance!.id" />
       <template #footer>
         <ElButton type="primary" @click="detailDialogVisible=false">Close</ElButton>
-      </template>       
+      </template>
     </ElDialog>
     <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="70%" destroy-on-close>
-      <ResultForm :instance="selectInstance" />
+      <ResultForm :instance-id="selectInstance!.id" />
       <template #footer>
         <ElButton type="primary" @click="resultDialogVisible=false">Close</ElButton>
       </template>

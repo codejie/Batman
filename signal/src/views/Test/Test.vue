@@ -160,6 +160,6 @@ const param = ref<ReqParam>({
     </div>
     <!-- <KLinePanel :param="param" :show-table="true" /> -->
     <!-- <KLineChart4 ref="klc3" /> -->
-     <KLinePanel2 :req-param="param" />
+      <KLinePanel2 :req-param="param" />
   </ContentWrap>
 </template>

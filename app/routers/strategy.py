@@ -39,14 +39,30 @@ class StrategyModel(BaseModel):
     algorithms: list[str] = None
     result_fields: list[ResultFieldModel] = None
 
-class InstanceModel(BaseModel):
+class InstanceListItemModel(BaseModel):
+    id: str
+    name: str
+    strategy: str
+    trigger: TriggerModel
+    results: int | None = None
+    latest_updated: datetime | None = None
+    run_times: int = 0
+    state: int = 0
+    is_removed: bool = False
+
+class InstanceItemResult(BaseModel):
+    code: str
+    name: str
+    results: list
+
+class InstanceItemModel(BaseModel):
     id: str
     name: str
     strategy: str
     trigger: TriggerModel
     arg_values: dict | None = None
     algo_values: dict[str, dict] | None = None
-    results: list | None = None
+    results: list[InstanceItemResult] | None = None
     result_params: dict | None = None
     latest_updated: datetime | None = None
     run_times: int = 0
@@ -123,7 +139,7 @@ class ListInstanceRequest(RequestModel):
     type: str | None = None
 
 class ListInstanceResponse(ResponseModel):
-    result: list[InstanceModel]
+    result: list[InstanceListItemModel]
 
 @router.post('/list', response_model=ListInstanceResponse, response_model_exclude_none=True)
 async def list(body: ListInstanceRequest=Body()):
@@ -139,14 +155,11 @@ async def list(body: ListInstanceRequest=Body()):
     instances = strategyInstanceManager.list(body.strategy, type)
     for inst in instances:
         trigger = TriggerModel.model_validate(obj=inst.trigger)
-        ret.append(InstanceModel(id=inst.id,
+        ret.append(InstanceListItemModel(id=inst.id,
                                  name=inst.name,
                                  strategy=inst.strategy,
                                  trigger=trigger,
-                                 arg_values=inst.arg_values,
-                                 algo_values=inst.algo_values,
-                                 results=inst.results,
-                                 result_params=inst.result_params,
+                                 results=len(inst.results) if inst.results else None,
                                  latest_updated=inst.latest_updated,
                                  run_times = inst.run_times,
                                  state=inst.state.value,
@@ -160,13 +173,13 @@ class GetInstanceRequest(RequestModel):
     id: str
 
 class GetInstanceResponse(ResponseModel):
-    result: InstanceModel
+    result: InstanceItemModel
 
 @router.post('/get', response_model=GetInstanceResponse, response_model_exclude_none=True)
 async def get(body: GetInstanceRequest=Body()):
     instance = strategyInstanceManager.get(id=body.id)
     trigger = TriggerModel.model_validate(obj=instance.trigger)
-    return GetInstanceResponse(result=InstanceModel(
+    return GetInstanceResponse(result=InstanceItemModel(
         id=instance.id,
         name=instance.name,
         strategy=instance.strategy,

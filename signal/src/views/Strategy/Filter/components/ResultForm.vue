@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { PropType, defineProps, ref, unref, watch } from 'vue'
-import { InstanceModel } from '@/api/strategy/types'
-import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol, ElMessage, makeList } from 'element-plus'
+import { defineProps, onMounted, ref, unref } from 'vue'
+import { InstanceItemModel  } from '@/api/strategy/types'
+import { ElForm, ElFormItem, ElTable, ElTableColumn, ElRow, ElCol } from 'element-plus'
 import { KLinePanel2, ReqParam } from '@/components/KLine'
 import { apiCreate } from '@/api/customized';
-import Volume from 'xgplayer/es/plugins/volume';
+import { apiGet } from '@/api/strategy';
+
+
 
 const props = defineProps({
-  instance: {
-    type: Object as PropType<InstanceModel>
+  instanceId: {
+    type: String,
+    required: true
   }
 })
 
@@ -20,28 +23,7 @@ const initParam = ref({
   volume: true
 })
 
-const extRanges = [
-  // {
-  //   value: -14,
-  //   label: '-14days'
-  // },  
-  {
-    value: 0,
-    label: '+0 days'
-  },
-  {
-    value: 14,
-    label: '+14 days'
-  },
-  {
-    value: 28,
-    label: '+28 days'
-  },
-  {
-    value: 60,
-    label: '+60 days'
-  }  
-]
+const instance = ref<InstanceItemModel>()
 
 function getDateString(date: string, days: number): string {
   if (days == 0)
@@ -55,8 +37,8 @@ const dateRange = ref<number>(0)
 let selectRow: any = ref<any>()
 
 function updateChartParam(days: number) {
-  const start = getDateString(props.instance?.result_params.start, -days)
-  const end = getDateString(props.instance?.result_params.end, days)
+  const start = getDateString(unref(instance)?.result_params.start, -days)
+  const end = getDateString(unref(instance)?.result_params.end, days)
 
   reqParam.value = {
     code: selectRow.value?.code,
@@ -65,10 +47,22 @@ function updateChartParam(days: number) {
   }
 }
 
+function makeResultDate(row: any): string {
+  const result = row.results[0]
+  return result.date
+}
+
 function onRowClick(row: any) {
   selectRow.value = row
   updateChartParam(unref(dateRange))
 }
+
+onMounted(async () => {
+  const retGet = await apiGet({
+    id: props.instanceId
+  })
+  instance.value = retGet.result
+})
 
 </script>
 <template>
@@ -82,7 +76,11 @@ function onRowClick(row: any) {
           <ElTable :data="instance?.results" @row-click="onRowClick" :border="true" height="500" highlight-current-row>
             <ElTableColumn prop="code" label="Code" width="100" />
             <ElTableColumn prop="name" label="Name" width="100" />
-            <ElTableColumn prop="date" label="Date" />
+            <ElTableColumn prop="date" label="Date">
+              <template #default="scope">
+                {{ makeResultDate(scope.row) }}
+              </template>              
+            </ElTableColumn>
           </ElTable>
         </ElCol>
         <ElCol :span="17">
