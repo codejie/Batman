@@ -48,8 +48,10 @@ function updateChartParam(days: number) {
 }
 
 function makeResultDate(row: any): string {
-  const result = row.results[0]
-  return result.date
+  if (row.results.length === 1)
+    return row.results[0].date
+  else
+    return `${row.results[0].date}[${row.results.length}]`
 }
 
 function onRowClick(row: any) {
@@ -74,8 +76,8 @@ onMounted(async () => {
       <ElRow :gutter="24" style="width: 100%">
         <ElCol :span="7">
           <ElTable :data="instance?.results" @row-click="onRowClick" :border="true" height="500" highlight-current-row>
-            <ElTableColumn prop="code" label="Code" width="100" />
-            <ElTableColumn prop="name" label="Name" width="100" />
+            <ElTableColumn prop="code" label="Code" width="80" />
+            <ElTableColumn prop="name" label="Name" width="90" />
             <ElTableColumn prop="date" label="Date">
               <template #default="scope">
                 {{ makeResultDate(scope.row) }}

@@ -151,7 +151,7 @@ class MACDIndicatorStrategy(Strategy):
         df = common.select(table=table, columns=['日期', '收盘'], where=f'where 日期 > "{start}" ORDER BY 日期')
         calc_df = MACD(df['收盘'], fast, slow, signal)
         hits = MACDIndicatorStrategy.__exec_algorithm(calc_df, days, algo_values[LineCrossAlgorithm.name])
-        MACDIndicatorStrategy.__algorithm_hits_merge(results, hits, code, name, df)
+        MACDIndicatorStrategy.__algorithm_hits_merge(results, hits, code, name, df, days)
         # if len(hits) > 0:
         #   found = False
         #   for r in results:
@@ -210,8 +210,8 @@ class MACDIndicatorStrategy(Strategy):
     algorithm = LineCrossAlgorithm()
     algorithm.set_args(args)
     algorithm.set_data({
-        'seriesA': (df['dif'].iloc[-(days - 1):]).reset_index(drop=True),
-        'seriesB': (df['dea'].iloc[-(days - 1):]).reset_index(drop=True)
+        'seriesA': (df['dif'].iloc[-(days):]).reset_index(drop=True),
+        'seriesB': (df['dea'].iloc[-(days):]).reset_index(drop=True)
     })
 
     algorithm.set_callback(callback)
@@ -219,15 +219,16 @@ class MACDIndicatorStrategy(Strategy):
     return results
   
   @staticmethod
-  def __algorithm_hits_merge(results: list, hits: list, code: str, name: str, df: DataFrame) -> None:
+  def __algorithm_hits_merge(results: list, hits: list, code: str, name: str, df: DataFrame, days: int) -> None:
     if len(hits) > 0:
+      total = len(df)
       found = False
       for r in results:
         if r['code'] == code:
           for hit in hits:
             r['results'].append({
               'position': hit['pos'],
-              'date': df['日期'][hit['pos']],
+              'date': df['日期'][total - days + hit['pos']],
               'direction': hit['direction'],
               'macd': hit['diff']
             })
@@ -242,7 +243,7 @@ class MACDIndicatorStrategy(Strategy):
         for hit in hits:
           r['results'].append({
             'position': hit['pos'],
-            'date': df['日期'][hit['pos']],
+            'date': df['日期'][total - days + hit['pos']],
             'direction': hit['direction'],
             'macd': hit['diff']
           })

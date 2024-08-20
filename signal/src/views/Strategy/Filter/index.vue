@@ -35,7 +35,6 @@ const onBtnCreate = () => {
 
 function onDetail(row: any) {
   selectInstance.value = row
-  console.log(selectInstance.value?.id)
   detailDialogVisible.value = true
 }
 
@@ -179,13 +178,13 @@ async function onReset(id: string, name: string) {
         </template>
       </ElTableColumn>
     </ElTable>
-    <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="50%">
+    <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="50%" destroy-on-close>
       <DetailForm :instance-id="selectInstance!.id" />
       <template #footer>
         <ElButton type="primary" @click="detailDialogVisible=false">Close</ElButton>
       </template>
     </ElDialog>
-    <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="70%" destroy-on-close>
+    <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="65%" destroy-on-close>
       <ResultForm :instance-id="selectInstance!.id" />
       <template #footer>
         <ElButton type="primary" @click="resultDialogVisible=false">Close</ElButton>

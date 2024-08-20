@@ -21,7 +21,7 @@ class LineCrossAlgorithm(Algorithm):
              required=False),    
     Argument(name='diff',
              type='number',
-             desc='交叉后差值条件，value >= |diff|',
+             desc='交叉后差值条件(value >= |diff|,（交叉后第一个点不检查）)',
              default=0.0,
              required=False),
     Argument(name='count',
@@ -37,8 +37,8 @@ class LineCrossAlgorithm(Algorithm):
   results: list[Result] = [
     Result('pos', 'number', '交叉前点'),
     # Result('pos2', 'number', '交叉后点'),
-    Result('direction', '-1/1', '交叉方向，-1：A向下交叉B；1：A向上交叉B'),
-    Result('diff', 'number', '交叉后差值')
+    Result('direction', '-1/1', '交叉方向（-1:A向下交叉B; 1:A向上交叉B)'),
+    Result('diff', 'number', '交叉后差值（交叉后第一个点不检查）')
   ]
 
   def __init__(self) -> None:
@@ -65,7 +65,7 @@ class LineCrossAlgorithm(Algorithm):
       # print('hit')
       print(f'{pos} - {direction} - {diff}')
       if self.callback:
-        if (self.direction == 0 or self.direction == direction) and (self.diff <= abs(diff)):
+        if (self.direction == 0 or self.direction == direction): # and (self.diff <= abs(diff)):
           self.callback(CallbackType.HIT, {
             'pos': pos,
             'direction': direction,
@@ -76,20 +76,22 @@ class LineCrossAlgorithm(Algorithm):
       return True
 
     if self.down_hitted:
-      if self.A[self.pos] < self.B[self.pos]:
+      diff = self.A[self.pos] - self.B[self.pos]
+      if (self.A[self.pos] < self.B[self.pos]) and (self.diff <= abs(diff)):
         self.down_count += 1
         if self.down_count >= self.count:
-          hitCallback(self.pos, -1, self.A[self.pos] - self.B[self.pos])
+          hitCallback(self.pos - self.down_count + 1, -1, diff)
           self.down_count = 0
           self.down_hitted = False
       else:
         self.down_count = 0
         self.down_hitted = False
     elif self.up_hitted:
-      if self.A[self.pos] > self.B[self.pos]:
+      diff = self.A[self.pos] - self.B[self.pos]
+      if self.A[self.pos] > self.B[self.pos] and (self.diff <= abs(diff)):
         self.up_count += 1
         if self.up_count >= self.count:
-          hitCallback(self.pos, 1, self.A[self.pos] - self.B[self.pos])
+          hitCallback(self.pos - self.up_count + 1, 1, diff)
           self.up_count = 0
           self.up_hitted = False
     else:
@@ -100,7 +102,7 @@ class LineCrossAlgorithm(Algorithm):
         self.up_count = 0
         self.up_hitted = False
         if self.down_count >= self.count:
-          hitCallback(self.pos, -1, self.A[self.pos + 1] - self.B[self.pos + 1])
+          hitCallback(self.pos - self.down_count + 1, -1, self.A[self.pos + 1] - self.B[self.pos + 1])
           self.down_count = 0
           self.up_hitted = False
       elif (self.A[self.pos] <= self.B[self.pos]) and (self.A[self.pos + 1] > self.B[self.pos + 1]):
@@ -110,32 +112,8 @@ class LineCrossAlgorithm(Algorithm):
         self.up_count += 1
         self.up_hitted = True
         if self.up_count >= self.count:
-          hitCallback(self.pos, 1, self.A[self.pos + 1] - self.B[self.pos + 1])
+          hitCallback(self.pos - self.up_count + 1, 1, self.A[self.pos + 1] - self.B[self.pos + 1])
           self.up_count = 0
           self.up_hitted = False
-
-    # if (self.A[self.pos] >= self.B[self.pos]) and (self.A[self.pos + 1] < self.B[self.pos + 1]):
-    #   # -1, down
-    #   self.down_count += 1
-    #   self.up_count = 0
-    #   self.up_hitted = False
-    #   print(f'down = {self.down_count} - {self.down_hitted} - {self.count}')
-    #   if not self.down_hitted and self.down_count >= self.count:
-    #     hitCallback(self.pos, -1, self.A[self.pos + 1] - self.B[self.pos + 1])
-    #     self.down_hitted = True
-    # elif (self.A[self.pos] <= self.B[self.pos]) and (self.A[self.pos + 1] > self.B[self.pos + 1]):
-    #   # 1, up
-    #   self.down_count = 0
-    #   self.up_count += 1
-    #   self.down_hitted = False
-    #   print(f'up = {self.up_count} - {self.up_hitted} - {self.count}')
-    #   if not self.up_hitted and self.up_count >= self.count:
-    #     hitCallback(self.pos, 1, self.A[self.pos + 1] - self.B[self.pos + 1])
-    #     self.up_hitted = True
-    # elif self.A[self.pos] == self.B[self.pos]:
-    #   if self.A[self.pos + 1] < self.B[self.pos + 1]:
-    #     hitCallback(self.pos, -1, self.A[self.pos + 1] - self.B[self.pos + 1])
-    #   elif self.A[self.pos + 1] > self.B[self.pos + 1]:
-    #     hitCallback(self.pos, 1, self.A[self.pos + 1] - self.B[self.pos + 1])
 
     return True

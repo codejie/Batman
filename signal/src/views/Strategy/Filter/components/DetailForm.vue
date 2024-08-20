@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { defineProps, onMounted, ref, unref } from 'vue'
-import { InstanceItemModel, StrategyModel } from '@/api/strategy/types'
+import { defineProps, onMounted, ref, unref, watch } from 'vue'
+import { InstanceItemModel, InstanceItemResult, StrategyModel, TriggerModel } from '@/api/strategy/types'
 import { ElRow, ElCol, ElTable, ElTableColumn, ElRadioGroup, ElRadioButton } from 'element-plus'
 import { apiGet, apiInfos } from '@/api/strategy';
 import { apiInfos as algo_apiInfos } from '@/api/algorithm'
@@ -21,13 +21,18 @@ const props = defineProps({
 
 const instance = ref<InstanceItemModel>()
 const strategy = ref<StrategyModel>()
+const strategyArgs = ref<Argument[]>([])
+const strategyState = ref<string>('-')
+const strategyTrigger = ref<string>('-')
+const resultUpdated = ref<string>('-')
+const results = ref<any[]>([])
+
 const algorithm = ref()
 const algorithm_desc = ref<string>()
 const algorithmArgs = ref<Argument[]>([])
 
-function makeTrigger(): string {
-  if (instance.value) {
-    const trigger = unref(instance)!.trigger
+function makeTrigger(trigger?: TriggerModel): string {
+  if (trigger) {
     if (trigger.mode == 'daily') {
       return `(每日)${trigger.hour}:${trigger.minute}`
     } else if (trigger.mode == 'delay') {
@@ -35,21 +40,22 @@ function makeTrigger(): string {
     } else {
       return 'unknown'
     }
-    return `(${trigger.mode})`
+    return `(${trigger!.mode})`
+  } else {
+    return '-'
   }
-  return '-'
 }
 
-function makeUpdated(): string {
-  const date = new Date(unref(instance)!.latest_updated || 0)
+function makeUpdated(updated?: Date): string {
+  const date = new Date(updated || 0)
   return `${date.toISOString().slice(0, 10)} ${date.toISOString().slice(11, 19)}`
 }
 
-function makeState(): string {
-  if (unref(instance)?.is_removed) {
+function makeState(is_removed?: boolean, state?: number): string {
+  if (is_removed) {
     return 'Removed'
   }
-  switch(unref(instance)?.state) {
+  switch(state) {
     case 0:
       return 'Init'
     case 1:
@@ -69,15 +75,17 @@ function makeState(): string {
   }
 }
 
-function makeStrategyArgs(): Argument[] {
+function makeStrategyArgs(args?: any[], values?: any): Argument[] {
   const ret:Argument[] = []
-  strategy.value?.args?.forEach(item => {
-    ret.push({
-      label: item.name,
-      value: unref(instance)?.arg_values?.[item.name] + (item.unit || ''),
-      desc: item.desc
+  if (args && values) {
+    args.forEach(item => {
+      ret.push({
+        label: item.name,
+        value: values[item.name] + (item.unit || ''),
+        desc: item.desc
+      })
     })
-  })
+  }
   return ret
 }
 
@@ -86,7 +94,6 @@ async function onAlgorithmChange(value: string) {
     name: value
   })
   const algo = ret.result as AlgorithmModel
-  console.log(algo)
   algorithm_desc.value = algo.desc
 
   const s_algo = unref(instance)?.algo_values![value]
@@ -100,28 +107,51 @@ async function onAlgorithmChange(value: string) {
   })
 }
 
-function makeResultDate(row: any): string {
-  const result = row.results[0]
-  return result.date
+
+function makeResults(results?: InstanceItemResult[]) {
+  const ret: any[] = []
+  if (results) {
+    for (const r of results) {
+      ret.push({
+        code: r.code,
+        name: r.name,
+        date: r.results[0].date
+      })
+    }
+  }
+  return ret
 }
 
 onMounted(async () => {
-  console.log(props.instanceId)
   const retGet = await apiGet({
     id: props.instanceId
   })
   instance.value = retGet.result
-  console.log(unref(instance)?.strategy)
 
   const retStg = await apiInfos({
     id: unref(instance)?.strategy
   })
   
   strategy.value = retStg.result[0]
-  console.log(strategy.value)
   await onAlgorithmChange(unref(strategy)!.algorithms![0])
-
 })
+
+watch(
+  instance,
+  () => {
+    strategyState.value = makeState(unref(instance)?.is_removed, unref(instance)?.state)
+    strategyTrigger.value = makeTrigger(unref(instance)?.trigger)
+    resultUpdated.value = makeUpdated(unref(instance)?.latest_updated)
+    results.value = makeResults(unref(instance)?.results)
+  }
+)
+
+watch(
+  strategy,
+  () => {
+    strategyArgs.value = makeStrategyArgs(unref(strategy)?.args, unref(instance)?.arg_values)
+  }
+)
 
 </script>
 <template>
@@ -141,7 +171,7 @@ onMounted(async () => {
       <ElRow class="row" :gutter="24">
         <ElCol :span="2" />
         <ElCol :span="22">
-          <ElTable :data="makeStrategyArgs()" :border="true">
+          <ElTable :data="strategyArgs" :border="true">
             <ElTableColumn prop="label" label="Item" width="120" />
             <ElTableColumn prop="value" label="Value" width="100" />
             <ElTableColumn prop="desc" label="Desc" />
@@ -174,29 +204,25 @@ onMounted(async () => {
     <ElCol :span="9">
       <ElRow class="row" :gutter="24">
         <ElCol :span="6">状态</ElCol>
-        <ElCol :span="18">{{ makeState() }}</ElCol>
+        <ElCol :span="18">{{ strategyState }}</ElCol>
       </ElRow>
       <ElRow class="row" :gutter="24">
         <ElCol :span="6">定时器</ElCol>
-        <ElCol :span="18">{{ makeTrigger() }}</ElCol>
+        <ElCol :span="18">{{ strategyTrigger }}</ElCol>
       </ElRow>
       <ElRow class="row" :gutter="24">
         <ElCol :span="6">Updated</ElCol>
-        <ElCol :span="18">{{ makeUpdated() }}</ElCol>
+        <ElCol :span="18">{{ resultUpdated }}</ElCol>
       </ElRow>
       <ElRow class="row" :gutter="24">
-        <ElCol :span="24">Result ({{ instance?.results?.length }})</ElCol>
+        <ElCol :span="24">Result ({{ results.length }})</ElCol>
       </ElRow>
       <ElRow class="row" :gutter="24">
         <ElCol :span="24">
-          <ElTable :data="instance?.results" :border="true" max-height="440">
+          <ElTable :data="results" :border="true" max-height="440">
             <ElTableColumn prop="code" label="Code" width="80" />
             <ElTableColumn prop="name" label="Name" width="90" />
-            <ElTableColumn prop="date" label="Date">
-              <template #default="scope">
-                {{ makeResultDate(scope.row) }}
-              </template>              
-            </ElTableColumn>
+            <ElTableColumn prop="date" label="Date" />             
           </ElTable>
         </ElCol>        
       </ElRow>
