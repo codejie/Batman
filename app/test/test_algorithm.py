@@ -4,6 +4,7 @@ from app.database import common
 from app.database.tables import TableName
 from app.libs.talib.momentum_indicators import MACD
 from app.strategy.algorithm.line_cross import LineCrossAlgorithm
+from app.strategy.algorithm.line_cross_track import LineCrossTrackAlgorithm
 from app.strategy.algorithm.m_up_n_down import MUpNDownAlgorithem
 
 
@@ -66,4 +67,29 @@ class Test_Algorithm(unittest.TestCase):
         algorithm.run()
 
         self.assertTrue(True)
+
+    def test_line_cross_track(self):
+        def callback(event, result) -> bool:
+            print(result)
+        table = TableName.make_stock_history_name('002236')
+        df = common.select(table=table, columns=['日期', '收盘'])
+        
+        calcDf = MACD(df['收盘'])
+
+        algorithm = LineCrossTrackAlgorithm()
+        algorithm.set_args({
+            'direction': 0,
+            'count': 0,
+            'diff': 0.2
+        })        
+        algorithm.set_data({
+            'seriesA': calcDf['dif'],
+            'seriesB': calcDf['dea']
+        })
+        algorithm.set_callback(callback=callback)
+        algorithm.run()
+
+        self.assertTrue(True)        
+
+            
         

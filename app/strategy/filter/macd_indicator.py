@@ -206,6 +206,7 @@ class MACDIndicatorStrategy(Strategy):
             'direction': result['direction'],
             'diff': result['diff']
           })
+      return True
 
     algorithm = LineCrossAlgorithm()
     algorithm.set_args(args)

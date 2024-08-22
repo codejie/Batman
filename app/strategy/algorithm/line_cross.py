@@ -63,7 +63,7 @@ class LineCrossAlgorithm(Algorithm):
   def next(self) -> bool:
     def hitCallback(pos, direction, diff):
       # print('hit')
-      print(f'{pos} - {direction} - {diff}')
+      # print(f'{pos} - {direction} - {diff}')
       if self.callback:
         if (self.direction == 0 or self.direction == direction): # and (self.diff <= abs(diff)):
           self.callback(CallbackType.HIT, {
