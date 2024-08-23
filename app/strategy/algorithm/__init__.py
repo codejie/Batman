@@ -115,4 +115,4 @@ class Algorithm(metaclass=ABCMeta):
 
     @abstractmethod
     def next(self) -> bool:
-        pass            
+        return True            

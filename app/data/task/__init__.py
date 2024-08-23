@@ -46,8 +46,8 @@ def update_task(for_test: bool = False) -> None:
           # 'seconds': 3600 * 4
         'mode': 'daily',
         'days': '0-5',
-        'hour': 22,
-        'minute': 23          
+        'hour': 18,
+        'minute': 0          
       }
       id = taskScheduler.make_id()
       taskScheduler.make_job(id=id, trigger=trigger, func=daily_update_check, args=None)

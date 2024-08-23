@@ -2,7 +2,7 @@
 import { apiNewHigh } from '@/api/third/stock';
 import { onMounted, ref } from 'vue';
 import { ElTable, ElTableColumn, ElDialog, ElButton } from 'element-plus';
-import { KLinePanel } from '@/components/KLine'
+import { KLinePanel2, ReqParam } from '@/components/KLine'
 
 const props = defineProps({
   category: {
@@ -25,11 +25,13 @@ const data = ref<any[]>([]) // ref<DataFrameSetModel>()
 const columns = ref<Column[]>([])
 
 const klineDialogVisible = ref<boolean>(false)
-const klineParam = ref<any>({
-  type: 1,
-  code: '',
-  name: ''
-})
+// const klineParam = ref<any>({
+//   type: 1,
+//   code: '',
+//   name: ''
+// })
+const reqParam = ref<ReqParam>()
+
 const dialogTitle = ref<string>()
 
 async function fetchNewHigh() {
@@ -56,7 +58,12 @@ async function fetchNewHigh() {
 
 function onRowClick(row: any) {
   dialogTitle.value = `${row['股票代码']}(${row['股票简称']})`
-  klineParam.value = {
+  // klineParam.value = {
+  //   code: row['股票代码'],
+  //   name: row['股票简称'],
+  //   type: 1
+  // }
+  reqParam.value = {
     code: row['股票代码'],
     name: row['股票简称'],
     type: 1
@@ -74,10 +81,10 @@ onMounted(async () => {
     <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
   </ElTable>
   <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%">
-    <KLinePanel :param="klineParam" />
+    <KLinePanel2 :req-param="reqParam" />
     <template #footer>
-        <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
-      </template>    
+      <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
+    </template>    
   </ElDialog>
 </template>
 <style lang="css">
