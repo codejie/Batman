@@ -48,7 +48,7 @@ class LineCrossTrackAlgorithm(Algorithm):
     # self.changed = 0
     self.direction = -2
     self.count = 0
-    self.pos = 0
+    # self.pos = 0
     # self.cross = 0
 
     self.current = 0

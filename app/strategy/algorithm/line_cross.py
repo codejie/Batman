@@ -6,7 +6,7 @@ from app.strategy.algorithm import Algorithm, Argument, CallbackType, Data, Resu
 
 
 class LineCrossAlgorithm(Algorithm):
-  name: str = '线交叉'
+  name: str = '线交叉检测'
   desc: str = '检查两个序列的交叉点(连续)'
   args: list[Argument] =[
     Argument(name='direction',
