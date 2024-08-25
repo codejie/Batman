@@ -26,8 +26,8 @@ const props = defineProps({
     required: false,
     default: () => {
       return {
-        maGroup: [5, 7, 9, 10, 12, 15, 17, 20, 26, 30, 45, 60],
-        maLines: [7, 9, 12],
+        maGroup: [5, 10, 20, 60], // [5, 7, 9, 10, 12, 15, 17, 20, 26, 30, 45, 60],
+        maLines: [5, 10, 20],
         zoom: false,
         volume: true
       }
@@ -267,7 +267,7 @@ function onGridModeChanged(mode) {
       </ElCheckboxGroup>
     </ElCol>
     <ElCol :span="6">
-      <ElDropdown :disabled="zoom_kline.includes('Zoom')" ize="small" trigger="click" @command="onGridModeChanged">
+      <ElDropdown :disabled="zoom_kline.includes('Zoom')" size="small" trigger="click" @command="onGridModeChanged">
         <ElButton :disabled="zoom_kline.includes('Zoom')" size="small">{{ grid2Mode }}</ElButton>
         <template #dropdown>
           <ElDropdownMenu>

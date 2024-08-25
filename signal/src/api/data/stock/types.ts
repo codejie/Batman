@@ -30,3 +30,8 @@ export type HistoryRequest = {
 }
 export type HistoryResponse = HistoryDataModel[]
 
+export type InfoRequest = {
+  code: string
+}
+
+export type InfoResponse = AListModel

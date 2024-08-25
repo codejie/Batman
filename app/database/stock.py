@@ -7,6 +7,9 @@ from app.database import common, tables
 def get_a_list() -> DataFrame:
   return common.select(tables.TableName.Stock_A_List)
 
+def get_info(code: str) -> DataFrame:
+   return common.select(table=tables.TableName.Stock_A_List, columns=['code', 'name'], where=f'WHERE code="{code}"')
+
 def get_history(code: str, start: str = None, end: str = None, columns: list[str] = None, peroid: str = 'daily', adjust: str = 'qfq') -> DataFrame:
   table = tables.TableName.make_stock_history_name(code, peroid, adjust)
   where = None

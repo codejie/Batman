@@ -124,6 +124,35 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         ]
       }
     ]
+  },  
+  {
+    name: 'lookup',
+    path: '/lookup',
+    component: Layout,
+    meta: {
+      title: '速查',
+      icon: 'carbon:carbon-ui-builder'      
+    },
+    children: [
+      {
+        path: 'draw',
+        name: 'draw',
+        component: getParentLayout(),
+        meta: {
+          title: '速查'
+        },
+        children: [
+          {
+            path: 'quick-look',
+            name: 'quick-look',
+            component: () => import('@/views/Lookup/QuickLook.vue'),
+            meta: {
+              title: '数据线图'
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     path: '/strategy',

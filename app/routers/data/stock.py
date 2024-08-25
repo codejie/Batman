@@ -63,6 +63,20 @@ async def alist():
   return AListResponse(result=ret)
 
 """
+Info
+"""
+class InfoRequest(RequestModel):
+  code: str
+
+class InfoResponse(ResponseModel):
+  result: AListModel | None
+
+@router.post('/info', response_model=InfoResponse, response_model_exclude_none=True)
+async def info(body: InfoRequest=Body()):
+  df = stock.get_info(body.code)
+  return InfoResponse(result=AListModel(code=df['code'][0], name=df['name'][0]) if len(df) > 0 else None)
+
+"""
 History
 """
 class HistoryRequest(RequestModel):
