@@ -172,7 +172,7 @@ function resetChart() {
 function updateChartOptions(data: HistoryDataModel[]) {
   xData = data.map(item => item.date)
   klineData = data.map(({open, close, low, high}) => ([open, close, low, high]))
-  volumeData = data.map(item => [item.date, item.volume, item.open > item.close ? 1 : -1])
+  volumeData = data.map(item => [item.date, item.volume, item.open <= item.close ? 1 : -1])
 
   resetChart()
 }

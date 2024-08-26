@@ -37,11 +37,11 @@ onMounted(async () => {
 function updateData(data: HistoryDataModel[], data2: HistoryDataModel[]) {
   xData = data.map(item => item.date)
   klineData = data.map(({open, close, low, high}) => ([open, close, low, high]))
-  volumeData = data.map(item => [item.date, item.volume, item.open > item.close ? 1 : -1])
+  volumeData = data.map(item => [item.date, item.volume, item.open < item.close ? 1 : -1])
 
   xData2 = data2.map(item => item.date)
   klineData2 = data2.map(({open, close, low, high}) => ([open, close, low, high]))
-  volumeData2 = data2.map(item => [item.date, item.volume, item.open > item.close ? 1 : -1])
+  volumeData2 = data2.map(item => [item.date, item.volume, item.open < item.close ? 1 : -1])
 }
 
 function calcMAData(ma: number, data: number[]) {
