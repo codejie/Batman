@@ -1,6 +1,3 @@
-<!--
-KLine that support add lines or data
--->
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Echart, EChartsOption } from '@/components/Echart';

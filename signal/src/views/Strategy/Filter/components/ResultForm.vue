@@ -56,7 +56,7 @@ function makeResultDate(row: any): string {
 
 function onRowClick(row: any) {
   selectRow.value = row
-  updateChartParam(unref(dateRange))
+  updateChartParam(unref(dateRange))``
 }
 
 onMounted(async () => {

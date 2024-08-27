@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElRow, ElCol, ElButton, ElTable, ElTableColumn, ElDropdown, ElDropdownMenu, ElDropdownItem, ElInput, ElText } from 'element-plus'
+import { ElRow, ElCol, ElButton, ElTable, ElTableColumn, ElDropdown, ElDropdownMenu, ElDropdownItem, ElInput, ElText, ElMessage } from 'element-plus'
 import { KLineChart4 } from '@/components/KLine'
 import { onMounted, ref, unref, watch } from 'vue';
 import { apiHistory, apiInfo } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
+import { KLineChartData, KLineData, makeKLineChartData, VolumeData, XData } from '@/utils/kline';
 
 type CodeItem = {
   type?: number
@@ -12,9 +13,16 @@ type CodeItem = {
   name?: string
 }
 
+const props = defineProps({
+  code: {
+    type: String,
+    required: false
+  }
+})
+
 const kchart = ref(null)
 const codeType = ref<string>('Stock')
-const codeList = ref<CodeItem[]>([{type: 1, code: '002236', name: 'abc'}])
+const codeList = ref<CodeItem[]>([])
 const inputCode = ref<string>()
 const itemCode = ref<CodeItem>()
 const itemHistoryData = ref<HistoryDataModel>()
@@ -23,14 +31,20 @@ const itemDataOutput = ref<string>()
 
 let k_zoom: boolean = false
 
+let chartData: KLineChartData
+
 let searchTimer: NodeJS.Timeout
 watch(
   () => inputCode.value,
   async () => {
+    if (!inputCode.value || inputCode.value.length < 6)
+      return
+
     clearTimeout(searchTimer)
     searchTimer = setTimeout(async () => {
         itemTitleOutput.value = ''
         itemDataOutput.value = ''
+        itemCode.value = undefined
         
         const ret = await apiInfo({
         code: inputCode.value!
@@ -50,20 +64,25 @@ watch(
 watch(
   () => itemCode.value,
   async () => {
-      const ret = await apiHistory({
-      code: itemCode.value!.code
-    })
+    if (itemCode.value) {
+        const ret = await apiHistory({
+        code: itemCode.value!.code
+      })
 
-    if (ret.result.length > 0) {
-      itemHistoryData.value = ret.result[0]
-      itemDataOutput.value = makeItemData()
-    } 
+      if (ret.result.length > 0) {
+        itemHistoryData.value = ret.result[0]
+        itemDataOutput.value = makeItemData()
+      }
+    }
   }
 )
 
 onMounted(() => {
   initChart(kchart.value)
   setAxis(kchart.value, [])
+  if (props.code) {
+    inputCode.value = props.code
+  }
 })
 
 function initChart(chart) {
@@ -71,7 +90,7 @@ function initChart(chart) {
   chart?.addGrid(1, '4%', '70%', '4%', '6%')
 }
 
-function setAxis(chart, data: string[]) {
+function setAxis(chart, data: XData) {
   if (k_zoom) {
     chart?.addAxis(0, data, true)
     chart?.addAxisPointer([0])
@@ -80,6 +99,14 @@ function setAxis(chart, data: string[]) {
     chart?.addAxis(1, data, false)
     chart?.addAxisPointer([0, 1])
   }
+}
+
+function setKLine(chart, data: KLineData) {
+  // if (kline) {
+    chart?.addKLine(0, 'KLine', data, true, true)
+  // } else {
+  //   kchart.value?.remove('KLine')
+  // }
 }
 
 function makeItemData() {
@@ -97,12 +124,37 @@ function makeItemData() {
   | 换手率: ${unref(itemHistoryData)?.rate}%`
 }
 
+function makeReqStart(range: string): string {
+  return '2023-01-01'
+}
+
 function onCodeTypeCommand(cmd: string) {
   codeType.value = cmd
 }
 
-function onCodeListClick(row: CodeItem) {
+function onItemAddClick() {
+  if (itemCode.value) {
+    if (codeList.value.indexOf(itemCode.value) == -1) {
+      codeList.value.push(itemCode.value)
+    } else {
+      ElMessage({
+        message: `${itemCode.value.code} has been in list.`,
+        type: 'warning',
+      })      
+    }
+  }
+}
+
+async function onCodeListClick(row: CodeItem) {
   console.log(row)
+  const ret = await apiHistory({
+    code: row.code,
+    start: makeReqStart('')
+  })
+  chartData = makeKLineChartData(ret.result)
+
+  setAxis(kchart.value, chartData.xData)
+  setKLine(kchart.value, chartData.klineData)
 }
 
 </script>
@@ -120,7 +172,7 @@ function onCodeListClick(row: CodeItem) {
           </template>
         </ElDropdown>
         <ElInput v-model="inputCode" style="width: 80px;" max-length="6"/>
-        <ElButton type="primary">TEST</ElButton>
+        <ElButton type="primary" :disabled="itemCode == undefined" @Click="onItemAddClick">+</ElButton>
         <ElText tag="b" size="default">{{ itemTitleOutput }}</ElText>
         <ElText size="default">{{ itemDataOutput }}</ElText>
       </ElCol>
