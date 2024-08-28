@@ -5,12 +5,18 @@ import { KLineChart4 } from '@/components/KLine'
 import { onMounted, ref, unref, watch } from 'vue';
 import { apiHistory, apiInfo } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
-import { KLineChartData, KLineData, makeKLineChartData, VolumeData, XData } from '@/utils/kline';
+import { getKLineDataRange, KLineChartData, KLineData, makeKLineChartData, VolumeData, XData } from '@/utils/kline';
 
-type CodeItem = {
+type ItemCode = {
   type?: number
   code: string
   name?: string
+}
+
+type ItemContext = {
+  item: ItemCode
+  historyData: HistoryDataModel[]
+  chartData: KLineChartData
 }
 
 const props = defineProps({
@@ -22,15 +28,18 @@ const props = defineProps({
 
 const kchart = ref(null)
 const codeType = ref<string>('Stock')
-const codeList = ref<CodeItem[]>([])
+const codeList = ref<ItemCode[]>([])
 const inputCode = ref<string>()
-const itemCode = ref<CodeItem>()
+const itemCode = ref<ItemCode>()
 const itemHistoryData = ref<HistoryDataModel>()
 const itemTitleOutput = ref<string>()
 const itemDataOutput = ref<string>()
 
-let k_zoom: boolean = false
+let baseItem: ItemContext
+let moreItem: ItemContext[]
 
+
+let k_zoom: boolean = false
 let chartData: KLineChartData
 
 let searchTimer: NodeJS.Timeout
@@ -78,16 +87,20 @@ watch(
 )
 
 onMounted(() => {
-  initChart(kchart.value)
-  setAxis(kchart.value, [])
+  setGrid(kchart.value)
   if (props.code) {
     inputCode.value = props.code
   }
 })
 
-function initChart(chart) {
-  chart?.addGrid(0, '4%', '4%', '4%', '40%')
-  chart?.addGrid(1, '4%', '70%', '4%', '6%')
+function setGrid(chart) {
+  chart?.reset()
+  if (k_zoom) {
+    chart?.addGrid(0, '4%', '4%', '4%', '10%')
+  } else {
+    chart?.addGrid(0, '4%', '4%', '4%', '40%')
+    chart?.addGrid(1, '4%', '70%', '4%', '6%')
+  }
 }
 
 function setAxis(chart, data: XData) {
@@ -128,6 +141,28 @@ function makeReqStart(range: string): string {
   return '2023-01-01'
 }
 
+function makeItemContext(item: ItemCode, historyData: HistoryDataModel[]) {
+  if (baseItem) {
+
+  } else {
+    baseItem = {
+      item: item,
+      historyData: historyData,
+      chartData: makeKLineChartData(historyData)
+    }
+  }
+}
+
+function setChart(historyData: HistoryDataModel[]) {
+  
+  chartData = makeKLineChartData(historyData)
+
+  getKLineDataRange(chartData.klineData)
+
+  setAxis(kchart.value, chartData.xData)
+  setKLine(kchart.value, chartData.klineData)
+}
+
 function onCodeTypeCommand(cmd: string) {
   codeType.value = cmd
 }
@@ -145,16 +180,13 @@ function onItemAddClick() {
   }
 }
 
-async function onCodeListClick(row: CodeItem) {
-  console.log(row)
+async function onCodeListClick(row: ItemCode) {
   const ret = await apiHistory({
     code: row.code,
     start: makeReqStart('')
   })
-  chartData = makeKLineChartData(ret.result)
-
-  setAxis(kchart.value, chartData.xData)
-  setKLine(kchart.value, chartData.klineData)
+  makeItemContext(row, ret.result)
+  // setChart(ret.result)
 }
 
 </script>
