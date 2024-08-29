@@ -5,21 +5,35 @@
 import { HistoryDataModel } from "@/api/data/stock/types";
 
 export type XData = string[]
-export type KLineData = (number | string)[][]
-export type VolumeData = (number | string)[][]
-export type MAData = (number | string)[][]
+export type YData = (number | string)[][]
+export type KLineData = {
+  data: YData
+  max: number | string
+  min: number | string
+}
+export type VolumeData = {
+  data: YData
+  max: number | string
+  min: number | string
+}  
+export type MAData = {
+  data: YData
+  max: number | string
+  min: number | string
+}  
 export type MACDData = {
-  dif: (number | string)[][]
-  dea: (number | string)[][]
-  macd: (number| string)[][]  
+  dif: YData
+  dea: YData
+  macd: YData
+  max: number | string
+  min: number | string
 }
 export type KLineChartData = {
   xData: XData
   klineData: KLineData
   maData: { [key in string]: MAData }
-  secondData: VolumeData | MACDData
-  klineMax, klineMin: number
-  secondMax, secondMin: number
+  volumeData: VolumeData
+  macdData?: MACDData
 }
 
 
@@ -27,26 +41,33 @@ export type KLineChartData = {
 export function isNumber(n) { return /^-?[\d.]+(?:e-?\d+)?$/.test(n); }
 
 export function calcMAData(ma: number, xData: XData, kline: KLineData, column: string = 'close'): MAData {
-  const ret: MAData = []
-  for (let i = 0; i < kline.length; i++) {
+  const data: YData = []
+  for (let i = 0; i < kline.data.length; i++) {
     if (i < ma) {
-      ret.push([xData[i], '-'])
+      data.push([xData[i], '-'])
       continue;
     }
     let sum = 0;
     for (let j = 0; j < ma; j++) {
-      sum += kline[i - j][column] // +data[i - j]
+      sum += kline.data[i - j][column] // +data[i - j]
     }
-    ret.push([xData[i], (sum / ma).toFixed(2)])
+    data.push([xData[i], (sum / ma).toFixed(2)])
   }
-  return ret  
+
+  return {
+    data: data,
+    max: data.map((a, b) => a[1] > b[1] ? a : b)[1], // TODO
+    min: data.map((a, b) => a[1] < b[1] ? a : b)[1]
+  }
 }
 
 export function makeKLineChartData(data: HistoryDataModel[]): KLineChartData {
   return {
     xData: data.map(item => item.date),
     klineData: data.map(({open, close, low, high}) => ([open, close, low, high])),
-    secondData: data.map(item => [item.date, item.volume, item.open <= item.close ? 1 : -1]),
+    maData: {},
+    volumeData: data.map(item => [item.date, item.volume, item.open <= item.close ? 1 : -1]),
+    macdData: undefined,
     klineMax: data.map((a, b) => a['close'] > b['close'] ? a : b)['close'],
     klineMin: data.map((a, b) => a['close'] < b['close'] ? a : b)['close'],
     secondMax: data.map((a, b) => a['volume'] > b['volume'] ? a : b)['volume'],
@@ -81,3 +102,7 @@ export function getDataRange(data: any[][]):  { max: number | string, min: numbe
     min: data.reduce((a, b) => a[1] < b[1] ? a : b)[1]
   }
 }
+
+// export function getMaxData(data: any[], index: number | string): number {
+
+// }

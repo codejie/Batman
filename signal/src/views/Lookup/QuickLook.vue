@@ -5,7 +5,8 @@ import { KLineChart4 } from '@/components/KLine'
 import { onMounted, ref, unref, watch } from 'vue';
 import { apiHistory, apiInfo } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
-import { getKLineDataRange, KLineChartData, KLineData, makeKLineChartData, VolumeData, XData } from '@/utils/kline';
+import { calcMAData, getKLineDataRange, KLineChartData, KLineData, MACDData, MAData, makeKLineChartData, makeMACDData, VolumeData, XData } from '@/utils/kline';
+import { apiMACD } from '@/api/libs/talib';
 
 type ItemCode = {
   type?: number
@@ -30,17 +31,18 @@ const kchart = ref(null)
 const codeType = ref<string>('Stock')
 const codeList = ref<ItemCode[]>([])
 const inputCode = ref<string>()
-const itemCode = ref<ItemCode>()
-const itemHistoryData = ref<HistoryDataModel>()
+const itemFetched = ref<boolean>(false)
 const itemTitleOutput = ref<string>()
 const itemDataOutput = ref<string>()
+const maSelected = ref<number[]>([])
+const secondMode = ref<string>('Volume')
 
+let itemCode: ItemCode
 let baseItem: ItemContext
-let moreItem: ItemContext[]
-
+let moreItems: ItemContext[]
 
 let k_zoom: boolean = false
-let chartData: KLineChartData
+let k_line: boolean = true
 
 let searchTimer: NodeJS.Timeout
 watch(
@@ -51,38 +53,8 @@ watch(
 
     clearTimeout(searchTimer)
     searchTimer = setTimeout(async () => {
-        itemTitleOutput.value = ''
-        itemDataOutput.value = ''
-        itemCode.value = undefined
-        
-        const ret = await apiInfo({
-        code: inputCode.value!
-      })
-      if (ret.result) {
-        itemCode.value = {
-          type: codeType.value == 'Stock' ? 1 : 0,
-          code: ret.result.code,
-          name: ret.result.name
-        }
-        itemTitleOutput.value = `${unref(itemCode)?.code}(${unref(itemCode)?.name}):  ` 
-      }
+      await fetchItemCode(inputCode.value!)
     }, 1000)
-  }
-)
-
-watch(
-  () => itemCode.value,
-  async () => {
-    if (itemCode.value) {
-        const ret = await apiHistory({
-        code: itemCode.value!.code
-      })
-
-      if (ret.result.length > 0) {
-        itemHistoryData.value = ret.result[0]
-        itemDataOutput.value = makeItemData()
-      }
-    }
   }
 )
 
@@ -114,53 +86,105 @@ function setAxis(chart, data: XData) {
   }
 }
 
-function setKLine(chart, data: KLineData) {
-  // if (kline) {
-    chart?.addKLine(0, 'KLine', data, true, true)
-  // } else {
-  //   kchart.value?.remove('KLine')
-  // }
+function setKLine(item: ItemCode, chart, data: KLineData) {
+  const name = item.code + '-K'
+  if (k_line) {
+    chart?.addKLine(0, name, data, true, true)
+  } else {
+    kchart.value?.remove(name)
+  }
 }
 
-function makeItemData() {
-  return `${unref(itemHistoryData)?.date}\
-  | 现价: ${unref(itemHistoryData)?.price}\
-  | 涨跌幅: ${unref(itemHistoryData)?.percentage}%\
-  | 涨跌额: ${unref(itemHistoryData)?.amount}\
-  | 振幅: ${unref(itemHistoryData)?.volatility}%\
-  | 今开: ${unref(itemHistoryData)?.open}\
-  | 昨收: ${unref(itemHistoryData)?.close}\
-  | 最高: ${unref(itemHistoryData)?.high}\
-  | 最低: ${unref(itemHistoryData)?.low}\
-  | 成交量: ${unref(itemHistoryData)?.volume}\
-  | 成交额: ${unref(itemHistoryData)?.turnover}\
-  | 换手率: ${unref(itemHistoryData)?.rate}%`
+async function fetchItemCode(code: string) {
+  itemTitleOutput.value = ''
+  itemDataOutput.value = ''
+  itemFetched.value = false
+  
+  const ret = await apiInfo({
+    code: code
+  })
+  if (ret.result) {
+    itemFetched.value = true
+    itemCode = {
+      type: codeType.value == 'Stock' ? 1 : 0,
+      code: ret.result.code,
+      name: ret.result.name
+    }
+    itemTitleOutput.value = `${itemCode.code}(${itemCode.name}):  `
+    const hret = await apiHistory({
+      code: itemCode.code
+    })
+    if (hret.result.length > 0) {
+      itemDataOutput.value = makeItemDataOutput(hret.result[0])        
+    }
+  }
+}
+
+async function fetchItemMACDData(code: string, xData: XData, klineData: KLineData): Promise<MACDData> {
+  const closeData = klineData.map(item => item[1])
+  const ret = await apiMACD({
+    value: (closeData as number[])
+  })
+  return makeMACDData(xData, ret.result.data)
+}
+
+function makeItemDataOutput(data: HistoryDataModel) {
+  return `${data.date}\
+  | 现价: ${data.price}\
+  | 涨跌幅: ${data.percentage}%\
+  | 涨跌额: ${data.amount}\
+  | 振幅: ${data.volatility}%\
+  | 今开: ${data.open}\
+  | 昨收: ${data.close}\
+  | 最高: ${data.high}\
+  | 最低: ${data.low}\
+  | 成交量: ${data.volume}\
+  | 成交额: ${data.turnover}\
+  | 换手率: ${data.rate}%`
 }
 
 function makeReqStart(range: string): string {
   return '2023-01-01'
 }
 
-function makeItemContext(item: ItemCode, historyData: HistoryDataModel[]) {
-  if (baseItem) {
+async function makeItemContext(item: ItemCode, historyData: HistoryDataModel[]) {
+  const context: ItemContext = {
+    item: item,
+    historyData: historyData,
+    chartData: makeKLineChartData(historyData)    
+  }
+  makeItemContextMAData(maSelected.value, context)
 
+  if (baseItem) {
+    moreItems.push(context)
+    drawMoreItem(context)
   } else {
-    baseItem = {
-      item: item,
-      historyData: historyData,
-      chartData: makeKLineChartData(historyData)
-    }
+    baseItem = context
+    await drawBaseItem(context)
   }
 }
 
-function setChart(historyData: HistoryDataModel[]) {
-  
-  chartData = makeKLineChartData(historyData)
+function makeItemContextMAData(maSelected: number[], context: ItemContext) {
+  context.chartData.maData = {}
+  maSelected.forEach(item => {
+    context.chartData.maData[item] = calcMAData(item, context.chartData.xData, context.chartData.klineData)
+  })
+}
 
-  getKLineDataRange(chartData.klineData)
+async function drawBaseItem(context: ItemContext) {
+  itemTitleOutput.value = `${context.item.code}(${context.item.name}):  `
+  itemDataOutput.value = makeItemDataOutput(context.historyData[context.historyData.length - 1])
 
-  setAxis(kchart.value, chartData.xData)
-  setKLine(kchart.value, chartData.klineData)
+  setAxis(kchart.value, context.chartData.xData)
+  setKLine(context.item, kchart.value, context.chartData.klineData)
+  if (secondMode.value == 'Volume') {
+    setSecondVolume(context.item, kchart.value, context.chartData.volumeData)
+  } else {
+    if (!context.chartData.macdData) {
+      context.chartData.macdData = await fetchItemMACDData(context.item.code, context.chartData.xData, context.chartData.klineData)
+    }
+    setSecondMACD(context.item, kchart.value, context.chartData.macdData)
+  }
 }
 
 function onCodeTypeCommand(cmd: string) {
@@ -168,25 +192,39 @@ function onCodeTypeCommand(cmd: string) {
 }
 
 function onItemAddClick() {
-  if (itemCode.value) {
-    if (codeList.value.indexOf(itemCode.value) == -1) {
-      codeList.value.push(itemCode.value)
+  if (itemCode) {
+    if (codeList.value.indexOf(itemCode) == -1) {
+      codeList.value.push(itemCode)
     } else {
       ElMessage({
-        message: `${itemCode.value.code} has been in list.`,
+        message: `${itemCode.code} has been in list.`,
         type: 'warning',
       })      
     }
   }
 }
 
-async function onCodeListClick(row: ItemCode) {
-  const ret = await apiHistory({
-    code: row.code,
-    start: makeReqStart('')
-  })
-  makeItemContext(row, ret.result)
-  // setChart(ret.result)
+// async function onCodeListClick(row: ItemCode) {
+//   const ret = await apiHistory({
+//     code: row.code,
+//     start: makeReqStart('')
+//   })
+//   makeItemContext(row, ret.result)
+//   // setChart(ret.result)
+// }
+
+async function onCodeListSelected(selected: ItemCode[], row: ItemCode) {
+  console.log(selected)
+  console.log(row)
+  if (selected.includes(row)) {
+    const ret = await apiHistory({
+      code: row.code,
+      start: makeReqStart('')
+    })
+    makeItemContext(row, ret.result)
+  } else {
+    removeItemContext(row)
+  }
 }
 
 </script>
@@ -204,14 +242,15 @@ async function onCodeListClick(row: ItemCode) {
           </template>
         </ElDropdown>
         <ElInput v-model="inputCode" style="width: 80px;" max-length="6"/>
-        <ElButton type="primary" :disabled="itemCode == undefined" @Click="onItemAddClick">+</ElButton>
+        <ElButton type="primary" :disabled="!itemFetched" @Click="onItemAddClick">+</ElButton>
         <ElText tag="b" size="default">{{ itemTitleOutput }}</ElText>
         <ElText size="default">{{ itemDataOutput }}</ElText>
       </ElCol>
     </ElRow>
     <ElRow class="row" :gutter="24">
       <ElCol :span="3">
-        <ElTable :data="codeList" size="small" @row-click="onCodeListClick" :border="true" max-height="800" highlight-current-row>
+        <ElTable :data="codeList" size="small" @select="onCodeListSelected" :border="true" max-height="800" highlight-current-row>
+          <ElTableColumn type="selection" width="30" />
           <ElTableColumn prop="code" label="Code" />
           <ElTableColumn prop="name" label="Name" />
           <!-- <ElTableColumn label="Action" /> -->
