@@ -224,7 +224,7 @@ function addLine(name: string, data: number[], fit: boolean = true, legend: bool
 
 function remove(name: string, fit: boolean = false) {
   if (fit) name = name + '(f)'
-  options.value.series = options.value.series!.filter( item => item.name != name)
+  options.value.series = options.value.series!.filter(item => item.name != name)
 }
 
 function addBar(name: string, data: number[], fit: boolean = true, legend: boolean = true) {

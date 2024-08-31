@@ -5,8 +5,9 @@ import { KLineChart4 } from '@/components/KLine'
 import { onMounted, ref, unref, watch } from 'vue';
 import { apiHistory, apiInfo } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
-import { calcMAData, getKLineDataRange, KLineChartData, KLineData, MACDData, MAData, makeKLineChartData, makeMACDData, VolumeData, XData } from '@/utils/kline';
+import { calcMAData, KLineChartData, KLineData, MACDData, MAData, MADataGroup, makeKLineChartData, makeMACDData, makeMADataGroup, VolumeData, XData } from '@/utils/kline';
 import { apiMACD } from '@/api/libs/talib';
+import { ka_GE } from '@faker-js/faker';
 
 type ItemCode = {
   type?: number
@@ -34,12 +35,12 @@ const inputCode = ref<string>()
 const itemFetched = ref<boolean>(false)
 const itemTitleOutput = ref<string>()
 const itemDataOutput = ref<string>()
-const maSelected = ref<number[]>([])
-const secondMode = ref<string>('Volume')
+const maSelected = ref<number[]>([5, 10])
+const secondMode = ref<string>('MACD')
 
 let itemCode: ItemCode
 let baseItem: ItemContext
-let moreItems: ItemContext[]
+let moreItems: ItemContext[] = []
 
 let k_zoom: boolean = false
 let k_line: boolean = true
@@ -89,9 +90,29 @@ function setAxis(chart, data: XData) {
 function setKLine(item: ItemCode, chart, data: KLineData) {
   const name = item.code + '-K'
   if (k_line) {
-    chart?.addKLine(0, name, data, true, true)
+    chart?.addKLine(0, name, data.data, true, true)
   } else {
     kchart.value?.remove(name)
+  }
+}
+
+function setVolume(item: ItemCode, chart, data: VolumeData) {
+  if (!k_zoom) {
+    const name = item.code + '-V'
+    chart.addBar(1, name, data.data)
+  }
+}
+
+function setMACD(item: ItemCode, chart, data: MACDData) {
+  chart.addLine(1, item.code + '-DIF', data.dif)
+  chart.addLine(1, item.code + '-DEA', data.dea)
+  chart.addBar(1, item.code + '-MACD', data.macd) 
+}
+
+function setMAData(item: ItemCode, chart, data: MADataGroup) {
+  for (const key of Object.keys(data)) {
+    const name = item.code + '-' + key
+    chart.addLine(0, name, data[key].data)
   }
 }
 
@@ -120,8 +141,8 @@ async function fetchItemCode(code: string) {
   }
 }
 
-async function fetchItemMACDData(code: string, xData: XData, klineData: KLineData): Promise<MACDData> {
-  const closeData = klineData.map(item => item[1])
+async function calcItemMACDData( xData: XData, klineData: KLineData): Promise<MACDData> {
+  const closeData = klineData.data.map(item => item[1])
   const ret = await apiMACD({
     value: (closeData as number[])
   })
@@ -147,20 +168,36 @@ function makeReqStart(range: string): string {
   return '2023-01-01'
 }
 
-async function makeItemContext(item: ItemCode, historyData: HistoryDataModel[]) {
+function checkItemContext(item: ItemCode): boolean {
+  if (baseItem && baseItem.item.code == item.code)
+    return true
+  for (let i = 0; i < moreItems.length; ++ i) {
+    if (moreItems[i].item.code == item.code)
+      return true
+  }
+  return false
+}
+
+async function makeItemContext(item: ItemCode) {
+  if (checkItemContext(item)) return
+
+  const ret = await apiHistory({
+      code: item.code,
+      start: makeReqStart('')
+  })
+
+  const historyData = ret.result
   const context: ItemContext = {
     item: item,
     historyData: historyData,
     chartData: makeKLineChartData(historyData)    
   }
   makeItemContextMAData(maSelected.value, context)
-
+  
   if (baseItem) {
     moreItems.push(context)
-    drawMoreItem(context)
   } else {
     baseItem = context
-    await drawBaseItem(context)
   }
 }
 
@@ -171,20 +208,39 @@ function makeItemContextMAData(maSelected: number[], context: ItemContext) {
   })
 }
 
-async function drawBaseItem(context: ItemContext) {
+async function drawItemContext() {
+  await drawBaseItem()
+  await drawMoreItems()
+}
+
+async function drawBaseItem() {
+  const context = baseItem
   itemTitleOutput.value = `${context.item.code}(${context.item.name}):  `
   itemDataOutput.value = makeItemDataOutput(context.historyData[context.historyData.length - 1])
 
+  setGrid(kchart.value)
   setAxis(kchart.value, context.chartData.xData)
   setKLine(context.item, kchart.value, context.chartData.klineData)
+  if (!context.chartData.maData) {
+    context.chartData.maData = makeMADataGroup(maSelected.value, context.chartData)
+  }
+  setMAData(context.item, kchart.value, context.chartData.maData)
   if (secondMode.value == 'Volume') {
-    setSecondVolume(context.item, kchart.value, context.chartData.volumeData)
+    setVolume(context.item, kchart.value, context.chartData.volumeData)
   } else {
     if (!context.chartData.macdData) {
-      context.chartData.macdData = await fetchItemMACDData(context.item.code, context.chartData.xData, context.chartData.klineData)
+      context.chartData.macdData = await calcItemMACDData(context.chartData.xData, context.chartData.klineData)
     }
-    setSecondMACD(context.item, kchart.value, context.chartData.macdData)
+    setMACD(context.item, kchart.value, context.chartData.macdData)
   }
+}
+
+async function drawMoreItems() {
+
+}
+
+function clearItemContext(item: ItemCode) {
+  kchart.value?.remove(item.code, true)
 }
 
 function onCodeTypeCommand(cmd: string) {
@@ -217,13 +273,10 @@ async function onCodeListSelected(selected: ItemCode[], row: ItemCode) {
   console.log(selected)
   console.log(row)
   if (selected.includes(row)) {
-    const ret = await apiHistory({
-      code: row.code,
-      start: makeReqStart('')
-    })
-    makeItemContext(row, ret.result)
+    await makeItemContext(row)
+    await drawItemContext()
   } else {
-    removeItemContext(row)
+    clearItemContext(row)
   }
 }
 
