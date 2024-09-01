@@ -5,7 +5,7 @@ import { KLineChart4 } from '@/components/KLine'
 import { onMounted, ref, unref, watch } from 'vue';
 import { apiHistory, apiInfo } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
-import { calcMAData, KLineChartData, KLineData, MACDData, MAData, MADataGroup, makeKLineChartData, makeMACDData, makeMADataGroup, VolumeData, XData } from '@/utils/kline';
+import { calcMAData, fitMAData, fitVolumeData, KLineChartData, KLineData, MACDData, MAData, MADataGroup, makeKLineChartData, makeMACDData, makeMADataGroup, VolumeData, XData } from '@/utils/kline';
 import { apiMACD } from '@/api/libs/talib';
 import { ka_GE } from '@faker-js/faker';
 
@@ -35,7 +35,7 @@ const inputCode = ref<string>()
 const itemFetched = ref<boolean>(false)
 const itemTitleOutput = ref<string>()
 const itemDataOutput = ref<string>()
-const maSelected = ref<number[]>([5, 10])
+const maSelected = ref<number[]>([5])
 const secondMode = ref<string>('MACD')
 
 let itemCode: ItemCode
@@ -103,6 +103,14 @@ function setVolume(item: ItemCode, chart, data: VolumeData) {
   }
 }
 
+function addVolume(item: ItemCode, chart, data: VolumeData, base: VolumeData) {
+  if (!k_zoom) {
+    const fitData = fitVolumeData(data, base)
+    const name = item.code + '-V'
+    chart.addBar(1, name, fitData)
+  }
+}
+
 function setMACD(item: ItemCode, chart, data: MACDData) {
   chart.addLine(1, item.code + '-DIF', data.dif)
   chart.addLine(1, item.code + '-DEA', data.dea)
@@ -113,6 +121,15 @@ function setMAData(item: ItemCode, chart, data: MADataGroup) {
   for (const key of Object.keys(data)) {
     const name = item.code + '-' + key
     chart.addLine(0, name, data[key].data)
+  }
+}
+
+function addMAData(item: ItemCode, chart, data: MADataGroup, base: MADataGroup) {
+  for (const key of Object.keys(data)) {
+    const fitData = fitMAData(data[key], base[key])
+    console.log(fitData)
+    const name = item.code + '-' + key
+    chart.addLine(0, name, fitData)
   }
 }
 
@@ -141,7 +158,7 @@ async function fetchItemCode(code: string) {
   }
 }
 
-async function calcItemMACDData( xData: XData, klineData: KLineData): Promise<MACDData> {
+async function fetchItemMACDData( xData: XData, klineData: KLineData): Promise<MACDData> {
   const closeData = klineData.data.map(item => item[1])
   const ret = await apiMACD({
     value: (closeData as number[])
@@ -204,7 +221,7 @@ async function makeItemContext(item: ItemCode) {
 function makeItemContextMAData(maSelected: number[], context: ItemContext) {
   context.chartData.maData = {}
   maSelected.forEach(item => {
-    context.chartData.maData[item] = calcMAData(item, context.chartData.xData, context.chartData.klineData)
+    context.chartData.maData![item] = calcMAData(item, context.chartData.xData, context.chartData.klineData)
   })
 }
 
@@ -229,14 +246,28 @@ async function drawBaseItem() {
     setVolume(context.item, kchart.value, context.chartData.volumeData)
   } else {
     if (!context.chartData.macdData) {
-      context.chartData.macdData = await calcItemMACDData(context.chartData.xData, context.chartData.klineData)
+      context.chartData.macdData = await fetchItemMACDData(context.chartData.xData, context.chartData.klineData)
     }
     setMACD(context.item, kchart.value, context.chartData.macdData)
   }
 }
 
 async function drawMoreItems() {
-
+  for (let i = 0;i < moreItems.length; ++ i) {
+    const item = moreItems[i]
+    if (!item.chartData.maData) {
+      item.chartData.maData = makeMADataGroup(maSelected.value, item.chartData)
+    }
+    addMAData(item.item, kchart.value, item.chartData.maData, baseItem.chartData.maData!)
+    if (secondMode.value == 'Volume') {
+      addVolume(item.item, kchart.value, item.chartData.volumeData, baseItem.chartData.volumeData)
+    } else {
+      if (!item.chartData.macdData) {
+        item.chartData.macdData = await fetchItemMACDData(item.chartData.xData, item.chartData.klineData)
+      }
+      addMACD(item.item, kchart.value, item.chartData.macdData, baseItem.chartData.macdData)      
+    }
+  }
 }
 
 function clearItemContext(item: ItemCode) {
