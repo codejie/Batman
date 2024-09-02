@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElRow, ElCol, ElButton, ElTable, ElTableColumn, ElDropdown, ElDropdownMenu, ElDropdownItem, ElInput, ElText, ElMessage } from 'element-plus'
+import { ElRow, ElCol, ElButton, ElTable, ElTableColumn, ElDropdown, ElDropdownMenu, 
+  ElDropdownItem, ElInput, ElText, ElMessage, ElRadioGroup, ElRadioButton } from 'element-plus'
 import { KLineChart4 } from '@/components/KLine'
-import { onMounted, ref, unref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { apiHistory, apiInfo } from '@/api/data/stock';
 import { HistoryDataModel } from '@/api/data/stock/types';
-import { calcMAData, fitMAData, fitVolumeData, KLineChartData, KLineData, MACDData, MAData, MADataGroup, makeKLineChartData, makeMACDData, makeMADataGroup, VolumeData, XData } from '@/utils/kline';
+import { calcMAData, fitKLineData, fitMACDData, fitMAData, fitVolumeData, KLineChartData,
+   KLineData, MACDData, MADataGroup, makeKLineChartData, makeMACDData, makeMADataGroup, VolumeData, XData } from '@/utils/kline';
 import { apiMACD } from '@/api/libs/talib';
-import { ka_GE } from '@faker-js/faker';
 
 type ItemCode = {
   type?: number
@@ -37,9 +38,13 @@ const itemTitleOutput = ref<string>()
 const itemDataOutput = ref<string>()
 const maSelected = ref<number[]>([5])
 const secondMode = ref<string>('MACD')
+const fitMode = ref<boolean>(true)
 
-let itemCode: ItemCode
-let baseItem: ItemContext
+const startGroup: string[] = ['两年', '一年', '半年']
+let startRange: string
+
+let itemCode: ItemCode | null = null
+let baseItem: ItemContext | null = null
 let moreItems: ItemContext[] = []
 
 let k_zoom: boolean = false
@@ -90,9 +95,19 @@ function setAxis(chart, data: XData) {
 function setKLine(item: ItemCode, chart, data: KLineData) {
   const name = item.code + '-K'
   if (k_line) {
-    chart?.addKLine(0, name, data.data, true, true)
+    chart.addKLine(0, name, data.data, true, true)
   } else {
-    kchart.value?.remove(name)
+    chart.remove(name)
+  }
+}
+
+function addKLine(item: ItemCode, chart, data: KLineData, base: KLineData) {
+  const name = item.code + '-K'
+  if (k_line) {
+    const fitData = fitMode.value ? fitKLineData(data, base) : data
+    chart.addKLine(0, item.code + '-K', fitData.data, true, true)
+  } else {
+    chart.remove(name)
   }
 }
 
@@ -117,6 +132,13 @@ function setMACD(item: ItemCode, chart, data: MACDData) {
   chart.addBar(1, item.code + '-MACD', data.macd) 
 }
 
+function addMACD(item: ItemCode, chart, data: MACDData, base: MACDData) {
+  const fitData = fitMode.value ? fitMACDData(data, base) : data
+  chart.addLine(1, item.code + '-DIF', fitData.dif)
+  chart.addLine(1, item.code + '-DEA', fitData.dea)
+  chart.addBar(1, item.code + '-MACD', fitData.macd) 
+}
+
 function setMAData(item: ItemCode, chart, data: MADataGroup) {
   for (const key of Object.keys(data)) {
     const name = item.code + '-' + key
@@ -126,8 +148,8 @@ function setMAData(item: ItemCode, chart, data: MADataGroup) {
 
 function addMAData(item: ItemCode, chart, data: MADataGroup, base: MADataGroup) {
   for (const key of Object.keys(data)) {
-    const fitData = fitMAData(data[key], base[key])
-    console.log(fitData)
+    const fitData = fitMode.value ? fitMAData(data[key], base[key]) : data
+    // console.log(fitData)
     const name = item.code + '-' + key
     chart.addLine(0, name, fitData)
   }
@@ -225,13 +247,13 @@ function makeItemContextMAData(maSelected: number[], context: ItemContext) {
   })
 }
 
-async function drawItemContext() {
+async function drawItemContexts() {
   await drawBaseItem()
   await drawMoreItems()
 }
 
 async function drawBaseItem() {
-  const context = baseItem
+  const context = baseItem!
   itemTitleOutput.value = `${context.item.code}(${context.item.name}):  `
   itemDataOutput.value = makeItemDataOutput(context.historyData[context.historyData.length - 1])
 
@@ -255,23 +277,37 @@ async function drawBaseItem() {
 async function drawMoreItems() {
   for (let i = 0;i < moreItems.length; ++ i) {
     const item = moreItems[i]
+    addKLine(item.item, kchart.value, item.chartData.klineData, baseItem!.chartData.klineData)
     if (!item.chartData.maData) {
       item.chartData.maData = makeMADataGroup(maSelected.value, item.chartData)
     }
-    addMAData(item.item, kchart.value, item.chartData.maData, baseItem.chartData.maData!)
+    addMAData(item.item, kchart.value, item.chartData.maData, baseItem!.chartData.maData!)
     if (secondMode.value == 'Volume') {
-      addVolume(item.item, kchart.value, item.chartData.volumeData, baseItem.chartData.volumeData)
+      addVolume(item.item, kchart.value, item.chartData.volumeData, baseItem!.chartData.volumeData)
     } else {
       if (!item.chartData.macdData) {
         item.chartData.macdData = await fetchItemMACDData(item.chartData.xData, item.chartData.klineData)
       }
-      addMACD(item.item, kchart.value, item.chartData.macdData, baseItem.chartData.macdData)      
+      addMACD(item.item, kchart.value, item.chartData.macdData, baseItem!.chartData.macdData!)      
     }
   }
 }
 
-function clearItemContext(item: ItemCode) {
-  kchart.value?.remove(item.code, true)
+function clearItemContext(item: ItemCode): boolean {
+  let changed = false
+  if (item == baseItem?.item) {
+    if (moreItems.length > 0) {
+      baseItem = moreItems[0]
+      moreItems = moreItems.slice(1)
+
+      changed = true
+    } else {
+      baseItem = null
+    }
+  } else {
+    moreItems = moreItems.filter(element => element.item != item)
+  }
+  return changed
 }
 
 function onCodeTypeCommand(cmd: string) {
@@ -291,24 +327,47 @@ function onItemAddClick() {
   }
 }
 
-// async function onCodeListClick(row: ItemCode) {
-//   const ret = await apiHistory({
-//     code: row.code,
-//     start: makeReqStart('')
-//   })
-//   makeItemContext(row, ret.result)
-//   // setChart(ret.result)
-// }
-
 async function onCodeListSelected(selected: ItemCode[], row: ItemCode) {
   console.log(selected)
   console.log(row)
-  if (selected.includes(row)) {
+
+  const added: boolean = selected.includes(row)
+  if (added) {
     await makeItemContext(row)
-    await drawItemContext()
+    await drawItemContexts()    
   } else {
-    clearItemContext(row)
+    if (clearItemContext(row)) {
+      await drawItemContexts()
+    } else {
+      kchart.value?.remove(row.code, true)
+    }
   }
+
+  // if (selected.includes(row)) {
+  //   await makeItemContext(row)
+  //   await drawItemContexts()
+  // } else {
+  //   clearItemContext(row)
+  // }
+}
+
+async function onStartChanged() {
+  const date: Date = new Date()
+  switch(startRange) {
+    case '两年':
+      date.setFullYear(date.getFullYear() - 2)
+      break
+    case '半年':
+      date.setMonth(date.getMonth() - 6)
+      break
+    case '一年':
+    default:
+      date.setFullYear(date.getFullYear() - 1)
+  }
+  // props.reqParam!.start = date.toISOString().slice(0, 10)
+
+  // await fetchHistoryData()
+  // updateChartOptions(historyData)
 }
 
 </script>
@@ -333,7 +392,7 @@ async function onCodeListSelected(selected: ItemCode[], row: ItemCode) {
     </ElRow>
     <ElRow class="row" :gutter="24">
       <ElCol :span="3">
-        <ElTable :data="codeList" size="small" @select="onCodeListSelected" :border="true" max-height="800" highlight-current-row>
+        <ElTable :data="codeList" size="small" @select="onCodeListSelected" :border="true" max-height="auto" highlight-current-row>
           <ElTableColumn type="selection" width="30" />
           <ElTableColumn prop="code" label="Code" />
           <ElTableColumn prop="name" label="Name" />
@@ -342,7 +401,11 @@ async function onCodeListSelected(selected: ItemCode[], row: ItemCode) {
       </ElCol>
       <ElCol :span="21">
         <ElRow class="row" :gutter="24">
-          <div>aaa</div>
+          <ElCol :span="5">
+            <ElRadioGroup v-model="startRange" size="small" style="float: right;" @change="onStartChanged">
+              <ElRadioButton v-for="item in startGroup" :key="item" :value="item" :label="item" />
+            </ElRadioGroup>
+          </ElCol>
         </ElRow>
         <KLineChart4 class="row" ref="kchart" />
       </ElCol>

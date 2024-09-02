@@ -41,27 +41,6 @@ export type KLineChartData = {
 // function isNumber(n) { return !isNaN(parseFloat(n)) && !isNaN(n - 0) }
 export function isNumber(n) { return /^-?[\d.]+(?:e-?\d+)?$/.test(n); }
 
-// function getMax(data: YData, column: number = 1): number {
-//   let ret = Number.NEGATIVE_INFINITY
-//   data.forEach(d => {
-//     // console.log(`${ret} >= ${(d[column] as number)} - ${ret >= (d[column] as number)} - ${typeof d[column]}`)
-//     if (isNumber(d[column])) {
-//       ret = (ret < (d[column] as number)) ? (d[column] as number): ret
-//     }
-//   })
-//   return ret
-// }
-
-// function getMin(data: YData, column: number = 1): number {
-//   let ret = Number.POSITIVE_INFINITY
-//   data.forEach(d => {
-//     if (isNumber(d[column])) {
-//       ret = (ret <= (d[column] as number)) ? ret : (d[column] as number)
-//     }
-//   })
-//   return ret
-// }
-
 export function calcMAData(ma: number, xData: XData, kline: KLineData, column: number = 1): MAData {
   const data: YData = []
   for (let i = 0; i < kline.data.length; i++) {
@@ -132,18 +111,33 @@ export function makeMADataGroup(ma: number[], chartData: KLineChartData): MAData
   const ret: MADataGroup = {}
   ma.forEach(item => {
     ret[item] = calcMAData(item, chartData.xData, chartData.klineData)
-
   })
   return ret
 }
 
-export function fitMAData(data: MAData, base: MAData): YData {
-  console.log(data)
-  console.log(base)
+export function fitKLineData(data: KLineData, base: KLineData): KLineData {
   const arg1 = (base.max - base.min) / (data.max - data.min)
-  console.log(`arg1 = ${arg1}`)
   const arg2 = arg1 * data.min - base.min
-  console.log(`arg2 = ${arg2}`)
+  
+  return {
+    data: data.data.map(item => [
+      ((item[0] as number) * arg1 - arg2),
+      ((item[1] as number) * arg1 - arg2),
+      ((item[2] as number) * arg1 - arg2),
+      ((item[3] as number) * arg1 - arg2)
+    ]),
+    max: data.max,
+    min: data.min
+  }
+}
+
+export function fitMAData(data: MAData, base: MAData): YData {
+  // console.log(data)
+  // console.log(base)
+  const arg1 = (base.max - base.min) / (data.max - data.min)
+  // console.log(`arg1 = ${arg1}`)
+  const arg2 = arg1 * data.min - base.min
+  // console.log(`arg2 = ${arg2}`)
   return data.data.map(item => [item[0], ((item[1] as number) * arg1 - arg2)])
 }
 
@@ -152,4 +146,17 @@ export function fitVolumeData(data: VolumeData, base: VolumeData): YData {
   const arg1 = diff / (data.max - data.min)
   const arg2 = arg1 * data.min - base.min
   return data.data.map(item => [item[0], ((item[1] as number) * arg1 - arg2), item[2]])  
+}
+
+export function fitMACDData(data: MACDData, base: MACDData): MACDData {
+  const arg1 = (base.max - base.min) / (data.max - data.min)
+  const arg2 = arg1 * data.min - base.min
+
+  return {
+    dif: data.dif.map(item => [item[0], ((item[1] as number) * arg1 - arg2)]),
+    dea: data.dea.map(item => [item[0], ((item[1] as number) * arg1 - arg2)]),
+    macd: data.macd.map(item => [item[0], ((item[1] as number) * arg1 - arg2), item[2]]),
+    max: data.max,
+    min: data.min
+  }
 }
