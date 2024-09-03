@@ -46,7 +46,7 @@ def update_task(for_test: bool = False) -> None:
           # 'seconds': 3600 * 4
         'mode': 'daily',
         'days': '0-5',
-        'hour': 19,
+        'hour': 6,
         'minute': 21          
       }
       id = taskScheduler.make_id()
