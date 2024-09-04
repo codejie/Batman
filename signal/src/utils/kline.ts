@@ -131,21 +131,29 @@ export function fitKLineData(data: KLineData, base: KLineData): KLineData {
   }
 }
 
-export function fitMAData(data: MAData, base: MAData): YData {
+export function fitMAData(data: MAData, base: MAData): MAData {
   // console.log(data)
   // console.log(base)
   const arg1 = (base.max - base.min) / (data.max - data.min)
   // console.log(`arg1 = ${arg1}`)
   const arg2 = arg1 * data.min - base.min
   // console.log(`arg2 = ${arg2}`)
-  return data.data.map(item => [item[0], ((item[1] as number) * arg1 - arg2)])
+  return {
+    data: data.data.map(item => [item[0], ((item[1] as number) * arg1 - arg2)]),
+    max: data.max,
+    min: data.min
+  }
 }
 
-export function fitVolumeData(data: VolumeData, base: VolumeData): YData {
+export function fitVolumeData(data: VolumeData, base: VolumeData): VolumeData {
   const diff = base.max - base.min
   const arg1 = diff / (data.max - data.min)
   const arg2 = arg1 * data.min - base.min
-  return data.data.map(item => [item[0], ((item[1] as number) * arg1 - arg2), item[2]])  
+  return {
+    data: data.data.map(item => [item[0], ((item[1] as number) * arg1 - arg2), item[2]]),
+    max: data.max,
+    min: data.min
+  }
 }
 
 export function fitMACDData(data: MACDData, base: MACDData): MACDData {

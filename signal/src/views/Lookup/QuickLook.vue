@@ -10,9 +10,10 @@ import { calcMAData, fitKLineData, fitMACDData, fitMAData, fitVolumeData, KLineC
    KLineData, MACDData, MADataGroup, makeKLineChartData, makeMACDData, makeMADataGroup, VolumeData, XData } from '@/utils/kline';
 import { apiMACD } from '@/api/libs/talib';
 import { formatToDate } from '@/utils/dateUtil';
+import { apiCreate } from '@/api/customized';
 
 type ItemCode = {
-  type?: number
+  type: number
   code: string
   name?: string
 }
@@ -32,23 +33,20 @@ const props = defineProps({
 
 const kchart = ref(null)
 const codeType = ref<string>('Stock')
-const codeList = ref<ItemCode[]>([])
+const codeList = ref<ItemCode[]>([{ type: 1, code: '000001', name: 'A'}, { type: 1, code: '000009', name: 'b'}])
 const inputCode = ref<string>()
 const itemFetched = ref<boolean>(false)
 const itemTitleOutput = ref<string>()
 const itemDataOutput = ref<string>()
 
-const fitMode = ref<boolean>(true)
-
 const startGroup: string[] = ['两年', '一年', '半年']
 const startRange = ref<string>('半年')
 const maGroup: number[] = [5, 9, 10, 12, 22, 26, 30, 45, 60]
-const maSelected = ref<number[]>([5, 10, 22])
+const maSelected = ref<number[]>([5])
 const secondGroup: string[] = ['Volume', 'MACD']
 const secondSelected = ref<string>('Volume')
 const chartModeGroup: string[] = ['KLine', 'Zoom', 'Fit']
-const chartModeSelected = ref<string[]>(['KLine', 'Fit'])
-
+const chartModeSelected = ref<string[]>(['KLine'])
 
 let itemCode: ItemCode | null = null
 let baseItem: ItemContext | null = null
@@ -57,6 +55,7 @@ let moreItems: ItemContext[] = []
 let k_start: string = makeStart()
 let k_zoom: boolean = false
 let k_line: boolean = true
+let k_fit: boolean = false
 
 let searchTimer: NodeJS.Timeout
 watch(
@@ -80,7 +79,7 @@ onMounted(() => {
 })
 
 function setGrid(chart) {
-  chart?.reset()
+  chart.reset()
   if (k_zoom) {
     chart?.addGrid(0, '4%', '4%', '4%', '10%')
   } else {
@@ -91,12 +90,12 @@ function setGrid(chart) {
 
 function setAxis(chart, data: XData) {
   if (k_zoom) {
-    chart?.addAxis(0, data, true)
-    chart?.addAxisPointer([0])
+    chart.addAxis(0, data, true)
+    chart.addAxisPointer([0])
   } else {
-    chart?.addAxis(0, data, true)
-    chart?.addAxis(1, data, false)
-    chart?.addAxisPointer([0, 1])
+    chart.addAxis(0, data, true)
+    chart.addAxis(1, data, false)
+    chart.addAxisPointer([0, 1])
   }
 }
 
@@ -112,8 +111,9 @@ function setKLine(item: ItemCode, chart, data: KLineData) {
 function addKLine(item: ItemCode, chart, data: KLineData, base: KLineData) {
   const name = item.code + '-K'
   if (k_line) {
-    const fitData = fitMode.value ? fitKLineData(data, base) : data
-    chart.addKLine(0, item.code + '-K', fitData.data, true, true)
+    const fitData = k_fit ? fitKLineData(data, base) : data
+    console.log(`fitData = ${fitData}`)
+    chart.addKLine(0, name, fitData.data, false, true)
   } else {
     chart.remove(name)
   }
@@ -130,7 +130,7 @@ function addVolume(item: ItemCode, chart, data: VolumeData, base: VolumeData) {
   if (!k_zoom) {
     const fitData = fitVolumeData(data, base)
     const name = item.code + '-V'
-    chart.addBar(1, name, fitData)
+    chart.addBar(1, name, fitData.data)
   }
 }
 
@@ -141,7 +141,7 @@ function setMACD(item: ItemCode, chart, data: MACDData) {
 }
 
 function addMACD(item: ItemCode, chart, data: MACDData, base: MACDData) {
-  const fitData = fitMode.value ? fitMACDData(data, base) : data
+  const fitData = k_fit ? fitMACDData(data, base) : data
   chart.addLine(1, item.code + '-DIF', fitData.dif)
   chart.addLine(1, item.code + '-DEA', fitData.dea)
   chart.addBar(1, item.code + '-DIFF', fitData.macd) 
@@ -156,16 +156,16 @@ function setMAData(item: ItemCode, chart, data: MADataGroup) {
 
 function addMAData(item: ItemCode, chart, data: MADataGroup, base: MADataGroup) {
   for (const key of Object.keys(data)) {
-    const fitData = fitMode.value ? fitMAData(data[key], base[key]) : data
-    // console.log(fitData)
+    console.log(`k_fit = ${k_fit}`)
+    const fitData = k_fit ? fitMAData(data[key], base[key]) : data[key]
     const name = item.code + '-MA' + key
-    chart.addLine(0, name, fitData)
+    chart.addLine(0, name, fitData.data)
   }
 }
 
 async function fetchItemCode(code: string) {
-  itemTitleOutput.value = ''
-  itemDataOutput.value = ''
+  itemTitleOutput.value = undefined
+  itemDataOutput.value = undefined
   itemFetched.value = false
   
   const ret = await apiInfo({
@@ -268,9 +268,10 @@ async function createItemContext(item: ItemCode) {
 async function refreshItemContextData() {
   if (baseItem) {
     baseItem = await makeItemContext(baseItem.item)
-  }
-  for (let index = 0; index < moreItems.length; ++ index) {
-    moreItems[index] = await makeItemContext(moreItems[index].item)
+
+    for (let index = 0; index < moreItems.length; ++ index) {
+      moreItems[index] = await makeItemContext(moreItems[index].item)
+    }
   }
   await drawItemContexts()
 }
@@ -287,30 +288,21 @@ function refreshItemContextMAData() {
   if (baseItem) {
     makeItemContextMAData(maSelected.value, baseItem)
     setMAData(baseItem.item, kchart.value, baseItem.chartData.maData!)
-  }
-  for (let index = 0; index < moreItems.length; ++ index) {
-    makeItemContextMAData(maSelected.value, moreItems[index])
-    addMAData(moreItems[index].item, kchart.value, moreItems[index].chartData.maData!, baseItem!.chartData.maData!)
+    for (let index = 0; index < moreItems.length; ++ index) {
+      makeItemContextMAData(maSelected.value, moreItems[index])
+      addMAData(moreItems[index].item, kchart.value, moreItems[index].chartData.maData!, baseItem!.chartData.maData!)
+    }
   }
 }
 
-async function drawItemContexts() {
-  await drawBaseItem()
-  await drawMoreItems()
-}
-
-async function drawBaseItem() {
+async function refreshItemContextVolumnData() {
   if (!baseItem) return
-  itemTitleOutput.value = `${baseItem.item.code}(${baseItem.item.name}):  `
-  itemDataOutput.value = makeItemDataOutput(baseItem.historyData[baseItem.historyData.length - 1])
 
-  setGrid(kchart.value)
-  setAxis(kchart.value, baseItem.chartData.xData)
-  setKLine(baseItem.item, kchart.value, baseItem.chartData.klineData)
-  if (!baseItem.chartData.maData) {
-    baseItem.chartData.maData = makeMADataGroup(maSelected.value, baseItem.chartData)
-  }
-  setMAData(baseItem.item, kchart.value, baseItem.chartData.maData)
+  clearChartSeries('-V', kchart.value)  
+  clearChartSeries('-DIF', kchart.value)
+  clearChartSeries('-DEA', kchart.value)
+  clearChartSeries('-DIFF', kchart.value)
+
   if (secondSelected.value == 'Volume') {
     setVolume(baseItem.item, kchart.value, baseItem.chartData.volumeData)
   } else {
@@ -318,6 +310,53 @@ async function drawBaseItem() {
       baseItem.chartData.macdData = await fetchItemMACDData(baseItem.chartData.xData, baseItem.chartData.klineData)
     }
     setMACD(baseItem.item, kchart.value, baseItem.chartData.macdData)
+  }
+
+  for (let index = 0; index < moreItems.length; ++ index) {
+    const item = moreItems[index]
+    if (secondSelected.value == 'Volume') {
+      addVolume(item.item, kchart.value, item.chartData.volumeData, baseItem!.chartData.volumeData)
+    } else {
+      if (!item.chartData.macdData) {
+        item.chartData.macdData = await fetchItemMACDData(item.chartData.xData, item.chartData.klineData)
+      }
+      addMACD(item.item, kchart.value, item.chartData.macdData, baseItem!.chartData.macdData!)      
+    }    
+  }  
+}
+
+async function drawItemContexts() {
+  itemTitleOutput.value = undefined
+  itemDataOutput.value = undefined
+  setGrid(kchart.value)
+
+  await drawBaseItem()
+  await drawMoreItems()
+}
+
+async function drawBaseItem() {
+  if (!baseItem) {
+    return
+  }
+  itemTitleOutput.value = `${baseItem.item.code}(${baseItem.item.name}):  `
+  itemDataOutput.value = makeItemDataOutput(baseItem.historyData[baseItem.historyData.length - 1])
+
+  // setGrid(kchart.value)
+  setAxis(kchart.value, baseItem.chartData.xData)
+  setKLine(baseItem.item, kchart.value, baseItem.chartData.klineData)
+  if (!baseItem.chartData.maData) {
+    baseItem.chartData.maData = makeMADataGroup(maSelected.value, baseItem.chartData)
+  }
+  setMAData(baseItem.item, kchart.value, baseItem.chartData.maData)
+  if (!k_zoom) {
+    if (secondSelected.value == 'Volume') {
+      setVolume(baseItem.item, kchart.value, baseItem.chartData.volumeData)
+    } else {
+      if (!baseItem.chartData.macdData) {
+        baseItem.chartData.macdData = await fetchItemMACDData(baseItem.chartData.xData, baseItem.chartData.klineData)
+      }
+      setMACD(baseItem.item, kchart.value, baseItem.chartData.macdData)
+    }
   }
 }
 
@@ -329,32 +368,40 @@ async function drawMoreItems() {
       item.chartData.maData = makeMADataGroup(maSelected.value, item.chartData)
     }
     addMAData(item.item, kchart.value, item.chartData.maData, baseItem!.chartData.maData!)
-    if (secondSelected.value == 'Volume') {
-      addVolume(item.item, kchart.value, item.chartData.volumeData, baseItem!.chartData.volumeData)
-    } else {
-      if (!item.chartData.macdData) {
-        item.chartData.macdData = await fetchItemMACDData(item.chartData.xData, item.chartData.klineData)
+    if (!k_zoom) {
+      if (secondSelected.value == 'Volume') {
+        addVolume(item.item, kchart.value, item.chartData.volumeData, baseItem!.chartData.volumeData)
+      } else {
+        if (!item.chartData.macdData) {
+          item.chartData.macdData = await fetchItemMACDData(item.chartData.xData, item.chartData.klineData)
+        }
+        addMACD(item.item, kchart.value, item.chartData.macdData, baseItem!.chartData.macdData!)      
       }
-      addMACD(item.item, kchart.value, item.chartData.macdData, baseItem!.chartData.macdData!)      
     }
   }
 }
 
-function clearItemContext(item: ItemCode): boolean {
-  let changed = false
+function redrawItemContextKLineData() {
+  if (baseItem) {
+    setKLine(baseItem.item, kchart.value, baseItem.chartData.klineData)
+    for (let index = 0; index < moreItems.length; ++ index) {
+      const item = moreItems[index]
+      addKLine(item.item, kchart.value, item.chartData.klineData, baseItem!.chartData.klineData!)
+    } 
+  }
+}
+
+function clearItemContext(item: ItemCode) {
   if (item == baseItem?.item) {
     if (moreItems.length > 0) {
       baseItem = moreItems[0]
       moreItems = moreItems.slice(1)
-
-      changed = true
     } else {
       baseItem = null
     }
   } else {
     moreItems = moreItems.filter(element => element.item != item)
   }
-  return changed
 }
 
 function clearChartSeries(key: string, chart) {
@@ -379,20 +426,15 @@ function onItemAddClick() {
 }
 
 async function onCodeListSelected(selected: ItemCode[], row: ItemCode) {
-  console.log(selected)
-  console.log(row)
-
   const added: boolean = selected.includes(row)
   if (added) {
     await createItemContext(row) // makeItemContext(row)
-    await drawItemContexts()    
+    // await drawItemContexts()    
   } else {
-    if (clearItemContext(row)) {
-      await drawItemContexts()
-    } else {
-      clearChartSeries(row.code, kchart.value)
-    }
+    clearItemContext(row)
+    // clearChartSeries(row.code, kchart.value)
   }
+  await drawItemContexts()
 }
 
 async function onStartChanged() {
@@ -404,8 +446,42 @@ function onMaGroupChanged() {
   refreshItemContextMAData()
 }
 
-function onSecondChanged() {
+async function onSecondChanged() {
+  await refreshItemContextVolumnData()
+}
 
+async function onChartModeChanged() {
+  console.log(`chartmode = ${chartModeSelected.value}`)
+  const kline = chartModeSelected.value.includes('KLine')
+  if (k_line != kline) {
+    k_line = kline
+    redrawItemContextKLineData()
+  }
+  const zoom = chartModeSelected.value.includes('Zoom')
+  if (k_zoom != zoom) {
+    k_zoom = zoom
+    console.log(`kzoom = ${k_zoom}`)
+    await drawItemContexts()
+  }
+  const fit = chartModeSelected.value.includes('Fit')
+  if (k_fit != fit) {
+    k_fit = fit
+    await drawItemContexts()
+  }
+}
+
+async function onCustomizedClick() {
+  const { type, code } = baseItem ? baseItem.item : itemCode!
+  const ret = await apiCreate({
+    code: code,
+    type: type
+  })
+  if (ret.code == 0) {
+    ElMessage({
+        type: 'success',
+        message: `${code} added to customized list.`
+      })    
+  }
 }
 
 </script>
@@ -448,8 +524,8 @@ function onSecondChanged() {
               <ElCheckboxButton v-for="item in maGroup" :key="item" :value="item" :label="item" :checked="item in maSelected" />
             </ElCheckboxGroup>
           </ElCol>
-          <ElCol class="col" :span="3">
-            <ElRadioGroup v-model="secondSelected" size="small" style="display: flex; justify-content: center;" @change="onSecondChanged">
+          <ElCol class="col" :span="4">
+            <ElRadioGroup v-model="secondSelected" size="small" :disabled="chartModeSelected.includes('Zoom')" style="display: flex; justify-content: center;" @change="onSecondChanged">
               <ElRadioButton v-for="item in secondGroup" :key="item" :value="item" :label="item" />
             </ElRadioGroup>
           </ElCol>
@@ -457,7 +533,10 @@ function onSecondChanged() {
             <ElCheckboxGroup v-model="chartModeSelected" size="small" style="display: flex; justify-content: center;" @change="onChartModeChanged">
               <ElCheckboxButton v-for="item in chartModeGroup" :key="item" :value="item" :label="item" :checked="item in chartModeSelected" />
             </ElCheckboxGroup>
-          </ElCol>                 
+          </ElCol>
+          <ElCol class="col" :span="6">
+            <ElButton size="small" style="float: right;" :disabled="itemTitleOutput==undefined" @click="onCustomizedClick">自</ElButton>
+          </ElCol>
         </ElRow>
         <KLineChart4 class="row" ref="kchart" />
       </ElCol>
