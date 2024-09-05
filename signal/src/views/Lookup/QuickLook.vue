@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElRow, ElCol, ElButton, ElTable, ElTableColumn, ElDropdown, ElDropdownMenu, 
-  ElDropdownItem, ElInput, ElText, ElMessage, ElRadioGroup, ElRadioButton, ElCheckboxGroup, ElCheckboxButton } from 'element-plus'
+  ElDropdownItem, ElInput, ElText, ElMessage, ElRadioGroup, ElRadioButton, ElCheckboxGroup, ElCheckboxButton,
+  ElDivider } from 'element-plus'
 import { KLineChart4 } from '@/components/KLine'
 import { onMounted, ref, watch } from 'vue';
 import { apiHistory, apiInfo } from '@/api/data/stock';
@@ -487,10 +488,10 @@ async function onCustomizedClick() {
 </script>
 <template>
   <ContentWrap title="Lookup">
-    <ElRow class="row" :gutter="24">
+    <ElRow :gutter="24">
       <ElCol :span="24">
-        <ElDropdown trigger="click" @command="onCodeTypeCommand">
-          <ElButton>{{ codeType }}</ElButton>
+        <ElDropdown trigger="click" style="padding-right: 8px;" @command="onCodeTypeCommand">
+          <ElButton size="default">{{ codeType }}</ElButton>
           <template #dropdown>
             <ElDropdownMenu>
               <ElDropdownItem command="Stock">Stock</ElDropdownItem>
@@ -498,13 +499,13 @@ async function onCustomizedClick() {
             </ElDropdownMenu>
           </template>
         </ElDropdown>
-        <ElInput v-model="inputCode" style="width: 80px;" max-length="6" />
-        <ElButton type="primary" :disabled="!itemFetched" @click="onItemAddClick">+</ElButton>
-        <ElText tag="b" size="default">{{ itemTitleOutput }}</ElText>
-        <ElText size="default">{{ itemDataOutput }}</ElText>
+        <ElInput v-model="inputCode" size="default" type="string" :clearable="true" style="width: 100px; padding-right: 8px;" maxlength="6" />
+        <ElButton type="primary" size="default" :disabled="!itemFetched" @click="onItemAddClick">+</ElButton>
+        <ElText tag="b" size="large" style="padding-left: 16px; text-align: center; height: 100%;" >{{ itemTitleOutput }}  {{ itemDataOutput }}</ElText>
       </ElCol>
     </ElRow>
-    <ElRow class="row" :gutter="24">
+    <ElDivider border-style="dashed" />    
+    <ElRow :gutter="24">
       <ElCol :span="3">
         <ElTable :data="codeList" size="small" @select="onCodeListSelected" :border="true" max-height="auto">
           <ElTableColumn type="selection" width="30" />
@@ -513,32 +514,32 @@ async function onCustomizedClick() {
         </ElTable>
       </ElCol>
       <ElCol :span="21">
-        <ElRow class="row" :gutter="24">
-          <ElCol class="col" :span="4">
+        <ElRow :gutter="24">
+          <ElCol :span="4">
             <ElRadioGroup v-model="startRange" size="small" style="float: left;" @change="onStartChanged">
               <ElRadioButton v-for="item in startGroup" :key="item" :value="item" :label="item" />
             </ElRadioGroup>
           </ElCol>
-          <ElCol class="col" :span="7">
+          <ElCol :span="7">
             <ElCheckboxGroup v-model="maSelected" size="small" style="display: flex; justify-content: center;" @change="onMaGroupChanged">
               <ElCheckboxButton v-for="item in maGroup" :key="item" :value="item" :label="item" :checked="item in maSelected" />
             </ElCheckboxGroup>
           </ElCol>
-          <ElCol class="col" :span="4">
+          <ElCol :span="4">
             <ElRadioGroup v-model="secondSelected" size="small" :disabled="chartModeSelected.includes('Zoom')" style="display: flex; justify-content: center;" @change="onSecondChanged">
               <ElRadioButton v-for="item in secondGroup" :key="item" :value="item" :label="item" />
             </ElRadioGroup>
           </ElCol>
-          <ElCol class="col" :span="3">
+          <ElCol :span="3">
             <ElCheckboxGroup v-model="chartModeSelected" size="small" style="display: flex; justify-content: center;" @change="onChartModeChanged">
               <ElCheckboxButton v-for="item in chartModeGroup" :key="item" :value="item" :label="item" :checked="item in chartModeSelected" />
             </ElCheckboxGroup>
           </ElCol>
-          <ElCol class="col" :span="6">
+          <ElCol :span="6">
             <ElButton size="small" style="float: right;" :disabled="itemTitleOutput==undefined" @click="onCustomizedClick">自</ElButton>
           </ElCol>
         </ElRow>
-        <KLineChart4 class="row" ref="kchart" />
+        <KLineChart4 ref="kchart" />
       </ElCol>
     </ElRow>
   </ContentWrap>
@@ -550,5 +551,10 @@ async function onCustomizedClick() {
 }
 .col {
   outline: 1px solid red;
+}
+.text {
+  width: 100%;
+  height: 100%;
+  border: 1px solid green;
 }
 </style>
