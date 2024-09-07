@@ -9,7 +9,7 @@ import KLinePanel2 from './src/KLinePanel2.vue'
 export { KLineChart, KLineChart2, KLineChart3, KLineChart4, KLinePanel, KLinePanel2 }
 
 export type ReqParam = {
-  type?: number,
+  type: number,
   code: string,
   name?: string,
   start?: string,

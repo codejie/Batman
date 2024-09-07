@@ -5,7 +5,7 @@ import { InfoModel } from '@/api/customized/types';
 import { onMounted, ref } from 'vue';
 import { ElRow, ElCol, ElButton, ElTable, ElTableColumn } from 'element-plus'
 import { useRouter } from 'vue-router';
-import { ShowParam, KLinePanel, ReqParam } from '@/components/KLine';
+import { KLinePanel, ReqParam } from '@/components/KLine';
 import MarginTable from './components/MarginTable.vue';
 
 const { go } = useRouter()
@@ -14,6 +14,10 @@ const { go } = useRouter()
 // const DEFAULT_END = undefined
 
 const props = defineProps({
+  type: {
+    type: String,
+    required: true
+  },
   code: {
     type: String,
     required: true
@@ -29,6 +33,7 @@ const colSpan = ref<any>({
   middle: 17,
   right: 4
 })
+const selectType = ref<number>(parseInt(props.type))
 const selectCode = ref<string>(props.code)
 const customizedList = ref<InfoModel[]>()
 // const historyData = ref<HistoryDataModel[]>([])
@@ -85,15 +90,18 @@ function onTestClick() {
 }
 
 async function onCustomizedClick(row: any) {
+  selectType.value = row.type
   selectCode.value = row.code
   // await fetchHistory(selectCode.value)
   param.value = {
+    type: row.type,
     code: row.code,
     name: row.name
   }
 }
 
 const param = ref<ReqParam>({
+  type: parseInt(props.type),
   code: props.code,
   name: props.name
 })
@@ -138,7 +146,7 @@ const param = ref<ReqParam>({
       </ElCol>
       <ElCol class="middle-col" :span="colSpan.right">
         <ElRow :gutter="24">
-          <MarginTable :code="selectCode" />
+          <MarginTable :type="selectType" :code="selectCode" />
         </ElRow>
       </ElCol>      
     </ElRow>

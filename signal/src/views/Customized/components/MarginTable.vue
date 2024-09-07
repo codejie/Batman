@@ -2,6 +2,10 @@
 import { watch } from 'vue';
 
 const props = defineProps({
+  type: {
+    type: Number,
+    required: true
+  },
   code: {
     type: String,
     required: true

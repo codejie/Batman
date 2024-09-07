@@ -65,7 +65,7 @@ class InfosResponse(ResponseModel):
 @router.post('/infos', response_model=InfosResponse, response_model_exclude_none=True)
 async def infos(body: InfosRequest=Body()):
   uid = 99 # get_uid_by_token()
-  ret: list[InfoModel] = customized.get_list(uid=uid)
+  ret: list[InfoModel] = customized.get_list(uid=uid, type=body.type)
   return InfosResponse(result=ret)
 
 """

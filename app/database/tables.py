@@ -32,3 +32,10 @@ class StockAListTable(TableBase):
 
     code = Column(String, primary_key=True)
     name = Column(String)
+
+class IndexAListTable(TableBase):
+    __tablename__ = TableName.Index_A_List
+
+    code = Column(String, primary_key=True)
+    name = Column(String)
+    market = Column(String)

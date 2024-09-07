@@ -1,8 +1,8 @@
 
 from app.database import TableBase, Column, Integer, String, DateTime, func
-from app.database import dbEngine, Bundle, sql_insert, sql_delete, sql_update, sql_select, and_
+from app.database import dbEngine, Bundle, sql_insert, sql_delete, sql_update, sql_select, and_, case
 from app.database import stock
-from app.database.tables import StockAListTable
+from app.database.tables import IndexAListTable, StockAListTable
 
 class CustomizedRecordTable(TableBase):
   __tablename__ = 'user_customized_record'
@@ -37,18 +37,27 @@ def update_comment(id: int, comment: str = None) -> int:
   return dbEngine.update(stmt=stmt)
 
 def get_list(uid: int, type: int = 1) -> list:
-  stmt = sql_select(CustomizedRecordTable, StockAListTable.name).join(
-      StockAListTable, CustomizedRecordTable.code == StockAListTable.code
-    ).filter(
-      CustomizedRecordTable.uid == uid
-    )
+  # select c.type, c.code, case when c.type=1 then s.name else i.name end as name from user_customized_record c left join stock_a_list s on s.code = c.code left join index_a_list i on i.code = c.code
+  stmt = sql_select(CustomizedRecordTable,
+        case(
+            (CustomizedRecordTable.type == 1, StockAListTable.name),
+            else_=IndexAListTable.name
+          ).label('name')
+        ).select_from(
+          CustomizedRecordTable
+        ).join(StockAListTable, StockAListTable.code == CustomizedRecordTable.code, isouter=True
+        ).join(IndexAListTable, IndexAListTable.code == CustomizedRecordTable.code, isouter=True
+        ).filter(
+          CustomizedRecordTable.uid == uid
+        )  
+
   # stmt = sql_select(StockAListTable.name, CustomizedRecordTable).select_from(CustomizedRecordTable).join(
   #     StockAListTable, CustomizedRecordTable.code == StockAListTable.code
   #   ).filter(
   #     CustomizedRecordTable.uid == uid
   #   )  
   results = dbEngine.select_with_execute(stmt=stmt)
-
+  print(results)
   ret = []
   for row in results:
     ret.append({

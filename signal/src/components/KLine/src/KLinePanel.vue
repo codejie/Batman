@@ -36,8 +36,9 @@ const showParam = ref<ShowParam>({
 })
 const reqParam = ref<ReqParam>()
 
-function updateDataParam(code: string) {
+function updateDataParam(type: number, code: string) {
   reqParam.value = {
+    type: type,
     code: code,
     start: start
   }
@@ -59,7 +60,7 @@ function updateTitle() {
 watch(
   () => props.param,
   () => {
-    updateDataParam(props.param.code)
+    updateDataParam(props.param.type, props.param.code)
     updateTitle()
 })
 
@@ -68,7 +69,7 @@ onMounted(() =>{
   date.setFullYear(date.getFullYear() - 1)
   start = date.toISOString().slice(0, 10)
 
-  updateDataParam(props.param.code)
+  updateDataParam(props.param.type, props.param.code)
   updateTitle()
 })
 
@@ -112,7 +113,7 @@ function onStartChanged() {
       date.setFullYear(date.getFullYear() - 1)
   }
   start = date.toISOString().slice(0, 10)
-  updateDataParam(props.param.code)
+  updateDataParam(props.param.type, props.param.code)
 }
 
 const kc = ref(null)

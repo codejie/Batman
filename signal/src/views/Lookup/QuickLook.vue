@@ -5,13 +5,12 @@ import { ElRow, ElCol, ElButton, ElTable, ElTableColumn, ElDropdown, ElDropdownM
   ElDivider } from 'element-plus'
 import { KLineChart4 } from '@/components/KLine'
 import { onMounted, ref, watch } from 'vue';
-import { apiHistory, apiInfo } from '@/api/data/stock';
-import { HistoryDataModel } from '@/api/data/stock/types';
 import { calcMAData, fitKLineData, fitMACDData, fitMAData, fitVolumeData, KLineChartData,
    KLineData, MACDData, MADataGroup, makeKLineChartData, makeMACDData, makeMADataGroup, VolumeData, XData } from '@/utils/kline';
 import { apiMACD } from '@/api/libs/talib';
 import { formatToDate } from '@/utils/dateUtil';
 import { apiCreate } from '@/api/customized';
+import { apiHistory, apiInfo, HistoryDataModel } from '@/api/data/wrap';
 
 type ItemCode = {
   type: number
@@ -68,7 +67,7 @@ watch(
     clearTimeout(searchTimer)
     searchTimer = setTimeout(async () => {
       await fetchItemCode(inputCode.value!)
-    }, 400)
+    }, 300)
   }
 )
 
@@ -169,9 +168,12 @@ async function fetchItemCode(code: string) {
   itemDataOutput.value = undefined
   itemFetched.value = false
   
-  const ret = await apiInfo({
-    code: code
-  })
+  const ret = await apiInfo(
+    {
+      code: code
+    },
+    (codeType.value == 'Stock' ? 1 : 0)
+)
   if (ret.result) {
     itemFetched.value = true
     itemCode = {
@@ -180,9 +182,12 @@ async function fetchItemCode(code: string) {
       name: ret.result.name
     }
     itemTitleOutput.value = `${itemCode.code}(${itemCode.name}):  `
-    const hret = await apiHistory({
-      code: itemCode.code
-    })
+    const hret = await apiHistory(
+      {
+        code: itemCode.code
+      },
+      (codeType.value == 'Stock' ? 1 : 0)
+    )
     if (hret.result.length > 0) {
       itemDataOutput.value = makeItemDataOutput(hret.result[0])        
     }
@@ -229,10 +234,10 @@ function makeItemDataOutput(data: HistoryDataModel) {
 }
 
 function checkItemContext(item: ItemCode): boolean {
-  if (baseItem && baseItem.item.code == item.code)
+  if (baseItem && (baseItem.item.code == item.code && baseItem.item.type == item.type))
     return true
   for (let i = 0; i < moreItems.length; ++ i) {
-    if (moreItems[i].item.code == item.code)
+    if (moreItems[i].item.code == item.code && moreItems[i].item.type == item.type)
       return true
   }
   return false
@@ -240,10 +245,13 @@ function checkItemContext(item: ItemCode): boolean {
 
 function makeItemContext(item: ItemCode): Promise<ItemContext> {
   return new Promise<ItemContext>((resolve) => {
-    apiHistory({
-      code: item.code,
-      start: k_start
-    }).then(ret => {
+    apiHistory(
+      {
+        code: item.code,
+        start: k_start
+      },
+      item.type
+  ).then(ret => {
       const historyData = ret.result
       const context: ItemContext = {
         item: item,
@@ -409,8 +417,11 @@ function clearChartSeries(key: string, chart) {
   chart.remove(key, true)
 }
 
-function onCodeTypeCommand(cmd: string) {
+async function onCodeTypeCommand(cmd: string) {
   codeType.value = cmd
+  if (!inputCode.value || inputCode.value.length < 6)
+    return
+  await fetchItemCode(inputCode.value)
 }
 
 function onItemAddClick() {

@@ -101,5 +101,5 @@ def update_margin(symbols: DataFrame) -> None:
     if start < end:
         codes = symbols['code'].to_list()
         local.fetch_margin(codes, start, end, 'append')
-        records.set_latest(records.Item.STOCK_DAILY_MARGIN, end, is_update=is_update)    
+        records.set_latest(records.Item.STOCK_DAILY_MARGIN, end, is_update=is_update) 
 

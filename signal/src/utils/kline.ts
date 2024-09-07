@@ -2,7 +2,7 @@
 * K-Line data functions
 */
 
-import { HistoryDataModel } from "@/api/data/stock/types";
+import { HistoryDataModel } from "@/api/data/wrap"
 
 export type XData = string[]
 export type YData = (number | string)[][]

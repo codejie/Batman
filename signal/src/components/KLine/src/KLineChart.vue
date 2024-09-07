@@ -4,8 +4,8 @@ KLine that support fetch data by code
 <script setup lang="ts">
 import { ref, PropType, watch, unref } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
-import { apiHistory } from '@/api/data/stock';
 import { DataParam, ReqParam, ShowParam } from '..';
+import { apiHistory } from '@/api/data/wrap';
 
 const DEFAULT_START: string = '2023-01-01'
 
@@ -15,6 +15,7 @@ const props = defineProps({
     required: false,
     default() {
       return {
+        type: 1,
         code: '000001',
         start: '2023-01-01'
       }
@@ -201,11 +202,12 @@ const options = ref<EChartsOption>({
 watch(
   () => props.reqParam,
   async () => {
+    console.log(`type = ${props.reqParam.type}`)
     const ret = await apiHistory({
       code: props.reqParam.code,
       start: props.reqParam.start || DEFAULT_START,
       end: props.reqParam.end
-    })
+    }, props.reqParam.type)
     originData.value = (ret.result as DataParam)
     updateData(unref(originData))
     updateOptions()

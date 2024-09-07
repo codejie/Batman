@@ -4,7 +4,7 @@ System Data Initialization
 from datetime import datetime
 from app.logger import logger
 
-from app.data.task import stock
+from app.data.task import stock, index
 from app.task_scheduler import taskScheduler
 
 # UPDATE_TASK_RUNNING: bool = False
@@ -12,6 +12,7 @@ from app.task_scheduler import taskScheduler
 def init() -> None:
     logger.info('system data init check, maybe would take a long time..')
     stock.init_check()
+    index.init_check()
     logger.info('system data init check end')
 
 def daily_update_check(**kwargs) -> None:
@@ -27,6 +28,7 @@ def daily_update_check(**kwargs) -> None:
         return
     logger.info('daily update check start..')
     stock.update_daily()
+    index.update_daily()
     logger.info('daily update check end.')
     # UPDATE_TASK_RUNNING = False
 
@@ -38,6 +40,7 @@ def update_task(for_test: bool = False) -> None:
     if for_test:
       logger.info('daily update check start..')
       stock.update_daily()
+      index.update_daily()
       logger.info('daily update check end.')
     else:
     # daily update task

@@ -26,6 +26,9 @@ class Item(Enum):
     STOCK_DAILY_HSGT = 3
     STOCK_DAILY_MARGIN = 4
 
+    INDEX_LIST = 101
+    INDEX_DAILY_HISTORY = 102
+
 def insert(item: Item, latest: datetime, code: str = None) -> bool:
     stmt = sql_insert(ItemUpdatedRecordTable).values(
         item=item.value,
@@ -68,9 +71,9 @@ def get_latest(item: Item, code: str = None) -> datetime | None:
 
 def set_latest(item: Item, latest: datetime, code: str = None, is_update: bool = False) -> int:
     if is_update:
-        update(Item.STOCK_DAILY_HISTORY, latest, code)
+        update(item, latest, code)
     else:
-        insert(Item.STOCK_DAILY_HISTORY, latest, code)
+        insert(item, latest, code)
 
 def get_start_end(item: Item, code: str = None) -> tuple:
     start = HISTORY_START

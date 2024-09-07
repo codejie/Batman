@@ -23,12 +23,3 @@ def get_history(code: str, start: str = None, end: str = None, columns: list[str
      where = f'ORDER BY 日期 DESC LIMIT 1'
   return common.select(table, columns, where)
 
-# def get_history_by_date(code: str, date: str = None, columns: list[str] = None, peroid: str = 'daily', adjust: str = 'qfq') -> DataFrame:
-#   table = tables.TableName.make_stock_history_name(code, peroid, adjust)
-#   where = None
-#   if date:
-#       where = f'WHERE 日期 == "{date} LIMIT 1'
-#   else:
-#      where = f'ORDER BY 日期 DESC LIMIT 1'
-
-#   return common.select(table, columns, where)
