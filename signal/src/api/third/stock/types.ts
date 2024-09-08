@@ -9,5 +9,9 @@ import { DataFrameSetModel } from "@/api/common/types"
 export type NewHighRequest = {
   category: number
 }
-
 export type NewHighResponse = DataFrameSetModel
+
+export type UptrendRequest = {
+  days: number
+}
+export type UptrendResponse = DataFrameSetModel

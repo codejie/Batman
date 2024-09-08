@@ -76,7 +76,7 @@ onMounted(() =>{
 async function onCustomizedClick() {
   const ret = await apiCreate({
     code: props.param.code,
-    type: 1
+    type: props.param.type
   })
   if (ret.code == 0) {
     ElMessage({

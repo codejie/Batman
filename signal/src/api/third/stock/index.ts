@@ -7,3 +7,10 @@ export const apiNewHigh = (data: NewHighRequest): Promise<Response<NewHighRespon
     data
   })
 }
+
+export const apiUptrend = (data: UptrendRequest): Promise<Response<UptrendResponse>> => {
+  return request.post({
+    url: '/data/third/stock/uptrend',
+    data
+  })
+}

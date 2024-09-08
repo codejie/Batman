@@ -20,3 +20,13 @@ def new_high(category: int = 0) -> DataFrame:
   df = akshare.stock_rank_cxg_ths(symbol=symbol)
   return df
   
+"""
+连续上涨
+https://data.10jqka.com.cn/rank/lxsz/
+"""
+def uptrend(days: int = 1) -> DataFrame:
+  df = akshare.stock_rank_lxsz_ths()
+  if days > 1:
+    df = df[df['连涨天数'] >= days]
+  return df
+

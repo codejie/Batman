@@ -38,3 +38,21 @@ async def new_high(body: NewHighRequest=Body()):
     )))
   except Exception as e:
     raise AppException(e)  
+
+class UptrendRequest(RequestModel):
+  days: int = 0
+
+class UptrendResponse(ResponseModel):
+  result: DataFrameSetModel
+
+@router.post('/uptrend', response_model=UptrendResponse, response_model_exclude_none=True)
+async def uptrend(body: UptrendRequest=Body()):
+  try:
+    df = third.uptrend(body.days)
+    result = df.to_dict(orient='tight', index=False)
+    return UptrendResponse(result=(DataFrameSetModel(
+      columns=result['columns'],
+      data=result['data']
+    )))
+  except Exception as e:
+    raise AppException(e) 

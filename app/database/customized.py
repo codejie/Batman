@@ -57,7 +57,6 @@ def get_list(uid: int, type: int = 1) -> list:
   #     CustomizedRecordTable.uid == uid
   #   )  
   results = dbEngine.select_with_execute(stmt=stmt)
-  print(results)
   ret = []
   for row in results:
     ret.append({

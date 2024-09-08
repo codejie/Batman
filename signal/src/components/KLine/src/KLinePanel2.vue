@@ -26,7 +26,7 @@ const props = defineProps({
     required: false,
     default: () => {
       return {
-        maGroup: [5, 10, 20, 60], // [5, 7, 9, 10, 12, 15, 17, 20, 26, 30, 45, 60],
+        maGroup: [5, 10, 20, 30, 45, 60], // [5, 7, 9, 10, 12, 15, 17, 20, 26, 30, 45, 60],
         maLines: [5, 10, 20],
         zoom: false,
         volume: true
@@ -41,7 +41,7 @@ const klineGroup: string[] = ['KLine', 'Zoom']
 let zoom: boolean = props.initParam.zoom // false
 let kline: boolean = true
 
-const startRange = ref<string>()
+const startRange = ref<string>('半年')
 const maLines = ref<number[]>(props.initParam.maLines) // [7, 9, 12])
 const zoom_kline = ref<string[]>(['KLine'])
 const grid2Mode = ref<string>(props.initParam.volume ? 'Volume' : 'MACD')
@@ -181,7 +181,7 @@ onMounted(async () =>{
   if (props.reqParam) {
     if (!props.reqParam!.start) {
       const date: Date = new Date()
-      date.setFullYear(date.getFullYear() - 1)
+      date.setMonth(date.getMonth() - 6)
       props.reqParam!.start = date.toISOString().slice(0, 10)
     }
 
@@ -202,7 +202,7 @@ watch(
 async function onCustomizedClick() {
   const ret = await apiCreate({
     code: props.reqParam.code,
-    type: 1
+    type: props.reqParam.type,
   })
   if (ret.code == 0) {
     ElMessage({
