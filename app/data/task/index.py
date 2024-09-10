@@ -40,9 +40,11 @@ def init_daily_history(symbols: DataFrame, start: datetime, end: datetime) -> No
 
   for i, r in symbols.iterrows():
     code = r['code']
-    local.fetch_history(code, start, end, if_exists='replace')
-    records.insert(records.Item.INDEX_DAILY_HISTORY, end, code)
-
+    try:
+      local.fetch_history(code, start, end, if_exists='replace')
+      records.insert(records.Item.INDEX_DAILY_HISTORY, end, code)
+    except AppException as e:
+      logger.warning(f'init index {code} history fail - {e.message}')
 """
 daily update
 """
@@ -58,5 +60,8 @@ def update_daily_history(symbols: DataFrame) -> None:
     code = r['code']
     start, end, is_update = records.get_start_end(records.Item.INDEX_DAILY_HISTORY, code)
     if start < end:
-      local.fetch_history(code, start, end, if_exists='replace')
-      records.set_latest(records.Item.INDEX_DAILY_HISTORY, end, code, is_update)
+      try:
+        local.fetch_history(code, start, end, if_exists='replace')
+        records.set_latest(records.Item.INDEX_DAILY_HISTORY, end, code, is_update)
+      except AppException as e:
+        logger.warning(f'update {code} history fail - {e.message}')

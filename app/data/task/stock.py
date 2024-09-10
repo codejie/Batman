@@ -57,7 +57,7 @@ def init_hsgt(symbols: DataFrame, start: datetime, end: datetime) -> None:
             local.fetch_hsgt(code, 'replace')
             records.insert(records.Item.STOCK_DAILY_HSGT, end, code)
         except Exception as e:
-            logger.warn(f'stock {code} fetch_hsgt() fail - {e}')
+            logger.warning(f'stock {code} fetch_hsgt() fail - {e}')
 
 def init_margin(symbols: DataFrame, start: datetime, end: datetime) -> None:
     codes = symbols['code'].to_list()
@@ -82,8 +82,11 @@ def update_daily_history(symbols: DataFrame) -> None:
         start, end, is_update = records.get_start_end(records.Item.STOCK_DAILY_HISTORY, code)
         # print(f'{code} - {start} - {end} - {is_update} ------ update daily_history')        
         if start < end:
-            local.fetch_history(code, start, end, if_exists='append')
-            records.set_latest(records.Item.STOCK_DAILY_HISTORY, end, code, is_update)
+            try:
+              local.fetch_history(code, start, end, if_exists='append')
+              records.set_latest(records.Item.STOCK_DAILY_HISTORY, end, code, is_update)
+            except AppException as e:
+              logger.warning(f'update {code} fail - {e.message}')
 
 def update_hsgt(symbols: DataFrame) -> None:
     for i, r in symbols.iterrows():
@@ -94,7 +97,7 @@ def update_hsgt(symbols: DataFrame) -> None:
                 local.fetch_hsgt(code, 'append')
                 records.set_latest(records.Item.STOCK_DAILY_HSGT, end, code, is_update)
         except Exception as e:
-            logger.warn(f'stock {code} fetch_hsgt() fail - {e}')
+            logger.warning(f'stock {code} fetch_hsgt() fail - {e}')
 
 def update_margin(symbols: DataFrame) -> None:
     start, end, is_update = records.get_start_end(records.Item.STOCK_DAILY_MARGIN)

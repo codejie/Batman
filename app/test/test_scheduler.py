@@ -28,6 +28,23 @@ class Test_Scheduler(unittest.TestCase):
     taskScheduler.shutdown()
     print('end')
     self.assertTrue(True)
+
+  def test_daily(self):
+    taskScheduler.start()
+    trigger = {
+      'mode': 'daily',
+      'days': '0-6',
+      'hour': 20,
+      'minute': 28
+    }
+    id = taskScheduler.make_id()
+    taskScheduler.make_job(id=id, trigger=trigger, func=func, args=None)
+    input('press..')
+    taskScheduler.shutdown()
+    print('end')
+    self.assertTrue(True)    
+
+      
     
 if __name__ == '__main__':
     unittest.main()   

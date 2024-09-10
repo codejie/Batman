@@ -22,14 +22,17 @@ def daily_update_check(**kwargs) -> None:
     #    return
     
     # UPDATE_TASK_RUNNING = True
-    now = datetime.now()
-    if (now.hour >= 9 and now.hour < 16) or now.weekday() > 4:
-        logger.info('daily update check process skip..')
-        return
-    logger.info('daily update check start..')
-    stock.update_daily()
-    index.update_daily()
-    logger.info('daily update check end.')
+    try:
+      now = datetime.now()
+      if (now.hour >= 9 and now.hour < 16) or now.weekday() > 4:
+          logger.info('daily update check process skip..')
+          return
+      logger.info('daily update check start..')
+      stock.update_daily()
+      index.update_daily()
+      logger.info('daily update check end.')
+    except Exception as e:
+       logger.info(f'daily update check failed - {str(e)}')
     # UPDATE_TASK_RUNNING = False
 
 def test(**kwargs) -> None:

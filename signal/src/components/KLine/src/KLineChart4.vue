@@ -210,15 +210,41 @@ function addBar(grid: number, name: string, data: number[], legend: boolean = tr
   }  
 }
 
-function remove(name: string, wildcard: boolean = false) {
-  if (!wildcard) {
-    options.value.legend!.data = options.value.legend!.data.filter( item => item != name)
-    options.value.series = options.value.series!.filter( item => item.name != name )
+// function remove(name: string, wildcard: boolean = false) {
+//   if (!wildcard) {
+//     options.value.legend!.data = options.value.legend!.data.filter( item => item != name)
+//     options.value.series = options.value.series!.filter( item => item.name != name )
+//   }
+//   else {
+//     options.value.legend!.data = options.value.legend!.data.filter( item => ! item.includes(name) )
+//     options.value.series = options.value.series!.filter( item => ! item.name.includes(name) )
+//   }
+// }
+
+function remove(name: string, mode: number = 0) {
+  let func // = (item) => item != name
+  let func1
+  switch (mode) {
+    case 1: // wildcard
+      func = item => !item.includes(name)
+      func1 = item => !item.name.includes(name)
+      break
+    case 2: // prefix
+      func = item => !item.startsWith(name)
+      func1 = item => !item.name.startsWith(name)
+      break
+    case 3: // suffix
+      func = item => !item.endsWith(name) // (item.indexOf(name, item.length - name.length) !== -1)
+      func1 = item => !item.name.endsWith(name) // !(item.indexOf(name, item.length - name.length) !== -1)
+      break
+    case 0: // match
+    default:
+      func = (item) => item != name
+      func1 = (item) => item.name != name 
   }
-  else {
-    options.value.legend!.data = options.value.legend!.data.filter( item => ! item.includes(name) )
-    options.value.series = options.value.series!.filter( item => ! item.name.includes(name) )
-  }
+
+  options.value.legend!.data = options.value.legend!.data.filter(func)
+  options.value.series = options.value.series!.filter(func1)
 }
 
 defineExpose({

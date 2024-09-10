@@ -32,7 +32,7 @@ class TriggerMode(Enum):
 
 class Scheduler:
     def __init__(self) -> None:
-        self.scheduler = BackgroundScheduler()
+        self.scheduler = BackgroundScheduler(timezone='Asia/Shanghai')
         self.listListener = []
         self.scheduler.add_listener(callback=self.job_listener, mask=EVENT_JOB_ADDED | EVENT_JOB_REMOVED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR | EVENT_JOB_MISSED)
 

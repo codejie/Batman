@@ -3,6 +3,7 @@ import { ContentWrap } from '@/components/ContentWrap'
 import { ElRow, ElCol, ElButton, ElTable, ElTableColumn, ElDropdown, ElDropdownMenu, 
   ElDropdownItem, ElInput, ElText, ElMessage, ElRadioGroup, ElRadioButton, ElCheckboxGroup, ElCheckboxButton,
   ElDivider } from 'element-plus'
+import { Delete } from '@element-plus/icons-vue'
 import { KLineChart4 } from '@/components/KLine'
 import { onMounted, ref, watch } from 'vue';
 import { calcMAData, fitKLineData, fitMACDData, fitMAData, fitVolumeData, KLineChartData,
@@ -34,6 +35,7 @@ const props = defineProps({
 const kchart = ref(null)
 const codeType = ref<string>('Stock')
 const codeList = ref<ItemCode[]>([{ type: 1, code: '000001', name: 'A'}, { type: 1, code: '000009', name: 'b'}])
+const selectedCodeList = ref<ItemCode[]>([])
 const inputCode = ref<string>()
 const itemFetched = ref<boolean>(false)
 const itemTitleOutput = ref<string>()
@@ -56,6 +58,8 @@ let k_start: string = makeStart()
 let k_zoom: boolean = false
 let k_line: boolean = true
 let k_fit: boolean = false
+
+const codeTable = ref(null)
 
 let searchTimer: NodeJS.Timeout
 watch(
@@ -112,7 +116,6 @@ function addKLine(item: ItemCode, chart, data: KLineData, base: KLineData) {
   const name = item.code + '-K'
   if (k_line) {
     const fitData = k_fit ? fitKLineData(data, base) : data
-    console.log(`fitData = ${fitData}`)
     chart.addKLine(0, name, fitData.data, false, true)
   } else {
     chart.remove(name)
@@ -137,14 +140,14 @@ function addVolume(item: ItemCode, chart, data: VolumeData, base: VolumeData) {
 function setMACD(item: ItemCode, chart, data: MACDData) {
   chart.addLine(1, item.code + '-DIF', data.dif)
   chart.addLine(1, item.code + '-DEA', data.dea)
-  chart.addBar(1, item.code + '-DIFF', data.macd) 
+  chart.addBar(1, item.code + '-MACD', data.macd) 
 }
 
 function addMACD(item: ItemCode, chart, data: MACDData, base: MACDData) {
   const fitData = k_fit ? fitMACDData(data, base) : data
   chart.addLine(1, item.code + '-DIF', fitData.dif)
   chart.addLine(1, item.code + '-DEA', fitData.dea)
-  chart.addBar(1, item.code + '-DIFF', fitData.macd) 
+  chart.addBar(1, item.code + '-MACD', fitData.macd) 
 }
 
 function setMAData(item: ItemCode, chart, data: MADataGroup) {
@@ -156,7 +159,6 @@ function setMAData(item: ItemCode, chart, data: MADataGroup) {
 
 function addMAData(item: ItemCode, chart, data: MADataGroup, base: MADataGroup) {
   for (const key of Object.keys(data)) {
-    console.log(`k_fit = ${k_fit}`)
     const fitData = k_fit ? fitMAData(data[key], base[key]) : data[key]
     const name = item.code + '-MA' + key
     chart.addLine(0, name, fitData.data)
@@ -293,12 +295,14 @@ function makeItemContextMAData(maSelected: number[], context: ItemContext) {
 }
 
 function refreshItemContextMAData() {
-  clearChartSeries('-MA', kchart.value)
+  // clearChartSeries('-MA', kchart.value)
   if (baseItem) {
     makeItemContextMAData(maSelected.value, baseItem)
+    clearChartSeries(baseItem.item.code + '-MA', kchart.value)
     setMAData(baseItem.item, kchart.value, baseItem.chartData.maData!)
     for (let index = 0; index < moreItems.length; ++ index) {
       makeItemContextMAData(maSelected.value, moreItems[index])
+      clearChartSeries(moreItems[index].item + '-MA', kchart.value)
       addMAData(moreItems[index].item, kchart.value, moreItems[index].chartData.maData!, baseItem!.chartData.maData!)
     }
   }
@@ -310,7 +314,7 @@ async function refreshItemContextVolumnData() {
   clearChartSeries('-V', kchart.value)  
   clearChartSeries('-DIF', kchart.value)
   clearChartSeries('-DEA', kchart.value)
-  clearChartSeries('-DIFF', kchart.value)
+  clearChartSeries('-MACD', kchart.value)
 
   if (secondSelected.value == 'Volume') {
     setVolume(baseItem.item, kchart.value, baseItem.chartData.volumeData)
@@ -414,7 +418,7 @@ function clearItemContext(item: ItemCode) {
 }
 
 function clearChartSeries(key: string, chart) {
-  chart.remove(key, true)
+  chart.remove(key, 1)
 }
 
 async function onCodeTypeCommand(cmd: string) {
@@ -424,21 +428,27 @@ async function onCodeTypeCommand(cmd: string) {
   await fetchItemCode(inputCode.value)
 }
 
-function onItemAddClick() {
+async function onItemAddClick() {
   if (itemCode) {
-    if (codeList.value.indexOf(itemCode) == -1) {
-      codeList.value.push(itemCode)
-    } else {
+    if (codeList.value.find(item => (item.type == itemCode?.type && item.code == itemCode?.code))) {
       ElMessage({
         message: `${itemCode.code} has been in list.`,
         type: 'warning',
       })      
+    } else {
+      codeList.value.push(itemCode)
+      codeTable.value?.toggleRowSelection(itemCode, true)
+      selectedCodeList.value.push(itemCode)
+      console.log(selectedCodeList)
+      await createItemContext(itemCode)
+      await drawItemContexts()
     }
   }
 }
 
 async function onCodeListSelected(selected: ItemCode[], row: ItemCode) {
-  const added: boolean = selected.includes(row)
+  selectedCodeList.value = selected
+  const added: boolean = selectedCodeList.value.includes(row)
   if (added) {
     await createItemContext(row) // makeItemContext(row)
     // await drawItemContexts()    
@@ -463,7 +473,6 @@ async function onSecondChanged() {
 }
 
 async function onChartModeChanged() {
-  console.log(`chartmode = ${chartModeSelected.value}`)
   const kline = chartModeSelected.value.includes('KLine')
   if (k_line != kline) {
     k_line = kline
@@ -472,7 +481,6 @@ async function onChartModeChanged() {
   const zoom = chartModeSelected.value.includes('Zoom')
   if (k_zoom != zoom) {
     k_zoom = zoom
-    console.log(`kzoom = ${k_zoom}`)
     await drawItemContexts()
   }
   const fit = chartModeSelected.value.includes('Fit')
@@ -496,6 +504,15 @@ async function onCustomizedClick() {
   }
 }
 
+async function onCodeTableDelete() {
+  selectedCodeList.value.forEach(item => {
+    clearItemContext(item)
+  })
+  codeList.value = codeList.value.filter(item => selectedCodeList.value.indexOf(item))
+  selectedCodeList.value = []
+  await drawItemContexts()
+}
+
 </script>
 <template>
   <ContentWrap title="Lookup">
@@ -510,7 +527,7 @@ async function onCustomizedClick() {
             </ElDropdownMenu>
           </template>
         </ElDropdown>
-        <ElInput v-model="inputCode" size="default" type="string" :clearable="true" style="width: 100px; padding-right: 8px;" maxlength="6" />
+        <ElInput v-model="inputCode" size="default" type="string" :clearable="true" style="width: 120px; padding-right: 8px;" maxlength="6" />
         <ElButton type="primary" size="default" :disabled="!itemFetched" @click="onItemAddClick">+</ElButton>
         <ElText tag="b" size="default" style="padding-left: 16px; text-align: center; height: 100%;" >{{ itemTitleOutput }}  {{ itemDataOutput }}</ElText>
       </ElCol>
@@ -518,11 +535,16 @@ async function onCustomizedClick() {
     <ElDivider border-style="dashed" />    
     <ElRow :gutter="24">
       <ElCol :span="3">
-        <ElTable :data="codeList" size="small" @select="onCodeListSelected" :border="true" max-height="auto">
-          <ElTableColumn type="selection" width="30" />
-          <ElTableColumn prop="code" label="Code" />
-          <ElTableColumn prop="name" label="Name" />
-        </ElTable>
+        <ElRow>
+          <ElTable ref="codeTable" :data="codeList" size="small" @select="onCodeListSelected" :border="true" max-height="auto">
+            <ElTableColumn type="selection" width="30" />
+            <ElTableColumn prop="code" label="Code" />
+            <ElTableColumn prop="name" label="Name" />
+          </ElTable>
+        </ElRow>
+        <ElRow style="padding-top: 8px;">
+          <ElButton size="small" :icon="Delete" :disabled="selectedCodeList.length == 0" @click="onCodeTableDelete" />
+        </ElRow>
       </ElCol>
       <ElCol :span="21">
         <ElRow :gutter="24">
