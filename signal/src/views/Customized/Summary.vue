@@ -30,8 +30,8 @@ const props = defineProps({
 
 const colSpan = ref<any>({
   left: 3,
-  middle: 17,
-  right: 4
+  middle: 21,
+  right: 0
 })
 const selectType = ref<number>(parseInt(props.type))
 const selectCode = ref<string>(props.code)

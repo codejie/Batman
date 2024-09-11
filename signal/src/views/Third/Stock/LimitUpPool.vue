@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { apiUptrend } from '@/api/third/stock';
+import { apiLimitUpPool } from '@/api/third/stock';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
-import { ElText, ElSelect, ElOption, ElTable, ElDialog, ElTableColumn, ElButton } from 'element-plus';
+import { ElTable, ElDialog, ElTableColumn, ElButton, ElDatePicker } from 'element-plus';
 import { onMounted, ref } from 'vue';
 
 type Column = {
   name: string
   width?: number
 }
-const columnWidths = [90, 90, 80, 80, 80, 90, 100, 100]
-const daysOptions = [9, 8, 7, 6, 5, 4, 3, 2, 1]
+const columnWidths = [90, 90, 90, 90, 90, 90, 90, 90, 90, 120, 120, 90, 90, 80]
+// const daysOptions = [7, 6, 5, 4, 3, 2, 1]
 
 const loading = ref<boolean>(false)
 const days = ref<number>(3)
@@ -21,15 +21,13 @@ const reqParam = ref<ReqParam>()
 const dialogTitle = ref<string>()
 
 function fetch(): Promise<void> {
+  loading.value = true
+
   data.value = []
   columns.value = []
 
   return new Promise<void>((resolve) =>{
-    loading.value = true
-
-    apiUptrend({
-      days: days.value
-    }).then((ret) => {
+    apiLimitUpPool({}).then((ret) => {
       const cols = ret.result.columns
       for (let i = 1; i < cols.length; ++ i) {
         columns.value.push({
@@ -42,11 +40,34 @@ function fetch(): Promise<void> {
       items.forEach(item => {
         const d = {}
         for (let i = 0; i < columns.value.length; ++ i) {
+          switch (i) {
+            case 2:
+              item[i+1] = parseFloat(item[i+1]).toFixed(2) + '%'
+              break
+            case 3:
+              item[i+1] = parseFloat(item[i+1]).toFixed(2)
+              break
+            case 4:
+              // item[i+1] = (parseFloat(item[i+1]) / 10000).toFixed(2) + '万'
+              // break
+            case 5:
+            case 6:
+            case 8:
+              item[i+1] = (parseFloat(item[i+1]) / 100000000).toFixed(2) + '亿'
+              break
+            case 7:
+              item[i+1] = (parseFloat(item[i+1])).toFixed(2) + '%'
+              break
+            case 9:
+            case 10:
+              item[i+1] = item[i+1].replace(/(.{2})/g, `$1:`).slice(0, -1)
+              // item[i+1] = item[i+1].replace(new RegExp(`(.{2})`, 'g'), '$1' + ':').slice(0, -1)
+              break
+          }
           d[columns.value[i].name] = item[i+1]
         }
         data.value.push(d)
       })
-
       loading.value = false
       resolve()
     })
@@ -58,28 +79,25 @@ onMounted(async () => {
 })
 
 function onRowClick(row: any) {
-  dialogTitle.value = `${row['股票代码']}(${row['股票简称']})`
+  dialogTitle.value = `${row['代码']}(${row['名称']})`
   reqParam.value = {
-    code: row['股票代码'],
-    name: row['股票简称'],
+    code: row['代码'],
+    name: row['名称'],
     type: 1
   }
   klineDialogVisible.value = true
 }
 
-async function onDaysChanged() {
-  await fetch()
-}
+// async function onDaysChanged() {
+//   await fetch()
+// }
 
 </script>
 <template>
-  <ContentWrap title="连续上涨">
+  <ContentWrap title="涨停股池">
     <div class="title">
-      <ElText tag="b" style="padding-right: 4px;">连续上涨天数大于</ElText>
-      <ElSelect v-model="days" style="width: 60px;" @change="onDaysChanged">
-        <ElOption v-for="i in daysOptions" :key="i" :value="i" :label="i" />
-      </ElSelect>
-      <ElText tag="b" style="padding-left: 4px;">天</ElText>
+      <ElText tag="b" style="padding-right: 4px;">日期</ElText>
+      <ElDatePicker />
     </div>
     <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
       <ElTableColumn type="index" width="60" />

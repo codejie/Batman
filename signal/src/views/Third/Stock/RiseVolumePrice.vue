@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiUptrend } from '@/api/third/stock';
+import { apiRiseVolumePrice } from '@/api/third/stock';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
 import { ElText, ElSelect, ElOption, ElTable, ElDialog, ElTableColumn, ElButton } from 'element-plus';
@@ -9,8 +9,8 @@ type Column = {
   name: string
   width?: number
 }
-const columnWidths = [90, 90, 80, 80, 80, 90, 100, 100]
-const daysOptions = [9, 8, 7, 6, 5, 4, 3, 2, 1]
+const columnWidths = [90, 90, 80, 120, 100, 100]
+const daysOptions = [7, 6, 5, 4, 3, 2, 1]
 
 const loading = ref<boolean>(false)
 const days = ref<number>(3)
@@ -21,13 +21,13 @@ const reqParam = ref<ReqParam>()
 const dialogTitle = ref<string>()
 
 function fetch(): Promise<void> {
+  loading.value = true
+
   data.value = []
   columns.value = []
 
   return new Promise<void>((resolve) =>{
-    loading.value = true
-
-    apiUptrend({
+    apiRiseVolumePrice({
       days: days.value
     }).then((ret) => {
       const cols = ret.result.columns
@@ -46,7 +46,6 @@ function fetch(): Promise<void> {
         }
         data.value.push(d)
       })
-
       loading.value = false
       resolve()
     })
@@ -73,9 +72,9 @@ async function onDaysChanged() {
 
 </script>
 <template>
-  <ContentWrap title="连续上涨">
+  <ContentWrap title="量价齐升">
     <div class="title">
-      <ElText tag="b" style="padding-right: 4px;">连续上涨天数大于</ElText>
+      <ElText tag="b" style="padding-right: 4px;">量价齐升天数大于</ElText>
       <ElSelect v-model="days" style="width: 60px;" @change="onDaysChanged">
         <ElOption v-for="i in daysOptions" :key="i" :value="i" :label="i" />
       </ElSelect>

@@ -34,7 +34,7 @@ const props = defineProps({
 
 const kchart = ref(null)
 const codeType = ref<string>('Stock')
-const codeList = ref<ItemCode[]>([{ type: 1, code: '000001', name: 'A'}, { type: 1, code: '000009', name: 'b'}])
+const codeList = ref<ItemCode[]>([]) //([{ type: 1, code: '000001', name: 'A'}, { type: 1, code: '000009', name: 'b'}])
 const selectedCodeList = ref<ItemCode[]>([])
 const inputCode = ref<string>()
 const itemFetched = ref<boolean>(false)
@@ -48,7 +48,7 @@ const maSelected = ref<number[]>([5])
 const secondGroup: string[] = ['Volume', 'MACD']
 const secondSelected = ref<string>('Volume')
 const chartModeGroup: string[] = ['KLine', 'Zoom', 'Fit']
-const chartModeSelected = ref<string[]>(['KLine'])
+const chartModeSelected = ref<string[]>(['KLine', 'Fit'])
 
 let itemCode: ItemCode | null = null
 let baseItem: ItemContext | null = null
@@ -57,7 +57,7 @@ let moreItems: ItemContext[] = []
 let k_start: string = makeStart()
 let k_zoom: boolean = false
 let k_line: boolean = true
-let k_fit: boolean = false
+let k_fit: boolean = true
 
 const codeTable = ref(null)
 
@@ -405,7 +405,8 @@ function redrawItemContextKLineData() {
 }
 
 function clearItemContext(item: ItemCode) {
-  if (item == baseItem?.item) {
+  if (item.code == baseItem?.item.code && item.type == baseItem?.item.type) {
+    console.log('match')
     if (moreItems.length > 0) {
       baseItem = moreItems[0]
       moreItems = moreItems.slice(1)
@@ -413,7 +414,7 @@ function clearItemContext(item: ItemCode) {
       baseItem = null
     }
   } else {
-    moreItems = moreItems.filter(element => element.item != item)
+    moreItems = moreItems.filter(element => (item.code != element.item.code || item.type != element.item.type))
   }
 }
 
@@ -439,7 +440,7 @@ async function onItemAddClick() {
       codeList.value.push(itemCode)
       codeTable.value?.toggleRowSelection(itemCode, true)
       selectedCodeList.value.push(itemCode)
-      console.log(selectedCodeList)
+
       await createItemContext(itemCode)
       await drawItemContexts()
     }
@@ -447,6 +448,8 @@ async function onItemAddClick() {
 }
 
 async function onCodeListSelected(selected: ItemCode[], row: ItemCode) {
+  console.log(`selected = ${selected}`)
+  console.log(`selectedCodeList = ${selectedCodeList.value}`)
   selectedCodeList.value = selected
   const added: boolean = selectedCodeList.value.includes(row)
   if (added) {
@@ -515,7 +518,7 @@ async function onCodeTableDelete() {
 
 </script>
 <template>
-  <ContentWrap title="Lookup">
+  <ContentWrap title="数据比对">
     <ElRow :gutter="24">
       <ElCol :span="24">
         <ElDropdown trigger="click" style="padding-right: 8px;" @command="onCodeTypeCommand">

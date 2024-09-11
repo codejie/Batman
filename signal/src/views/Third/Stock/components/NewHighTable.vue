@@ -21,6 +21,7 @@ type Column = {
 }
 const columnWidths = [90, 90, 80, 80, 80, 90, 120]
 
+const loading = ref<boolean>(false)
 const data = ref<any[]>([]) // ref<DataFrameSetModel>()
 const columns = ref<Column[]>([])
 
@@ -31,13 +32,16 @@ const klineDialogVisible = ref<boolean>(false)
 //   name: ''
 // })
 const reqParam = ref<ReqParam>()
-
 const dialogTitle = ref<string>()
 
 async function fetchNewHigh() {
+  loading.value = true
+
   const ret = await apiNewHigh({
     category: props.category
   })
+
+  loading.value = false
   //columns.value = ret.result.columns.slice(1)
   const cols = ret.result.columns
   for (let i = 1; i < cols.length; ++ i) {
@@ -77,7 +81,8 @@ onMounted(async () => {
 </script>
 <template>
   <div class="title">{{ name }}</div>
-  <ElTable class="table" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
+  <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
+    <ElTableColumn type="index" width="60" />
     <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
   </ElTable>
   <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%">

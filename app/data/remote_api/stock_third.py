@@ -30,3 +30,31 @@ def uptrend(days: int = 1) -> DataFrame:
     df = df[df['连涨天数'] >= days]
   return df
 
+"""
+持续放量
+https://data.10jqka.com.cn/rank/cxfl/
+"""
+def high_volume(days: int = 1) -> DataFrame:
+  df = akshare.stock_rank_cxfl_ths()
+  if days > 1:
+    df = df[df['放量天数'] >= days]
+  return df
+
+"""
+量价齐升
+https://data.10jqka.com.cn/rank/ljqs/
+"""
+def high_volume(days: int = 1) -> DataFrame:
+  df = akshare.stock_rank_ljqs_ths()
+  if days > 1:
+    df = df[df['量价齐升天数'] >= days]
+  return df
+
+"""
+涨停股池
+https://quote.eastmoney.com/ztb/detail#type=ztgc
+"""
+def limit_up_pool(date: str) -> DataFrame:
+  df = akshare.stock_zt_pool_em(date)
+  return df
+

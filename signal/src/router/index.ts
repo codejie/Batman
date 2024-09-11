@@ -97,6 +97,35 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     ]
   },
   {
+    name: 'lookup',
+    path: '/lookup',
+    component: Layout,
+    meta: {
+      title: '速查',
+      icon: 'carbon:carbon-ui-builder'      
+    },
+    children: [
+      {
+        path: 'draw',
+        name: 'draw',
+        component: getParentLayout(),
+        meta: {
+          title: '速查'
+        },
+        children: [
+          {
+            path: 'quick-look',
+            name: 'quick-look',
+            component: () => import('@/views/Lookup/QuickLook.vue'),
+            meta: {
+              title: '数据比对'
+            }
+          }
+        ]
+      }
+    ]
+  },  
+  {
     name: 'data',
     path: '/data',
     component: Layout,
@@ -128,36 +157,31 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
             meta: {
               title: '连续上涨'
             }
-          }          
-        ]
-      }
-    ]
-  },  
-  {
-    name: 'lookup',
-    path: '/lookup',
-    component: Layout,
-    meta: {
-      title: '速查',
-      icon: 'carbon:carbon-ui-builder'      
-    },
-    children: [
-      {
-        path: 'draw',
-        name: 'draw',
-        component: getParentLayout(),
-        meta: {
-          title: '速查'
-        },
-        children: [
+          },
           {
-            path: 'quick-look',
-            name: 'quick-look',
-            component: () => import('@/views/Lookup/QuickLook.vue'),
+            path: 'high_volume',
+            name: 'high_volume',
+            component: () => import('@/views/Third/Stock/HighVolume.vue'),
             meta: {
-              title: '数据线图'
+              title: '持续放量'
             }
-          }
+          },
+          {
+            path: 'rise_volume_price',
+            name: 'rise_volume_price',
+            component: () => import('@/views/Third/Stock/RiseVolumePrice.vue'),
+            meta: {
+              title: '量价齐升'
+            }
+          },
+          {
+            path: 'limit_up_pool',
+            name: 'limit_up_pool',
+            component: () => import('@/views/Third/Stock/LimitUpPool.vue'),
+            meta: {
+              title: '涨停股池'
+            }
+          }          
         ]
       }
     ]

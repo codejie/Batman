@@ -47,3 +47,21 @@ def timedelta2String(delta: timedelta) -> str:
     if delta is None:
         return ''
     return str(delta)
+
+import datetime
+
+def find_last_non_weekend_date(date=None):
+    """
+    找到最近一个非周末的日期
+
+    Args:
+        date (datetime.date, optional): 日期. Defaults to None.
+
+    Returns:
+        datetime.date: 最近一个非周末的日期
+    """
+    if date is None:
+        date = datetime.date.today()
+    while date.weekday() >= 5:  # 5代表星期六，6代表星期日
+        date -= datetime.timedelta(days=1)
+    return date

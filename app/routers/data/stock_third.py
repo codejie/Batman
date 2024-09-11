@@ -1,11 +1,11 @@
 """
 股票三方数据接口
 """
-from datetime import datetime, date
 from app.exception import AppException
 from app.routers.definition import BaseModel, RequestModel, ResponseModel, APIRouter, Depends, Body, verify_token
 from app.data.remote_api import stock_third as third
 from app.routers.common_model import DataFrameSetModel
+from app.utils import utils
 
 router: APIRouter = APIRouter(prefix='/data/third/stock', tags=['data', 'stock', 'third'], dependencies=[Depends(verify_token)])
 
@@ -39,6 +39,9 @@ async def new_high(body: NewHighRequest=Body()):
   except Exception as e:
     raise AppException(e)  
 
+"""
+连续上涨
+"""
 class UptrendRequest(RequestModel):
   days: int = 0
 
@@ -56,3 +59,70 @@ async def uptrend(body: UptrendRequest=Body()):
     )))
   except Exception as e:
     raise AppException(e) 
+  
+"""
+持续放量
+"""
+class HighVolumeRequest(RequestModel):
+  days: int = 0
+
+class HighVolumeResponse(ResponseModel):
+  result: DataFrameSetModel
+
+@router.post('/high_volume', response_model=HighVolumeResponse, response_model_exclude_none=True)
+async def high_volume(body: HighVolumeRequest=Body()):
+  try:
+    df = third.high_volume(body.days)
+    result = df.to_dict(orient='tight', index=False)
+    return HighVolumeResponse(result=(DataFrameSetModel(
+      columns=result['columns'],
+      data=result['data']
+    )))
+  except Exception as e:
+    raise AppException(e)
+  
+"""
+量价齐升
+"""
+class RiseVolumePriceRequest(RequestModel):
+  days: int = 0
+
+class RiseVolumePriceResponse(ResponseModel):
+  result: DataFrameSetModel
+
+@router.post('/rise_volume_price', response_model=RiseVolumePriceResponse, response_model_exclude_none=True)
+async def rise_volume_price(body: RiseVolumePriceRequest=Body()):
+  try:
+    df = third.high_volume(body.days)
+    result = df.to_dict(orient='tight', index=False)
+    return RiseVolumePriceResponse(result=(DataFrameSetModel(
+      columns=result['columns'],
+      data=result['data']
+    )))
+  except Exception as e:
+    raise AppException(e)
+  
+"""
+涨停股池
+"""
+class LimitUpPoolRequest(RequestModel):
+  date: str = None
+
+class LimitUpPoolResponse(ResponseModel):
+  result: DataFrameSetModel
+
+@router.post('/limit_up_pool', response_model=LimitUpPoolResponse, response_model_exclude_none=True)
+async def rise_volume_price(body: LimitUpPoolRequest=Body()):
+  try:
+    date = body.date if body.date else utils.date2String1(utils.find_last_non_weekend_date())
+    print(date)
+    df = third.limit_up_pool(date)
+    print(df)
+    result = df.to_dict(orient='tight', index=False)
+    print(result)
+    return LimitUpPoolResponse(result=(DataFrameSetModel(
+      columns=result['columns'],
+      data=result['data']
+    )))
+  except Exception as e:
+    raise AppException(e)  
