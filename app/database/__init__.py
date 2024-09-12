@@ -4,7 +4,7 @@ SQLAlchemy数据访问引擎
 
 from sqlalchemy import create_engine, Engine, case
 from sqlalchemy import insert as sql_insert, select as sql_select, delete as sql_delete, update as sql_update, and_, or_
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Float
 from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase, Session, Bundle
 

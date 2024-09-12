@@ -5,7 +5,7 @@ import { ElRow, ElCol } from 'element-plus';
 </script>
 <template>
   <ContentWrap title="创新高">
-    <ElRow :utter="24">
+    <ElRow :gutter="24">
       <ElCol :span="12">
         <ElRow>
           <NewHighTable name="历史新高" :category="3" />

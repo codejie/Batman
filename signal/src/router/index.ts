@@ -231,6 +231,33 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     ]
   },
   {
+    name: 'holding',
+    path: '/holding',
+    component: Layout,
+    meta: {
+      title: '持仓',
+      icon: 'carbon:currency-yen'      
+    },
+    children: [
+      {
+        path: 'holding-list',
+        name: 'holding-list',
+        component: () => import('@/views/Holding/HoldingList.vue'),
+        meta: {
+          title: '持仓列表'
+        }
+      },
+      {
+        path: 'trade-records',
+        name: 'trade-records',
+        component: () => import('@/views/Holding/TradeRecords.vue'),
+        meta: {
+          title: '交易记录'
+        }
+      }
+    ]
+  },  
+  {
     path: '/test',
     component: Layout,
     name: 'Test',

@@ -26,5 +26,7 @@ export type RiseVolumePriceRequest = {
 }
 export type RiseVolumePriceResponse = DataFrameSetModel
 
-export type LimitUpPoolRequest = {}
+export type LimitUpPoolRequest = {
+  date: string
+}
 export type LimitUpPoolResponse = DataFrameSetModel

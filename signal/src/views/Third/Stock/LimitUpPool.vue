@@ -2,7 +2,8 @@
 import { apiLimitUpPool } from '@/api/third/stock';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
-import { ElTable, ElDialog, ElTableColumn, ElButton, ElDatePicker } from 'element-plus';
+import { formatToDate } from '@/utils/dateUtil';
+import { ElTable, ElDialog, ElTableColumn, ElButton, ElDatePicker, ElText } from 'element-plus';
 import { onMounted, ref } from 'vue';
 
 type Column = {
@@ -13,12 +14,16 @@ const columnWidths = [90, 90, 90, 90, 90, 90, 90, 90, 90, 120, 120, 90, 90, 80]
 // const daysOptions = [7, 6, 5, 4, 3, 2, 1]
 
 const loading = ref<boolean>(false)
-const days = ref<number>(3)
+const dateValue = ref<string>(getToday())
 const columns = ref<Column[]>([])
 const data = ref<any[]>([])
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<ReqParam>()
 const dialogTitle = ref<string>()
+
+function getToday() {
+  return formatToDate(new Date(), 'YYYYMMDD')
+}
 
 function fetch(): Promise<void> {
   loading.value = true
@@ -27,7 +32,14 @@ function fetch(): Promise<void> {
   columns.value = []
 
   return new Promise<void>((resolve) =>{
-    apiLimitUpPool({}).then((ret) => {
+    apiLimitUpPool({
+      date: dateValue.value
+    }).then((ret) => {
+      if (ret == undefined) {
+        loading.value = false
+        return resolve()
+      }
+
       const cols = ret.result.columns
       for (let i = 1; i < cols.length; ++ i) {
         columns.value.push({
@@ -88,16 +100,32 @@ function onRowClick(row: any) {
   klineDialogVisible.value = true
 }
 
-// async function onDaysChanged() {
-//   await fetch()
-// }
+function isworkday(date) {
+  const today = new Date()
+
+  if (date.date > today || date.date < today.setDate(today.getDate() - 20))
+    return 'text'
+  return date.date.getDay() == 0 || date.date.getDay() == 6 ? 'text': 'workday'
+}
+
+async function onDateChanged(value) {
+  if (value > getToday())
+    dateValue.value = getToday()
+  await fetch()
+}
 
 </script>
 <template>
   <ContentWrap title="涨停股池">
     <div class="title">
-      <ElText tag="b" style="padding-right: 4px;">日期</ElText>
-      <ElDatePicker />
+      <ElText tag="b" style="padding-right: 8px;">日期</ElText>
+      <ElDatePicker v-model="dateValue" type="date" format="YYYY-MM-DD" value-format="YYYYMMDD" @change="onDateChanged" >
+        <template #default="cell">
+          <div class="cell" :class="{ current: cell.isCurrent }">
+            <span :class="isworkday(cell)">{{ cell.text }}</span>
+        </div>
+        </template>
+      </ElDatePicker>
     </div>
     <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
       <ElTableColumn type="index" width="60" />
@@ -114,6 +142,48 @@ function onRowClick(row: any) {
 <style lang="css">
 .title {
   padding: 14px;
+}
+
+.cell {
+  height: 30px;
+  padding: 3px 0;
+  box-sizing: border-box;
+}
+
+.cell .text {
+  width: 24px;
+  height: 24px;
+  display: block;
+  margin: 0 auto;
+  line-height: 24px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+}
+
+.cell.current .text {
+  background: #626aef;
+  color: #fff;
+}
+
+.cell .workday {
+  width: 24px;
+  height: 24px;
+  display: block;
+  margin: 0 auto;
+  line-height: 24px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;  
+  color: black;
+  font-weight: bold;
+}
+
+.cell.current .workday {
+  background: #626aef;
+  color: #fff;
 }
 </style>
 

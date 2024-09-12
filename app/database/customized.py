@@ -1,7 +1,6 @@
 
 from app.database import TableBase, Column, Integer, String, DateTime, func
-from app.database import dbEngine, Bundle, sql_insert, sql_delete, sql_update, sql_select, and_, case
-from app.database import stock
+from app.database import dbEngine, sql_insert, sql_delete, sql_update, sql_select, and_, case
 from app.database.tables import IndexAListTable, StockAListTable
 
 class CustomizedRecordTable(TableBase):

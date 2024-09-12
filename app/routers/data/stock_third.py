@@ -115,11 +115,8 @@ class LimitUpPoolResponse(ResponseModel):
 async def rise_volume_price(body: LimitUpPoolRequest=Body()):
   try:
     date = body.date if body.date else utils.date2String1(utils.find_last_non_weekend_date())
-    print(date)
     df = third.limit_up_pool(date)
-    print(df)
     result = df.to_dict(orient='tight', index=False)
-    print(result)
     return LimitUpPoolResponse(result=(DataFrameSetModel(
       columns=result['columns'],
       data=result['data']

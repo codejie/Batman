@@ -147,7 +147,7 @@ const originData = computed(() => unref(kc)?.originData.reverse())
   <ElRow :gutter="24" style="margin-top: 12px;">
     <KLineChart ref="kc" :reqParam="reqParam" :showParam="showParam" />
   </ElRow>
-  <ElRow v-if="showTable" :utter="24">
+  <ElRow v-if="showTable" :gutter="24">
     <ElTable :data="originData" :stripe="true" :border="true" max-height="300" style="width: 100%;">
       <ElTableColumn prop="date" label="日期" width="120" />            
       <ElTableColumn prop="price" label="现价" width="100" />
