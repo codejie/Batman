@@ -1,6 +1,6 @@
 from datetime import datetime
 from app.routers.definition import BaseModel, RequestModel, ResponseModel, APIRouter, Body, Depends, verify_token
-from app.database import customized, stock
+from app.database import customized
 
 router: APIRouter = APIRouter(prefix='/customized', tags=['customized'], dependencies=[Depends(verify_token)])
 

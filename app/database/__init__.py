@@ -32,9 +32,12 @@ class DBEngine:
     def insert(self, stmt: object) -> bool:
         try:
             with Session(self.engine) as session:
-                session.execute(stmt)
+                result = session.execute(stmt)
                 session.commit()
-                return True
+                # if result.returns_rows:
+                return result.inserted_primary_key[0]
+                # else:
+                #     return result.lastrowid
         except Exception as e:
             raise AppException(e)
         

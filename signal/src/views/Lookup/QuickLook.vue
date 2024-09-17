@@ -532,7 +532,7 @@ async function onCodeTableDelete() {
         </ElDropdown>
         <ElInput v-model="inputCode" size="default" type="string" :clearable="true" style="width: 120px; padding-right: 8px;" maxlength="6" />
         <ElButton type="primary" size="default" :disabled="!itemFetched" @click="onItemAddClick">+</ElButton>
-        <ElText tag="b" size="default" style="padding-left: 16px; text-align: center; height: 100%;" >{{ itemTitleOutput }}  {{ itemDataOutput }}</ElText>
+        <ElText tag="b" size="default" style="padding-left: 16px; text-align: center; height: 100%;">{{ itemTitleOutput }}  {{ itemDataOutput }}</ElText>
       </ElCol>
     </ElRow>
     <ElDivider border-style="dashed" />    

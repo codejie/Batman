@@ -11,7 +11,7 @@ class AccountTable(TableBase):
   comment = Column(String, nullable=True)
   updated = Column(DateTime(), server_default=func.now(), onupdate=func.current_timestamp())
 
-def insert(account: str, passwd: str, name: str, avatar: str = None, comment: str = None) -> bool:
+def insert(account: str, passwd: str, name: str, avatar: str = None, comment: str = None) -> int:
   stmt = sql_insert(AccountTable).values(
     account=account,
     passwd=passwd,

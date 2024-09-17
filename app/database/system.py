@@ -9,5 +9,5 @@ class SystemInfosTable(TableBase):
   version = Column(String)
   updated = Column(DateTime(timezone=True), server_default=func.now())
 
-def insert_info() -> bool:
+def insert_info() -> int:
     return dbEngine.insert(sql_insert(SystemInfosTable).values(version='0.2'))

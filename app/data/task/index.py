@@ -51,6 +51,7 @@ daily update
 def update_daily() -> None:
   try:
     symbols = get_list()
+    logger.info('index update daily history...')
     update_daily_history(symbols=symbols)
   except Exception as e:
     raise AppException(e)

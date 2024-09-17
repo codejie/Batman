@@ -70,8 +70,11 @@ daily update
 def update_daily() -> None:
     try:
         symbols = get_list()
+        logger.info('stock update daily history...')
         update_daily_history(symbols=symbols)
+        logger.info('stock update daily hsgt...')
         update_hsgt(symbols=symbols)
+        logger.info('stock update daily margin...')
         update_margin(symbols=symbols)
     except Exception as e:
         raise AppException(e)

@@ -1,31 +1,131 @@
+from sqlalchemy import Index, ForeignKey, literal
 from app.database import TableBase, Column, Integer, Float, String, DateTime, func
+from app.database import dbEngine, sql_insert, sql_delete, sql_update, sql_select, and_, case
 
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+TRADE_ACTION_BUY: int = 0
+TRADE_ACTION_SELL: int = 1
+HOLDING_FLAG_NORMAL: int = 0
+HOLDING_FLAG_REMOVED: int = 1
 
 class HoldingListTable(TableBase):
   __tablename__ = 'user_holding_list'
 
-  id = Column(Integer, autoincrement=True, primary_key=True)
+  # id = Column(Integer, autoincrement='auto', primary_key=True)
+  id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True)
   uid = Column(Integer, nullable=False, default=99)
   type = Column(Integer, default=1)
   code = Column(String, nullable=False)
-  quantity = Column(Integer, nullable=False)
-  buying = Column(Float, nullable=False)
-  cost = Column(Float, nullable=False)
-  comment = Column(String, nullable=True)
+  # quantity = Column(Integer, nullable=False)
+  # buying = Column(Float, nullable=False) # 买入价
+  # cost = Column(Float, nullable=False) # 成本价
+  # comment = Column(String, nullable=True)
   created = Column(DateTime(timezone=True), server_default=func.now())
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.current_timestamp())
+  flag = Column(Integer, nullable=False, default=HOLDING_FLAG_NORMAL) # 0: normal, 1: removed
 
-class TradeRecordsTable(TableBase):
-  __tablename__ = 'user_trade_records'
+  __table_args__ = (
+    Index('type_code_index', 'type', 'code', unique=True),
+  # UniqueConstraint("type", "code", name="type_code_index")    
+  )
 
-  id = Column(Integer, autoincrement=True, primary_key=True)
-  uid = Column(Integer, nullable=False, default=99)
+
+class TradeRecordTable(TableBase):
+  __tablename__ = 'user_trade_record'
+
+  id = Column(Integer, autoincrement='auto', primary_key=True)
+  # uid = Column(Integer, nullable=False, default=99)
+  holding = Column(Integer, ForeignKey(HoldingListTable.id), nullable=False)
   action = Column(Integer, nullable=False)
-  type = Column(Integer, default=1)
-  code = Column(String, nullable=False)
+  # type = Column(Integer, default=1)
+  # code = Column(String, nullable=False)
   quantity = Column(Integer, nullable=False)
-  buying = Column(Float, nullable=False)
-  selling = Column(Float, nullable=False)
-  cost = Column(Float, nullable=False)
+  # buying = Column(Float, nullable=False)
+  # selling = Column(Float, nullable=False)
+  deal = Column(Float, nullable=False) # 成交价
+  cost = Column(Float, nullable=False) # 总费用
   comment = Column(String, nullable=True)
   created = Column(DateTime(timezone=True), server_default=func.now())
+
+
+def insert(uid: int, type: int, code: str, quantity: int, deal: float, cost: float, comment: str = None) -> int:
+  # stmt = sql_insert(HoldingListTable).values(
+  #   uid=uid,
+  #   type=type,
+  #   code=code
+  # )
+  stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code)
+  stmt = stmt.on_conflict_do_update(
+    index_elements=[HoldingListTable.type, HoldingListTable.code],
+    set_=dict(updated=func.now(), flag=HOLDING_FLAG_NORMAL)).return_defaults(HoldingListTable.id)
+  print(stmt)
+  id = dbEngine.insert(stmt=stmt)
+  stmt = sql_insert(TradeRecordTable).values(
+    holding=id,
+    action=TRADE_ACTION_BUY,
+    quantity=quantity,
+    deal=deal,
+    cost=cost,
+    comment=comment
+  )
+  id = dbEngine.insert(stmt=stmt)
+  return id
+
+def update(uid: int, type: int, code: str, action: int, quantity: int, deal: float, cost: float, comment: str = None) -> int:
+  # stmt = sql_insert(TradeRecordTable).from_select(
+  #   [TradeRecordTable.holding, TradeRecordTable.action, TradeRecordTable.quantity,
+  #    TradeRecordTable.deal, TradeRecordTable.cost, TradeRecordTable.comment],
+  #    select(
+  #      HoldingListTable.id,
+  #      bindparam(TradeRecordTable.action, action),
+  #      bindparam('quantity', quantity),
+  #      bindparam('deal', deal),
+  #      bindparam('code', cost),
+  #      bindparam('comment', comment)
+  #     ).filter(
+  #      HoldingListTable.type == type, HoldingListTable.code == code
+  #    )
+  # )
+  stmt = sql_insert(TradeRecordTable).from_select(
+    names=[
+      TradeRecordTable.holding,
+      TradeRecordTable.action,
+      TradeRecordTable.quantity,
+     TradeRecordTable.deal,
+     TradeRecordTable.cost,
+     TradeRecordTable.comment
+     ],
+     select=sql_select(
+       HoldingListTable.id,
+       action,
+       quantity,
+       deal,
+       cost,
+       literal(comment)
+      ).filter(
+       HoldingListTable.type == type, HoldingListTable.code == code
+     )
+  )
+  return dbEngine.update(stmt=stmt)
+
+def remove(uid: int, id: int) -> int:
+  stmt = sql_update(HoldingListTable).values(
+      flag=HOLDING_FLAG_REMOVED
+    ).where(
+      HoldingListTable.uid == uid and HoldingListTable.id == id
+    )
+  return dbEngine.update(stmt=stmt)
+
+def test(uid: int, type: int, code: str, quantity: int, deal: float, cost: float, comment: str = None) -> int:
+  stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code)
+  stmt = stmt.on_conflict_do_update(
+    index_elements=[HoldingListTable.type, HoldingListTable.code],
+    set_=dict(updated=func.now(), flag=1))
+  return dbEngine.insert(stmt=stmt)
+
+def get_holding(uid: int, type: int = None, code: str = None, with_removed: bool = False) -> list:
+  pass
+
+def get_record(uid: int, id: int = None, with_removed: bool = False) -> list:
+  pass

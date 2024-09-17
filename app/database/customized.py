@@ -13,7 +13,7 @@ class CustomizedRecordTable(TableBase):
   comment = Column(String, nullable=True)
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.current_timestamp())
 
-def insert(uid:int, code: str, type: int = 1, comment: str = None) -> bool:
+def insert(uid:int, code: str, type: int = 1, comment: str = None) -> int:
   stmt = sql_insert(CustomizedRecordTable).values(
     uid=uid,
     type=type,
