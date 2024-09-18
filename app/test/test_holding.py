@@ -9,7 +9,7 @@ class Test_Holding(unittest.TestCase):
     result = holding.insert(
       uid=99,
       type=1,
-      code='000005',
+      code='000001',
       quantity=100,
       deal=1.1,
       cost=120.2,
@@ -50,3 +50,27 @@ class Test_Holding(unittest.TestCase):
     print(result)
     dbEngine.shutdown()
     self.assertTrue(True)
+
+  def test_get_holding(self):
+    dbEngine.start()
+
+    result = holding.get_holding(
+      uid=99,
+      with_removed=True
+    )
+    print(result)
+    dbEngine.shutdown()
+    self.assertTrue(True)
+
+  def test_get_record(self):
+    dbEngine.start()
+
+    result = holding.get_record(
+      uid=99,
+      holding=1,
+      action=0,
+      with_removed=False
+    )
+    print(result)
+    dbEngine.shutdown()
+    self.assertTrue(True)    

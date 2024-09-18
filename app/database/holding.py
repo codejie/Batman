@@ -4,6 +4,8 @@ from app.database import dbEngine, sql_insert, sql_delete, sql_update, sql_selec
 
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
+from app.database.tables import IndexAListTable, StockAListTable
+
 TRADE_ACTION_BUY: int = 0
 TRADE_ACTION_SELL: int = 1
 HOLDING_FLAG_NORMAL: int = 0
@@ -125,7 +127,76 @@ def test(uid: int, type: int, code: str, quantity: int, deal: float, cost: float
   return dbEngine.insert(stmt=stmt)
 
 def get_holding(uid: int, type: int = None, code: str = None, with_removed: bool = False) -> list:
-  pass
+  stmt = sql_select(HoldingListTable,
+        case(
+            (HoldingListTable.type == 1, StockAListTable.name),
+            else_=IndexAListTable.name
+          ).label('name')
+        ).select_from(
+          HoldingListTable
+        ).join(StockAListTable, StockAListTable.code == HoldingListTable.code, isouter=True
+        ).join(IndexAListTable, IndexAListTable.code == HoldingListTable.code, isouter=True
+        ).filter(
+          HoldingListTable.uid == uid
+        )
+  if (type is not None) and (code is not None):
+    stmt = stmt.where(HoldingListTable.type == type, HoldingListTable.code == code)
+  elif type is not None:
+    stmt = stmt.where(HoldingListTable.type == type)
+  elif code is not None:
+    stmt = stmt.where(HoldingListTable.code == code)
+  if not with_removed:
+    stmt = stmt.where(HoldingListTable.flag == HOLDING_FLAG_NORMAL)
 
-def get_record(uid: int, id: int = None, with_removed: bool = False) -> list:
-  pass
+  # stmt = sql_select(HoldingListTable).where(HoldingListTable.uid == uid)
+  # if (type is not None) and (code is not None):
+  #   stmt = stmt.where(HoldingListTable.type == type, HoldingListTable.code == code)
+  # elif type is not None:
+  #   stmt = stmt.where(HoldingListTable.type == type)
+  # elif code is not None:
+  #   stmt = stmt.where(HoldingListTable.code == code)
+  # if not with_removed:
+  #   stmt = stmt.where(HoldingListTable.flag == HOLDING_FLAG_NORMAL)
+
+  results = dbEngine.select_with_execute(stmt)
+  ret = []
+  for r in results:
+    ret.append({
+      'id': r[0].id,
+      'name': r[1],
+      'type': r[0].type,
+      'code': r[0].code,
+      'created': r[0].created,
+      'updated': r[0].updated,
+      'flag': r[0].flag
+    })
+
+  return ret
+
+def get_record(uid: int, holding: int = None, action: int = None, with_removed: bool = False) -> list:
+  stmt = sql_select(
+    TradeRecordTable
+  ).join(HoldingListTable, TradeRecordTable.holding == HoldingListTable.id
+  ).filter(HoldingListTable.uid == uid)
+
+  if holding is not None:
+    stmt = stmt.where(TradeRecordTable.holding == holding)
+  if action is not None:
+    stmt = stmt.where(TradeRecordTable.action == action)
+  if not with_removed:
+    stmt = stmt.where(HoldingListTable.flag == HOLDING_FLAG_NORMAL)
+
+  results = dbEngine.select_with_execute(stmt)
+  ret = []
+  for r in results:
+    ret.append({
+      'id': r[0].id,
+      'holding': r[0].holding,
+      'action': r[0].action,
+      'quantity': r[0].quantity,
+      'deal': r[0].deal,
+      'cost': r[0].cost,
+      'comment': r[0].comment,
+      'created': r[0].created,
+    })  
+  return ret
