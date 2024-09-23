@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue';
 import { ElRow, ElText } from 'element-plus';
-import Table, { ColumnOpt, ActionOpt} from './components/Table.vue'
+import HoldingTable, { ColumnOpt, ActionOpt} from './components/HoldingTable.vue'
 import { ref } from 'vue';
 
 // type ColumnOpt = {
@@ -31,17 +31,22 @@ const columns: ColumnOpt[] = [
     width: 90
   },
   {
+    name: 'price',
+    label: '现价',
+    width: 90
+  },  
+  {
     name: 'cost',
     label: '成本',
     width: 90
   },
   {
-    name: 'price',
-    label: '现价',
-    width: 90
-  },
-  {
     name: 'value',
+    label: '市值', // total price + cost
+    width: 120
+  },  
+  {
+    name: 'gain',
     label: '盈亏', // value + rate
     width: 120
   },
@@ -96,10 +101,14 @@ function onDelete(row: any) {
   console.log(row)
 }
 
-const data = ref<any[]>([{
-  code: '000001',
-  extend: 100 // id
-}])
+const data = ref<any[]>([
+  {
+    type: 1,
+    code: '000001',
+    name: 'aaa',
+    quantity: 100
+  }
+])
 
 </script>
 <template>
@@ -109,7 +118,7 @@ const data = ref<any[]>([{
       Summary
     </ElRow>
     <ElRow :gutter="24">
-      <Table :data="data" :columns="columns" :actions="actions" />
+      <HoldingTable :data="data" :columns="columns" :actions="actions" />
     </ElRow>
   </ContentWrap>
 </template>

@@ -74,7 +74,7 @@ def insert(uid: int, type: int, code: str, quantity: int, deal: float, cost: flo
   id = dbEngine.insert(stmt=stmt)
   return id
 
-def update(uid: int, type: int, code: str, action: int, quantity: int, deal: float, cost: float, comment: str = None) -> int:
+def update(uid: int, action: int, type: int, code: str, quantity: int, deal: float, cost: float, comment: str = None) -> int:
   # stmt = sql_insert(TradeRecordTable).from_select(
   #   [TradeRecordTable.holding, TradeRecordTable.action, TradeRecordTable.quantity,
   #    TradeRecordTable.deal, TradeRecordTable.cost, TradeRecordTable.comment],
@@ -106,7 +106,9 @@ def update(uid: int, type: int, code: str, action: int, quantity: int, deal: flo
        cost,
        literal(comment)
       ).filter(
-       HoldingListTable.type == type, HoldingListTable.code == code
+       HoldingListTable.uid == uid,
+       HoldingListTable.type == type,
+       HoldingListTable.code == code
      )
   )
   return dbEngine.update(stmt=stmt)

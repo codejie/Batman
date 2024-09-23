@@ -247,6 +247,7 @@ function checkItemContext(item: ItemCode): boolean {
 
 function makeItemContext(item: ItemCode): Promise<ItemContext> {
   return new Promise<ItemContext>((resolve) => {
+    console.log(k_start)
     apiHistory(
       {
         code: item.code,
@@ -448,8 +449,6 @@ async function onItemAddClick() {
 }
 
 async function onCodeListSelected(selected: ItemCode[], row: ItemCode) {
-  console.log(`selected = ${selected}`)
-  console.log(`selectedCodeList = ${selectedCodeList.value}`)
   selectedCodeList.value = selected
   const added: boolean = selectedCodeList.value.includes(row)
   if (added) {

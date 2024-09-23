@@ -24,11 +24,11 @@ def daily_update_check(**kwargs) -> None:
     # UPDATE_TASK_RUNNING = True
     try:
       now = datetime.now()
-      if (now.hour >= 9 and now.hour < 16): #  or now.weekday() > 4:
-          logger.info('daily update check process skip..')
-          return
+      # if (now.hour >= 9 and now.hour < 16): #  or now.weekday() > 4:
+      #     logger.info('daily update check process skip..')
+      #     return
       logger.info('daily update check start..')
-      # stock.update_daily()
+      stock.update_daily()
       index.update_daily()
       logger.info('daily update check end.')
     except Exception as e:
@@ -51,9 +51,9 @@ def update_task(for_test: bool = False) -> None:
           # 'mode': 'interval',
           # 'seconds': 3600 * 4
         'mode': 'daily',
-        'days': '0-5',
-        'hour': 1,
-        'minute': 29         
+        'days': '0-6',
+        'hour': 6,
+        'minute': 22
       }
       id = taskScheduler.make_id()
       taskScheduler.make_job(id=id, trigger=trigger, func=daily_update_check, args=None)

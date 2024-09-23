@@ -19,7 +19,7 @@ type InitParam = {
 const props = defineProps({
   reqParam: {
     type: Object as PropType<ReqParam>,
-    required: false
+    required: true
   },
   initParam: {
     type: Object as PropType<InitParam>,
@@ -178,13 +178,10 @@ function updateChartOptions(data: HistoryDataModel[]) {
 }
 
 onMounted(async () =>{
-  if (props.reqParam) {
-    if (!props.reqParam!.start) {
-      const date: Date = new Date()
-      date.setMonth(date.getMonth() - 6)
-      props.reqParam!.start = date.toISOString().slice(0, 10)
-    }
-
+  if (!props.reqParam.start) {
+    const date: Date = new Date()
+    date.setMonth(date.getMonth() - 6)
+    props.reqParam!.start = date.toISOString().slice(0, 10)
     // initChartOptions()
     await fetchHistoryData()
     updateChartOptions(historyData)
@@ -197,7 +194,6 @@ watch(
     await fetchHistoryData()
     updateChartOptions(historyData)
 })
-
 
 async function onCustomizedClick() {
   const ret = await apiCreate({

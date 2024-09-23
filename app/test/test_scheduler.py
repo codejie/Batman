@@ -35,7 +35,7 @@ class Test_Scheduler(unittest.TestCase):
       'mode': 'daily',
       'days': '0-6',
       'hour': 20,
-      'minute': 28
+      'minute': 23
     }
     id = taskScheduler.make_id()
     taskScheduler.make_job(id=id, trigger=trigger, func=func, args=None)

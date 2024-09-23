@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ElButton, ElTable, ElTableColumn } from 'element-plus';
-import { PropType } from 'vue';
+import { ElButton, ElTable, ElTableColumn, ElDialog } from 'element-plus';
+import { PropType, ref } from 'vue';
+import { KLinePanel2, ReqParam } from '@/components/KLine'
 
 export type ColumnOpt = {
   name: string,
   label: string,
   width: number,
-  extend?: any
 }
 
 export type ActionOpt = {
@@ -32,13 +32,28 @@ defineProps({
   }
 })
 
+const klineDialogVisible = ref<boolean>(false)
+const reqParam = ref<ReqParam>()
+const dialogTitle = ref<string>()
+
+function onRowClick(row: any) {
+  dialogTitle.value = `${row.code}(${row.name})`
+  reqParam.value = {
+    code: row.code,
+    name: row.name,
+    type: row.type
+  }
+  klineDialogVisible.value = true
+  console.log(row)
+}
+
 function getBtnType(type?: string): any {
   return type || 'default'
 }
 </script>
 
 <template>
-  <ElTable :data="data" :border="true" :highlight-current-row="true">
+  <ElTable :data="data" :border="true" :highlight-current-row="true" @row-click="onRowClick">
     <ElTableColumn type="index" width="60" />
     <ElTableColumn v-for="item in columns" :key="item.name" :label="item.label" :prop="item.name" :width="item.width" />
     <ElTableColumn label="Action">
@@ -47,4 +62,10 @@ function getBtnType(type?: string): any {
       </template>
     </ElTableColumn>
   </ElTable>
+  <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
+    <KLinePanel2 :req-param="reqParam!" />
+    <template #footer>
+      <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
+    </template>    
+  </ElDialog>  
 </template>
