@@ -7,6 +7,7 @@ from app.routers import algorithm
 from app.routers import system
 from app.routers import data
 from app.routers import customized
+from app.routers import holding
 
 routers: list[APIRouter] = []
 
@@ -19,4 +20,5 @@ def register_routers(app: FastAPI):
     app.include_router(account.router)
     app.include_router(algorithm.router)
     app.include_router(customized.router)
+    app.include_router(holding.router)
     app.include_router(system.router)

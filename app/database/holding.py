@@ -34,7 +34,7 @@ class HoldingListTable(TableBase):
 
 
 class TradeRecordTable(TableBase):
-  __tablename__ = 'user_trade_record'
+  __tablename__ = 'user_holding_trade_record'
 
   id = Column(Integer, autoincrement='auto', primary_key=True)
   # uid = Column(Integer, nullable=False, default=99)
@@ -45,13 +45,13 @@ class TradeRecordTable(TableBase):
   quantity = Column(Integer, nullable=False)
   # buying = Column(Float, nullable=False)
   # selling = Column(Float, nullable=False)
-  deal = Column(Float, nullable=False) # 成交价
-  cost = Column(Float, nullable=False) # 总费用
+  # deal = Column(Float, nullable=False) # 成交价
+  expense = Column(Float, nullable=False) # 总费用
   comment = Column(String, nullable=True)
   created = Column(DateTime(timezone=True), server_default=func.now())
 
 
-def insert(uid: int, type: int, code: str, quantity: int, deal: float, cost: float, comment: str = None) -> int:
+def insert(uid: int, type: int, code: str, quantity: int, expense: float, comment: str = None) -> int:
   # stmt = sql_insert(HoldingListTable).values(
   #   uid=uid,
   #   type=type,
@@ -67,14 +67,13 @@ def insert(uid: int, type: int, code: str, quantity: int, deal: float, cost: flo
     holding=id,
     action=TRADE_ACTION_BUY,
     quantity=quantity,
-    deal=deal,
-    cost=cost,
+    expense=expense,
     comment=comment
   )
   id = dbEngine.insert(stmt=stmt)
   return id
 
-def update(uid: int, action: int, type: int, code: str, quantity: int, deal: float, cost: float, comment: str = None) -> int:
+def update(uid: int, action: int, type: int, code: str, quantity: int, expense: float, comment: str = None) -> int:
   # stmt = sql_insert(TradeRecordTable).from_select(
   #   [TradeRecordTable.holding, TradeRecordTable.action, TradeRecordTable.quantity,
   #    TradeRecordTable.deal, TradeRecordTable.cost, TradeRecordTable.comment],
@@ -94,16 +93,14 @@ def update(uid: int, action: int, type: int, code: str, quantity: int, deal: flo
       TradeRecordTable.holding,
       TradeRecordTable.action,
       TradeRecordTable.quantity,
-     TradeRecordTable.deal,
-     TradeRecordTable.cost,
+     TradeRecordTable.expense,
      TradeRecordTable.comment
      ],
      select=sql_select(
        HoldingListTable.id,
        action,
        quantity,
-       deal,
-       cost,
+       expense,
        literal(comment)
       ).filter(
        HoldingListTable.uid == uid,
@@ -122,11 +119,24 @@ def remove(uid: int, id: int) -> int:
   return dbEngine.update(stmt=stmt)
 
 def test(uid: int, type: int, code: str, quantity: int, deal: float, cost: float, comment: str = None) -> int:
-  stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code)
-  stmt = stmt.on_conflict_do_update(
-    index_elements=[HoldingListTable.type, HoldingListTable.code],
-    set_=dict(updated=func.now(), flag=1))
-  return dbEngine.insert(stmt=stmt)
+  # stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code)
+  # stmt = stmt.on_conflict_do_update(
+  #   index_elements=[HoldingListTable.type, HoldingListTable.code],
+  #   set_=dict(updated=func.now(), flag=1))
+  # return dbEngine.insert(stmt=stmt)
+  stmt = sql_select(
+    # func.sum(case([(TradeRecordTable.action==TRADE_ACTION_BUY, TradeRecordTable.cost)],
+    #                else_=-TradeRecordTable.cost)).label('cost')
+    func.sum(TradeRecordTable.cost).label('cost'),
+    func.sum(
+      case((TradeRecordTable.action==TRADE_ACTION_BUY, TradeRecordTable.expense),
+                   else_=-TradeRecordTable.expense)
+    ).label('expense')
+  ).group_by(TradeRecordTable.holding)
+  results = dbEngine.select_with_execute(stmt)
+  print(results)
+  return 0
+
 
 def get_holding(uid: int, type: int = None, code: str = None, with_removed: bool = False) -> list:
   stmt = sql_select(HoldingListTable,
@@ -196,9 +206,57 @@ def get_record(uid: int, holding: int = None, action: int = None, with_removed: 
       'holding': r[0].holding,
       'action': r[0].action,
       'quantity': r[0].quantity,
-      'deal': r[0].deal,
-      'cost': r[0].cost,
+      'expense': r[0].expense,
       'comment': r[0].comment,
       'created': r[0].created,
     })  
   return ret
+
+def calc_holding(uid:int, type: int = None, code: str = None, with_removed: bool = False) -> list:
+  stmt = sql_select(HoldingListTable,
+          case(
+            (HoldingListTable.type == 1, StockAListTable.name),
+            else_=IndexAListTable.name
+          ).label('name'),
+          func.sum(case((TradeRecordTable.action==TRADE_ACTION_BUY, TradeRecordTable.quantity),
+                   else_=-TradeRecordTable.quantity)).label('quantity'),
+          func.sum(case((TradeRecordTable.action==TRADE_ACTION_SELL, TradeRecordTable.expense),
+                   else_=-TradeRecordTable.expense)).label('expense'),
+        ).select_from(
+          HoldingListTable
+        ).join(StockAListTable, StockAListTable.code == HoldingListTable.code, isouter=True
+        ).join(IndexAListTable, IndexAListTable.code == HoldingListTable.code, isouter=True
+        ).join(TradeRecordTable, TradeRecordTable.id == HoldingListTable.id, isouter=True
+        ).filter(
+          HoldingListTable.uid == uid
+        ).group_by(HoldingListTable.type, HoldingListTable.code)
+  if (type is not None) and (code is not None):
+    stmt = stmt.where(HoldingListTable.type == type, HoldingListTable.code == code)
+  elif type is not None:
+    stmt = stmt.where(HoldingListTable.type == type)
+  elif code is not None:
+    stmt = stmt.where(HoldingListTable.code == code)
+  if not with_removed:
+    stmt = stmt.where(HoldingListTable.flag == HOLDING_FLAG_NORMAL)
+  results = dbEngine.select_with_execute(stmt)
+
+  ret = []
+  for r in results:
+    ret.append({
+      'id': r[0].id,
+      'name': r[1],
+      'type': r[0].type,
+      'code': r[0].code,
+      'created': r[0].created,
+      'updated': r[0].updated,
+      'flag': r[0].flag,
+      'quantity': r[2],
+      'expense': r[3]
+    })
+
+  return ret
+
+# 收益 = sum(expense)
+# 成本价 = sum(expense) / sum(quantity)
+# 市值 = sum(quantity) * price
+# 盈亏 = sum(expense) - 市值

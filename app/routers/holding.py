@@ -11,8 +11,7 @@ class CreateRequest(RequestModel):
   type: int
   code: str
   quantity: int
-  deal: float
-  cost: float
+  expense: float
   comment: str | None = None
 
 class CreateResponse(ResponseModel):
@@ -32,8 +31,7 @@ class UpdateRequest(RequestModel):
   type: int
   code: str
   quantity: int
-  deal: float
-  cost: float
+  expense: float
   comment: str | None = None
 
 class UpdateResponse(ResponseModel):
@@ -80,7 +78,7 @@ class HoldingModel(BaseModel):
 class GetHoldingListResponse(ResponseModel):
   result: list[HoldingModel]
 
-@router.post('get_holding', response_model=GetHoldingListResponse, response_model_exclude_none=True)
+@router.post('/get_holding', response_model=GetHoldingListResponse, response_model_exclude_none=True)
 async def get_holding(body: GetHoldingListResquest=Body()):
   uid = 99
   result = holding.get_holding(uid, body.type, body.code, body.with_removed)
@@ -99,16 +97,43 @@ class RecordModel(BaseModel):
   holding: int
   action: int
   quantity: int
-  deal: float
-  cost: float
+  expense: float
   comment: str | None
   created: datetime
 
 class GetRecordListResponse(ResponseModel):
   result: list[RecordModel]
 
-@router.post('get_record', response_model=GetRecordListResponse, response_model_exclude_none=True)
+@router.post('/get_record', response_model=GetRecordListResponse, response_model_exclude_none=True)
 async def get_record(body: GetRecordListResquest=Body()):
   uid = 99
   result = holding.get_record(uid, body.holding, body.action, body.with_removed)
   return GetRecordListResponse(result=result)
+
+"""
+CalcHoldingList
+"""
+class CalcHoldingListResquest(RequestModel):
+  type: int | None = None
+  code: str | None = None
+  with_removed: bool = False
+
+class CalcHoldingModel(BaseModel):
+  id: int
+  type: int
+  code: str
+  name: str
+  created: datetime
+  updated: datetime
+  flag: int
+  quantity: int
+  expense: float
+
+class CalcHoldingListResponse(ResponseModel):
+  result: list[CalcHoldingModel]
+
+@router.post('/calc_holding', response_model=CalcHoldingListResponse, response_model_exclude_none=True)
+async def calc_holding(body: CalcHoldingListResquest=Body()):
+  uid = 99
+  result = holding.calc_holding(uid, body.type, body.code, body.with_removed)
+  return CalcHoldingListResponse(result=result)

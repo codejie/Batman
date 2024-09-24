@@ -9,10 +9,9 @@ class Test_Holding(unittest.TestCase):
     result = holding.insert(
       uid=99,
       type=1,
-      code='000001',
-      quantity=100,
-      deal=1.1,
-      cost=120.2,
+      code='002236',
+      quantity=300,
+      expense=920.2,
       comment='test'
     )
     print(result)
@@ -25,11 +24,10 @@ class Test_Holding(unittest.TestCase):
     result = holding.update(
       uid=99,
       type=1,
-      code='000005',
+      code='000001',
       action=0,
       quantity=200,
-      deal=1.1,
-      cost=120.2
+      expense=120.2
     )
     print(result)
     dbEngine.shutdown()
@@ -43,8 +41,7 @@ class Test_Holding(unittest.TestCase):
       type=1,
       code='000001',
       quantity=100,
-      deal=1.1,
-      cost=120.2,
+      expense=120.2,
       comment='test'
     )
     print(result)
@@ -73,4 +70,15 @@ class Test_Holding(unittest.TestCase):
     )
     print(result)
     dbEngine.shutdown()
-    self.assertTrue(True)    
+    self.assertTrue(True)
+
+  def test_calc_holding(self):
+    dbEngine.start()
+
+    result = holding.calc_holding(
+      uid=99,
+      with_removed=True
+    )
+    print(result)
+    dbEngine.shutdown()
+    self.assertTrue(True)
