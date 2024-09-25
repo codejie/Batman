@@ -38,7 +38,7 @@ export type HoldingModel = {
 }
 export type GetHoldingListResponse = HoldingModel[]
 
-export type GetRecordListResquest = {
+export type GetRecordListRequest = {
   holding?: number
   action?: number
   with_removed?: boolean  

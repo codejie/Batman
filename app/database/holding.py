@@ -61,7 +61,6 @@ def insert(uid: int, type: int, code: str, quantity: int, expense: float, commen
   stmt = stmt.on_conflict_do_update(
     index_elements=[HoldingListTable.type, HoldingListTable.code],
     set_=dict(updated=func.now(), flag=HOLDING_FLAG_NORMAL)).return_defaults(HoldingListTable.id)
-  print(stmt)
   id = dbEngine.insert(stmt=stmt)
   stmt = sql_insert(TradeRecordTable).values(
     holding=id,
@@ -118,7 +117,7 @@ def remove(uid: int, id: int) -> int:
     )
   return dbEngine.update(stmt=stmt)
 
-def test(uid: int, type: int, code: str, quantity: int, deal: float, cost: float, comment: str = None) -> int:
+def test(uid: int, type: int, code: str, quantity: int, expense: float, comment: str = None) -> int:
   # stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code)
   # stmt = stmt.on_conflict_do_update(
   #   index_elements=[HoldingListTable.type, HoldingListTable.code],
@@ -127,14 +126,13 @@ def test(uid: int, type: int, code: str, quantity: int, deal: float, cost: float
   stmt = sql_select(
     # func.sum(case([(TradeRecordTable.action==TRADE_ACTION_BUY, TradeRecordTable.cost)],
     #                else_=-TradeRecordTable.cost)).label('cost')
-    func.sum(TradeRecordTable.cost).label('cost'),
+    func.sum(TradeRecordTable.expense).label('expense'),
     func.sum(
       case((TradeRecordTable.action==TRADE_ACTION_BUY, TradeRecordTable.expense),
                    else_=-TradeRecordTable.expense)
     ).label('expense')
   ).group_by(TradeRecordTable.holding)
   results = dbEngine.select_with_execute(stmt)
-  print(results)
   return 0
 
 

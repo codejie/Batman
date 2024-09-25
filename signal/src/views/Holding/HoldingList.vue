@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue';
-import { ElRow, ElText } from 'element-plus';
+import { ElDialog, ElRow, ElText, ElButton } from 'element-plus';
 import HoldingTable, { ColumnOpt, ActionOpt} from './components/HoldingTable.vue'
 import { onMounted, ref } from 'vue';
 import { apiCalcHoldingList } from '@/api/holding';
 import { CalcHoldingModel } from '@/api/holding/types';
 import { formatToDate } from '@/utils/dateUtil';
 import { apiHistory, HistoryDataModel } from '@/api/data/wrap';
+import TradeTraceForm from './components/TradeTraceForm.vue';
+import { ReqParam } from '@/components/KLine';
 
 const columns: ColumnOpt[] = [
   {
@@ -62,11 +64,7 @@ const actions: ActionOpt[] = [
     func: onDetail
   },
   {
-    name: '走势',
-    func: onTrace
-  },  
-  {
-    name: '交易记录',
+    name: '交易走势',
     func: onRecord
   },
   {
@@ -81,6 +79,9 @@ const actions: ActionOpt[] = [
 ]
 
 const data = ref<any[]>([])
+const tradeDialogVisible = ref<boolean>(false)
+const reqParam = ref<ReqParam>()
+const reqHolding = ref<number>()
 
 onMounted(async () => {
   await fetch()
@@ -125,12 +126,15 @@ function onDetail(row: any) {
   console.log(row)
 }
 
-function onTrace(row: any) {
-  console.log(row)
-}
-
 function onRecord(row: any) {
   console.log(row)
+  reqParam.value = {
+    type: row.type,
+    code: row.code
+  }
+  reqHolding.value = row.id
+
+  tradeDialogVisible.value = true
 }
 
 function onSetReminder(row: any) {
@@ -151,5 +155,11 @@ function onDelete(row: any) {
     <ElRow :gutter="24">
       <HoldingTable :data="data" :columns="columns" :actions="actions" />
     </ElRow>
+    <ElDialog v-model="tradeDialogVisible" :destroy-on-close="true">
+      <TradeTraceForm :req-param="reqParam!" :holding="reqHolding!" />
+      <template #footer>
+        <ElButton type="primary" @click="tradeDialogVisible=false">Close</ElButton>
+      </template>    
+    </ElDialog>
   </ContentWrap>
 </template>

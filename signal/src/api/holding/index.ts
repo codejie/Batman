@@ -1,5 +1,5 @@
 import request from '@/axios'
-import { CalcHoldingListResponse, CalcHoldingListResquest, CreateRequest, CreateResponse, GetHoldingListRequest, GetHoldingListResponse, GetRecordListResponse, RemoveRequest, RemoveResponse, UpdateRequest, UpdateResponse } from './types'
+import { CalcHoldingListResponse, CalcHoldingListResquest, CreateRequest, CreateResponse, GetHoldingListRequest, GetHoldingListResponse, GetRecordListRequest, GetRecordListResponse, RemoveRequest, RemoveResponse, UpdateRequest, UpdateResponse } from './types'
 
 export const apiCreate = (data: CreateRequest): Promise<Response<CreateResponse>> => {
   return request.post({
@@ -29,7 +29,7 @@ export const apiGetHoldingList = (data: GetHoldingListRequest): Promise<Response
   })
 }
 
-export const apiCetRecordList = (data: GetHoldingListResponse): Promise<Response<GetRecordListResponse>> => {
+export const apiGetRecordList = (data: GetRecordListRequest): Promise<Response<GetRecordListResponse>> => {
   return request.post({
     url: '/holding/get_record',
     data
