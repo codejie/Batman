@@ -9,8 +9,8 @@ class Test_Holding(unittest.TestCase):
     result = holding.insert(
       uid=99,
       type=1,
-      code='002236',
-      quantity=300,
+      code='000001',
+      quantity=100,
       expense=920.2,
       comment='test'
     )

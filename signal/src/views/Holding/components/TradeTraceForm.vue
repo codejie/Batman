@@ -6,8 +6,11 @@ import { ReqParam } from '@/components/KLine';
 import { formatToDate } from '@/utils/dateUtil';
 import { ElRow, ElTable, ElTableColumn } from 'element-plus'
 import { onMounted, PropType, ref } from 'vue';
+import TradeKLineForm from './TradeKLineForm.vue';
 
-type TradeRecord = {
+const EXTEND_MONTHS: number = 2
+
+export type TradeRecord = {
   id: number
   holding: number
   action: string
@@ -32,6 +35,7 @@ const props = defineProps({
 let start: Date = new Date('9999/01/01')
 let end: Date = new Date('0001/01/01')
 
+const historyData = ref<HistoryDataModel[]>([])
 const tradeRecords = ref<TradeRecord[]>([])
 
 function makeTradeRecords(data: RecordModel[]) {
@@ -39,7 +43,7 @@ function makeTradeRecords(data: RecordModel[]) {
     tradeRecords.value.push({
       id: item.id,
       holding: item.holding,
-      action: item.action == 0 ? 'Buy' : 'Sell',
+      action: item.action == 0 ? '买入' : '卖出',
       quantity: item.quantity,
       price: '-',
       cost: (item.expense / item.quantity).toFixed(2),
@@ -47,14 +51,10 @@ function makeTradeRecords(data: RecordModel[]) {
       comment: item.comment,
       created: formatToDate(item.created, 'YYYY-MM-DD')
     })
-    console.log(new Date(item.created))
-    console.log(start > new Date(item.created))
     const c = new Date(item.created)
     if (start > c) start = c
     if (end < c) end = c
   })
-  console.log(start)
-  console.log(end)
 }
 
 function updateTradeRecord(data: HistoryDataModel[]) {
@@ -64,7 +64,6 @@ function updateTradeRecord(data: HistoryDataModel[]) {
       item.price = d.price
     }
   })
-  console.log(tradeRecords.value)
 } 
 
 onMounted(async () => {
@@ -73,22 +72,33 @@ onMounted(async () => {
   })
   makeTradeRecords(retRecord.result)
 
+  const s = start.setMonth(start.getMonth() - EXTEND_MONTHS)
+  const e = end.setMonth(end.getMonth() + EXTEND_MONTHS)
+
   const retHistory = await apiHistory({
     code: props.reqParam.code,
-    start: formatToDate(start, 'YYYY-MM-DD'),
-    end: formatToDate(end, 'YYYY-MM-DD')
+    start: formatToDate(s, 'YYYY-MM-DD'),
+    end: formatToDate(e, 'YYYY-MM-DD')
   }, props.reqParam.type)
-  console.log(retHistory.result)
+  historyData.value = retHistory.result
   updateTradeRecord(retHistory.result)
 })
 
 </script>
 <template>
   <ElRow :gutter="24">
-    <ElTable :data="tradeRecords">
-      <ElTableColumn prop="action" label="操作" />
-      <ElTableColumn prop="quantity" label="数量" />
-      <ElTableColumn prop="price" label="价格" />
+    <TradeKLineForm :history="historyData" :records="tradeRecords" />
+  </ElRow>
+  <ElRow :gutter="24">
+    <ElTable :data="tradeRecords" size="small" :border="true" max-height="200" >
+      <ElTableColumn type="index" width="35" />
+      <ElTableColumn prop="action" label="操作" width="45" />
+      <ElTableColumn prop="quantity" label="数量" width="80" />
+      <ElTableColumn prop="price" label="价格" width="70" />
+      <ElTableColumn prop="cost" label="成本"  width="70" />
+      <ElTableColumn prop="expense" label="费用" width="90" />
+      <ElTableColumn prop="created" label="交易日期" width="120" />      
+      <ElTableColumn prop="comment" label="备注"  />
     </ElTable>
   </ElRow>
 </template>

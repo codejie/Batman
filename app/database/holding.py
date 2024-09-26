@@ -148,7 +148,7 @@ def get_holding(uid: int, type: int = None, code: str = None, with_removed: bool
         ).join(IndexAListTable, IndexAListTable.code == HoldingListTable.code, isouter=True
         ).filter(
           HoldingListTable.uid == uid
-        )
+        ).order_by(HoldingListTable.id)
   if (type is not None) and (code is not None):
     stmt = stmt.where(HoldingListTable.type == type, HoldingListTable.code == code)
   elif type is not None:
@@ -187,8 +187,9 @@ def get_record(uid: int, holding: int = None, action: int = None, with_removed: 
   stmt = sql_select(
     TradeRecordTable
   ).join(HoldingListTable, TradeRecordTable.holding == HoldingListTable.id
-  ).filter(HoldingListTable.uid == uid)
-
+  ).filter(HoldingListTable.uid == uid
+  ).order_by(TradeRecordTable.id.desc())
+  
   if holding is not None:
     stmt = stmt.where(TradeRecordTable.holding == holding)
   if action is not None:
@@ -227,7 +228,9 @@ def calc_holding(uid:int, type: int = None, code: str = None, with_removed: bool
         ).join(TradeRecordTable, TradeRecordTable.id == HoldingListTable.id, isouter=True
         ).filter(
           HoldingListTable.uid == uid
-        ).group_by(HoldingListTable.type, HoldingListTable.code)
+        ).group_by(HoldingListTable.type, HoldingListTable.code
+        ).order_by(HoldingListTable.id)
+  
   if (type is not None) and (code is not None):
     stmt = stmt.where(HoldingListTable.type == type, HoldingListTable.code == code)
   elif type is not None:

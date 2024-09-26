@@ -46,7 +46,7 @@ const maLines = ref<number[]>(props.initParam.maLines) // [7, 9, 12])
 const zoom_kline = ref<string[]>(['KLine'])
 const grid2Mode = ref<string>(props.initParam.volume ? 'Volume' : 'MACD')
 
-const kchart = ref(null)
+const kchart = ref<typeof KLineChart4>()
 
 let historyData: HistoryDataModel[] = []
 let xData: string[] = []

@@ -60,8 +60,8 @@ const columns: ColumnOpt[] = [
 
 const actions: ActionOpt[] = [
   {
-    name: '详情',
-    func: onDetail
+    name: '操作',
+    func: onAction
   },
   {
     name: '交易走势',
@@ -108,7 +108,6 @@ async function makeData(items: CalcHoldingModel[]) {
     item['updated'] = formatToDate(item.updated, 'YYYY-MM-DD')
 
     const history = await fetchHistoryData(item.code, item.type)
-    console.log(history)
     if (history) {
       item['price'] = history.price
       item['value'] = (history.price * item.quantity).toFixed(2)
@@ -122,18 +121,17 @@ async function fetch() {
   await makeData(ret.result)
 }
 
-function onDetail(row: any) {
+function onAction(row: any) {
   console.log(row)
 }
 
 function onRecord(row: any) {
-  console.log(row)
   reqParam.value = {
     type: row.type,
-    code: row.code
+    code: row.code,
+    name: row.name,
   }
   reqHolding.value = row.id
-
   tradeDialogVisible.value = true
 }
 
@@ -156,6 +154,9 @@ function onDelete(row: any) {
       <HoldingTable :data="data" :columns="columns" :actions="actions" />
     </ElRow>
     <ElDialog v-model="tradeDialogVisible" :destroy-on-close="true">
+      <template #header>
+        {{ `${reqParam!.code}(${reqParam!.name})` }}
+      </template>
       <TradeTraceForm :req-param="reqParam!" :holding="reqHolding!" />
       <template #footer>
         <ElButton type="primary" @click="tradeDialogVisible=false">Close</ElButton>
