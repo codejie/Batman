@@ -11,7 +11,7 @@ class Test_Holding(unittest.TestCase):
       type=1,
       code='000001',
       quantity=100,
-      expense=920.2,
+      expense=1000.2,
       comment='test'
     )
     print(result)
@@ -27,7 +27,7 @@ class Test_Holding(unittest.TestCase):
       code='000001',
       action=0,
       quantity=200,
-      expense=120.2
+      expense=2100
     )
     print(result)
     dbEngine.shutdown()

@@ -9,6 +9,7 @@ import { formatToDate } from '@/utils/dateUtil';
 import { apiHistory, HistoryDataModel } from '@/api/data/wrap';
 import TradeTraceForm from './components/TradeTraceForm.vue';
 import { ReqParam } from '@/components/KLine';
+import CreateHoldingForm from './components/CreateHoldingForm.vue';
 
 const columns: ColumnOpt[] = [
   {
@@ -49,12 +50,17 @@ const columns: ColumnOpt[] = [
   {
     name: 'gain',
     label: '盈亏', // value + rate
-    width: 120
+    width: 150
+  },
+  {
+    name: 'days',
+    label: '持有',
+    width: 80
   },
   {
     name: 'updated',
     label: '变动日期', // date + days
-    width: 120
+    width: 200
   }
 ]
 
@@ -80,8 +86,10 @@ const actions: ActionOpt[] = [
 
 const data = ref<any[]>([])
 const tradeDialogVisible = ref<boolean>(false)
+const createDialogVisible = ref<boolean>(false)
 const reqParam = ref<ReqParam>()
 const reqHolding = ref<number>()
+const reqTitle = ref<string>('')
 
 onMounted(async () => {
   await fetch()
@@ -105,13 +113,16 @@ async function makeData(items: CalcHoldingModel[]) {
     const item = data.value[i]
 
     item['cost'] = (item.quantity != 0 ? -(item.expense / item.quantity) : 0.0).toFixed(2)
+    item['days'] = `${Math.floor((Date.parse(item.updated) - Date.parse(item.created)) / 86400000)}天`
     item['updated'] = formatToDate(item.updated, 'YYYY-MM-DD')
 
     const history = await fetchHistoryData(item.code, item.type)
     if (history) {
       item['price'] = history.price
-      item['value'] = (history.price * item.quantity).toFixed(2)
-      item['gain'] = (item.expense + history.price * item.quantity).toFixed(2)
+      const value = history.price * item.quantity
+      item['value'] = value.toFixed(2)
+      const gain = item.expense + history.price * item.quantity
+      item['gain'] = `${gain.toFixed(2)} [${(gain * 100 /value).toFixed(2)}%]`  // (item.expense + history.price * item.quantity).toFixed(2)
     }
   }
 }
@@ -121,11 +132,16 @@ async function fetch() {
   await makeData(ret.result)
 }
 
+function onCreateClick() {
+  createDialogVisible.value = true
+}
+
 function onAction(row: any) {
   console.log(row)
 }
 
 function onRecord(row: any) {
+  reqTitle.value = `${row.code}(${row.name}) [数量: ${row.quantity} | 费用: ${row.value} | 盈亏: ${row.gain}]`
   reqParam.value = {
     type: row.type,
     code: row.code,
@@ -147,20 +163,33 @@ function onDelete(row: any) {
 <template>
   <ContentWrap title="持仓列表">
     <ElRow :gutter="24">
-      <ElText>abc</ElText>
-      Summary
+      <ElButton class="padding" type="primary" @click="onCreateClick">新增</ElButton>
     </ElRow>
     <ElRow :gutter="24">
       <HoldingTable :data="data" :columns="columns" :actions="actions" />
     </ElRow>
     <ElDialog v-model="tradeDialogVisible" :destroy-on-close="true">
       <template #header>
-        {{ `${reqParam!.code}(${reqParam!.name})` }}
+        <ElText tag="b">{{ reqTitle }}</ElText>
       </template>
       <TradeTraceForm :req-param="reqParam!" :holding="reqHolding!" />
       <template #footer>
         <ElButton type="primary" @click="tradeDialogVisible=false">Close</ElButton>
       </template>    
     </ElDialog>
+    <ElDialog v-model="createDialogVisible" :destroy-on-close="true" width="25%">
+      <template #header>
+        <ElText tag="b">新增</ElText>
+      </template>      
+      <CreateHoldingForm />
+      <template #footer>
+        <ElButton type="primary" @click="createDialogVisible=false">Close</ElButton>
+      </template>         
+    </ElDialog>
   </ContentWrap>
 </template>
+<style lang="css">
+.padding {
+  margin: 8px;
+}
+</style>

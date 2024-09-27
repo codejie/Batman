@@ -34,7 +34,7 @@ const showParam = ref<ShowParam>({
   markLines: true,
   hideKLine: !kline  
 })
-const reqParam = ref<ReqParam>()
+const reqParam = ref<ReqParam>(props.param)
 
 function updateDataParam(type: number, code: string) {
   reqParam.value = {

@@ -3,10 +3,10 @@ import { computed, ref, unref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { ContentDetailWrap } from '@/components/ContentDetailWrap'
-import CreateForm from '@/views/Strategy/Filter/components/CreateForm.vue'
 import { CreateInstanceRequest, TriggerModel } from '@/api/strategy/types'
 import { apiCreate } from '@/api/strategy'
 import { ElMessage, ElButton } from 'element-plus'
+import CreateForm from './components/CreateForm.vue'
 
 const { t } = useI18n()
 const { push, go } = useRouter()

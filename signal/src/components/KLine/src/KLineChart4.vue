@@ -18,7 +18,7 @@ const downColor = '#00da3c'
 //   }
 // }
 
-function makeKLineOption(grid: number, name: string, data: any) {
+function makeKLineOption(grid: number, name: string, data: any[]) {
   return {
     name: name,
     type: 'candlestick',
@@ -44,7 +44,7 @@ function makeMarkLine(min: boolean) {
   }  
 }
 
-function makeLineOption(grid: number, name: string, data: number[]) {
+function makeLineOption(grid: number, name: string, data: any[]) {
   return {
     name: name,
     type: 'line',
@@ -61,7 +61,7 @@ function makeLineOption(grid: number, name: string, data: number[]) {
   }
 }
 
-function makeBarOption(grid: number, name: string, data: number[]) {
+function makeBarOption(grid: number, name: string, data: any[]) {
   return {
     name: name,
     type: 'bar',
@@ -77,6 +77,24 @@ function makeBarOption(grid: number, name: string, data: number[]) {
       }
     },
     data: data
+  }
+}
+
+function makeStepLineOption(grid: number, name: string, data: any[], step: string = 'end') {
+  return {
+    name: name,
+    type: 'line',
+    step: step,
+    xAxisIndex: grid,
+    yAxisIndex: grid,
+    showSymbol: false,
+    lineStyle: {
+      width: 1
+    },
+    // itemStyle: {
+    //   color: '#ec0000'
+    // },
+    data: data    
   }
 }
 
@@ -158,7 +176,7 @@ function addAxis(grid: number, xdata: number[] | string[], showTick: boolean = t
     gridIndex: grid,
     data: xdata,
     boundaryGap: false,
-    axisLine: { onZero: false },
+    axisLine: { onZero: true },
     axisTick: { show: true },
     splitLine: { show: false },
     axisLabel: { show: showTick },    
@@ -210,6 +228,14 @@ function addBar(grid: number, name: string, data: number[], legend: boolean = tr
   }  
 }
 
+function addStepLine(grid: number, name: string, data: any[], legend: boolean = true, step: string = 'end') {
+  const lineOpt = makeStepLineOption(grid, name, data, step)
+  options.value.series?.push(lineOpt)
+  if (legend) {
+    options.value.legend!.data.push(name)
+  }  
+}
+
 // function remove(name: string, wildcard: boolean = false) {
 //   if (!wildcard) {
 //     options.value.legend!.data = options.value.legend!.data.filter( item => item != name)
@@ -255,6 +281,7 @@ defineExpose({
   addKLine,
   addLine,
   addBar,
+  addStepLine,
   remove
 })
 
