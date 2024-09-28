@@ -4,6 +4,7 @@ export type CreateRequest = {
   quantity: number
   expense: number
   comment?: string
+  created: Date
 }
 export type CreateResponse = number
 
@@ -13,7 +14,8 @@ export type UpdateRequest = {
   code: string
   quantity: number
   expense: number
-  comment?: string  
+  comment?: string
+  created: Date
 }
 export type UpdateResponse = number
 

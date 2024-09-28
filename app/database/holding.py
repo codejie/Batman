@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy import Index, ForeignKey, literal
 from app.database import TableBase, Column, Integer, Float, String, DateTime, func
 from app.database import dbEngine, sql_insert, sql_delete, sql_update, sql_select, and_, case
@@ -51,13 +52,13 @@ class TradeRecordTable(TableBase):
   created = Column(DateTime(timezone=True), server_default=func.now())
 
 
-def insert(uid: int, type: int, code: str, quantity: int, expense: float, comment: str = None) -> int:
+def insert(uid: int, type: int, code: str, quantity: int, expense: float, comment: str = None, created: datetime = func.now()) -> int:
   # stmt = sql_insert(HoldingListTable).values(
   #   uid=uid,
   #   type=type,
   #   code=code
   # )
-  stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code)
+  stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code, created=created)
   stmt = stmt.on_conflict_do_update(
     index_elements=[HoldingListTable.type, HoldingListTable.code],
     set_=dict(updated=func.now(), flag=HOLDING_FLAG_NORMAL)).return_defaults(HoldingListTable.id)
@@ -67,12 +68,13 @@ def insert(uid: int, type: int, code: str, quantity: int, expense: float, commen
     action=TRADE_ACTION_BUY,
     quantity=quantity,
     expense=expense,
-    comment=comment
+    comment=comment,
+    created=created
   )
   id = dbEngine.insert(stmt=stmt)
   return id
 
-def update(uid: int, action: int, type: int, code: str, quantity: int, expense: float, comment: str = None) -> int:
+def update(uid: int, action: int, type: int, code: str, quantity: int, expense: float, comment: str = None, created: datetime = func.now()) -> int:
   # stmt = sql_insert(TradeRecordTable).from_select(
   #   [TradeRecordTable.holding, TradeRecordTable.action, TradeRecordTable.quantity,
   #    TradeRecordTable.deal, TradeRecordTable.cost, TradeRecordTable.comment],
@@ -92,15 +94,17 @@ def update(uid: int, action: int, type: int, code: str, quantity: int, expense: 
       TradeRecordTable.holding,
       TradeRecordTable.action,
       TradeRecordTable.quantity,
-     TradeRecordTable.expense,
-     TradeRecordTable.comment
+      TradeRecordTable.expense,
+      TradeRecordTable.comment,
+      TradeRecordTable.created
      ],
      select=sql_select(
        HoldingListTable.id,
        action,
        quantity,
        expense,
-       literal(comment)
+       literal(comment),
+       created
       ).filter(
        HoldingListTable.uid == uid,
        HoldingListTable.type == type,

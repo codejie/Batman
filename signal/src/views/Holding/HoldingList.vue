@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue';
-import { ElDialog, ElRow, ElText, ElButton } from 'element-plus';
+import { ElDialog, ElRow, ElText, ElButton, ElMessage } from 'element-plus';
 import HoldingTable, { ColumnOpt, ActionOpt} from './components/HoldingTable.vue'
 import { onMounted, ref } from 'vue';
-import { apiCalcHoldingList } from '@/api/holding';
+import { apiCalcHoldingList, apiCreate } from '@/api/holding';
 import { CalcHoldingModel } from '@/api/holding/types';
 import { formatToDate } from '@/utils/dateUtil';
 import { apiHistory, HistoryDataModel } from '@/api/data/wrap';
@@ -60,7 +60,7 @@ const columns: ColumnOpt[] = [
   {
     name: 'updated',
     label: '变动日期', // date + days
-    width: 200
+    width: 120
   }
 ]
 
@@ -159,6 +159,30 @@ function onDelete(row: any) {
   console.log(row)
 }
 
+const createForm = ref<typeof CreateHoldingForm>()
+async function onSubmit() {
+  const form = createForm.value?.form
+  console.log(form)
+  if (form) {
+    const ret = await apiCreate({
+      type: form.type,
+      code: form.code,
+      quantity: form.quantity,
+      expense: form.expense,
+      comment: form.comment,
+      created: form.created
+    })
+    createDialogVisible.value = false
+    if (ret.code == 0) {
+      ElMessage({
+        type: 'success',
+        message: `${form.code} added to holding list.`
+      })
+      await fetch()
+    }
+  }
+}
+
 </script>
 <template>
   <ContentWrap title="持仓列表">
@@ -181,10 +205,11 @@ function onDelete(row: any) {
       <template #header>
         <ElText tag="b">新增</ElText>
       </template>      
-      <CreateHoldingForm />
+      <CreateHoldingForm ref="createForm"/>
       <template #footer>
-        <ElButton type="primary" @click="createDialogVisible=false">Close</ElButton>
-      </template>         
+        <ElButton @click="createDialogVisible=false">取消</ElButton>
+        <BaseButton type="primary" @click="onSubmit">确定</BaseButton>
+      </template>              
     </ElDialog>
   </ContentWrap>
 </template>

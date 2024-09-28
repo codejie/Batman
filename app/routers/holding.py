@@ -13,6 +13,7 @@ class CreateRequest(RequestModel):
   quantity: int
   expense: float
   comment: str | None = None
+  created: datetime
 
 class CreateResponse(ResponseModel):
   result: int
@@ -20,7 +21,8 @@ class CreateResponse(ResponseModel):
 @router.post('/create', response_model=CreateResponse, response_model_exclude_none=True)
 async def create(body: CreateRequest=Body()):
   uid = 99
-  result = holding.insert(uid, body.type, body.code, body.quantity, body.deal, body.cost, body.comment)
+  print(body)
+  result = holding.insert(uid, body.type, body.code, body.quantity, body.expense, body.comment, body.created)
   return CreateResponse(result=result)
 
 """
@@ -33,6 +35,7 @@ class UpdateRequest(RequestModel):
   quantity: int
   expense: float
   comment: str | None = None
+  created: datetime
 
 class UpdateResponse(ResponseModel):
   result: int
@@ -40,7 +43,7 @@ class UpdateResponse(ResponseModel):
 @router.post('/update', response_model=UpdateResponse, response_model_exclude_none=True)
 async def update(body: UpdateRequest=Body()):
   uid = 99
-  result = holding.update(uid, body.action, body.type, body.code, body.quantity, body.deal, body.cost, body.comment)
+  result = holding.update(uid, body.action, body.type, body.code, body.quantity, body.expense, body.comment, body.created)
   return UpdateResponse(result=result)
 
 """
