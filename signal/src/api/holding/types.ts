@@ -4,7 +4,7 @@ export type CreateRequest = {
   quantity: number
   expense: number
   comment?: string
-  created: Date
+  created: string
 }
 export type CreateResponse = number
 
@@ -15,7 +15,7 @@ export type UpdateRequest = {
   quantity: number
   expense: number
   comment?: string
-  created: Date
+  created: string
 }
 export type UpdateResponse = number
 
@@ -34,8 +34,8 @@ export type HoldingModel = {
   type: number
   code: string
   name: string
-  created: Date
-  updated: Date
+  created: string
+  updated: string
   flag: number
 }
 export type GetHoldingListResponse = HoldingModel[]
@@ -52,7 +52,7 @@ export type RecordModel = {
   quantity: number
   expense: number
   comment?: string
-  created: Date
+  created: string
 }
 export type GetRecordListResponse = RecordModel[]
 
@@ -66,8 +66,8 @@ export type CalcHoldingModel = {
   type: number
   code: string
   name: string
-  created: Date
-  updated: Date
+  created: string
+  updated: string
   flag: number
   quantity: number
   expense: number

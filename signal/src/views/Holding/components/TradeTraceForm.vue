@@ -8,7 +8,7 @@ import { ElRow, ElTable, ElTableColumn } from 'element-plus'
 import { onMounted, PropType, ref } from 'vue';
 import TradeKLineForm from './TradeKLineForm.vue';
 
-const EXTEND_MONTHS: number = 2
+const EXTEND_MONTHS: number = 3
 
 export type TradeRecord = {
   id: number
@@ -33,7 +33,7 @@ const props = defineProps({
   }
 })
 let start: Date = new Date('9999/01/01')
-let end: Date = new Date('0001/01/01')
+// let end: Date = new Date('0001/01/01')
 
 const historyData = ref<HistoryDataModel[]>([])
 const tradeRecords = ref<TradeRecord[]>([])
@@ -49,11 +49,12 @@ function makeTradeRecords(data: RecordModel[]) {
       cost: (item.expense / item.quantity).toFixed(2),
       expense: item.expense,
       comment: item.comment,
-      created: formatToDate(item.created, 'YYYY-MM-DD')
+      created: item.created // formatToDate(item.created, 'YYYY-MM-DD')
     })
+    console.log(item.created)
     const c = new Date(item.created)
     if (start > c) start = c
-    if (end < c) end = c
+    // if (end < c) end = c
   })
 }
 
@@ -71,14 +72,12 @@ onMounted(async () => {
     holding: props.holding
   })
   makeTradeRecords(retRecord.result)
-
-  const s = start.setMonth(start.getMonth() - EXTEND_MONTHS)
-  const e = end.setMonth(end.getMonth() + EXTEND_MONTHS)
+  const s = formatToDate(start.setMonth(start.getMonth() - EXTEND_MONTHS), 'YYYY-MM-DD')
+  // const e = formatToDate(end.setMonth(end.getMonth() + EXTEND_MONTHS), 'YYYY-MM-DD')
 
   const retHistory = await apiHistory({
     code: props.reqParam.code,
-    start: formatToDate(s, 'YYYY-MM-DD'),
-    end: formatToDate(e, 'YYYY-MM-DD')
+    start: s
   }, props.reqParam.type)
   historyData.value = retHistory.result
   updateTradeRecord(retHistory.result)

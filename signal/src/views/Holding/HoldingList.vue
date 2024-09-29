@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import ContentWrap from '@/components/ContentWrap/src/ContentWrap.vue';
-import { ElDialog, ElRow, ElText, ElButton, ElMessage } from 'element-plus';
+import { ElDialog, ElRow, ElText, ElButton, ElMessage, ElMessageBox } from 'element-plus';
 import HoldingTable, { ColumnOpt, ActionOpt} from './components/HoldingTable.vue'
 import { onMounted, ref } from 'vue';
-import { apiCalcHoldingList, apiCreate } from '@/api/holding';
+import { apiCalcHoldingList, apiCreate, apiRemove, apiUpdate } from '@/api/holding';
 import { CalcHoldingModel } from '@/api/holding/types';
 import { formatToDate } from '@/utils/dateUtil';
 import { apiHistory, HistoryDataModel } from '@/api/data/wrap';
 import TradeTraceForm from './components/TradeTraceForm.vue';
 import { ReqParam } from '@/components/KLine';
 import CreateHoldingForm from './components/CreateHoldingForm.vue';
+import UpdateHoldingForm from './components/UpdateHoldingForm.vue';
 
 const columns: ColumnOpt[] = [
   {
@@ -25,12 +26,12 @@ const columns: ColumnOpt[] = [
   {
     name: 'quantity',
     label: '数量',
-    width: 90
+    width: 80
   },
   {
     name: 'price',
     label: '现价',
-    width: 90
+    width: 80
   },
   {
     name: 'value',
@@ -45,17 +46,17 @@ const columns: ColumnOpt[] = [
   {
     name: 'expense',
     label: '费用', //
-    width: 120
+    width: 100
   },  
   {
     name: 'gain',
     label: '盈亏', // value + rate
-    width: 150
+    width: 180
   },
   {
     name: 'days',
     label: '持有',
-    width: 80
+    width: 70
   },
   {
     name: 'updated',
@@ -87,6 +88,7 @@ const actions: ActionOpt[] = [
 const data = ref<any[]>([])
 const tradeDialogVisible = ref<boolean>(false)
 const createDialogVisible = ref<boolean>(false)
+const updateDialogVisible = ref<boolean>(false)
 const reqParam = ref<ReqParam>()
 const reqHolding = ref<number>()
 const reqTitle = ref<string>('')
@@ -114,7 +116,7 @@ async function makeData(items: CalcHoldingModel[]) {
 
     item['cost'] = (item.quantity != 0 ? -(item.expense / item.quantity) : 0.0).toFixed(2)
     item['days'] = `${Math.floor((Date.parse(item.updated) - Date.parse(item.created)) / 86400000)}天`
-    item['updated'] = formatToDate(item.updated, 'YYYY-MM-DD')
+    item['updated'] = item.updated // formatToDate(item.updated, 'YYYY-MM-DD')
 
     const history = await fetchHistoryData(item.code, item.type)
     if (history) {
@@ -137,11 +139,16 @@ function onCreateClick() {
 }
 
 function onAction(row: any) {
-  console.log(row)
+  reqParam.value = {
+    type: row.type,
+    code: row.code,
+    name: row.name,
+  }  
+  updateDialogVisible.value = true
 }
 
 function onRecord(row: any) {
-  reqTitle.value = `${row.code}(${row.name}) [数量: ${row.quantity} | 费用: ${row.value} | 盈亏: ${row.gain}]`
+  reqTitle.value = `${row.code}(${row.name}): 数量: ${row.quantity} | 费用: ${row.value} | 盈亏: ${row.gain}`
   reqParam.value = {
     type: row.type,
     code: row.code,
@@ -155,12 +162,40 @@ function onSetReminder(row: any) {
   console.log(row)
 }
 
-function onDelete(row: any) {
+async function onDelete(row: any) {
   console.log(row)
+  try {
+    await ElMessageBox.confirm(
+      `remove holding instance '${row.code}'?`,
+      'Warning', 
+      {
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        type: 'warning'
+      }
+    )
+    const r = await apiRemove({
+      id: row.id
+    })
+    if (r.code == 0) {
+      ElMessage({
+        type: 'success',
+        message: 'holding instance be removed.'
+      })
+    } else {
+      ElMessage({
+        type: 'error',
+        message: 'removing holding instance failed.'
+      })
+    }
+    await fetch()
+  } catch (error) {
+
+  }
 }
 
 const createForm = ref<typeof CreateHoldingForm>()
-async function onSubmit() {
+async function onCreateSubmit() {
   const form = createForm.value?.form
   console.log(form)
   if (form) {
@@ -170,13 +205,37 @@ async function onSubmit() {
       quantity: form.quantity,
       expense: form.expense,
       comment: form.comment,
-      created: form.created
+      created: formatToDate(form.created, 'YYYY-MM-DD')
     })
     createDialogVisible.value = false
     if (ret.code == 0) {
       ElMessage({
         type: 'success',
         message: `${form.code} added to holding list.`
+      })
+      await fetch()
+    }
+  }
+}
+
+const updateForm = ref<typeof UpdateHoldingForm>()
+async function onUpdateSubmit() {
+  const form = updateForm.value?.form
+  if (form) {
+    const ret = await apiUpdate({
+      type: form.type,
+      code: form.code,
+      action: form.action,
+      quantity: form.quantity,
+      expense: form.expense,
+      comment: form.comment,
+      created: formatToDate(form.created, 'YYYY-MM-DD')
+    })
+    updateDialogVisible.value = false
+    if (ret.code == 0) {
+      ElMessage({
+        type: 'success',
+        message: `${form.code} added holding action successful.`
       })
       await fetch()
     }
@@ -203,14 +262,24 @@ async function onSubmit() {
     </ElDialog>
     <ElDialog v-model="createDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
-        <ElText tag="b">新增</ElText>
+        <ElText tag="b">新增持股</ElText>
       </template>      
       <CreateHoldingForm ref="createForm"/>
       <template #footer>
         <ElButton @click="createDialogVisible=false">取消</ElButton>
-        <BaseButton type="primary" @click="onSubmit">确定</BaseButton>
+        <ElButton type="primary" @click="onCreateSubmit">确定</ElButton>
       </template>              
     </ElDialog>
+    <ElDialog v-model="updateDialogVisible" :destroy-on-close="true" width="25%">
+      <template #header>
+        <ElText tag="b">新增交易记录</ElText>
+      </template>      
+      <UpdateHoldingForm ref="updateForm" :req-param="reqParam!"/>
+      <template #footer>
+        <ElButton @click="updateDialogVisible=false">取消</ElButton>
+        <ElButton type="primary" @click="onUpdateSubmit">确定</ElButton>
+      </template>              
+    </ElDialog>    
   </ContentWrap>
 </template>
 <style lang="css">

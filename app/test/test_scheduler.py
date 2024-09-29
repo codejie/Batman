@@ -1,6 +1,5 @@
 from datetime import datetime
 import unittest
-from unittest import mock
 from app.task_scheduler import taskScheduler
 
 def func():

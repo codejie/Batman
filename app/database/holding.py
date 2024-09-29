@@ -1,11 +1,12 @@
 from datetime import datetime
-from sqlalchemy import Index, ForeignKey, literal
+from sqlalchemy import Index, ForeignKey, literal, text
 from app.database import TableBase, Column, Integer, Float, String, DateTime, func
 from app.database import dbEngine, sql_insert, sql_delete, sql_update, sql_select, and_, case
 
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from app.database.tables import IndexAListTable, StockAListTable
+from app.utils import utils
 
 TRADE_ACTION_BUY: int = 0
 TRADE_ACTION_SELL: int = 1
@@ -24,8 +25,8 @@ class HoldingListTable(TableBase):
   # buying = Column(Float, nullable=False) # 买入价
   # cost = Column(Float, nullable=False) # 成本价
   # comment = Column(String, nullable=True)
-  created = Column(DateTime(timezone=True), server_default=func.now())
-  updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.current_timestamp())
+  created = Column(String, nullable=False) # YYYY-MM-DD
+  updated = Column(String, nullable=False)
   flag = Column(Integer, nullable=False, default=HOLDING_FLAG_NORMAL) # 0: normal, 1: removed
 
   __table_args__ = (
@@ -49,19 +50,20 @@ class TradeRecordTable(TableBase):
   # deal = Column(Float, nullable=False) # 成交价
   expense = Column(Float, nullable=False) # 总费用
   comment = Column(String, nullable=True)
-  created = Column(DateTime(timezone=True), server_default=func.now())
+  created = Column(String, nullable=False)
 
 
-def insert(uid: int, type: int, code: str, quantity: int, expense: float, comment: str = None, created: datetime = func.now()) -> int:
+def insert(uid: int, type: int, code: str, quantity: int, expense: float, created: str, comment: str = None) -> int:
   # stmt = sql_insert(HoldingListTable).values(
   #   uid=uid,
   #   type=type,
   #   code=code
   # )
-  stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code, created=created)
+  updated = utils.date2String2(datetime.now())
+  stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code, created=created, updated=updated)
   stmt = stmt.on_conflict_do_update(
     index_elements=[HoldingListTable.type, HoldingListTable.code],
-    set_=dict(updated=func.now(), flag=HOLDING_FLAG_NORMAL)).return_defaults(HoldingListTable.id)
+    set_=dict(updated=updated, flag=HOLDING_FLAG_NORMAL)).return_defaults(HoldingListTable.id)
   id = dbEngine.insert(stmt=stmt)
   stmt = sql_insert(TradeRecordTable).values(
     holding=id,
@@ -74,7 +76,7 @@ def insert(uid: int, type: int, code: str, quantity: int, expense: float, commen
   id = dbEngine.insert(stmt=stmt)
   return id
 
-def update(uid: int, action: int, type: int, code: str, quantity: int, expense: float, comment: str = None, created: datetime = func.now()) -> int:
+def update(uid: int, action: int, type: int, code: str, quantity: int, expense: float, created: str, comment: str = None) -> int:
   # stmt = sql_insert(TradeRecordTable).from_select(
   #   [TradeRecordTable.holding, TradeRecordTable.action, TradeRecordTable.quantity,
   #    TradeRecordTable.deal, TradeRecordTable.cost, TradeRecordTable.comment],
@@ -104,7 +106,7 @@ def update(uid: int, action: int, type: int, code: str, quantity: int, expense: 
        quantity,
        expense,
        literal(comment),
-       created
+       literal(created)
       ).filter(
        HoldingListTable.uid == uid,
        HoldingListTable.type == type,
@@ -229,7 +231,7 @@ def calc_holding(uid:int, type: int = None, code: str = None, with_removed: bool
           HoldingListTable
         ).join(StockAListTable, StockAListTable.code == HoldingListTable.code, isouter=True
         ).join(IndexAListTable, IndexAListTable.code == HoldingListTable.code, isouter=True
-        ).join(TradeRecordTable, TradeRecordTable.id == HoldingListTable.id, isouter=True
+        ).join(TradeRecordTable, TradeRecordTable.holding == HoldingListTable.id, isouter=True
         ).filter(
           HoldingListTable.uid == uid
         ).group_by(HoldingListTable.type, HoldingListTable.code
@@ -243,6 +245,7 @@ def calc_holding(uid:int, type: int = None, code: str = None, with_removed: bool
     stmt = stmt.where(HoldingListTable.code == code)
   if not with_removed:
     stmt = stmt.where(HoldingListTable.flag == HOLDING_FLAG_NORMAL)
+
   results = dbEngine.select_with_execute(stmt)
 
   ret = []

@@ -13,7 +13,7 @@ class CreateRequest(RequestModel):
   quantity: int
   expense: float
   comment: str | None = None
-  created: datetime
+  created: str
 
 class CreateResponse(ResponseModel):
   result: int
@@ -21,8 +21,7 @@ class CreateResponse(ResponseModel):
 @router.post('/create', response_model=CreateResponse, response_model_exclude_none=True)
 async def create(body: CreateRequest=Body()):
   uid = 99
-  print(body)
-  result = holding.insert(uid, body.type, body.code, body.quantity, body.expense, body.comment, body.created)
+  result = holding.insert(uid, body.type, body.code, body.quantity, body.expense, body.created, body.comment)
   return CreateResponse(result=result)
 
 """
@@ -35,7 +34,7 @@ class UpdateRequest(RequestModel):
   quantity: int
   expense: float
   comment: str | None = None
-  created: datetime
+  created: str
 
 class UpdateResponse(ResponseModel):
   result: int
@@ -43,7 +42,7 @@ class UpdateResponse(ResponseModel):
 @router.post('/update', response_model=UpdateResponse, response_model_exclude_none=True)
 async def update(body: UpdateRequest=Body()):
   uid = 99
-  result = holding.update(uid, body.action, body.type, body.code, body.quantity, body.expense, body.comment, body.created)
+  result = holding.update(uid, body.action, body.type, body.code, body.quantity, body.expense, body.created, body.comment)
   return UpdateResponse(result=result)
 
 """
@@ -74,8 +73,8 @@ class HoldingModel(BaseModel):
   type: int
   code: str
   name: str
-  created: datetime
-  updated: datetime
+  created: str
+  updated: str
   flag: int
 
 class GetHoldingListResponse(ResponseModel):
@@ -102,7 +101,7 @@ class RecordModel(BaseModel):
   quantity: int
   expense: float
   comment: str | None
-  created: datetime
+  created: str
 
 class GetRecordListResponse(ResponseModel):
   result: list[RecordModel]
@@ -126,8 +125,8 @@ class CalcHoldingModel(BaseModel):
   type: int
   code: str
   name: str
-  created: datetime
-  updated: datetime
+  created: str
+  updated: str
   flag: int
   quantity: int
   expense: float
@@ -140,3 +139,33 @@ async def calc_holding(body: CalcHoldingListResquest=Body()):
   uid = 99
   result = holding.calc_holding(uid, body.type, body.code, body.with_removed)
   return CalcHoldingListResponse(result=result)
+
+"""
+GetHoldingRecord
+"""
+class GetHoldingRecordRequest(RequestModel):
+  type: int | None = None
+  code: str | None = None
+  action: int | None = None
+  with_removed: bool = False
+
+class HoldingRecordModel(BaseModel):
+  id: int
+  type: int
+  code: str
+  name: str
+  action: int
+  quantity: int
+  expense: float
+  created: str
+  updated: str # record's create
+  flag: int
+
+class GetHoldingRecordResponse(ResponseModel):
+  result: list[HoldingRecordModel]
+
+@router.post('/get_holding_record', response_model=GetHoldingRecordResponse, response_model_exclude_none=True)
+async def get_holding_record(body: GetHoldingRecordRequest=Body()):
+  uid = 99
+  result = holding.get_holding_record(uid, body.type, body.code, body.action, body.with_removed)
+  return GetHoldingRecordResponse(result=result)
