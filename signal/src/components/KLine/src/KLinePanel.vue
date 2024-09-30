@@ -24,7 +24,7 @@ let zoom: boolean = false
 let kline: boolean = true
 
 const title = ref<string>('')
-const startRange = ref<string>('一年')
+const startRange = ref<string>('半年')
 const maLines = ref<number[]>([7, 9, 12])
 const zoom_kline = ref<string[]>(['KLine'])
 
@@ -57,11 +57,15 @@ function updateTitle() {
   title.value = `${props.param.code}(${props.param.name})`
 }
 
+const kc = ref(null)
+const originData = ref<any[]>()
 watch(
-  () => props.param,
+  () => [props.param, unref(kc)?.dataChanged],
   () => {
+    console.log('watch')
     updateDataParam(props.param.type, props.param.code)
     updateTitle()
+    originData.value = unref(kc)?.originData.reverse()
 })
 
 onMounted(() =>{
@@ -116,8 +120,8 @@ function onStartChanged() {
   updateDataParam(props.param.type, props.param.code)
 }
 
-const kc = ref(null)
-const originData = computed(() => unref(kc)?.originData.reverse())
+// const kc = ref(null)
+// const originData = computed(() => unref(kc)?.originData.reverse())
 
 </script>
 <template>

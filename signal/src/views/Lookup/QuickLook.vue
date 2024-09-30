@@ -247,7 +247,6 @@ function checkItemContext(item: ItemCode): boolean {
 
 function makeItemContext(item: ItemCode): Promise<ItemContext> {
   return new Promise<ItemContext>((resolve) => {
-    console.log(k_start)
     apiHistory(
       {
         code: item.code,
@@ -407,7 +406,6 @@ function redrawItemContextKLineData() {
 
 function clearItemContext(item: ItemCode) {
   if (item.code == baseItem?.item.code && item.type == baseItem?.item.type) {
-    console.log('match')
     if (moreItems.length > 0) {
       baseItem = moreItems[0]
       moreItems = moreItems.slice(1)

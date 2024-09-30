@@ -44,7 +44,6 @@ function onRowClick(row: any) {
     type: row.type
   }
   klineDialogVisible.value = true
-  console.log(row)
 }
 
 function getBtnType(type?: string): any {

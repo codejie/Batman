@@ -36,9 +36,11 @@ const props = defineProps({
 })
 
 const originData = ref<DataParam>([])
+const dataChanged = ref<boolean>(false)
 
 defineExpose({
-  originData
+  originData,
+  dataChanged,
 })
 
 let xData: string[] = []
@@ -202,13 +204,14 @@ const options = ref<EChartsOption>({
 watch(
   () => props.reqParam,
   async () => {
-    console.log(`type = ${props.reqParam.type}`)
+    // console.log(`type = ${props.reqParam.type}`)
     const ret = await apiHistory({
       code: props.reqParam.code,
       start: props.reqParam.start || DEFAULT_START,
       end: props.reqParam.end
     }, props.reqParam.type)
     originData.value = (ret.result as DataParam)
+    dataChanged.value = true
     updateData(unref(originData))
     updateOptions()
   }

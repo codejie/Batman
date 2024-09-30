@@ -61,6 +61,21 @@ async def remove(body: RemoveRequest=Body()):
   return RemoveResponse(result=result)
 
 """
+Remove record
+"""
+class RemoveRecordRequest(RequestModel):
+  id: int
+
+class RemoveRecordResponse(ResponseModel):
+  result: int
+
+@router.post('/remove_record', response_model=RemoveRecordResponse, response_model_exclude_none=True)
+async def remove_record(body: RemoveRecordRequest=Body()):
+  uid = 99
+  result = holding.remove_record(uid, body.id)
+  return RemoveRecordResponse(result=result)
+
+"""
 GetHoldingList
 """
 class GetHoldingListResquest(RequestModel):
@@ -151,6 +166,7 @@ class GetHoldingRecordRequest(RequestModel):
 
 class HoldingRecordModel(BaseModel):
   id: int
+  holding: int
   type: int
   code: str
   name: str

@@ -163,7 +163,6 @@ function onSetReminder(row: any) {
 }
 
 async function onDelete(row: any) {
-  console.log(row)
   try {
     await ElMessageBox.confirm(
       `remove holding instance '${row.code}'?`,
@@ -197,7 +196,6 @@ async function onDelete(row: any) {
 const createForm = ref<typeof CreateHoldingForm>()
 async function onCreateSubmit() {
   const form = createForm.value?.form
-  console.log(form)
   if (form) {
     const ret = await apiCreate({
       type: form.type,

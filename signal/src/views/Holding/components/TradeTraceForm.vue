@@ -8,7 +8,7 @@ import { ElRow, ElTable, ElTableColumn } from 'element-plus'
 import { onMounted, PropType, ref } from 'vue';
 import TradeKLineForm from './TradeKLineForm.vue';
 
-const EXTEND_MONTHS: number = 3
+const EXTEND_MONTHS: number = 2
 
 export type TradeRecord = {
   id: number
@@ -51,7 +51,6 @@ function makeTradeRecords(data: RecordModel[]) {
       comment: item.comment,
       created: item.created // formatToDate(item.created, 'YYYY-MM-DD')
     })
-    console.log(item.created)
     const c = new Date(item.created)
     if (start > c) start = c
     // if (end < c) end = c

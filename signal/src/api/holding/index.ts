@@ -1,5 +1,5 @@
 import request from '@/axios'
-import { CalcHoldingListResponse, CalcHoldingListResquest, CreateRequest, CreateResponse, GetHoldingListRequest, GetHoldingListResponse, GetRecordListRequest, GetRecordListResponse, RemoveRequest, RemoveResponse, UpdateRequest, UpdateResponse } from './types'
+import { CalcHoldingListResponse, CalcHoldingListResquest, CreateRequest, CreateResponse, GetHoldingListRequest, GetHoldingListResponse, GetHoldingRecordRequest, GetHoldingRecordResponse, GetRecordListRequest, GetRecordListResponse, RemoveRecordRequest, RemoveRecordResponse, RemoveRequest, RemoveResponse, UpdateRequest, UpdateResponse } from './types'
 
 export const apiCreate = (data: CreateRequest): Promise<Response<CreateResponse>> => {
   return request.post({
@@ -22,6 +22,13 @@ export const apiRemove = (data: RemoveRequest): Promise<Response<RemoveResponse>
   })
 }
 
+export const apiRemoveRecord = (data: RemoveRecordRequest): Promise<Response<RemoveRecordResponse>> => {
+  return request.post({
+    url: '/holding/remove_record',
+    data
+  })
+}
+
 export const apiGetHoldingList = (data: GetHoldingListRequest): Promise<Response<GetHoldingListResponse>> => {
   return request.post({
     url: '/holding/get_holding',
@@ -39,6 +46,13 @@ export const apiGetRecordList = (data: GetRecordListRequest): Promise<Response<G
 export const apiCalcHoldingList = (data: CalcHoldingListResquest): Promise<Response<CalcHoldingListResponse>> => {
   return request.post({
     url: '/holding/calc_holding',
+    data
+  })
+}
+
+export const apiGetHoldingRecord = (data: GetHoldingRecordRequest): Promise<Response<GetHoldingRecordResponse>> => {
+  return request.post({
+    url: '/holding/get_holding_record',
     data
   })
 }

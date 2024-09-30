@@ -82,3 +82,13 @@ class Test_Holding(unittest.TestCase):
     print(result)
     dbEngine.shutdown()
     self.assertTrue(True)
+
+  def test_get_holding_record(self):
+    dbEngine.start()
+
+    result = holding.get_holding_record(
+      uid=99
+    )
+    print(result)
+    dbEngine.shutdown()
+    self.assertTrue(True)

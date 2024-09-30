@@ -175,8 +175,8 @@ const themeChange = () => {
       <ThemeSwitch @change="themeChange" />
 
       <!-- 布局 -->
-      <ElDivider>{{ t('setting.layout') }}</ElDivider>
-      <LayoutRadioPicker />
+      <!-- <ElDivider>{{ t('setting.layout') }}</ElDivider>
+      <LayoutRadioPicker /> -->
 
       <!-- 系统主题 -->
       <ElDivider>{{ t('setting.systemTheme') }}</ElDivider>
@@ -231,15 +231,15 @@ const themeChange = () => {
     </div>
 
     <!-- 界面显示 -->
-    <ElDivider>{{ t('setting.interfaceDisplay') }}</ElDivider>
-    <InterfaceDisplay />
+    <!-- <ElDivider>{{ t('setting.interfaceDisplay') }}</ElDivider>
+    <InterfaceDisplay /> -->
 
     <ElDivider />
-    <div>
+    <!-- <div>
       <BaseButton type="primary" class="w-full" @click="copyConfig">{{
         t('setting.copy')
       }}</BaseButton>
-    </div>
+    </div> -->
     <div class="mt-5px">
       <BaseButton type="danger" class="w-full" @click="clear">
         {{ t('setting.clearAndReset') }}

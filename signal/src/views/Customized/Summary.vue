@@ -36,26 +36,11 @@ const colSpan = ref<any>({
 const selectType = ref<number>(parseInt(props.type))
 const selectCode = ref<string>(props.code)
 const customizedList = ref<InfoModel[]>()
-// const historyData = ref<HistoryDataModel[]>([])
-// const showParam = ref<ShowParam>({
-//   maLines: [5, 12, 30 ],
-//   hideVolume: false,
-//   markLines: true
-// })
 
 async function fetchCustomized() {
   const ret = await apiInfos({})
   customizedList.value = ret.result
 }
-
-// async function fetchHistory(code: string) {
-//   const ret = await apiHistory({
-//     code: code,
-//     start: DEFAULT_START,
-//     end: DEFAULT_END
-//   })
-//   historyData.value = ret.result
-// }
 
 onMounted(async () => {
     await fetchCustomized()
@@ -81,12 +66,6 @@ function onTestClick() {
       right: 4
     }
   }
-
-  // showParam.value = {
-  //   maLines: [5, 12, 30 ],
-  //   hideVolume: false,
-  //   markLines: true
-  // }
 }
 
 async function onCustomizedClick(row: any) {
@@ -111,7 +90,7 @@ const param = ref<ReqParam>({
   <ContentDetailWrap>
     <template #header>
       <ElButton @click="go(-1)">Back</ElButton>
-      <ElButton @click="onTestClick">Test</ElButton>
+      <!-- <ElButton @click="onTestClick">Test</ElButton> -->
     </template>
     <ElRow :gutter="24">
       <ElCol class="middle-col" :span="colSpan.left">

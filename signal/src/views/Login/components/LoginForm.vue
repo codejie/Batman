@@ -55,7 +55,7 @@ const schema = reactive<FormSchema[]>([
       span: 24
     },
     componentProps: {
-      placeholder: 'admin or test'
+      placeholder: 'any text..'
     }
   },
   {
@@ -70,7 +70,7 @@ const schema = reactive<FormSchema[]>([
       style: {
         width: '100%'
       },
-      placeholder: 'admin or test'
+      placeholder: 'any text..'
     }
   },
   {

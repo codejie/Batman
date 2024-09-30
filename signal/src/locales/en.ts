@@ -359,19 +359,6 @@ export default {
     clearWatermark: 'Clear watermark',
     resetWatermark: 'Reset watermark'
   },
-  qrcodeDemo: {
-    qrcode: 'Qrcode',
-    qrcodeDes: 'Secondary packaging based on qrcode',
-    basicUsage: 'Basic usage',
-    imgTag: 'Img tag',
-    style: 'Style config',
-    click: 'Click event',
-    asynchronousContent: 'Asynchronous content',
-    invalid: 'Invalid',
-    logoConfig: 'Logo config',
-    logoStyle: 'Logo style',
-    size: 'size config'
-  },
   highlightDemo: {
     highlight: 'Highlight',
     message: 'The best time to plant a tree is ten years ago, followed by now.',

@@ -62,7 +62,7 @@ def update_daily_history(symbols: DataFrame) -> None:
     start, end, is_update = records.get_start_end(records.Item.INDEX_DAILY_HISTORY, code)
     if start < end:
       try:
-        local.fetch_history(code, start, end, if_exists='replace')
+        local.fetch_history(code, start, end, if_exists='append')
         records.set_latest(records.Item.INDEX_DAILY_HISTORY, end, code, is_update)
       except AppException as e:
         logger.warning(f'update {code} history fail - {e.message}')

@@ -6,8 +6,8 @@ import { apiList, apiRemove, apiReset } from '@/api/strategy'
 import { onMounted, ref, unref } from 'vue'
 import { ElTable, ElTableColumn, ElButton, ElMessageBox, ElMessage, ElDialog } from 'element-plus'
 import { InstanceListItemModel } from '@/api/strategy/types'
-import DetailForm from '@/views/Strategy/Filter/components/DetailForm.vue'
-import ResultForm from '@/views/Strategy/Filter/components/ResultForm.vue'
+import DetailForm from './components/DetailForm.vue'
+import ResultForm from './components/ResultForm.vue'
 
 
 const { t } = useI18n()

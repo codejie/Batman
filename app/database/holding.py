@@ -123,6 +123,10 @@ def remove(uid: int, id: int) -> int:
     )
   return dbEngine.update(stmt=stmt)
 
+def remove_record(uid: int, id: int) -> int:
+  stmt = sql_delete(TradeRecordTable).where(TradeRecordTable.id == id)
+  return dbEngine.delete(stmt=stmt)
+
 def test(uid: int, type: int, code: str, quantity: int, expense: float, comment: str = None) -> int:
   # stmt = sqlite_insert(HoldingListTable).values(uid=uid, type=type, code=code)
   # stmt = stmt.on_conflict_do_update(
@@ -268,3 +272,48 @@ def calc_holding(uid:int, type: int = None, code: str = None, with_removed: bool
 # 成本价 = sum(expense) / sum(quantity)
 # 市值 = sum(quantity) * price
 # 盈亏 = sum(expense) - 市值
+
+def get_holding_record(uid: int, type: int = None, code: str = None, action: int = None, with_removed: bool = False):
+  stmt = sql_select(HoldingListTable,
+      case(
+        (HoldingListTable.type == 1, StockAListTable.name),
+        else_=IndexAListTable.name
+      ).label('name'),
+      TradeRecordTable
+    ).select_from(
+      HoldingListTable
+    ).join(StockAListTable, StockAListTable.code == HoldingListTable.code, isouter=True
+    ).join(IndexAListTable, IndexAListTable.code == HoldingListTable.code, isouter=True
+    ).join(TradeRecordTable, TradeRecordTable.holding == HoldingListTable.id, isouter=True
+    ).filter(
+      HoldingListTable.uid == uid
+    ).order_by(TradeRecordTable.id)
+  
+  if (type is not None) and (code is not None):
+    stmt = stmt.where(HoldingListTable.type == type, HoldingListTable.code == code)
+  elif type is not None:
+    stmt = stmt.where(HoldingListTable.type == type)
+  elif code is not None:
+    stmt = stmt.where(HoldingListTable.code == code)
+  if not with_removed:
+    stmt = stmt.where(HoldingListTable.flag == HOLDING_FLAG_NORMAL)
+
+  results = dbEngine.select_with_execute(stmt)
+
+  ret = []
+  for r in results:
+    ret.append({
+      'id': r[2].id,
+      'holding': r[2].holding,
+      'name': r[1],
+      'type': r[0].type,
+      'code': r[0].code,
+      'action': r[2].action,
+      'created': r[0].created,
+      'updated': r[2].created,
+      'flag': r[0].flag,
+      'quantity': r[2].quantity,
+      'expense': r[2].expense
+    })
+
+  return ret

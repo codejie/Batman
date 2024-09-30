@@ -65,7 +65,7 @@ export default {
     returnToHome: '返回首页'
   },
   setting: {
-    projectSetting: '项目配置',
+    projectSetting: '配置',
     theme: '主题',
     layout: '布局',
     systemTheme: '系统主题',
@@ -352,19 +352,6 @@ export default {
     createdWatermark: '创建水印',
     clearWatermark: '清除水印',
     resetWatermark: '重置水印'
-  },
-  qrcodeDemo: {
-    qrcode: '二维码',
-    qrcodeDes: '基于 qrcode 二次封装',
-    basicUsage: '基础用法',
-    imgTag: 'img标签',
-    style: '样式配置',
-    click: '点击事件',
-    asynchronousContent: '异步内容',
-    invalid: '失效',
-    logoConfig: 'logo配置',
-    logoStyle: 'logo样式',
-    size: '大小配置'
   },
   highlightDemo: {
     highlight: '高亮',

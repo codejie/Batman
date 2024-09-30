@@ -24,6 +24,11 @@ export type RemoveRequest = {
 }
 export type RemoveResponse = number
 
+export type RemoveRecordRequest = {
+  id: number
+}
+export type RemoveRecordResponse = number
+
 export type GetHoldingListRequest = {
   type?: number
   code?: string
@@ -73,3 +78,24 @@ export type CalcHoldingModel = {
   expense: number
 }
 export type CalcHoldingListResponse = CalcHoldingModel[]
+
+export type GetHoldingRecordRequest = {
+  type?: number
+  code?: string
+  action?: number
+  with_removed?: boolean
+}
+export type HoldingRecordModel = {
+  id: number
+  holding: number
+  type: number
+  code: string
+  name: string
+  action: number
+  quantity: number
+  expense: number
+  created: string
+  updated: string // record's create
+  flag: number
+}
+export type GetHoldingRecordResponse = HoldingRecordModel[]

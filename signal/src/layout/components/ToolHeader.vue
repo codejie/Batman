@@ -1,7 +1,7 @@
 <script lang="tsx">
 import { defineComponent, computed } from 'vue'
 import { Collapse } from '@/components/Collapse'
-import { LocaleDropdown } from '@/components/LocaleDropdown'
+// import { LocaleDropdown } from '@/components/LocaleDropdown'
 import { SizeDropdown } from '@/components/SizeDropdown'
 import { UserInfo } from '@/components/UserInfo'
 import { Screenfull } from '@/components/Screenfull'
@@ -31,7 +31,7 @@ const size = computed(() => appStore.getSize)
 const layout = computed(() => appStore.getLayout)
 
 // 多语言图标
-const locale = computed(() => appStore.getLocale)
+// const locale = computed(() => appStore.getLocale)
 
 export default defineComponent({
   name: 'ToolHeader',
@@ -58,12 +58,6 @@ export default defineComponent({
           ) : undefined}
           {size.value ? (
             <SizeDropdown class="custom-hover" color="var(--top-header-text-color)"></SizeDropdown>
-          ) : undefined}
-          {locale.value ? (
-            <LocaleDropdown
-              class="custom-hover"
-              color="var(--top-header-text-color)"
-            ></LocaleDropdown>
           ) : undefined}
           <UserInfo></UserInfo>
         </div>
