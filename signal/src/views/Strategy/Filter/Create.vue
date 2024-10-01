@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, unref } from 'vue'
-import { useI18n } from 'vue-i18n'
+// import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { CreateInstanceRequest, TriggerModel } from '@/api/strategy/types'
@@ -8,7 +8,7 @@ import { apiCreate } from '@/api/strategy'
 import { ElMessage, ElButton } from 'element-plus'
 import CreateForm from './components/CreateForm.vue'
 
-const { t } = useI18n()
+// const { t } = useI18n()
 const { push, go } = useRouter()
 // const { emitter } = useEmitt()
 
@@ -72,17 +72,15 @@ const onBtnSubmit = async () => {
 }
 </script>
 <template>
-  <ContentDetailWrap :title="t('common.create')">
+  <ContentDetailWrap title="创建">
     <template #header>
-      <ElButton @click="go(-1)">{{ t('common.back') }}</ElButton>
-      <ElButton type="primary" :disabled="!submitEnabled" :loading="loading" @click="onBtnSubmit">
-        {{ t('common.submit') }}
-      </ElButton>
+      <ElButton @click="go(-1)">返回</ElButton>
+      <ElButton type="primary" :disabled="!submitEnabled" :loading="loading" @click="onBtnSubmit">提交</ElButton>
     </template>
     <CreateForm ref="form" />
   </ContentDetailWrap>
-  <div>
+  <!-- <div>
     {{ form }}
     {{ submitEnabled }}
-  </div>
+  </div> -->
 </template>

@@ -56,13 +56,10 @@ const onTimerChanged = (value) => {
 }
 </script>
 <template>
-  <!-- <ElTable :data="data" border style="width: 100%">
-    <ElTableColumn label=""
-  </ElTable> -->
   <ElRow :gutter="24" style="width: 100%">
     <ElCol :span="12">
       <ElRow :gutter="12" style="width: 100%">
-        <ElCol :span="4" style="text-align: right">Mode</ElCol>
+        <ElCol :span="4" style="text-align: right">模式</ElCol>
         <ElCol :span="20">
           <ElSelect v-model="data.mode">
             <ElOption
@@ -78,7 +75,7 @@ const onTimerChanged = (value) => {
     </ElCol>
     <ElCol :span="12" v-if="data.mode == 'daily'">
       <ElRow :gutter="12" style="width: 100%">
-        <ElCol :span="4" style="text-align: right">Days</ElCol>
+        <ElCol :span="4" style="text-align: right">时段</ElCol>
         <ElCol :span="20">
           <ElSelect v-model="data.days">
             <ElOption
@@ -95,11 +92,11 @@ const onTimerChanged = (value) => {
   <ElRow :gutter="24" style="width: 100%">
     <ElCol :span="12" v-if="data.mode == 'daily'">
       <ElRow :gutter="12" style="width: 100%">
-        <ElCol :span="4" style="text-align: right">Hour</ElCol>
+        <ElCol :span="4" style="text-align: right">时间</ElCol>
         <ElCol :span="20">
           <ElTimePicker
             v-model="dailyTime"
-            placeholder="select time"
+            placeholder="选择时间.."
             format="HH:mm"
             @change="onTimerChanged"
           />
@@ -108,14 +105,14 @@ const onTimerChanged = (value) => {
     </ElCol>
     <ElCol :span="12" v-if="data.mode == 'delay'">
       <ElRow :gutter="12" style="width: 100%">
-        <ElCol :span="4" style="text-align: right">Seconds</ElCol>
+        <ElCol :span="4" style="text-align: right">秒数</ElCol>
         <ElCol :span="20">
           <ElInput v-model="data.seconds" />
         </ElCol>
       </ElRow>
     </ElCol>
   </ElRow>
-  {{ dailyTime }}
+  <!-- {{ dailyTime }} -->
 </template>
 
 <style>

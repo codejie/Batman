@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, PropType, ref, unref, watch } from 'vue';
+import { onMounted, PropType, ref, unref, watch } from 'vue';
 import { ElRow, ElCol, ElButton, ElCheckboxGroup, ElCheckboxButton, ElRadioGroup, ElRadioButton, ElMessage, ElTable, ElTableColumn } from 'element-plus';
 import { ReqParam, ShowParam } from '..';
 import { apiCreate } from '@/api/customized';
@@ -17,7 +17,7 @@ const props = defineProps({
   }
 })
 const startGroup: string[] = ['两年', '一年', '半年']
-const maGroup: number[] = [5, 7, 9, 10, 12, 15, 17, 20, 26, 30, 45, 60]
+const maGroup: number[] = [5, 7, 10, 12, 15, 20, 26, 30, 45, 60]
 const klineGroup: string[] = ['KLine', 'Zoom']
 let start: string = '2023-01-01'
 let zoom: boolean = false
@@ -85,7 +85,7 @@ async function onCustomizedClick() {
   if (ret.code == 0) {
     ElMessage({
         type: 'success',
-        message: `${props.param.code} added to customized list.`
+        message: `${props.param.code} 加入到自选列表.`
       })    
   }
 }
@@ -129,7 +129,7 @@ function onStartChanged() {
     <ElCol :span="4">
       <div style="float: right;">
         <!-- {{ title }} -->
-        <ElButton size="small" @click="onCustomizedClick">Add to Customized</ElButton>
+        <ElButton size="small" @click="onCustomizedClick">加入自选</ElButton>
       </div>
     </ElCol>
     <ElCol :span="6">

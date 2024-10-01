@@ -32,14 +32,14 @@ function setKLineData(kline: KLineChartData) {
 }
 
 function setActionData(buy: YData, sell: YData) {
-  chart.value?.addLine(0, 'buy', buy, false)
-  chart.value?.addLine(0, 'sell', sell, false)
+  chart.value?.addLine(0, '买入', buy, false)
+  chart.value?.addLine(0, '卖出', sell, false)
 }
 
 function setQuantityData(buy: YData, sell: YData, total: YData) {
-  chart.value?.addBar(1, 'buy', buy, false)
-  chart.value?.addBar(1, 'sell', sell, false)
-  chart.value?.addStepLine(1, 'quantity', total, false)
+  chart.value?.addBar(1, '买入', buy, false)
+  chart.value?.addBar(1, '卖出', sell, false)
+  chart.value?.addStepLine(1, '数量', total, false)
 }
 
 onMounted(() => {

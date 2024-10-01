@@ -53,7 +53,7 @@ function getBtnType(type?: string): any {
 
 <template>
   <ElTable :data="data" :border="true" :highlight-current-row="true" @row-click="onRowClick">
-    <ElTableColumn type="index" width="60" />
+    <ElTableColumn type="index" width="50" />
     <ElTableColumn v-for="item in columns" :key="item.name" :label="item.label" :prop="item.name" :width="item.width" />
     <ElTableColumn label="Action">
       <template #default="{row}">

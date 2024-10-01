@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { apiList, apiRemove, apiReset } from '@/api/strategy'
 import { onMounted, ref, unref } from 'vue'
@@ -9,8 +8,6 @@ import { InstanceListItemModel } from '@/api/strategy/types'
 import DetailForm from './components/DetailForm.vue'
 import ResultForm from './components/ResultForm.vue'
 
-
-const { t } = useI18n()
 const { push } = useRouter()
 
 const detailDialogVisible = ref(false)
@@ -89,8 +86,8 @@ async function onDelete(id: string) {
     `delete strategy instance '${id}'?`,
     'Warning', 
     {
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'warning'
     }
   )
@@ -118,8 +115,8 @@ async function onReset(id: string, name: string) {
     `reset strategy instance '${name}'?`,
     'Information', 
     {
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'info'
     }
   )
@@ -144,50 +141,50 @@ async function onReset(id: string, name: string) {
 </script>
 
 <template>
-  <ContentWrap title="Filter Strategy Instance">
+  <ContentWrap title="选股策略">
     <div class="mb-10px">
       <!-- <BaseButton type="primary" @click="onBtnCreate">{{ t('common.create') }}</BaseButton> -->
-      <ElButton type="primary" @click="onBtnCreate">{{ t('common.create') }}</ElButton>
+      <ElButton type="primary" @click="onBtnCreate">创建</ElButton>
     </div>
     <ElTable :data="unref(listInstance)" :border="true" style="width: 100%">
-      <ElTableColumn prop="name" label="Name" width="180" />
-      <ElTableColumn prop="state" label="State" width="100">
+      <ElTableColumn prop="name" label="名称" width="180" />
+      <ElTableColumn prop="state" label="状态" width="100">
         <template #default="scope">
           {{ makeState(scope.row) }}
         </template>
       </ElTableColumn>
-      <ElTableColumn prop="strategy" label="Strategy" width="200" />
-      <ElTableColumn label="Hits" width="60">
+      <ElTableColumn prop="strategy" label="策略" width="200" />
+      <ElTableColumn label="命中" width="60">
         <template #default="scope">
           <ElButton link type="primary" @click="onResult(scope.row)">
             {{ makeResult(scope.row) }}
           </ElButton> 
         </template>
       </ElTableColumn>
-      <ElTableColumn prop="latest_updated" label="Updated" width="200">
+      <ElTableColumn prop="latest_updated" label="更新时间" width="200">
         <template #default="scope">
           {{ makeUpdated(scope.row.latest_updated) }}
         </template>
       </ElTableColumn>
       <ElTableColumn prop="id" label="ID" width="200" />
-      <ElTableColumn fixed="right" label="Operations" min-width="120">
+      <ElTableColumn fixed="right" label="操作" min-width="120">
         <template #default="scope">
-          <ElButton link type="primary" @click="onDetail(scope.row)">Detail</ElButton>
-          <ElButton link type="info" :disabled="scope.row.is_removed == false" @click="onReset(scope.row.id, scope.row.name)">Reset</ElButton>          
-          <ElButton link type="danger" @click="onDelete(scope.row.id)">Delete</ElButton>
+          <ElButton link type="primary" @click="onDetail(scope.row)">详情</ElButton>
+          <ElButton link type="info" :disabled="scope.row.is_removed == false" @click="onReset(scope.row.id, scope.row.name)">重置</ElButton>          
+          <ElButton link type="danger" @click="onDelete(scope.row.id)">删除</ElButton>
         </template>
       </ElTableColumn>
     </ElTable>
     <ElDialog v-model="detailDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="50%" destroy-on-close>
       <DetailForm :instance-id="selectInstance!.id" />
       <template #footer>
-        <ElButton type="primary" @click="detailDialogVisible=false">Close</ElButton>
+        <ElButton type="primary" @click="detailDialogVisible=false">关闭</ElButton>
       </template>
     </ElDialog>
     <ElDialog v-model="resultDialogVisible" :title="`${selectInstance?.name}(${selectInstance?.id})`" width="65%" destroy-on-close>
       <ResultForm :instance-id="selectInstance!.id" />
       <template #footer>
-        <ElButton type="primary" @click="resultDialogVisible=false">Close</ElButton>
+        <ElButton type="primary" @click="resultDialogVisible=false">关闭</ElButton>
       </template>
     </ElDialog>
   </ContentWrap>

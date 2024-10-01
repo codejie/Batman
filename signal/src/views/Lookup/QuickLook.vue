@@ -33,7 +33,7 @@ const props = defineProps({
 })
 
 const kchart = ref(null)
-const codeType = ref<string>('Stock')
+const codeType = ref<string>('股票')
 const codeList = ref<ItemCode[]>([]) //([{ type: 1, code: '000001', name: 'A'}, { type: 1, code: '000009', name: 'b'}])
 const selectedCodeList = ref<ItemCode[]>([])
 const inputCode = ref<string>()
@@ -43,7 +43,7 @@ const itemDataOutput = ref<string>()
 
 const startGroup: string[] = ['两年', '一年', '半年']
 const startRange = ref<string>('半年')
-const maGroup: number[] = [5, 9, 10, 12, 22, 26, 30, 45, 60]
+const maGroup: number[] = [5, 9, 10, 12, 26, 30, 45, 60]
 const maSelected = ref<number[]>([5])
 const secondGroup: string[] = ['Volume', 'MACD']
 const secondSelected = ref<string>('Volume')
@@ -174,12 +174,12 @@ async function fetchItemCode(code: string) {
     {
       code: code
     },
-    (codeType.value == 'Stock' ? 1 : 0)
+    (codeType.value == '股票' ? 1 : 0)
 )
   if (ret.result) {
     itemFetched.value = true
     itemCode = {
-      type: codeType.value == 'Stock' ? 1 : 0,
+      type: codeType.value == '股票' ? 1 : 0,
       code: ret.result.code,
       name: ret.result.name
     }
@@ -188,7 +188,7 @@ async function fetchItemCode(code: string) {
       {
         code: itemCode.code
       },
-      (codeType.value == 'Stock' ? 1 : 0)
+      (codeType.value == '股票' ? 1 : 0)
     )
     if (hret.result.length > 0) {
       itemDataOutput.value = makeItemDataOutput(hret.result[0])        
@@ -522,8 +522,8 @@ async function onCodeTableDelete() {
           <ElButton size="default">{{ codeType }}</ElButton>
           <template #dropdown>
             <ElDropdownMenu>
-              <ElDropdownItem command="Stock">Stock</ElDropdownItem>
-              <ElDropdownItem command="Index">Index</ElDropdownItem>
+              <ElDropdownItem command="Stock">股票</ElDropdownItem>
+              <ElDropdownItem command="Index">指数</ElDropdownItem>
             </ElDropdownMenu>
           </template>
         </ElDropdown>
@@ -534,41 +534,41 @@ async function onCodeTableDelete() {
     </ElRow>
     <ElDivider border-style="dashed" />    
     <ElRow :gutter="24">
-      <ElCol :span="3">
+      <ElCol :span="4">
         <ElRow>
           <ElTable ref="codeTable" :data="codeList" size="small" @select="onCodeListSelected" :border="true" max-height="auto">
             <ElTableColumn type="selection" width="30" />
-            <ElTableColumn prop="code" label="Code" />
-            <ElTableColumn prop="name" label="Name" />
+            <ElTableColumn prop="code" label="代码" />
+            <ElTableColumn prop="name" label="名称" />
           </ElTable>
         </ElRow>
         <ElRow style="padding-top: 8px;">
           <ElButton size="small" :icon="Delete" :disabled="selectedCodeList.length == 0" @click="onCodeTableDelete" />
         </ElRow>
       </ElCol>
-      <ElCol :span="21">
+      <ElCol :span="20">
         <ElRow :gutter="24">
-          <ElCol :span="4">
+          <ElCol :span="5">
             <ElRadioGroup v-model="startRange" size="small" style="float: left;" @change="onStartChanged">
               <ElRadioButton v-for="item in startGroup" :key="item" :value="item" :label="item" />
             </ElRadioGroup>
           </ElCol>
-          <ElCol :span="7">
+          <ElCol :span="8">
             <ElCheckboxGroup v-model="maSelected" size="small" style="display: flex; justify-content: center;" @change="onMaGroupChanged">
               <ElCheckboxButton v-for="item in maGroup" :key="item" :value="item" :label="item" :checked="item in maSelected" />
             </ElCheckboxGroup>
           </ElCol>
-          <ElCol :span="4">
+          <ElCol :span="5">
             <ElRadioGroup v-model="secondSelected" size="small" :disabled="chartModeSelected.includes('Zoom')" style="display: flex; justify-content: center;" @change="onSecondChanged">
               <ElRadioButton v-for="item in secondGroup" :key="item" :value="item" :label="item" />
             </ElRadioGroup>
           </ElCol>
-          <ElCol :span="3">
+          <ElCol :span="4">
             <ElCheckboxGroup v-model="chartModeSelected" size="small" style="display: flex; justify-content: center;" @change="onChartModeChanged">
               <ElCheckboxButton v-for="item in chartModeGroup" :key="item" :value="item" :label="item" :checked="item in chartModeSelected" />
             </ElCheckboxGroup>
           </ElCol>
-          <ElCol :span="6">
+          <ElCol :span="2">
             <ElButton size="small" style="float: right;" :disabled="itemTitleOutput==undefined" @click="onCustomizedClick">自</ElButton>
           </ElCol>
         </ElRow>

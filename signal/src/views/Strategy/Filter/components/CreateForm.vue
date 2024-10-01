@@ -43,11 +43,11 @@ defineExpose({
 </script>
 <template>
   <ElForm v-model="form" label-width="auto">
-    <ElFormItem label="Name" required>
+    <ElFormItem label="名称" required>
       <ElInput v-model="form.name" />
     </ElFormItem>
-    <ElFormItem label="Strategy" required>
-      <ElSelect v-model="form.strategy" placeholder="choose a strategy">
+    <ElFormItem label="策略" required>
+      <ElSelect v-model="form.strategy" placeholder="选择策略..">
         <ElOption v-for="s in strategyList" :key="s.id" :label="s.name" :value="s" />
       </ElSelect>
     </ElFormItem>
@@ -55,13 +55,13 @@ defineExpose({
       {{ form.strategy }}
     </ElFormItem> -->
     <div v-if="form.strategy">
-      <ElFormItem label="Strategy Results">
+      <ElFormItem label="策略结果">
         <ResultForm ref="result" :results="form.strategy.result_fields" />
       </ElFormItem>
-      <ElFormItem label="Strategy Arguments">
+      <ElFormItem label="策略参数">
         <ArgumentForm ref="argument" :args="form.strategy.args" />
       </ElFormItem>
-      <ElFormItem label="Algorithms">
+      <ElFormItem label="策略算法">
         <AlgorithmForm
           ref="algorithms"
           v-for="item in form.strategy.algorithms"
@@ -70,7 +70,7 @@ defineExpose({
         />
       </ElFormItem>
     </div>
-    <ElFormItem label="Trigger">
+    <ElFormItem label="定时参数">
       <TriggerForm ref="trigger" />
     </ElFormItem>
   </ElForm>

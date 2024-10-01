@@ -16,7 +16,7 @@ const columns: ColumnOpt[] = [
   {
     name: 'code',
     label: '代码',
-    width: 90
+    width: 80
   },
   {
     name: 'name',
@@ -26,32 +26,32 @@ const columns: ColumnOpt[] = [
   {
     name: 'quantity',
     label: '数量',
-    width: 80
+    width: 70
   },
   {
     name: 'price',
     label: '现价',
-    width: 80
+    width: 70
   },
   {
     name: 'value',
     label: '市值', // total price + cost
-    width: 120
+    width: 90
   },    
   {
     name: 'cost',
     label: '成本', 
-    width: 90
+    width: 70
   },
   {
     name: 'expense',
     label: '费用', //
-    width: 100
+    width: 80
   },  
   {
     name: 'gain',
     label: '盈亏', // value + rate
-    width: 180
+    width: 140
   },
   {
     name: 'days',
@@ -61,7 +61,7 @@ const columns: ColumnOpt[] = [
   {
     name: 'updated',
     label: '变动日期', // date + days
-    width: 120
+    width: 110
   }
 ]
 
@@ -124,7 +124,11 @@ async function makeData(items: CalcHoldingModel[]) {
       const value = history.price * item.quantity
       item['value'] = value.toFixed(2)
       const gain = item.expense + history.price * item.quantity
-      item['gain'] = `${gain.toFixed(2)} [${(gain * 100 /value).toFixed(2)}%]`  // (item.expense + history.price * item.quantity).toFixed(2)
+      if (item.quantity != 0) {
+        item['gain'] = `${gain.toFixed(2)} [${(gain * 100 /value).toFixed(2)}%]`  // (item.expense + history.price * item.quantity).toFixed(2)
+      } else {
+        item['gain'] = `${gain.toFixed(2)}`
+      }
     }
   }
 }
@@ -165,11 +169,11 @@ function onSetReminder(row: any) {
 async function onDelete(row: any) {
   try {
     await ElMessageBox.confirm(
-      `remove holding instance '${row.code}'?`,
+      `确定删除持仓记录'${row.code}'?`,
       'Warning', 
       {
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No',
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
         type: 'warning'
       }
     )
@@ -179,12 +183,12 @@ async function onDelete(row: any) {
     if (r.code == 0) {
       ElMessage({
         type: 'success',
-        message: 'holding instance be removed.'
+        message: '持仓记录被成功删除.'
       })
     } else {
       ElMessage({
         type: 'error',
-        message: 'removing holding instance failed.'
+        message: '持仓记录删除失败.'
       })
     }
     await fetch()
@@ -209,7 +213,7 @@ async function onCreateSubmit() {
     if (ret.code == 0) {
       ElMessage({
         type: 'success',
-        message: `${form.code} added to holding list.`
+        message: `添加'${form.code}'持仓记录.`
       })
       await fetch()
     }
@@ -233,7 +237,7 @@ async function onUpdateSubmit() {
     if (ret.code == 0) {
       ElMessage({
         type: 'success',
-        message: `${form.code} added holding action successful.`
+        message: `添加'${form.code}'持仓记录成功.`
       })
       await fetch()
     }

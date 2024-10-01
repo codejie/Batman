@@ -198,7 +198,7 @@ def get_record(uid: int, holding: int = None, action: int = None, with_removed: 
     TradeRecordTable
   ).join(HoldingListTable, TradeRecordTable.holding == HoldingListTable.id
   ).filter(HoldingListTable.uid == uid
-  ).order_by(TradeRecordTable.id.desc())
+  ).order_by(TradeRecordTable.created.desc())
   
   if holding is not None:
     stmt = stmt.where(TradeRecordTable.holding == holding)
@@ -287,7 +287,7 @@ def get_holding_record(uid: int, type: int = None, code: str = None, action: int
     ).join(TradeRecordTable, TradeRecordTable.holding == HoldingListTable.id, isouter=True
     ).filter(
       HoldingListTable.uid == uid
-    ).order_by(TradeRecordTable.id)
+    ).order_by(TradeRecordTable.created.desc())
   
   if (type is not None) and (code is not None):
     stmt = stmt.where(HoldingListTable.type == type, HoldingListTable.code == code)
@@ -297,7 +297,7 @@ def get_holding_record(uid: int, type: int = None, code: str = None, action: int
     stmt = stmt.where(HoldingListTable.code == code)
   if not with_removed:
     stmt = stmt.where(HoldingListTable.flag == HOLDING_FLAG_NORMAL)
-
+  
   results = dbEngine.select_with_execute(stmt)
 
   ret = []

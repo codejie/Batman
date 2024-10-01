@@ -119,8 +119,8 @@ async function onDelete(row: any) {
       `remove holding record '${row.id}'?`,
       'Warning', 
       {
-        confirmButtonText: 'Yes',
-        cancelButtonText: 'No',
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
         type: 'warning'
       }
     )

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+// import { watch } from 'vue';
 
 const props = defineProps({
   type: {
@@ -17,12 +17,12 @@ const props = defineProps({
   }
 })
 
-watch(
-  () => props.code,
-  () => {
-    console.log(`${props.code} changed`)
-  }
-)
+// watch(
+//   () => props.code,
+//   () => {
+//     console.log(`${props.code} changed`)
+//   }
+// )
 
 </script>
 <template>

@@ -14,12 +14,12 @@ type item = {
   info: InfoModel
   data?: HistoryDataModel
 }
-const codeType = ref<string>('Stock')
+const codeType = ref<string>('股票')
 const tableData = ref<item[]>([])
 const alistData = ref<AListModel[]>([])
 // const filterListData = ref<AListModel[]>([])
 const selectCode = ref<string>('')
-const listHolder = ref<string>('click load button to fetch..')
+const listHolder = ref<string>('点击加载按钮加载数据列表..')
 // const loading = ref(false)
 
 
@@ -47,7 +47,7 @@ async function fetchInfos() {
 
 async function onCreateClick() {
   const ret = await apiCreate({
-    type: (codeType.value == 'Index' ? 0 : 1),
+    type: (codeType.value == '指数' ? 0 : 1),
     code: selectCode.value
   })
   if (ret.code == 0) {
@@ -68,8 +68,8 @@ async function onDelete(info: InfoModel) {
     `remove '${info.name}' ?`,
     'Information', 
     {
-      confirmButtonText: 'Yes',
-      cancelButtonText: 'No',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
       type: 'info'
     }
   )  
@@ -80,10 +80,10 @@ async function onDelete(info: InfoModel) {
 }
 
 async function fetchAList() {
-  listHolder.value = 'loading..'
-  const ret = await apiAList((codeType.value == 'Index' ? 0 : 1))
+  listHolder.value = '加载..'
+  const ret = await apiAList((codeType.value == '指数' ? 0 : 1))
   alistData.value = ret.result
-  listHolder.value = 'please choose code..'
+  listHolder.value = '请选择代码..'
 }
 
 onMounted(async () => {
@@ -103,16 +103,16 @@ function onCodeTypeCommand(cmd: string) {
         <ElButton>{{ codeType }}</ElButton>
         <template #dropdown>
           <ElDropdownMenu>
-            <ElDropdownItem command="Stock">Stock</ElDropdownItem>
-            <ElDropdownItem command="Index">Index</ElDropdownItem>
+            <ElDropdownItem command="Stock">股票</ElDropdownItem>
+            <ElDropdownItem command="Index">指数</ElDropdownItem>
           </ElDropdownMenu>
         </template>
       </ElDropdown>      
       <ElSelect v-model="selectCode" :disabled="alistData.length==0" filterable clearable :placeholder="listHolder" style="width: 240px;">
         <ElOption v-for="i in alistData" :key="i.code" :value="i.code" :label="`${i.code} ${i.name}`" />
       </ElSelect>
-      <ElButton class="btn" @click="fetchAList">Load</ElButton>
-      <ElButton class="btn" type="primary" :disabled="selectCode===''" @click="onCreateClick">Add</ElButton>
+      <ElButton class="btn" @click="fetchAList">加载</ElButton>
+      <ElButton class="btn" type="primary" :disabled="selectCode===''" @click="onCreateClick">添加</ElButton>
     </ElRow>
     <ElRow>
       <ElTable :data="tableData" :stripe="true" :border="true" style="width: 100%; margin-top: 12px;" @row-click="onRowClick">
