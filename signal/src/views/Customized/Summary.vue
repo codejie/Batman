@@ -6,7 +6,6 @@ import { onMounted, ref } from 'vue';
 import { ElRow, ElCol, ElButton, ElTable, ElTableColumn } from 'element-plus'
 import { useRouter } from 'vue-router';
 import { KLinePanel, ReqParam } from '@/components/KLine';
-import MarginTable from './components/MarginTable.vue';
 
 const { go } = useRouter()
 
@@ -102,16 +101,10 @@ const param = ref<ReqParam>({
       <ElCol class="middle-col" :span="colSpan.middle">
         <ElRow :gutter="24">
           <div style="width: 100%; height: 100%;">
-            <!-- <KLinePanel3 :data="historyData" :showParam="showParam" /> -->
             <KLinePanel :param="param" :show-table="true" />
           </div>
         </ElRow>
-      </ElCol>
-      <ElCol class="middle-col" :span="colSpan.right">
-        <ElRow :gutter="24">
-          <MarginTable :type="selectType" :code="selectCode" />
-        </ElRow>
-      </ElCol>      
+      </ElCol>  
     </ElRow>
   </ContentDetailWrap>
 </template>

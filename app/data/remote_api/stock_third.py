@@ -4,6 +4,8 @@
 from pandas import DataFrame
 import akshare
 
+from app.utils import utils
+
 
 """
 创新高
@@ -44,7 +46,7 @@ def high_volume(days: int = 1) -> DataFrame:
 量价齐升
 https://data.10jqka.com.cn/rank/ljqs/
 """
-def high_volume(days: int = 1) -> DataFrame:
+def rise_volume_price(days: int = 1) -> DataFrame:
   df = akshare.stock_rank_ljqs_ths()
   if days > 1:
     df = df[df['量价齐升天数'] >= days]
@@ -54,7 +56,7 @@ def high_volume(days: int = 1) -> DataFrame:
 涨停股池
 https://quote.eastmoney.com/ztb/detail#type=ztgc
 """
-def limit_up_pool(date: str) -> DataFrame:
-  df = akshare.stock_zt_pool_em(date)
+def limit_up_pool(date: str = None) -> DataFrame:
+  df = akshare.stock_zt_pool_em(date if date != None else utils.date2String1(utils.find_last_non_weekend_date()))
   return df
 

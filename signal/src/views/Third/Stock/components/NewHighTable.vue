@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { apiNewHigh } from '@/api/third/stock';
 import { onMounted, ref } from 'vue';
-import { ElTable, ElTableColumn, ElDialog, ElButton } from 'element-plus';
+import { ElTableV2, ElAutoResizer, ElDialog, ElButton, ElText } from 'element-plus';
 import { KLinePanel2, ReqParam } from '@/components/KLine'
 
 const props = defineProps({
@@ -15,15 +15,15 @@ const props = defineProps({
   }
 })
 
-type Column = {
-  name: string
-  width?: number
-}
-const columnWidths = [90, 90, 80, 80, 80, 90, 120]
+// type Column = {
+//   name: string
+//   width?: number
+// }
+const columnWidths = [60, 90, 90, 80, 80, 80, 90, 120]
 
 const loading = ref<boolean>(false)
 const data = ref<any[]>([]) // ref<DataFrameSetModel>()
-const columns = ref<Column[]>([])
+const columns = ref<any[]>([])
 
 const klineDialogVisible = ref<boolean>(false)
 // const klineParam = ref<any>({
@@ -44,20 +44,27 @@ async function fetchNewHigh() {
   loading.value = false
   //columns.value = ret.result.columns.slice(1)
   const cols = ret.result.columns
-  for (let i = 1; i < cols.length; ++ i) {
+  for (let i = 0; i < cols.length; ++ i) {
     columns.value.push({
-      name: cols[i],
-      width: columnWidths[i - 1] || undefined
+      // name: cols[i],
+      // width: columnWidths[i] || undefined
+      key: cols[i],
+      dataKey: cols[i],
+      title: cols[i],
+      // name: cols[i],
+      width: columnWidths[i] || undefined
     })
   }
   const items = ret.result.data
+  const temp:any[] = []
   items.forEach(item => {
     const d = {}
     for (let i = 0; i < columns.value.length; ++ i) {
-      d[columns.value[i].name] = item[i+1]
+      d[columns.value[i].dataKey] = item[i]
     }
-    data.value.push(d)
+    temp.push(d)
   })
+  data.value = temp
 }
 
 function onRowClick(row: any) {
@@ -80,11 +87,16 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <div class="title">{{ name }}</div>
-  <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
+  <ElText tag="b" class="title">{{ name }}</ElText>
+  <!-- <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
     <ElTableColumn type="index" width="60" />
     <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
-  </ElTable>
+  </ElTable> -->
+  <ElAutoResizer>
+    <template #default="{width}">
+      <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :height="600"/>
+    </template>
+  </ElAutoResizer>  
   <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%">
     <KLinePanel2 :req-param="reqParam!" />
     <template #footer>

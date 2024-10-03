@@ -1,11 +1,14 @@
 """
 股票三方数据接口
 """
+from app import config
 from app.exception import AppException
-from app.routers.definition import BaseModel, RequestModel, ResponseModel, APIRouter, Depends, Body, verify_token
+from app.routers.definition import RequestModel, ResponseModel, APIRouter, Depends, Body, verify_token
 from app.data.remote_api import stock_third as third
 from app.routers.common_model import DataFrameSetModel
-from app.utils import utils
+
+from app.database import common
+from app.database.stock_third import TableName
 
 router: APIRouter = APIRouter(prefix='/data/third/stock', tags=['data', 'stock', 'third'], dependencies=[Depends(verify_token)])
 
@@ -30,14 +33,29 @@ class NewHighResponse(ResponseModel):
 @router.post('/new_high', response_model=NewHighResponse, response_model_exclude_none=True)
 async def new_high(body: NewHighRequest=Body()):
   try:
-    df = third.new_high(body.category)
+    table = TableName.New_High_0 if body.category == 0 \
+      else TableName.New_High_1 if body.category == 1 \
+      else TableName.New_High_2 if body.category == 2 \
+      else TableName.New_High_3
+    
+    df = common.select(table=table) if config.THIRD_STOCK_DATA_FROM_DATABASE else third.new_high(body.category)
     result = df.to_dict(orient='tight', index=False)
     return NewHighResponse(result=(DataFrameSetModel(
       columns=result['columns'],
       data=result['data']
     )))
   except Exception as e:
-    raise AppException(e)  
+    raise AppException(e)
+  
+  # try:
+  #   df = third.new_high(body.category)
+  #   result = df.to_dict(orient='tight', index=False)
+  #   return NewHighResponse(result=(DataFrameSetModel(
+  #     columns=result['columns'],
+  #     data=result['data']
+  #   )))
+  # except Exception as e:
+  #   raise AppException(e)  
 
 """
 连续上涨
@@ -51,14 +69,14 @@ class UptrendResponse(ResponseModel):
 @router.post('/uptrend', response_model=UptrendResponse, response_model_exclude_none=True)
 async def uptrend(body: UptrendRequest=Body()):
   try:
-    df = third.uptrend(body.days)
+    df = common.select(TableName.Uptrend) if config.THIRD_STOCK_DATA_FROM_DATABASE else third.uptrend(body.days)
     result = df.to_dict(orient='tight', index=False)
     return UptrendResponse(result=(DataFrameSetModel(
       columns=result['columns'],
       data=result['data']
     )))
   except Exception as e:
-    raise AppException(e) 
+    raise AppException(e)
   
 """
 持续放量
@@ -72,7 +90,8 @@ class HighVolumeResponse(ResponseModel):
 @router.post('/high_volume', response_model=HighVolumeResponse, response_model_exclude_none=True)
 async def high_volume(body: HighVolumeRequest=Body()):
   try:
-    df = third.high_volume(body.days)
+    # df = third.high_volume(body.days)
+    df = common.select(TableName.High_Volume) if config.THIRD_STOCK_DATA_FROM_DATABASE else third.high_volume(body.days)
     result = df.to_dict(orient='tight', index=False)
     return HighVolumeResponse(result=(DataFrameSetModel(
       columns=result['columns'],
@@ -93,7 +112,8 @@ class RiseVolumePriceResponse(ResponseModel):
 @router.post('/rise_volume_price', response_model=RiseVolumePriceResponse, response_model_exclude_none=True)
 async def rise_volume_price(body: RiseVolumePriceRequest=Body()):
   try:
-    df = third.high_volume(body.days)
+    # df = third.rise_volume_price(body.days)
+    df = common.select(TableName.Rise_Volume_Price) if config.THIRD_STOCK_DATA_FROM_DATABASE else third.rise_volume_price(body.days)
     result = df.to_dict(orient='tight', index=False)
     return RiseVolumePriceResponse(result=(DataFrameSetModel(
       columns=result['columns'],
@@ -106,16 +126,19 @@ async def rise_volume_price(body: RiseVolumePriceRequest=Body()):
 涨停股池
 """
 class LimitUpPoolRequest(RequestModel):
-  date: str = None
+  date: str | None = None
 
 class LimitUpPoolResponse(ResponseModel):
   result: DataFrameSetModel
 
 @router.post('/limit_up_pool', response_model=LimitUpPoolResponse, response_model_exclude_none=True)
-async def rise_volume_price(body: LimitUpPoolRequest=Body()):
+async def limit_up_pool(body: LimitUpPoolRequest=Body()):
   try:
-    date = body.date if body.date else utils.date2String1(utils.find_last_non_weekend_date())
-    df = third.limit_up_pool(date)
+    # date = body.date if body.date else utils.date2String1(utils.find_last_non_weekend_date())
+    # df = third.limit_up_pool(date)
+    # print(f'body.date = {body.date}')
+    df = common.select(TableName.Limit_Up_Pool) if config.THIRD_STOCK_DATA_FROM_DATABASE else third.limit_up_pool(body.date)
+    # print(f'df = {df}')
     result = df.to_dict(orient='tight', index=False)
     return LimitUpPoolResponse(result=(DataFrameSetModel(
       columns=result['columns'],

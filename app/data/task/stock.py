@@ -26,8 +26,8 @@ def init_check() -> None:
             # print(f'=====\n{symbols}')
 
             init_daily_history(symbols=symbols, start=start, end=end)
-            init_hsgt(symbols=symbols, start=start, end=end)
-            init_margin(symbols=symbols, start=start, end=end)      
+            # init_hsgt(symbols=symbols, start=start, end=end)
+            # init_margin(symbols=symbols, start=start, end=end)      
         
     except Exception as e:
         raise AppException(e)
@@ -72,10 +72,10 @@ def update_daily() -> None:
         symbols = get_list()
         logger.info('stock update daily history...')
         update_daily_history(symbols=symbols)
-        logger.info('stock update daily hsgt...')
-        update_hsgt(symbols=symbols)
-        logger.info('stock update daily margin...')
-        update_margin(symbols=symbols)
+        # logger.info('stock update daily hsgt...')
+        # update_hsgt(symbols=symbols)
+        # logger.info('stock update daily margin...')
+        # update_margin(symbols=symbols)
     except Exception as e:
         raise AppException(e)
     

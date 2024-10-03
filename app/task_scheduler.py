@@ -31,6 +31,8 @@ class TriggerMode(Enum):
 #         self.period = period
 
 class Scheduler:
+    JOB_COUNT: int = 0
+
     def __init__(self) -> None:
         self.scheduler = BackgroundScheduler()
         self.listListener = []
@@ -50,7 +52,8 @@ class Scheduler:
         self.listListener.append(callback)
     
     def make_id(self) -> str:
-        return datetime.today().strftime('%Y%m%d%H%M%S%f')
+        Scheduler.JOB_COUNT += 1
+        return datetime.today().strftime('%Y%m%d%H%M%S%f') + f'.{Scheduler.JOB_COUNT}'
 
     def make_trigger(self, trigger: dict) -> BaseTrigger:
         mode = trigger['mode']

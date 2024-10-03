@@ -62,7 +62,6 @@ const originData = ref<any[]>()
 watch(
   () => [props.param, unref(kc)?.dataChanged],
   () => {
-    console.log('watch')
     updateDataParam(props.param.type, props.param.code)
     updateTitle()
     originData.value = unref(kc)?.originData.reverse()
@@ -152,7 +151,7 @@ function onStartChanged() {
     <KLineChart ref="kc" :reqParam="reqParam" :showParam="showParam" />
   </ElRow>
   <ElRow v-if="showTable" :gutter="24">
-    <ElTable :data="originData" :stripe="true" :border="true" max-height="300" style="width: 100%;">
+    <ElTable :data="originData" :stripe="true" :border="true" size="small" max-height="300" style="width: 100%;">
       <ElTableColumn prop="date" label="日期" width="120" />            
       <ElTableColumn prop="price" label="现价" width="100" />
       <ElTableColumn prop="percentage" label="涨跌幅%" width="100" />

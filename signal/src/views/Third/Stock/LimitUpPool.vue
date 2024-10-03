@@ -3,19 +3,19 @@ import { apiLimitUpPool } from '@/api/third/stock';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
 import { formatToDate } from '@/utils/dateUtil';
-import { ElTable, ElDialog, ElTableColumn, ElButton, ElDatePicker, ElText } from 'element-plus';
+import { ElDialog, ElButton, ElDatePicker, ElText, ElTableV2, ElAutoResizer } from 'element-plus';
 import { onMounted, ref } from 'vue';
 
-type Column = {
-  name: string
-  width?: number
-}
-const columnWidths = [90, 90, 90, 90, 90, 90, 90, 90, 90, 120, 120, 90, 90, 80]
+// type Column = {
+//   name: string
+//   width?: number
+// }
+const columnWidths = [60, 90, 90, 90, 90, 90, 90, 90, 90, 90, 120, 120, 90, 90, 80, 120, 100]
 // const daysOptions = [7, 6, 5, 4, 3, 2, 1]
 
 const loading = ref<boolean>(false)
-const dateValue = ref<string>(getToday())
-const columns = ref<Column[]>([])
+const dateValue = ref<string>()
+const columns = ref<any[]>([])
 const data = ref<any[]>([])
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<ReqParam>()
@@ -28,9 +28,10 @@ function getToday() {
 function fetch(): Promise<void> {
   loading.value = true
 
-  data.value = []
-  columns.value = []
-
+  // data.value = []
+  // columns.value = []
+  const temp_data:any[] = []
+  const temp_columns: any[] = []
   return new Promise<void>((resolve) =>{
     apiLimitUpPool({
       date: dateValue.value
@@ -41,45 +42,62 @@ function fetch(): Promise<void> {
       }
 
       const cols = ret.result.columns
-      for (let i = 1; i < cols.length; ++ i) {
-        columns.value.push({
-          name: cols[i],
-          width: columnWidths[i - 1] || undefined
+      for (let i = 0; i < cols.length; ++ i) {
+        temp_columns.push({
+          key: cols[i],
+          dataKey: cols[i],
+          title: cols[i],
+          // name: cols[i],
+          width: columnWidths[i] || undefined
         })
       }
+
+    //   temp_columns.push({
+    //     key: 'Action',
+    //     dateKey: 'Action',
+    //     title: '操作',
+    //     width: 90,
+    //     cellRenderer: () => (
+    //   <>
+    //     <ElButton size="small">Edit</ElButton>
+    //   </>
+    // )
+    //   })
 
       const items = ret.result.data
       items.forEach(item => {
         const d = {}
-        for (let i = 0; i < columns.value.length; ++ i) {
+        for (let i = 0; i < temp_columns.length; ++ i) {
           switch (i) {
-            case 2:
-              item[i+1] = parseFloat(item[i+1]).toFixed(2) + '%'
-              break
             case 3:
-              item[i+1] = parseFloat(item[i+1]).toFixed(2)
+              item[i] = parseFloat(item[i]).toFixed(2) + '%'
               break
             case 4:
-              // item[i+1] = (parseFloat(item[i+1]) / 10000).toFixed(2) + '万'
-              // break
+              item[i] = parseFloat(item[i]).toFixed(2)
+              break
             case 5:
+              // item[i] = (parseFloat(item[i]) / 10000).toFixed(2) + '万'
+              // break
             case 6:
-            case 8:
-              item[i+1] = (parseFloat(item[i+1]) / 100000000).toFixed(2) + '亿'
-              break
             case 7:
-              item[i+1] = (parseFloat(item[i+1])).toFixed(2) + '%'
-              break
             case 9:
+              item[i] = (parseFloat(item[i]) / 100000000).toFixed(2) + '亿'
+              break
+            case 8:
+              item[i] = (parseFloat(item[i])).toFixed(2) + '%'
+              break
             case 10:
-              item[i+1] = item[i+1].replace(/(.{2})/g, `$1:`).slice(0, -1)
-              // item[i+1] = item[i+1].replace(new RegExp(`(.{2})`, 'g'), '$1' + ':').slice(0, -1)
+            case 11:
+              item[i] = item[i].replace(/(.{2})/g, `$1:`).slice(0, -1)
+              // item[i] = item[i].replace(new RegExp(`(.{2})`, 'g'), '$1' + ':').slice(0, -1)
               break
           }
-          d[columns.value[i].name] = item[i+1]
+          d[temp_columns[i].dataKey] = item[i]
         }
-        data.value.push(d)
+        temp_data.push(d)
       })
+      data.value = temp_data
+      columns.value = temp_columns
       loading.value = false
       resolve()
     })
@@ -119,18 +137,24 @@ async function onDateChanged(value) {
   <ContentWrap title="涨停股池">
     <div class="title">
       <ElText tag="b" style="padding-right: 8px;">日期</ElText>
-      <ElDatePicker v-model="dateValue" type="date" format="YYYY-MM-DD" value-format="YYYYMMDD" @change="onDateChanged" >
+      <ElDatePicker v-model="dateValue" type="date" format="YYYY-MM-DD" value-format="YYYYMMDD" @change="onDateChanged">
         <template #default="cell">
           <div class="cell" :class="{ current: cell.isCurrent }">
             <span :class="isworkday(cell)">{{ cell.text }}</span>
-        </div>
+          </div>
         </template>
       </ElDatePicker>
     </div>
-    <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
+    <ElAutoResizer>
+      <template #default="{width}">
+        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :height="600"/>
+      </template>
+    </ElAutoResizer>
+    <!-- <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="1600" :height="600"/> -->
+    <!-- <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
       <ElTableColumn type="index" width="60" />
       <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
-    </ElTable>
+    </ElTable> -->
     <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
       <KLinePanel2 :req-param="reqParam" />
       <template #footer>

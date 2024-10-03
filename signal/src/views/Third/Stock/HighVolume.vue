@@ -2,20 +2,20 @@
 import { apiHighVolume } from '@/api/third/stock';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
-import { ElText, ElSelect, ElOption, ElTable, ElDialog, ElTableColumn, ElButton } from 'element-plus';
+import { ElText, ElSelect, ElOption, ElTableV2, ElDialog, ElAutoResizer, ElButton } from 'element-plus';
 import { onMounted, ref } from 'vue';
 
-type Column = {
-  name: string
-  width?: number
-}
-const columnWidths = [90, 90, 80, 120, 100, 100]
+// type Column = {
+//   name: string
+//   width?: number
+// }
+const columnWidths = [60, 90, 90, 80, 80, 100, 160, 100, 120, 120]
 const daysOptions = [7, 6, 5, 4, 3, 2, 1]
 
 const loading = ref<boolean>(false)
 
 const days = ref<number>(3)
-const columns = ref<Column[]>([])
+const columns = ref<any[]>([])
 const data = ref<any[]>([])
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<ReqParam>()
@@ -32,22 +32,25 @@ function fetch(): Promise<void> {
       days: days.value
     }).then((ret) => {
       const cols = ret.result.columns
-      for (let i = 1; i < cols.length; ++ i) {
+      for (let i = 0; i < cols.length; ++ i) {
         columns.value.push({
-          name: cols[i],
-          width: columnWidths[i - 1] || undefined
+          key: cols[i],
+          dataKey: cols[i],
+          title: cols[i],
+          width: columnWidths[i] || undefined
         })
       }
 
       const items = ret.result.data
+      const temp: any[] =[]
       items.forEach(item => {
         const d = {}
         for (let i = 0; i < columns.value.length; ++ i) {
-          d[columns.value[i].name] = item[i+1]
+          d[columns.value[i].dataKey] = item[i]
         }
-        data.value.push(d)
+        temp.push(d)
       })
-
+      data.value = temp
       loading.value = false
       resolve()
     })
@@ -82,10 +85,15 @@ async function onDaysChanged() {
       </ElSelect>
       <ElText tag="b" style="padding-left: 4px;">天</ElText>
     </div>
-    <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
+    <ElAutoResizer>
+      <template #default="{width}">
+        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :height="600"/>
+      </template>
+    </ElAutoResizer>     
+    <!-- <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
       <ElTableColumn type="index" width="60" />
       <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
-    </ElTable>
+    </ElTable> -->
     <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
       <KLinePanel2 :req-param="reqParam" />
       <template #footer>
