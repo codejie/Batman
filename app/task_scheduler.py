@@ -34,7 +34,7 @@ class Scheduler:
     JOB_COUNT: int = 0
 
     def __init__(self) -> None:
-        self.scheduler = BackgroundScheduler()
+        self.scheduler = BackgroundScheduler(timezone='Asia/Shanghai')
         self.listListener = []
         self.scheduler.add_listener(callback=self.job_listener, mask=EVENT_JOB_ADDED | EVENT_JOB_REMOVED | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR | EVENT_JOB_MISSED)
 
@@ -46,7 +46,7 @@ class Scheduler:
         self.scheduler.start()
 
     def shutdown(self):
-        self.scheduler.shutdown(False)
+        self.scheduler.shutdown(wait=False)
 
     def register_listener(self, callback: callable) -> None:
         self.listListener.append(callback)
@@ -69,7 +69,7 @@ class Scheduler:
 
     def make_job(self, id: str, trigger: dict, func: callable, args: dict = None) -> str:
         trig = self.make_trigger(trigger)
-        job = self.scheduler.add_job(id=id, trigger=trig, func=func, kwargs=args, max_instances=1) #, misfire_grace_time=None)
+        job = self.scheduler.add_job(id=id, trigger=trig, func=func, kwargs=args, replace_existing=True) #, misfire_grace_time=None)
         return job.id
     
     # def restore_job(self, id: str, trigger: dict, func: callable, args: dict = None) -> str:

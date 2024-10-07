@@ -7,16 +7,16 @@ System Task Triggers
 """
 UPDATE_DAILY_TRIGGER = {
   'mode': 'daily',
-  'days': '0-5',
-  'hour': 16,
-  'minute': 28
+  'days': '0-6',
+  'hour': 11,
+  'minute': 3
 }
 
 UPDATE_DAILY_THIRD_TRIGGER = {
   'mode': 'daily',
-  'days': '0-5',
-  'hour': 22,
-  'minute': 1
+  'days': '0-6',
+  'hour': 11,
+  'minute': 0
 }
 
 """
