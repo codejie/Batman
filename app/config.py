@@ -8,15 +8,15 @@ System Task Triggers
 UPDATE_DAILY_TRIGGER = {
   'mode': 'daily',
   'days': '0-6',
-  'hour': 11,
-  'minute': 3
+  'hour': 17,
+  'minute': 1
 }
 
 UPDATE_DAILY_THIRD_TRIGGER = {
   'mode': 'daily',
   'days': '0-6',
-  'hour': 11,
-  'minute': 0
+  'hour': 17,
+  'minute': 9
 }
 
 """

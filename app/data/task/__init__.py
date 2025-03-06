@@ -15,8 +15,10 @@ def init() -> None:
     logger.info('system data init check end')
 
 def update_task() -> None:
-  register_update_daily()
-  register_update_third()
+  # register_update_daily()
+  # register_update_third()
+  daily_update_check()
+  daily_update_third_check()
 
 def daily_update_check(**kwargs) -> None:
   try:
