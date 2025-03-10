@@ -43,7 +43,7 @@ class DBEngine:
         with Session(self.engine) as session:
             ret = []
             for r in session.execute(stmt):
-                ret.append(r)
+                ret.append(r[0])
             return ret
     except Exception as e:
         raise AppException(e)

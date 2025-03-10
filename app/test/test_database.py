@@ -36,6 +36,25 @@ class TestUserHoldingTable(unittest.TestCase):
     print(result)
     self.assertTrue(True)
 
+  def test_select_record(self):
+    results = dbEngine.select_stmt(select(HoldingTable.UserHoldingTable).where(HoldingTable.UserHoldingTable.id.in_([1,2,3,4])))
+    # print(results)
+    for r in results:
+      print(r)
+      # print(type(r))
+      # user_holding = HoldingTable.UserHoldingTable(**r._mapping)
+      # print(user_holding)
+      # print(r)
+      # print(r['id'])
+      # print(r.uid)
+      # print(r.type)
+      # print(r.code)
+      # print(r.flag)
+      # print(r.created)
+      # print(r.updated)
+      
+    self.assertTrue(True)
+
   def tearDown(self):
     dbEngine.shutdown()
 
