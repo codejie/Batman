@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Float, ForeignKey, ForeignKeyConstraint, Index, Integer, String, DateTime
+from sqlalchemy import Column, Float, ForeignKey, ForeignKeyConstraint, Index, Integer, String, DateTime, select
 from sqlalchemy.sql import func
 from app.database import dbEngine, TableBase
 
@@ -40,4 +40,10 @@ def insert_holding(uid: int, type: int, code: str) -> int:
 def insert_operation(id: int, action: int, quantity: int, price: float, expense: float, comment: str = None) -> int:
   return dbEngine.insert_instance(UserHoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment))
 
-def 
+def select_holding(uid: int, type: int = -1, code: str = None) -> list[UserHoldingTable]:
+  stmt = select(UserHoldingTable).where(UserHoldingTable.uid == uid)
+  if type != -1:
+    stmt = stmt.where(UserHoldingTable.type == type)
+  if code: 
+    stmt = stmt.where(UserHoldingTable.code == code)
+  return dbEngine.select_stmt(stmt)

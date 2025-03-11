@@ -40,7 +40,7 @@ class TestUserHoldingTable(unittest.TestCase):
     results = dbEngine.select_stmt(select(HoldingTable.UserHoldingTable).where(HoldingTable.UserHoldingTable.id.in_([1,2,3,4])))
     # print(results)
     for r in results:
-      print(r)
+      print(r.id)
       # print(type(r))
       # user_holding = HoldingTable.UserHoldingTable(**r._mapping)
       # print(user_holding)
@@ -53,6 +53,13 @@ class TestUserHoldingTable(unittest.TestCase):
       # print(r.created)
       # print(r.updated)
       
+    self.assertTrue(True)
+
+  def test_select_holding(self): 
+    results = HoldingTable.select_holding(99)
+    print(results)
+    for r in results:
+      print(r.code)
     self.assertTrue(True)
 
   def tearDown(self):
