@@ -40,10 +40,16 @@ def insert_holding(uid: int, type: int, code: str) -> int:
 def insert_operation(id: int, action: int, quantity: int, price: float, expense: float, comment: str = None) -> int:
   return dbEngine.insert_instance(UserHoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment))
 
-def select_holding(uid: int, type: int = -1, code: str = None) -> list[UserHoldingTable]:
+def select_holding(uid: int, type: int = None, code: str = None, flag: int = None) -> list[UserHoldingTable]:
   stmt = select(UserHoldingTable).where(UserHoldingTable.uid == uid)
-  if type != -1:
+  if type:
     stmt = stmt.where(UserHoldingTable.type == type)
   if code: 
     stmt = stmt.where(UserHoldingTable.code == code)
+  if flag:
+    stmt = stmt.where(UserHoldingTable.flag == flag)
+  return dbEngine.select_stmt(stmt)
+
+def select_operation(uid: int, holding: int = -1) -> list[UserHoldingOperationTable]:
+  stmt = select(UserHoldingOperationTable).where(UserHoldingOperationTable.holding == holding)
   return dbEngine.select_stmt(stmt)

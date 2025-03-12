@@ -56,10 +56,10 @@ class TestUserHoldingTable(unittest.TestCase):
     self.assertTrue(True)
 
   def test_select_holding(self): 
-    results = HoldingTable.select_holding(99)
-    print(results)
+    results = HoldingTable.select_holding(99, type = 1)
+    # print(results)
     for r in results:
-      print(r.code)
+      print(r.__dict__)
     self.assertTrue(True)
 
   def tearDown(self):
