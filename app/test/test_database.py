@@ -12,13 +12,16 @@ class TestUserHoldingTable(unittest.TestCase):
     # Setup code to initialize the database connection and UserHoldingTable instance
     dbEngine.start()
 
+  def tearDown(self):
+    dbEngine.shutdown()
+
   def test_insert_record(self):
     # Test data
     record = {
       'user_id': 1
     }
 
-    inst = HoldingTable.UserHoldingTable(**record)
+    inst = HoldingTable.HoldingTable(**record)
     print(inst)
     
     count = dbEngine.instance_insert(inst)
@@ -32,12 +35,12 @@ class TestUserHoldingTable(unittest.TestCase):
 
   def test_scalar(self):
     
-    result = dbEngine.select_scalars(select(HoldingTable.UserHoldingTable.code).where(HoldingTable.UserHoldingTable.id.in_([1,2,3,4])))
+    result = dbEngine.select_scalars(select(HoldingTable.HoldingTable.code).where(HoldingTable.HoldingTable.id.in_([1,2,3,4])))
     print(result)
     self.assertTrue(True)
 
   def test_select_record(self):
-    results = dbEngine.select_stmt(select(HoldingTable.UserHoldingTable).where(HoldingTable.UserHoldingTable.id.in_([1,2,3,4])))
+    results = dbEngine.select_stmt(select(HoldingTable.HoldingTable).where(HoldingTable.HoldingTable.id.in_([1,2,3,4])))
     # print(results)
     for r in results:
       print(r.id)
@@ -62,8 +65,13 @@ class TestUserHoldingTable(unittest.TestCase):
       print(r.__dict__)
     self.assertTrue(True)
 
-  def tearDown(self):
-    dbEngine.shutdown()
+  def test_select_records(self):
+
+    results = HoldingTable.records(99)
+    print(results)
+
+    self.assertTrue(True)
+
 
 if __name__ == '__main__':
   unittest.main()
