@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status #, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from app.routers import register_routers
 
 from app.exception import AppException
 # from app.logger import logger
@@ -38,3 +39,4 @@ async def app_exception_handler(request, exc):
 def read_root():
   return {"message": "Welcome to Batman Platform!"}
 
+register_routers(app)

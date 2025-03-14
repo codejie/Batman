@@ -36,9 +36,9 @@ class LogoutRequest(RequestModel):
 class LogoutResponse(ResponseModel):
     pass
 
-@router.post('/logout', response_model=LogoutResponse, response_model_exclude_unset=True, dependencies=[Depends(verify_token)])
-async def logout(token: str=Header()):
-    print(f'logout() with {token}')
+@router.post('/logout', response_model=LogoutResponse, response_model_exclude_unset=True) # , dependencies=[Depends(verify_token)])
+async def logout(x_token: str=Header()):
+    print(f'logout() with {x_token}')
     return LogoutResponse(code=0)
 """
 Info

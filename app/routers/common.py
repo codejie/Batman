@@ -10,5 +10,5 @@ class ResponseModel(BaseModel):
   code: int = 0
   message: str = None
 
-def verify_token(token: str=Header()) -> str:
-    return token
+def verify_token(x_token: str=Header()) -> str:
+    return x_token

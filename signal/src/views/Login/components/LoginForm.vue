@@ -9,7 +9,7 @@ import { useAppStore } from '@/store/modules/app'
 import { usePermissionStore } from '@/store/modules/permission'
 import { useRouter } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
-import { UserType } from '@/api/login/types'
+import { UserLoginType, UserType } from '@/api/login/types'
 import { useValidator } from '@/hooks/web/useValidator'
 // import { Icon } from '@/components/Icon'
 import { useUserStore } from '@/store/modules/user'
@@ -49,7 +49,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'username',
+    field: 'account',
     label: t('login.username'),
     // value: 'admin',
     component: 'Input',
@@ -61,7 +61,7 @@ const schema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'password',
+    field: 'passwd',
     label: t('login.password'),
     // value: 'admin',
     component: 'InputPassword',
@@ -142,8 +142,8 @@ const remember = ref(userStore.getRememberMe)
 const initLoginInfo = () => {
   const loginInfo = userStore.getLoginInfo
   if (loginInfo) {
-    const { username, password } = loginInfo
-    setValues({ username, password })
+    const { account, passwd } = loginInfo
+    setValues({ account, passwd })
   }
 }
 onMounted(() => {
@@ -177,7 +177,7 @@ const signIn = async () => {
   await formRef?.validate(async (isValid) => {
     if (isValid) {
       loading.value = true
-      const formData = await getFormData<UserType>()
+      const formData = await getFormData<UserLoginType>()
 
       try {
         const res = await loginApi(formData)
@@ -186,14 +186,16 @@ const signIn = async () => {
           // 是否记住我
           if (unref(remember)) {
             userStore.setLoginInfo({
-              username: formData.username,
-              password: formData.password
+              account: formData.account,
+              passwd: formData.passwd
             })
           } else {
             userStore.setLoginInfo(undefined)
           }
           userStore.setRememberMe(unref(remember))
-          userStore.setUserInfo(res.data)
+
+          userStore.setUserInfo(Object.assign({}, formData, res.result))
+          userStore.setToken(res.result.accessToken || '')
           // 是否使用动态路由
           if (appStore.getDynamicRouter) {
             getRole()
