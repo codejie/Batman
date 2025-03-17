@@ -8,32 +8,32 @@ import { NO_RESET_WHITE_LIST } from '@/constants'
 const { t } = useI18n()
 
 export const constantRouterMap: AppRouteRecordRaw[] = [
-  {
-    path: '/',
-    component: Layout,
-    redirect: '/dashboard/analysis',
-    name: 'Root',
-    meta: {
-      hidden: true
-    }
-  },
-  {
-    path: '/redirect',
-    component: Layout,
-    name: 'RedirectWrap',
-    children: [
-      {
-        path: '/redirect/:path(.*)',
-        name: 'Redirect',
-        component: () => import('@/views/Redirect/Redirect.vue'),
-        meta: {}
-      }
-    ],
-    meta: {
-      hidden: true,
-      noTagsView: true
-    }
-  },
+  // {
+  //   path: '/',
+  //   component: Layout,
+  //   redirect: '/dashboard/analysis',
+  //   name: 'Root',
+  //   meta: {
+  //     hidden: true
+  //   }
+  // },
+  // {
+  //   path: '/redirect',
+  //   component: Layout,
+  //   name: 'RedirectWrap',
+  //   children: [
+  //     {
+  //       path: '/redirect/:path(.*)',
+  //       name: 'Redirect',
+  //       component: () => import('@/views/Redirect/Redirect.vue'),
+  //       meta: {}
+  //     }
+  //   ],
+  //   meta: {
+  //     hidden: true,
+  //     noTagsView: true
+  //   }
+  // },
   {
     path: '/login',
     component: () => import('@/views/Login/Login.vue'),
@@ -81,6 +81,63 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
 
 export const asyncRouterMap: AppRouteRecordRaw[] = [
   {
+    name: 'Home',
+    path: '/',
+    component: Layout,
+    redirect: '/home',
+    meta: {
+      title: t('router.home'),
+      icon: 'clarity:home-line',
+      noCache: true,
+      affix: true
+    },
+    children: [
+      {
+        name: 'Home-Index',
+        path: '/home',
+        component: () => import('@/views/Home/Home.vue'),
+        meta: {
+          title: t('router.home'),
+          noCache: true,
+          affix: true
+        }
+      }
+    ]
+  },
+  {
+    name: 'Holding',
+    path: '/holding',
+    component: Layout,
+    redirect: '/holding/list',
+    meta: {
+      title: t('router.holding'),
+      icon: 'carbon:currency-yen',
+      alwaysShow: true
+    },
+    children: [
+      {
+        name: 'List',
+        path: 'list',
+        component: () => import('@/views/Holding/List.vue'),
+        meta: {
+          title: t('router.holding_list'),
+          noCache: true,
+          affix: true
+        }
+      },
+      {
+        name: 'Operation',
+        path: 'operation',
+        component: () => import('@/views/Holding/Operation.vue'),
+        meta: {
+          title: t('router.holding_operation'),
+          noCache: true,
+          affix: true
+        }
+      }
+    ]
+  },
+  {
     path: '/dashboard',
     component: Layout,
     redirect: '/dashboard/analysis',
@@ -100,34 +157,25 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           noCache: true,
           affix: true
         }
-      },
-      {
-        path: 'workplace',
-        component: () => import('@/views/Dashboard/Workplace.vue'),
-        name: 'Workplace',
-        meta: {
-          title: t('router.workplace'),
-          noCache: true
-        }
       }
     ]
   },
-  {
-    path: '/external-link',
-    component: Layout,
-    meta: {},
-    name: 'ExternalLink',
-    children: [
-      {
-        path: 'https://element-plus-admin-doc.cn/',
-        name: 'DocumentLink',
-        meta: {
-          title: t('router.document'),
-          icon: 'vi-clarity:document-solid'
-        }
-      }
-    ]
-  },
+  // {
+  //   path: '/external-link',
+  //   component: Layout,
+  //   meta: {},
+  //   name: 'ExternalLink',
+  //   children: [
+  //     {
+  //       path: 'https://element-plus-admin-doc.cn/',
+  //       name: 'DocumentLink',
+  //       meta: {
+  //         title: t('router.document'),
+  //         icon: 'vi-clarity:document-solid'
+  //       }
+  //     }
+  //   ]
+  // },
   // {
   //   path: '/guide',
   //   component: Layout,
