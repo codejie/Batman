@@ -5,29 +5,42 @@ from app.routers.common import DEFAULT_UID, RequestModel, ResponseModel, verify_
 
 router: APIRouter = APIRouter(prefix="/holding", tags=["Holding"], dependencies=[Depends(verify_token)])
 
+# class CreateRequest(RequestModel):
+#     # uid: int
+#     type: int
+#     code: str
+#     action: int
+#     quantity: int
+#     price: float
+#     expense: float
+#     comment: Optional[str] = None
+
+# class CreateResponse(ResponseModel):
+#   result: int
+
+# @router.post("/create", response_model=CreateResponse)
+# async def create(request: CreateRequest):
+#   result = db.create(uid=DEFAULT_UID,
+#                      type=request.type,
+#                      code=request.code,
+#                      action=request.action,
+#                      quantity=request.quantity,
+#                      price=request.price,
+#                      expense=request.expense,
+#                      comment=request.comment)
+#   return CreateResponse(result=result)
+
 class CreateRequest(RequestModel):
-    # uid: int
-    type: int
-    code: str
-    action: int
-    quantity: int
-    price: float
-    expense: float
-    comment: Optional[str] = None
+  type: int
+  code: str
+  flag: Optional[int] = None
 
 class CreateResponse(ResponseModel):
   result: int
 
-@router.post("/create", response_model=CreateResponse)
+@router.post('/create', response_model=CreateResponse)
 async def create(request: CreateRequest):
-  result = db.create(uid=DEFAULT_UID,
-                     type=request.type,
-                     code=request.code,
-                     action=request.action,
-                     quantity=request.quantity,
-                     price=request.price,
-                     expense=request.expense,
-                     comment=request.comment)
+  result = db.insert_holding(uid=DEFAULT_UID, type=request.type, code=request.code)
   return CreateResponse(result=result)
 
 class ListRequest(RequestModel):
