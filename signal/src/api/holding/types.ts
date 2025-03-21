@@ -13,20 +13,34 @@ export interface ListRequest {
   flag?: number
 }
 
-export interface UserHoldingRecord {
+export interface HoldingData {
   id: number
   type: number
   code: string
-  quantity: number
-  price: number
-  expense: number
-  comment?: string
   flag: number
-  createdAt: string
-  updatedAt: string
+  created: Date
+  updated: Date
 }
 
-export interface ListResponse {
-  result: UserHoldingRecord[]
+export type ListResult = HoldingData[]
+
+export interface RecordRequest {
+  type?: number
+  code?: number
+  flag?: number
 }
+
+export interface HoldingRecord {
+  id: number
+  type: number
+  code: string
+  name: string
+  flag: number
+  quantity: number
+  expense: number
+  created: Date
+  updated: Date
+}
+
+export type RecordResult = HoldingRecord[]
 

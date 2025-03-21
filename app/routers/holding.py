@@ -84,3 +84,16 @@ async def operation(request: OperationRequest):
     request.expense = request.price * request.quantity
   result = db.insert_operation(id=request.holding, action=request.action, quantity=request.quantity, price=request.price, expense=request.expense, comment=request.comment)
   return OperationResponse(result=result)
+
+class RecordRequest(RequestModel):
+  type: Optional[int] = None
+  code: Optional[str] = None
+  flag: Optional[int] = db.HOLDING_FLAG_ACTIVE
+
+class RecordResponse(ResponseModel):
+  result: list[db.UserHoldingRecord] = []
+
+@router.post("/record", response_model=RecordResponse)
+async def record(request: RecordRequest):
+  result = db.records(uid=DEFAULT_UID, type=request.type, code=request.code, flag=request.flag)
+  return RecordResponse(result=result)
