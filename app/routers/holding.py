@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from fastapi import APIRouter, Depends
 from app.database import holding as db
 from app.routers.common import DEFAULT_UID, RequestModel, ResponseModel, verify_token
@@ -91,7 +91,7 @@ class RecordRequest(RequestModel):
   flag: Optional[int] = db.HOLDING_FLAG_ACTIVE
 
 class RecordResponse(ResponseModel):
-  result: list[db.UserHoldingRecord] = []
+  result: List[db.UserHoldingRecord] = []
 
 @router.post("/record", response_model=RecordResponse)
 async def record(request: RecordRequest):

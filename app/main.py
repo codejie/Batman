@@ -1,12 +1,21 @@
 from fastapi import FastAPI, status #, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 from app.routers import register_routers
-
+from app.logger import logger
 from app.exception import AppException
-# from app.logger import logger
+from app.database import dbEngine
 
-app = FastAPI(title='Batman API', version='v0.3')
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  logger.info("Application is starting up...")
+  dbEngine.start()
+  yield
+  dbEngine.shutdown()
+  logger.info("Application is shutting down...")
+
+app = FastAPI(title='Batman API', version='v0.3', lifespan=lifespan)
 
 app.add_middleware(
   CORSMiddleware,
@@ -33,7 +42,6 @@ async def app_exception_handler(request, exc):
       'message': exc.message
     }
   )
-
 
 @app.get("/")
 def read_root():

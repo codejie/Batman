@@ -3,9 +3,7 @@ export interface CreateRequest {
   code: string
 }
 
-export interface CreateResponse {
-  result: number
-}
+export type CreateResult = number
 
 export interface ListRequest {
   type?: number

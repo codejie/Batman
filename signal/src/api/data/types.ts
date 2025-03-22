@@ -4,6 +4,8 @@ export interface HistroyRequest {
   flag?: number // last, all
 }
 
-export interface HistroyData {}
+export interface HistroyData {
+  price: number
+}
 
 export type HistroyResult = HistroyData[]

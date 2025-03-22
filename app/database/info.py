@@ -16,7 +16,7 @@ class InfoTable(TableBase):
   type = Column(Integer, nullable=False, default=ITEM_TYPE_STOCK)
   code = Column(String, nullable=False)
   name = Column(String, nullable=False)
-  market = Column(String, nullable=True)
+  market = Column(Integer, nullable=True, default=0)
 
   __table_args__ = (
       PrimaryKeyConstraint('type', 'code', name='pk_info_type_code'),
