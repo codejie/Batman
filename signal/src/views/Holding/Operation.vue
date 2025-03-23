@@ -1,7 +1,45 @@
+<script lang="ts">
+interface OperationData {
+  id: number
+  type: number
+  code: string
+  name: string
+  flag: number
+  created: Date
+  updated: Date
+  quantity: number
+  expense: number
+
+  price_avg: number | string
+  price_cur?: number
+  revenue?: number | string// price_cur * quantity
+  profit?: number | string// revenue - expense
+  profit_percent?: number | string
+}
+</script>
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-</script>
+import { ref } from 'vue';
+import { viewOptions } from './List.vue';
 
+const newDialogVisible = ref<boolean>(false)
+const data
+</script>
 <template>
-  <ContentWrap title="Operation"> Operation </ContentWrap>
+  <ContentWrap title="Operation">
+    <ElRow :gutter="24">
+      <ElButton class="my-4 ml-4" type="primary" @click="newDialogVisible=true">增加</ElButton>
+    </ElRow>
+    <ElRow :gutter="24">
+      <ElTable :data="data" :stripe="true" :border="true">
+        <ElTableColumn type="index" width="40"></ElTableColumn>
+        <ElTableColumn label="操作" width="100">
+          <template #default="{ row }">
+            <ElButton type="text" @click="onOperation(row)">操作</ElButton>
+          </template>
+        </ElTableColumn>
+    </ElRow>
+
+  </ContentWrap>
 </template>
+
