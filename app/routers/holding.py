@@ -97,3 +97,14 @@ class RecordResponse(ResponseModel):
 async def record(request: RecordRequest):
   result = db.records(uid=DEFAULT_UID, type=request.type, code=request.code, flag=request.flag)
   return RecordResponse(result=result)
+
+class OperationListRequest(RequestModel):
+  holding: Optional[int] = None
+
+class OperationListResponse(ResponseModel):
+  result: List[db.HoldingOperationTable] = []
+
+@router.post("/operation/list", response_model=OperationListResponse)
+async def operation_list(request: OperationListRequest):
+  result = db.select_operation(uid=DEFAULT_UID, holding=request.holding)
+  return OperationListResponse(result=result)

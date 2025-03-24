@@ -42,3 +42,19 @@ export interface HoldingRecord {
 
 export type RecordResult = HoldingRecord[]
 
+export interface OperationListRequest {
+  holding?: number
+}
+
+export interface HoldingOperationData {
+  id: number
+  holding: number
+  action: number
+  quantity: number
+  price: number
+  expense: number
+  comment?: string
+  created: Date
+}
+
+export type OperationListResult = HoldingOperationData[]

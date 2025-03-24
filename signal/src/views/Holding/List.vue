@@ -1,5 +1,5 @@
 <script lang="ts">
-interface HoldingData {
+export interface HoldingData {
   id: number
   type: number
   code: string

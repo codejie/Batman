@@ -16,15 +16,46 @@ interface OperationData {
   profit?: number | string// revenue - expense
   profit_percent?: number | string
 }
+
+type CurrentData = {
+  [key in string]: {
+    name: string
+    price?: number
+  }
+}
 </script>
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { viewOptions } from './List.vue';
+import { apiOperationList } from '@/api/holding';
+import { getTypeCodeString } from '@/utils/comm';
 
 const newDialogVisible = ref<boolean>(false)
-const data
+const data = ref<OperationData[]>([])
+const currentData = ref<CurrentData>({})
+
+onMounted(async () => {
+  if (viewOptions.selected) {
+    currentData.value[getTypeCodeString(
+      viewOptions.selected.type,
+      viewOptions.selected.code
+    )] = {
+      name: viewOptions.selected.name,
+      price: viewOptions.selected.price_cur
+    }
+  }
+
+  const ret = await apiOperationList({
+    holding: viewOptions.selected ? viewOptions.selected.id : undefined
+  })
+
+
+
+})
+
 </script>
+
 <template>
   <ContentWrap title="Operation">
     <ElRow :gutter="24">
@@ -38,6 +69,7 @@ const data
             <ElButton type="text" @click="onOperation(row)">操作</ElButton>
           </template>
         </ElTableColumn>
+      </ElTable>
     </ElRow>
 
   </ContentWrap>

@@ -64,8 +64,10 @@ def select_holding(uid: int, type: int = None, code: str = None, flag: int = Non
     stmt = stmt.where(HoldingTable.flag == flag)
   return dbEngine.select_stmt(stmt)
 
-def select_operation(uid: int, holding: int = -1) -> list[HoldingOperationTable]:
-  stmt = select(HoldingOperationTable).where(HoldingOperationTable.holding == holding)
+def select_operation(uid: int, holding: int = None) -> list[HoldingOperationTable]:
+  stmt = select(HoldingOperationTable)
+  if holding:
+    stmt = stmt.where(HoldingOperationTable.holding == holding)
   return dbEngine.select_stmt(stmt)
 
 def update_holding_flag(uid: int, id: int, flag: int) -> int:
