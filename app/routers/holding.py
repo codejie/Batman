@@ -86,6 +86,7 @@ async def operation(request: OperationRequest):
   return OperationResponse(result=result)
 
 class RecordRequest(RequestModel):
+  id: Optional[int] = None
   type: Optional[int] = None
   code: Optional[str] = None
   flag: Optional[int] = db.HOLDING_FLAG_ACTIVE
@@ -95,7 +96,7 @@ class RecordResponse(ResponseModel):
 
 @router.post("/record", response_model=RecordResponse)
 async def record(request: RecordRequest):
-  result = db.records(uid=DEFAULT_UID, type=request.type, code=request.code, flag=request.flag)
+  result = db.records(uid=DEFAULT_UID, id=request.id, type=request.type, code=request.code, flag=request.flag)
   return RecordResponse(result=result)
 
 class OperationListRequest(RequestModel):

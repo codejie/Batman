@@ -23,8 +23,9 @@ export interface HoldingData {
 export type ListResult = HoldingData[]
 
 export interface RecordRequest {
+  id?: number
   type?: number
-  code?: number
+  code?: string
   flag?: number
 }
 

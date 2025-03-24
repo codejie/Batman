@@ -17,41 +17,31 @@ interface OperationData {
   profit_percent?: number | string
 }
 
-type CurrentData = {
-  [key in string]: {
-    name: string
-    price?: number
-  }
-}
 </script>
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue';
-import { viewOptions } from './List.vue';
+import { getHoldingData, HoldingData, viewOptions } from './List.vue';
 import { apiOperationList } from '@/api/holding';
-import { getTypeCodeString } from '@/utils/comm';
 
 const newDialogVisible = ref<boolean>(false)
 const data = ref<OperationData[]>([])
-const currentData = ref<CurrentData>({})
+const holdingData = ref<HoldingData[]>([])
 
 onMounted(async () => {
-  if (viewOptions.selected) {
-    currentData.value[getTypeCodeString(
-      viewOptions.selected.type,
-      viewOptions.selected.code
-    )] = {
-      name: viewOptions.selected.name,
-      price: viewOptions.selected.price_cur
-    }
+  if (!viewOptions.selected) {
+    holdingData.value = await getHoldingData()
+  } else {
+    holdingData.value = await getHoldingData(viewOptions.selected)
   }
 
   const ret = await apiOperationList({
     holding: viewOptions.selected ? viewOptions.selected.id : undefined
   })
 
-
-
+  for (const item of ret.result) {
+    // todo
+  }
 })
 
 </script>

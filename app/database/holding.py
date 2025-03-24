@@ -95,7 +95,7 @@ def create(uid: int, type: int, code: str, action: int, quantity: int, price: fl
   dbEngine.insert_instance(HoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment))
   return id
 
-def records(uid: int, type: int = None, code: str = None, flag: int = None) -> list[UserHoldingRecord]:
+def records(uid: int, id: int = None, type: int = None, code: str = None, flag: int = None) -> list[UserHoldingRecord]:
   stmt = select(HoldingTable,
                 Info.InfoTable.name.label('name'),
                 func.coalesce(
@@ -110,7 +110,8 @@ def records(uid: int, type: int = None, code: str = None, flag: int = None) -> l
               ).filter(HoldingTable.uid == uid
               ).group_by(HoldingTable.id
               ).order_by(HoldingTable.updated.desc())
-
+  if id:
+    stmt = stmt.where(HoldingTable.id == id)
   if type:
     stmt = stmt.where(HoldingTable.type == type)
   if code:

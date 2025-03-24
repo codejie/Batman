@@ -23,10 +23,45 @@ interface CreateForm {
 }
 
 export interface ViewOptions {
-  selected?: HoldingData
+  selected?: number // holding id
 }
 
 export const viewOptions = reactive<ViewOptions>({})
+
+export async function getHoldingData(id?: number, type?: number, code?: string, flag?: number): Promise<HoldingData[]> {
+  const results: HoldingData[] = []
+  const ret = await apiRecord({
+    id,
+    type,
+    code,
+    flag
+  })
+  for (const item of ret.result) {
+    const ret_current = await apiHistory({
+      type: item.type,
+      code: item.code
+    })
+    const current = ret_current.result[0]
+    console.log(current)
+    results.push({
+      id: item.id,
+      type: item.type,
+      code: item.code,
+      name: item.name,
+      flag: item.flag,
+      created: item.created,
+      updated: item.updated,
+      quantity: item.quantity,
+      expense: item.expense,
+      price_avg: (item.expense / item.quantity) || '-',
+      price_cur: current.price,
+      revenue: current.price * item.quantity,
+      profit: current.price * item.quantity - item.expense,
+      profit_percent: ((current.price * item.quantity - item.expense) / item.expense) || '-'
+    })
+  }
+  return results
+}
 
 </script>
 
@@ -44,38 +79,10 @@ const createForm = ref<CreateForm>({
 })
 const data = ref<HoldingData[]>([])
 
-onMounted(() => {
-  fetch()
+onMounted(async () => {
+  data.value = await getHoldingData()
 })
 
-async function fetch() {
-  const ret = await apiRecord({})
-  console.log(ret)
-  for (const item of ret.result) {
-    const ret_current = await apiHistory({
-      type: item.type,
-      code: item.code
-    })
-    const current = ret_current.result[0]
-    console.log(current)
-    data.value.push({
-      id: item.id,
-      type: item.type,
-      code: item.code,
-      name: item.name,
-      flag: item.flag,
-      created: item.created,
-      updated: item.updated,
-      quantity: item.quantity,
-      expense: item.expense,
-      price_avg: (item.expense / item.quantity) || '-',
-      price_cur: current.price,
-      revenue: current.price * item.quantity,
-      profit: current.price * item.quantity - item.expense,
-      profit_percent: ((current.price * item.quantity - item.expense) / item.expense) || '-'
-    })
-  }
-}
 
 async function onAdd() {
   const ret = await apiCreate({
@@ -83,7 +90,7 @@ async function onAdd() {
     code: createForm.value.code
   })
   createDialogVisible.value = false
-  await fetch()
+  data.value = await getHoldingData()
 }
 
 function onOperation(row: HoldingData) {
