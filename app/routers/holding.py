@@ -1,5 +1,7 @@
+import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from app.database import holding as db
 from app.routers.common import DEFAULT_UID, RequestModel, ResponseModel, verify_token
 
@@ -102,8 +104,18 @@ async def record(request: RecordRequest):
 class OperationListRequest(RequestModel):
   holding: Optional[int] = None
 
+class HoldingOperationTableModel(BaseModel):
+  id: int
+  holding: int
+  action: int
+  quantity: int
+  price: float
+  expense: float
+  comment: Optional[str] = None
+  created: datetime.datetime
+
 class OperationListResponse(ResponseModel):
-  result: List[db.HoldingOperationTable] = []
+  result: List[HoldingOperationTableModel] = []
 
 @router.post("/operation/list", response_model=OperationListResponse)
 async def operation_list(request: OperationListRequest):

@@ -70,7 +70,7 @@ import { apiHistory } from '@/api/data'
 import { apiCreate, apiRecord } from '@/api/holding'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, reactive, ref } from 'vue'
-import { ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn } from 'element-plus'
+import { ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn } from 'element-plus'
 
 const createDialogVisible = ref<boolean>(false)
 const createForm = ref<CreateForm>({
@@ -114,18 +114,18 @@ function onOperation(row: HoldingData) {
           <ElTableColumn prop="name" label="名称" min-width="80"></ElTableColumn>
           <!-- <ElTableColumn prop="flag" label="Flag" width="50"></ElTableColumn> -->
           <ElTableColumn prop="quantity" label="数量" min-width="60"></ElTableColumn>
-          <ElTableColumn prop="expense" label="费用" min-width="60"></ElTableColumn>
+          <ElTableColumn prop="expense" label="成本" min-width="60"></ElTableColumn>
           <ElTableColumn prop="price_avg" label="均价" min-width="80"></ElTableColumn>
           <ElTableColumn prop="price_cur" label="现价" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="revenue" label="总价" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="profit" label="收益" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="profit_percent" label="收益率 %" min-width="100"></ElTableColumn>
-          <ElTableColumn prop="created" label="Created" min-width="120"></ElTableColumn>
-          <ElTableColumn prop="updated" label="Updated" min-width="120"></ElTableColumn>
+          <ElTableColumn prop="revenue" label="收益" min-width="80"></ElTableColumn>
+          <ElTableColumn prop="profit" label="利润" min-width="80"></ElTableColumn>
+          <ElTableColumn prop="profit_percent" label="利润率 %" min-width="100"></ElTableColumn>
+          <ElTableColumn prop="created" label="创建时间" min-width="120"></ElTableColumn>
+          <ElTableColumn prop="updated" label="更新时间" min-width="120"></ElTableColumn>
           <ElTableColumn label="Action" width="160">
             <template #default="{ row }">
-              <ElButton type="text" size="small" @click="onOperation(row)">记录</ElButton>
-              <ElButton type="text" size="small" @click="onRemove(row)">删除</ElButton>
+              <ElButton :text="true" size="small" @click="onOperation(row)">记录</ElButton>
+              <ElButton :text="true" size="small" @click="onRemove(row)">删除</ElButton>
             </template>
           </ElTableColumn>
         </ElTable>
