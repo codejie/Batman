@@ -17,18 +17,34 @@ export interface HoldingData {
   profit_percent?: number | string
 }
 
+interface OperationData {
+  id: number
+  holding: number
+  action: number
+  quantity: number
+  price: number
+  expense: number
+  comment?: string
+  created: Date
+}
+
+interface HoldingOperationData {
+  holding: HoldingData
+  items: OperationData[]
+}
+
 interface CreateForm {
   type: string
   code: string
 }
 
-export interface ViewOptions {
-  selected?: number // holding id
-}
+// export interface ViewOptions {
+//   selected?: number // holding id
+// }
 
-export const viewOptions = reactive<ViewOptions>({})
+// export const viewOptions = reactive<ViewOptions>({})
 
-export async function getHoldingData(id?: number, type?: number, code?: string, flag?: number): Promise<HoldingData[]> {
+async function getHoldingData(id?: number, type?: number, code?: string, flag?: number): Promise<HoldingData[]> {
   const results: HoldingData[] = []
   const ret = await apiRecord({
     id,
@@ -67,7 +83,7 @@ export async function getHoldingData(id?: number, type?: number, code?: string, 
 
 <script setup lang="ts">
 import { apiHistory } from '@/api/data'
-import { apiCreate, apiRecord } from '@/api/holding'
+import { apiCreate, apiOperationList, apiRecord } from '@/api/holding'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, reactive, ref } from 'vue'
 import { ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn } from 'element-plus'
@@ -77,25 +93,38 @@ const createForm = ref<CreateForm>({
   type: '股票',
   code: ''
 })
-const data = ref<HoldingData[]>([])
+// const data = ref<HoldingData[]>([])
+const data = ref<HoldingOperationData[]>([])
 
 onMounted(async () => {
-  data.value = await getHoldingData()
+  const holding = await getHoldingData()
+  for (const item of holding) {
+    data.value.push({
+      holding: item,
+      items: []
+    })
+  }
+
+  const ret = await apiOperationList({})
+
+  for (const item of ret.result) {
+    const holding = data.value.find((x) => x.holding.id === item.holding)
+    holding!.items.push(item)
+  }
 })
 
+// async function onAdd() {
+//   const ret = await apiCreate({
+//     type: createForm.value.type == '股票' ? 1 : 0,
+//     code: createForm.value.code
+//   })
+//   createDialogVisible.value = false
+//   data.value = await getHoldingData()
+// }
 
-async function onAdd() {
-  const ret = await apiCreate({
-    type: createForm.value.type == '股票' ? 1 : 0,
-    code: createForm.value.code
-  })
-  createDialogVisible.value = false
-  data.value = await getHoldingData()
-}
-
-function onOperation(row: HoldingData) {
-  console.log(row)
-}
+// function onOperation(row: HoldingData) {
+//   console.log(row)
+// }
 
 </script>
 
@@ -105,14 +134,62 @@ function onOperation(row: HoldingData) {
       <ElButton class="my-4 ml-4" type="primary" @click="createDialogVisible=true">增加</ElButton>
     </ElRow>
     <ElRow :gutter="24">
+      <ElTable :data="data" stripe :border="true">
+        <ElTableColumn type="index" width="40" />
+        <ElTableColumn type="expand">
+          <template #default="{ row }">
+            <div class="mx-24px my-8px">
+              <h4>操作记录({{ row.items.length }})</h4>
+            </div>
+            <div class="mx-24px my-8px">       
+              <ElTable size="small" :data="row.items" stripe :border="true">
+                <ElTableColumn type="index" width="40" />
+                <ElTableColumn label="数量" prop="quantity" />
+                <ElTableColumn label="价格" prop="price" />
+                <ElTableColumn label="费用" prop="expense" />
+                <ElTableColumn label="备注" prop="comment" />
+                <ElTableColumn label="创建时间" prop="created" />
+                <ElTableColumn label="Action" width="160">
+                  <template #default="{ row }">
+                    <ElButton :text="true" size="small" @click="onOperationRemove(row)">删除</ElButton>
+                  </template>
+                </ElTableColumn>
+              </ElTable>
+            </div>
+          </template>
+        </ElTableColumn>
+        <!-- <ElTableColumn prop="id" label="ID" width="50"></ElTableColumn> -->
+          <!-- <ElTableColumn prop="type" label="Type" width="50"></ElTableColumn> -->
+          <ElTableColumn prop="holding.code" label="代码" min-width="80"></ElTableColumn>
+          <ElTableColumn prop="holding.name" label="名称" min-width="80"></ElTableColumn>
+          <!-- <ElTableColumn prop="flag" label="Flag" width="50"></ElTableColumn> -->
+          <ElTableColumn prop="holding.quantity" label="数量" min-width="60"></ElTableColumn>
+          <ElTableColumn prop="holding.expense" label="成本" min-width="60"></ElTableColumn>
+          <ElTableColumn prop="holding.price_avg" label="均价" min-width="80"></ElTableColumn>
+          <ElTableColumn prop="holding.price_cur" label="现价" min-width="80"></ElTableColumn>
+          <ElTableColumn prop="holding.revenue" label="收益" min-width="80"></ElTableColumn>
+          <ElTableColumn prop="holding.profit" label="利润" min-width="80"></ElTableColumn>
+          <ElTableColumn prop="holding.profit_percent" label="利润率 %" min-width="100"></ElTableColumn>
+          <ElTableColumn prop="holding.created" label="创建时间" min-width="120"></ElTableColumn>
+          <ElTableColumn prop="holding.updated" label="更新时间" min-width="120"></ElTableColumn>
+          <ElTableColumn label="Action" width="160">
+            <template #default="{ row }">
+              <!-- <ElButton :text="true" size="small" @click="onOperation(row)">记录</ElButton> -->
+              <ElButton :text="true" size="small" @click="onRemove(row)">删除</ElButton>
+            </template>
+          </ElTableColumn>      
+      </ElTable>
+    </ElRow>
+<!-- 
+    <ElRow :gutter="24">
       <ElCol :span="24">
         <ElTable :data=data :stripe="true" :border="true">
-          <!-- <ElTableColumn prop="id" label="ID" width="50"></ElTableColumn> -->
+          <ElTableColumn prop="id" label="ID" width="50"></ElTableColumn>
             <ElTableColumn type="index" width="40"></ElTableColumn>
-          <!-- <ElTableColumn prop="type" label="Type" width="50"></ElTableColumn> -->
+          <ElTableColumn prop="type" label="Type" width="50"></ElTableColumn>
           <ElTableColumn prop="code" label="代码" min-width="80"></ElTableColumn>
           <ElTableColumn prop="name" label="名称" min-width="80"></ElTableColumn>
-          <!-- <ElTableColumn prop="flag" label="Flag" width="50"></ElTableColumn> -->
+          <ElTableColumn prop="flag" label="Flag" width="50"></ElTableColumn>
           <ElTableColumn prop="quantity" label="数量" min-width="60"></ElTableColumn>
           <ElTableColumn prop="expense" label="成本" min-width="60"></ElTableColumn>
           <ElTableColumn prop="price_avg" label="均价" min-width="80"></ElTableColumn>
@@ -130,7 +207,7 @@ function onOperation(row: HoldingData) {
           </ElTableColumn>
         </ElTable>
       </ElCol>
-    </ElRow>
+    </ElRow> -->
     <ElDialog v-model="createDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
         <ElText tag="b">新增持股记录</ElText>

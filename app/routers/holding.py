@@ -119,5 +119,9 @@ class OperationListResponse(ResponseModel):
 
 @router.post("/operation/list", response_model=OperationListResponse)
 async def operation_list(request: OperationListRequest):
-  result = db.select_operation(uid=DEFAULT_UID, holding=request.holding)
+  records = db.select_operation(uid=DEFAULT_UID, holding=request.holding)
+  result = []
+  for record in records:
+    r = record[0]
+    result.append(HoldingOperationTableModel(id=r.id, holding=r.holding, action=r.action, quantity=r.quantity, price=r.price, expense=r.expense, comment=r.comment, created=r.created))
   return OperationListResponse(result=result)
