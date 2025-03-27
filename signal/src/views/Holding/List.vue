@@ -1,5 +1,5 @@
 <script lang="ts">
-export interface HoldingData {
+interface HoldingData {
   id: number
   type: number
   code: string
@@ -83,9 +83,9 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
 
 <script setup lang="ts">
 import { apiHistory } from '@/api/data'
-import { apiCreate, apiOperationList, apiRecord } from '@/api/holding'
+import { apiCreate, apiOperationCreate, apiOperationList, apiRecord } from '@/api/holding'
 import { ContentWrap } from '@/components/ContentWrap'
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn } from 'element-plus'
 
 const createDialogVisible = ref<boolean>(false)
@@ -96,7 +96,8 @@ const createForm = ref<CreateForm>({
 // const data = ref<HoldingData[]>([])
 const data = ref<HoldingOperationData[]>([])
 
-onMounted(async () => {
+async function fetchHoldingData() {
+  data.value = []
   const holding = await getHoldingData()
   for (const item of holding) {
     data.value.push({
@@ -111,27 +112,39 @@ onMounted(async () => {
     const holding = data.value.find((x) => x.holding.id === item.holding)
     holding!.items.push(item)
   }
+}
+
+onMounted(async () => {
+  await fetchHoldingData()
 })
 
-// async function onAdd() {
-//   const ret = await apiCreate({
-//     type: createForm.value.type == '股票' ? 1 : 0,
-//     code: createForm.value.code
-//   })
-//   createDialogVisible.value = false
-//   data.value = await getHoldingData()
-// }
+async function onAdd() {
+  const ret = await apiCreate({
+    type: createForm.value.type == '股票' ? 1 : 0,
+    code: createForm.value.code
+  })
+  createDialogVisible.value = false
+  await fetchHoldingData()
+}
 
-// function onOperation(row: HoldingData) {
-//   console.log(row)
-// }
+async function onAddOperation(row: HoldingOperationData) {
+  console.log(row)
+  const ret = await apiOperationCreate({
+    holding: row.holding.id,
+    action: 1,
+    quantity: 100,
+    price: 10,
+    expense: 1000
+  })
+  await fetchHoldingData()
+}
 
 </script>
 
 <template>
   <ContentWrap title="持仓">
     <ElRow :gutter="24">
-      <ElButton class="my-4 ml-4" type="primary" @click="createDialogVisible=true">增加</ElButton>
+      <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加</ElButton>
     </ElRow>
     <ElRow :gutter="24">
       <ElTable :data="data" stripe :border="true">
@@ -139,17 +152,29 @@ onMounted(async () => {
         <ElTableColumn type="expand">
           <template #default="{ row }">
             <div class="mx-24px my-8px">
-              <h4>操作记录({{ row.items.length }})</h4>
+              <ElRow :gutter="24">
+                <ElCol :span="12">
+                  <h4>操作记录({{ row.items.length }})</h4>
+                </ElCol>
+                <ElCol :span="12">
+                  <ElButton type="primary" style="float: right;" @click="onAddOperation(row)">增加操作</ElButton>
+                </ElCol>
+              </ElRow>
             </div>
             <div class="mx-24px my-8px">       
               <ElTable size="small" :data="row.items" stripe :border="true">
                 <ElTableColumn type="index" width="40" />
-                <ElTableColumn label="数量" prop="quantity" />
-                <ElTableColumn label="价格" prop="price" />
-                <ElTableColumn label="费用" prop="expense" />
+                <ElTableColumn label="操作" prop="action" width="60">
+                  <template #default="{ row }">
+                    {{ row.action == 1 ? '买入' : '卖出' }}
+                  </template>
+                </ElTableColumn>
+                <ElTableColumn label="数量" prop="quantity" min-width="80" />
+                <ElTableColumn label="价格" prop="price" min-width="80" />
+                <ElTableColumn label="费用" prop="expense" min-width="80" />
+                <ElTableColumn label="创建时间" prop="created" min-width="120" />
                 <ElTableColumn label="备注" prop="comment" />
-                <ElTableColumn label="创建时间" prop="created" />
-                <ElTableColumn label="Action" width="160">
+                <ElTableColumn label="" min-width="160">
                   <template #default="{ row }">
                     <ElButton :text="true" size="small" @click="onOperationRemove(row)">删除</ElButton>
                   </template>
@@ -172,7 +197,7 @@ onMounted(async () => {
           <ElTableColumn prop="holding.profit_percent" label="利润率 %" min-width="100"></ElTableColumn>
           <ElTableColumn prop="holding.created" label="创建时间" min-width="120"></ElTableColumn>
           <ElTableColumn prop="holding.updated" label="更新时间" min-width="120"></ElTableColumn>
-          <ElTableColumn label="Action" width="160">
+          <ElTableColumn label="" width="160">
             <template #default="{ row }">
               <!-- <ElButton :text="true" size="small" @click="onOperation(row)">记录</ElButton> -->
               <ElButton :text="true" size="small" @click="onRemove(row)">删除</ElButton>

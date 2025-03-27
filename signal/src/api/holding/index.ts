@@ -1,5 +1,5 @@
 import request from '@/axios'
-import type { CreateRequest, CreateResult } from './types'
+import type { CreateRequest, CreateResult, OperationCreateRequest, OperationCreateResult } from './types'
 import type { ListRequest, ListResult } from './types'
 import type { RecordRequest, RecordResult } from './types'
 import type { OperationListRequest, OperationListResult } from './types'
@@ -18,4 +18,8 @@ export const apiRecord = (data: RecordRequest): Promise<IResponse<RecordResult>>
 
 export const apiOperationList = (data: OperationListRequest): Promise<IResponse<OperationListResult>> => {
   return request.post({ url: '/holding/operation/list', data })
+}
+
+export const apiOperationCreate = (data: OperationCreateRequest): Promise<IResponse<OperationCreateResult>> => {
+  return request.post({ url: '/holding/operation/create', data })
 }

@@ -69,7 +69,7 @@ async def remove(request: RemoveRequest):
   result = db.update_holding_flag(uid=DEFAULT_UID, id=request.id, flag=db.HOLDING_FLAG_REMOVED)
   return RemoveResponse(result=result)
 
-class OperationRequest(RequestModel):
+class OperationCreateRequest(RequestModel):
   holding: int
   action: int
   quantity: int
@@ -77,15 +77,15 @@ class OperationRequest(RequestModel):
   expense: Optional[float] = None
   comment: Optional[str] = None
 
-class OperationResponse(ResponseModel):
+class OperationCreateResponse(ResponseModel):
   result: int
 
-@router.post("/operation", response_model=OperationResponse)
-async def operation(request: OperationRequest):
+@router.post("/operation/create", response_model=OperationCreateResponse)
+async def operation(request: OperationCreateRequest):
   if request.expense is None:
     request.expense = request.price * request.quantity
   result = db.insert_operation(id=request.holding, action=request.action, quantity=request.quantity, price=request.price, expense=request.expense, comment=request.comment)
-  return OperationResponse(result=result)
+  return OperationCreateResponse(result=result)
 
 class RecordRequest(RequestModel):
   id: Optional[int] = None

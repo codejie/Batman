@@ -59,3 +59,14 @@ export interface HoldingOperationData {
 }
 
 export type OperationListResult = HoldingOperationData[]
+
+export interface OperationCreateRequest {
+  holding: number
+  action: number
+  quantity: number
+  price: number
+  expense: number
+  comment?: string
+}
+
+export type OperationCreateResult = number
