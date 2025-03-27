@@ -87,6 +87,7 @@ import { apiCreate, apiOperationCreate, apiOperationList, apiRecord } from '@/ap
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
 import { ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn } from 'element-plus'
+import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 
 const createDialogVisible = ref<boolean>(false)
 const createForm = ref<CreateForm>({
@@ -172,7 +173,11 @@ async function onAddOperation(row: HoldingOperationData) {
                 <ElTableColumn label="数量" prop="quantity" min-width="80" />
                 <ElTableColumn label="价格" prop="price" min-width="80" />
                 <ElTableColumn label="费用" prop="expense" min-width="80" />
-                <ElTableColumn label="创建时间" prop="created" min-width="120" />
+                <ElTableColumn label="创建时间" prop="created" min-width="120">
+                  <template #default="{ row }">
+                    {{ formatToDateTime(row.created) }}
+                  </template>
+                </ElTableColumn>
                 <ElTableColumn label="备注" prop="comment" />
                 <ElTableColumn label="" min-width="160">
                   <template #default="{ row }">
@@ -195,8 +200,16 @@ async function onAddOperation(row: HoldingOperationData) {
           <ElTableColumn prop="holding.revenue" label="收益" min-width="80"></ElTableColumn>
           <ElTableColumn prop="holding.profit" label="利润" min-width="80"></ElTableColumn>
           <ElTableColumn prop="holding.profit_percent" label="利润率 %" min-width="100"></ElTableColumn>
-          <ElTableColumn prop="holding.created" label="创建时间" min-width="120"></ElTableColumn>
-          <ElTableColumn prop="holding.updated" label="更新时间" min-width="120"></ElTableColumn>
+          <ElTableColumn prop="holding.created" label="创建时间" min-width="120">
+            <template #default="{ row }">
+              {{ formatToDate(row.holding.created) }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="holding.updated" label="更新时间" min-width="120">
+            <template #default="{ row }">
+              {{ formatToDate(row.holding.updated) }}
+            </template>
+          </ElTableColumn>
           <ElTableColumn label="" width="160">
             <template #default="{ row }">
               <!-- <ElButton :text="true" size="small" @click="onOperation(row)">记录</ElButton> -->
@@ -205,34 +218,6 @@ async function onAddOperation(row: HoldingOperationData) {
           </ElTableColumn>      
       </ElTable>
     </ElRow>
-<!-- 
-    <ElRow :gutter="24">
-      <ElCol :span="24">
-        <ElTable :data=data :stripe="true" :border="true">
-          <ElTableColumn prop="id" label="ID" width="50"></ElTableColumn>
-            <ElTableColumn type="index" width="40"></ElTableColumn>
-          <ElTableColumn prop="type" label="Type" width="50"></ElTableColumn>
-          <ElTableColumn prop="code" label="代码" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="name" label="名称" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="flag" label="Flag" width="50"></ElTableColumn>
-          <ElTableColumn prop="quantity" label="数量" min-width="60"></ElTableColumn>
-          <ElTableColumn prop="expense" label="成本" min-width="60"></ElTableColumn>
-          <ElTableColumn prop="price_avg" label="均价" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="price_cur" label="现价" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="revenue" label="收益" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="profit" label="利润" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="profit_percent" label="利润率 %" min-width="100"></ElTableColumn>
-          <ElTableColumn prop="created" label="创建时间" min-width="120"></ElTableColumn>
-          <ElTableColumn prop="updated" label="更新时间" min-width="120"></ElTableColumn>
-          <ElTableColumn label="Action" width="160">
-            <template #default="{ row }">
-              <ElButton :text="true" size="small" @click="onOperation(row)">记录</ElButton>
-              <ElButton :text="true" size="small" @click="onRemove(row)">删除</ElButton>
-            </template>
-          </ElTableColumn>
-        </ElTable>
-      </ElCol>
-    </ElRow> -->
     <ElDialog v-model="createDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
         <ElText tag="b">新增持股记录</ElText>
