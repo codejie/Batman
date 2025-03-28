@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Session
 
 from app.exception import AppException
@@ -80,6 +80,17 @@ class DBEngine:
         result = session.execute(stmt)
         session.commit()
         return result.rowcount
+    except Exception as e:
+      raise AppException(e)
+    
+  def bulk_insert_data(self, table, data: list[dict]) -> None:
+    try:
+      with Session(self.engine) as session:
+        # session.execute(text(f"TRUNCATE TABLE {table.__tablename__}"))
+        session.query(table).delete()
+        session.commit()
+        session.bulk_insert_mappings(table, data)
+        session.commit()
     except Exception as e:
       raise AppException(e)
     

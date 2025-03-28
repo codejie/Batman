@@ -1,14 +1,14 @@
 import datetime
 from pydantic import BaseModel
-from sqlalchemy import Column, Float, ForeignKey, Index, Integer, String, DateTime, case, select, update
+from sqlalchemy import Column, Float, ForeignKey, Index, Integer, String, DateTime, case, delete, select, update
 from sqlalchemy.sql import func
 from app.database import dbEngine, TableBase
 from app.database import info as Info
 
-HOLDING_FLAG_ACTIVE: int = 0
-HOLDING_FLAG_REMOVED: int = 1
-OPERATION_ACTION_BUY: int = 0
-OPERATION_ACTION_SELL: int = 1
+HOLDING_FLAG_ACTIVE: int = 1
+HOLDING_FLAG_REMOVED: int = 2
+OPERATION_ACTION_BUY: int = 1
+OPERATION_ACTION_SELL: int = 2
 
 class HoldingTable(TableBase):
   __tablename__ = 'user_holding_table'
@@ -48,8 +48,8 @@ class UserHoldingRecord(BaseModel):
   quantity: int
   expense: float
 
-def insert_holding(uid: int, type: int, code: str) -> int:
-  return dbEngine.insert_instance(HoldingTable(uid=uid, type=type, code=code))
+def insert_holding(uid: int, type: int, code: str, flag: int = HOLDING_FLAG_ACTIVE) -> int:
+  return dbEngine.insert_instance(HoldingTable(uid=uid, type=type, code=code, flag=flag))
 
 def insert_operation(id: int, action: int, quantity: int, price: float, expense: float, comment: str = None) -> int:
   return dbEngine.insert_instance(HoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment))
@@ -71,10 +71,12 @@ def select_operation(uid: int, holding: int = None) -> list[HoldingOperationTabl
   return dbEngine.select_stmt(stmt)
 
 def update_holding_flag(uid: int, id: int, flag: int) -> int:
-  return dbEngine.update_stmt(update(HoldingTable).where(HoldingTable.id == id and HoldingTable.uid == uid).values([
-    {'flag': flag, 'updated': func.now()}
-  ]))
+  return dbEngine.update_stmt(update(HoldingTable).where(HoldingTable.id == id and HoldingTable.uid == uid).values({
+    'flag': flag, 'updated': func.now()
+  }))
 
+def delete_operation(uid: int, id: int) -> int:
+  return dbEngine.delete_stmt(delete(HoldingOperationTable).where(HoldingOperationTable.id == id))
 """
 Combination API
 """
@@ -102,7 +104,7 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
                   func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, HoldingOperationTable.quantity), else_=-HoldingOperationTable.quantity)),
                   0).label('quantity'),
                 func.coalesce(
-                  func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, -HoldingOperationTable.expense), else_=HoldingOperationTable.expense)),
+                  func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, HoldingOperationTable.expense), else_=-HoldingOperationTable.expense)),
                   0.0).label('expense')
               ).select_from(HoldingTable
               ).join(Info.InfoTable, Info.InfoTable.code == HoldingTable.code and Info.InfoTable.type == HoldingTable.type, isouter=True

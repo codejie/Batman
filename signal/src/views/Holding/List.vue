@@ -38,11 +38,17 @@ interface CreateForm {
   code: string
 }
 
-// export interface ViewOptions {
-//   selected?: number // holding id
-// }
-
-// export const viewOptions = reactive<ViewOptions>({})
+interface OperationForm {
+  holding: number
+  type: number
+  code: string
+  name: string
+  action: number
+  quantity: number
+  price: number
+  expense: number
+  comment?: string    
+}
 
 async function getHoldingData(id?: number, type?: number, code?: string, flag?: number): Promise<HoldingData[]> {
   const results: HoldingData[] = []
@@ -59,6 +65,8 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
     })
     const current = ret_current.result[0]
     console.log(current)
+    const avg = (item.expense / item.quantity)
+    const precent = ((current.price * item.quantity - item.expense) / item.expense)
     results.push({
       id: item.id,
       type: item.type,
@@ -69,11 +77,11 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
       updated: item.updated,
       quantity: item.quantity,
       expense: item.expense,
-      price_avg: (item.expense / item.quantity) || '-',
+      price_avg: avg ? avg.toFixed(2) : '-',
       price_cur: current.price,
       revenue: current.price * item.quantity,
       profit: current.price * item.quantity - item.expense,
-      profit_percent: ((current.price * item.quantity - item.expense) / item.expense) || '-'
+      profit_percent: precent ? ((precent * 100).toFixed(2) + '%') : '-'
     })
   }
   return results
@@ -83,19 +91,35 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
 
 <script setup lang="ts">
 import { apiHistory } from '@/api/data'
-import { apiCreate, apiOperationCreate, apiOperationList, apiRecord } from '@/api/holding'
+import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove, apiRecord } from '@/api/holding'
+import { HOLDING_FLAG_REMOVED } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
-import { ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn } from 'element-plus'
+import {
+  ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn,
+  ElRadioGroup, ElRadioButton
+ } from 'element-plus'
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 
 const createDialogVisible = ref<boolean>(false)
+const operationDialogVisible = ref<boolean>(false)
 const createForm = ref<CreateForm>({
   type: '股票',
   code: ''
 })
-// const data = ref<HoldingData[]>([])
+const operationForm = ref<OperationForm>({
+  holding: 0,
+  type: 0,
+  code: '',
+  name: '',
+  action: 0,
+  quantity: 0,
+  price: 0,
+  expense: 0,
+  comment: ''
+})
 const data = ref<HoldingOperationData[]>([])
+const expandRows = ref<string[]>([])
 
 async function fetchHoldingData() {
   data.value = []
@@ -128,18 +152,58 @@ async function onAdd() {
   await fetchHoldingData()
 }
 
-async function onAddOperation(row: HoldingOperationData) {
-  console.log(row)
+function onOperation(row: HoldingOperationData) {
+  operationForm.value.holding = row.holding.id
+  operationForm.value.type = row.holding.type
+  operationForm.value.code = row.holding.code
+  operationForm.value.name = row.holding.name
+  operationDialogVisible.value = true
+}
+
+function onPriceBlur() {
+  operationForm.value.expense = operationForm.value.quantity * operationForm.value.price
+}
+
+function onQuantityBlur() {
+  operationForm.value.expense = operationForm.value.quantity * operationForm.value.price
+}
+
+async function onAddOperation() {
   const ret = await apiOperationCreate({
-    holding: row.holding.id,
-    action: 1,
-    quantity: 100,
-    price: 10,
-    expense: 1000
+    holding: operationForm.value.holding,
+    action: operationForm.value.action,
+    quantity: operationForm.value.quantity,
+    price: operationForm.value.price,
+    expense: operationForm.value.expense,
+    comment: operationForm.value.comment
+  })
+  operationDialogVisible.value = false
+  await fetchHoldingData()
+}
+
+async function onOperationRemove(row: OperationData) {
+  await apiOperationRemove({
+    id: row.id
   })
   await fetchHoldingData()
 }
 
+async function onRemove(row: HoldingOperationData) {
+  await apiFlag({
+    id: row.holding.id,
+    flag: HOLDING_FLAG_REMOVED
+  })
+  await fetchHoldingData()
+}
+
+function getHoldingKey(row: HoldingOperationData): string {
+  // console.log(row.holding.id)
+  return row.holding.id.toString()
+}
+
+function onExpandChanged(rows: HoldingOperationData, expandedRows: HoldingOperationData[]) {
+  expandRows.value = expandedRows.map((x) => x.holding.id.toString())
+}
 </script>
 
 <template>
@@ -148,7 +212,7 @@ async function onAddOperation(row: HoldingOperationData) {
       <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加</ElButton>
     </ElRow>
     <ElRow :gutter="24">
-      <ElTable :data="data" stripe :border="true">
+      <ElTable :data="data" :row-key="getHoldingKey" :expand-row-keys="expandRows" @expand-change="onExpandChanged" stripe :border="true">
         <ElTableColumn type="index" width="40" />
         <ElTableColumn type="expand">
           <template #default="{ row }">
@@ -158,7 +222,7 @@ async function onAddOperation(row: HoldingOperationData) {
                   <h4>操作记录({{ row.items.length }})</h4>
                 </ElCol>
                 <ElCol :span="12">
-                  <ElButton type="primary" style="float: right;" @click="onAddOperation(row)">增加操作</ElButton>
+                  <ElButton type="primary" style="float: right;" @click="onOperation(row)">增加操作</ElButton>
                 </ElCol>
               </ElRow>
             </div>
@@ -181,7 +245,7 @@ async function onAddOperation(row: HoldingOperationData) {
                 <ElTableColumn label="备注" prop="comment" />
                 <ElTableColumn label="" min-width="160">
                   <template #default="{ row }">
-                    <ElButton :text="true" size="small" @click="onOperationRemove(row)">删除</ElButton>
+                    <ElButton size="small" @click="onOperationRemove(row)">删除</ElButton>
                   </template>
                 </ElTableColumn>
               </ElTable>
@@ -212,8 +276,7 @@ async function onAddOperation(row: HoldingOperationData) {
           </ElTableColumn>
           <ElTableColumn label="" width="160">
             <template #default="{ row }">
-              <!-- <ElButton :text="true" size="small" @click="onOperation(row)">记录</ElButton> -->
-              <ElButton :text="true" size="small" @click="onRemove(row)">删除</ElButton>
+              <ElButton size="small" @click="onRemove(row)">删除</ElButton>
             </template>
           </ElTableColumn>      
       </ElTable>
@@ -236,6 +299,43 @@ async function onAddOperation(row: HoldingOperationData) {
         <ElButton @click="createDialogVisible=false">取消</ElButton>
         <ElButton type="primary" @click="onAdd">确定</ElButton>
       </template>      
+    </ElDialog>
+    <ElDialog v-model="operationDialogVisible" :destroy-on-close="true" width="25%">
+      <template #header>
+        <ElText tag="b">新增操作记录</ElText>
+      </template>
+      <template #default>
+        <ElForm :model="operationForm" label-position="right" label-width="auto">
+          <ElFormItem label="代码">
+            <ElInput v-model="operationForm.code" :disabled="true" />
+          </ElFormItem>
+          <ElFormItem label="名称">
+            <ElInput v-model="operationForm.name" :disabled="true" />
+          </ElFormItem>
+          <ElFormItem label="操作">
+            <ElRadioGroup v-model="operationForm.action">
+              <ElRadioButton :value="0">买入</ElRadioButton>
+              <ElRadioButton :value="1">卖出</ElRadioButton>
+            </ElRadioGroup>
+          </ElFormItem>
+          <ElFormItem label="数量" @change="onQuantityBlur">
+            <ElInput v-model="operationForm.quantity" />
+          </ElFormItem>
+          <ElFormItem label="价格" @change="onPriceBlur">
+            <ElInput v-model="operationForm.price" />
+          </ElFormItem>
+          <ElFormItem label="费用">
+            <ElInput v-model="operationForm.expense" />
+          </ElFormItem>
+          <ElFormItem label="备注">
+            <ElInput v-model="operationForm.comment" />
+          </ElFormItem>
+        </ElForm>
+      </template>
+      <template #footer>
+        <ElButton @click="operationDialogVisible=false">取消</ElButton>
+        <ElButton type="primary" @click="onAddOperation">确定</ElButton>
+      </template>        
     </ElDialog>
   </ContentWrap>
 </template>

@@ -35,14 +35,14 @@ router: APIRouter = APIRouter(prefix="/holding", tags=["Holding"], dependencies=
 class CreateRequest(RequestModel):
   type: int
   code: str
-  flag: Optional[int] = None
+  flag: Optional[int] = db.HOLDING_FLAG_ACTIVE
 
 class CreateResponse(ResponseModel):
   result: int
 
 @router.post('/create', response_model=CreateResponse)
 async def create(request: CreateRequest):
-  result = db.insert_holding(uid=DEFAULT_UID, type=request.type, code=request.code)
+  result = db.insert_holding(uid=DEFAULT_UID, type=request.type, code=request.code, flag=request.flag)
   return CreateResponse(result=result)
 
 class ListRequest(RequestModel):
@@ -58,16 +58,17 @@ async def list(request: ListRequest):
   result = db.records(uid=DEFAULT_UID, type=request.type, code=request.code, flag=request.flag)
   return ListResponse(result=result)
 
-class RemoveRequest(RequestModel):
+class FlagRequest(RequestModel):
   id: int
+  flag: Optional[int] = db.HOLDING_FLAG_REMOVED
 
-class RemoveResponse(ResponseModel):
+class FlagResponse(ResponseModel):
   result: int
 
-@router.post("/remove", response_model=RemoveResponse)
-async def remove(request: RemoveRequest):
-  result = db.update_holding_flag(uid=DEFAULT_UID, id=request.id, flag=db.HOLDING_FLAG_REMOVED)
-  return RemoveResponse(result=result)
+@router.post("/flag", response_model=FlagResponse)
+async def remove(request: FlagRequest):
+  result = db.update_holding_flag(uid=DEFAULT_UID, id=request.id, flag=request.flag)
+  return FlagResponse(result=result)
 
 class OperationCreateRequest(RequestModel):
   holding: int
@@ -125,3 +126,14 @@ async def operation_list(request: OperationListRequest):
     r = record[0]
     result.append(HoldingOperationTableModel(id=r.id, holding=r.holding, action=r.action, quantity=r.quantity, price=r.price, expense=r.expense, comment=r.comment, created=r.created))
   return OperationListResponse(result=result)
+
+class OperationRemoveRequest(RequestModel):
+  id: int
+
+class OperationRemoveResponse(ResponseModel):
+  result: int
+
+@router.post("/operation/remove", response_model=OperationRemoveResponse)
+async def operation_remove(request: OperationRemoveRequest):
+  result = db.delete_operation(uid=DEFAULT_UID, id=request.id)
+  return OperationRemoveResponse(result=result)

@@ -1,7 +1,7 @@
 import unittest
 
 from sqlalchemy import select
-from app.database import dbEngine, info as Info
+from app.database import dbEngine, info as Info, stock as Stock
 # from app.database.holding import UserHoldingTable
 
 from app.database import holding as HoldingTable
@@ -70,6 +70,31 @@ class TestUserHoldingTable(unittest.TestCase):
     results = HoldingTable.records(99)
     print(results)
 
+    self.assertTrue(True)
+
+  def test_fetch_stock_info(self):
+    # Call the fetch_stock_info function
+    Info.fetch_stock_info()
+
+    # Verify that data has been inserted into the InfoTable
+    results = dbEngine.select_stmt(select(Info.InfoTable).where(Info.InfoTable.type == Info.ITEM_TYPE_STOCK))
+    for res in results:
+      r = res[0]
+      print(r.code, r.name, r.type, r.market)
+
+    # Assert that at least one record exists
+    self.assertTrue(len(results) > 0)
+
+  def test_fetch_table(self):
+    # Test data
+    code = "AAPL"
+    datatype = 1
+
+    # Fetch the table
+    table = Stock.fetch_table(code, datatype)
+
+    # Verify the table exists
+    # exists = table.__table__.exists(dbEngine.engine)
     self.assertTrue(True)
 
 

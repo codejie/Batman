@@ -1,3 +1,8 @@
+export const HOLDING_FLAG_ACTIVE: number = 1;
+export const HOLDING_FLAG_REMOVED: number = 2;
+export const OPERATION_ACTION_BUY: number = 1;
+export const OPERATION_ACTION_SELL: number = 2;
+
 export interface CreateRequest {
   type: number
   code: string
@@ -21,6 +26,13 @@ export interface HoldingData {
 }
 
 export type ListResult = HoldingData[]
+
+export interface FlagRequest {
+  id: number
+  flag?: number
+}
+
+export type FlagResult = number
 
 export interface RecordRequest {
   id?: number
@@ -70,3 +82,10 @@ export interface OperationCreateRequest {
 }
 
 export type OperationCreateResult = number
+
+///
+export interface OperationRemoveRequest {
+  id: number
+}
+
+export type OperationRemoveResult = number
