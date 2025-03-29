@@ -87,8 +87,8 @@ class DBEngine:
     try:
       with Session(self.engine) as session:
         # session.execute(text(f"TRUNCATE TABLE {table.__tablename__}"))
-        session.query(table).delete()
-        session.commit()
+        # session.query(table).delete()
+        # session.commit()
         session.bulk_insert_mappings(table, data)
         session.commit()
     except Exception as e:

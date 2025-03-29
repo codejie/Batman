@@ -1,21 +1,23 @@
+"""
+Stock
+"""
+import akshare as ak
+import app.database.data as common
+from app.database import dbEngine
 
-from sqlalchemy import Column, Integer, String, inspect
-from app.database import dbEngine, TableBase
 
-DATATYPE_HISTORY: int = 1
-
-def create_dynamic_table_class(code: str, datatype: int):
-  class DynamicTable(TableBase):
-    __tablename__ = f"stock_{datatype}_{code}"
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    value = Column(Integer)
-  
-  return DynamicTable
-
-def fetch_table(code: str, datatype: int = DATATYPE_HISTORY) -> TableBase:
-  table = create_dynamic_table_class(code, datatype)
-  exists = inspect(dbEngine.engine).has_table(table.__tablename__)
-  if not exists:
-    table.__table__.create(dbEngine.engine)
-  return table
+def download_history_data(code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> None:
+  history = ak.stock_zh_a_hist(symbol=code, period=period, adjust=adjust, start_date=start, end_date=end)
+  history = history.drop('股票代码', axis=1)
+  data = history.to_dict(orient='records')
+  print(data)
+  table = common.get_history_data_table(common.TYPE_STOCK, code, period, adjust)
+  for record in data:
+      
+  table = common.truncate_table(table)
+  dbEngine.bulk_insert_data(table, data)
+  # table = fetch_table(code, datatype)
+  # session = dbEngine.Session()
+  # data = session.query(table).all()
+  # session.close()
+  # return data

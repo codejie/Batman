@@ -1,6 +1,6 @@
 import datetime
 from pydantic import BaseModel
-from sqlalchemy import Column, Float, ForeignKey, Index, Integer, String, DateTime, case, delete, select, update
+from sqlalchemy import Column, Float, ForeignKey, Index, Integer, PrimaryKeyConstraint, String, DateTime, case, delete, select, update
 from sqlalchemy.sql import func
 from app.database import dbEngine, TableBase
 from app.database import info as Info
@@ -22,7 +22,7 @@ class HoldingTable(TableBase):
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
   __table_args__ = (
-      Index('idx_user_holding_type_code', 'type', 'code'),
+    Index('idx_user_holding_type_code', 'type', 'code'),
   )
 
 class HoldingOperationTable(TableBase):

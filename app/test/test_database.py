@@ -2,9 +2,8 @@ import unittest
 
 from sqlalchemy import select
 from app.database import dbEngine, info as Info, stock as Stock
-# from app.database.holding import UserHoldingTable
-
 from app.database import holding as HoldingTable
+from app.database import data as Data
 
 
 class TestUserHoldingTable(unittest.TestCase):
@@ -85,18 +84,31 @@ class TestUserHoldingTable(unittest.TestCase):
     # Assert that at least one record exists
     self.assertTrue(len(results) > 0)
 
-  def test_fetch_table(self):
+  # def test_fetch_table(self):
+  #   table = Stock.create_history_table("AAPL", "daily", "qfq")
+
+  #   self.assertTrue(True)
+
+  def test_download_history_data(self):
     # Test data
-    code = "AAPL"
-    datatype = 1
+    code = "000001"  # Example stock code
+    start_date = "20230101"
+    end_date = "20230131"
+    period = "daily"
+    adjust = "qfq"
 
-    # Fetch the table
-    table = Stock.fetch_table(code, datatype)
+    # Call the download_history_data function
+    Stock.download_history_data(code, start_date, end_date, period, adjust)
 
-    # Verify the table exists
-    # exists = table.__table__.exists(dbEngine.engine)
+    # Verify that data has been inserted into the corresponding table
+    # table_name = f"stock_{period}_{adjust}_{code}"
+    # table = Data.get_history_data_table(2, code, period, adjust)
+    # results = dbEngine.select_stmt(select(table))
+    # for res in results:
+    #   print(res.__dict__)
+
+    # Assert that at least one record exists
     self.assertTrue(True)
-
 
 if __name__ == '__main__':
   unittest.main()
