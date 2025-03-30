@@ -26,3 +26,6 @@ def download_history_data(code: str, start: str, end: str, period: str = 'daily'
   # data = session.query(table).all()
   # session.close()
   # return data
+
+def fetch_history_data(code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> list[common.HistoryData]:
+  return common.fetch_history_data(common.TYPE_STOCK, code, start, end, period, adjust)

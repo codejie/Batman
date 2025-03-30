@@ -121,5 +121,24 @@ class TestUserHoldingTable(unittest.TestCase):
     # Assert that at least one record exists
     self.assertTrue(True)
 
+  def test_fetch_history_data(self):
+    # Test data
+    code = "000001"  # Example stock code
+    start_date = "2023-01-01"
+    end_date = "2023-01-31"
+    period = "daily"
+    adjust = "qfq"
+
+    # Call the fetch_history_data function
+    results = Stock.fetch_history_data(code, start_date, end_date, period, adjust)
+
+    print('================')
+    # Print the fetched data
+    for record in results:
+      print(record.日期, record.开盘)
+
+    # Assert that the results are not empty
+    self.assertTrue(len(results) > 0)
+
 if __name__ == '__main__':
   unittest.main()

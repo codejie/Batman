@@ -3,7 +3,8 @@ Data
 """
 
 from typing import Optional
-from sqlalchemy import Column, DateTime, Float, Index, Integer, PrimaryKeyConstraint, String, func, inspect, select
+from pydantic import BaseModel
+from sqlalchemy import Column, DateTime, Float, Index, Integer, PrimaryKeyConstraint, String, func, inspect, select, text
 from app.database import TableBase, dbEngine
 import akshare as ak
 
@@ -81,6 +82,20 @@ Data common classes and functions
 """
 # history_table_map = {}
 
+class HistoryData(BaseModel):
+  日期: str
+  开盘: float
+  收盘: float
+  最高: float
+  最低: float
+  成交量: float
+  成交额: float
+  振幅: float
+  涨跌幅: float
+  涨跌额: float
+  换手率: float
+
+
 def make_history_data_table_name(type: int, code: str, period: str, adjust: str) -> str:
   if type == TYPE_STOCK:
     return f"stock_{period}_{adjust}_{code}"
@@ -147,5 +162,20 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
 #     histtory_table_map[table_name] = table
 #     return table
 
-def fetch_history_data(type: int, code: str, period: str, adjust: str) -> TableBase:
-  pass
+def fetch_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str) -> list[HistoryData]:
+  table_name = make_history_data_table_name(type, code, period, adjust)
+  inspector = inspect(dbEngine.engine)
+  if not inspector.has_table(table_name):
+    return []
+
+  if start and end:
+    stmt = text(f"SELECT * FROM {table_name} WHERE 日期 >= '{start}' AND 日期 <= '{end}' ORDER BY 日期 DESC")
+  elif start:
+    stmt = text(f"SELECT * FROM {table_name} WHERE 日期 >= '{start}' ORDER BY 日期 DESC")
+  elif end:
+    stmt = text(f"SELECT * FROM {table_name} WHERE 日期 <= '{end}' ORDER BY 日期 DESC")
+  else:
+    stmt = text(f"SELECT * FROM {table_name} ORDER BY 日期 DESC")
+
+  result = dbEngine.select_stmt(stmt)
+  return result
