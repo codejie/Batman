@@ -3,7 +3,7 @@ Data
 """
 
 from typing import Optional
-from sqlalchemy import Column, DateTime, Float, Index, Integer, PrimaryKeyConstraint, String, func, select
+from sqlalchemy import Column, DateTime, Float, Index, Integer, PrimaryKeyConstraint, String, func, inspect, select
 from app.database import TableBase, dbEngine
 import akshare as ak
 
@@ -57,14 +57,29 @@ class DownloadRecordsTable(TableBase):
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
   __table_args__ = (
-      # PrimaryKeyConstraint('type', 'code', name='pk_download_records_type_code')
     Index('idx_download_records_type_code', 'type', 'code'),
   )
+
+def update_download_records(type: int, code: str, period: str, adjust: str, start: str, end: str) -> Optional[int]:
+  stmt = select(DownloadRecordsTable).where(DownloadRecordsTable.type == type).where(DownloadRecordsTable.code == code).where(DownloadRecordsTable.period == period).where(DownloadRecordsTable.adjust == adjust)
+  result = dbEngine.select_scalar(stmt)
+  if result:
+    return result.id
+  else:
+    record = DownloadRecordsTable(type=type, code=code, period=period, adjust=adjust, start=start, end=end)
+    return dbEngine.insert_instance(record)
+
+def check_download_records(type: int, code: str, period: str, adjust: str, start: str, end: str) -> Optional[DownloadRecordsTable]:
+  stmt = select(DownloadRecordsTable).where(DownloadRecordsTable.type == type).where(DownloadRecordsTable.code == code).where(DownloadRecordsTable.period == period).where(DownloadRecordsTable.adjust == adjust)
+  result = dbEngine.select_scalar(stmt)
+  if result:
+    return result
+  return result if result else None
 
 """
 Data common classes and functions
 """
-histtory_table_map = {}
+# history_table_map = {}
 
 def make_history_data_table_name(type: int, code: str, period: str, adjust: str) -> str:
   if type == TYPE_STOCK:
@@ -72,42 +87,65 @@ def make_history_data_table_name(type: int, code: str, period: str, adjust: str)
   elif type == TYPE_INDEX:
     return f"index_{period}_{adjust}_{code}"
 
-def make_history_data_table(type: int, code: str, period: str, adjust: str) -> TableBase:
-  table_name = make_history_data_table_name(type, code, period, adjust)
-  class DynamicTable(TableBase):
-    __tablename__ = table_name
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    date = Column('日期', String, nullable=True)
-    open = Column('开盘', Float, nullable=True)
-    close = Column('收盘', Float, nullable=True)
-    high = Column('最高', Float, nullable=True)
-    low = Column('最低', Float, nullable=True)
-    volume = Column('成交量', Float, nullable=True)
-    amount = Column('成交额', Float, nullable=True)
-    amplitude = Column('振幅', Float, nullable=True)
-    change_pct = Column('涨跌幅', Float, nullable=True)
-    change = Column('涨跌额', Float, nullable=True)
-    turnover_rate = Column('换手率', Float, nullable=True)
+def download_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> int:
+  data = None
+  if type == TYPE_STOCK:
+    data = ak.stock_zh_a_hist(symbol=code, period=period, adjust=adjust, start_date=start, end_date=end)
+  elif type == TYPE_INDEX:
+    data = None
 
-    __table_args__ = (
-      Index(f"idx_{__tablename__}_date", '日期'),
-    )    
+  if data is not None:
+    data = data.drop('股票代码', axis=1)
+    table_name = make_history_data_table_name(type, code, period, adjust)
+    data.set_index('日期', inplace=True)
+    data.to_sql(table_name, dbEngine.engine, if_exists='replace', index=True, index_label='日期')
 
-  table = DynamicTable()
-  histtory_table_map[table_name] = table
-
-  return table
-
-def truncate_table(table: TableBase) -> TableBase:
-  table.__table__.drop(dbEngine.engine, checkfirst=True)
-  table.__table__.create(dbEngine.engine)
-  return table
-
-def get_history_data_table(type: int, code: str, period: str, adjust: str) -> TableBase:
-  table_name = make_history_data_table_name(type, code, period, adjust)
-  if table_name in histtory_table_map:
-    return histtory_table_map[table_name]
+    return len(data)
   else:
-    table = make_history_data_table(type, code, period, adjust)
-    histtory_table_map[table_name] = table
-    return table
+    return 0
+  
+# def make_history_data_table(type: int, code: str, period: str, adjust: str) -> str:
+#   table_name = make_history_data_table_name(type, code, period, adjust)
+#   class DynamicTable(TableBase):
+#     __tablename__ = table_name
+#     # id = Column('index', Integer, autoincrement=True, primary_key=True)
+#     date = Column('日期', DateTime, nullable=True)
+#     open = Column('开盘', Float, nullable=True)
+#     close = Column('收盘', Float, nullable=True)
+#     high = Column('最高', Float, nullable=True)
+#     low = Column('最低', Float, nullable=True)
+#     volume = Column('成交量', Float, nullable=True)
+#     amount = Column('成交额', Float, nullable=True)
+#     amplitude = Column('振幅', Float, nullable=True)
+#     change_pct = Column('涨跌幅', Float, nullable=True)
+#     change = Column('涨跌额', Float, nullable=True)
+#     turnover_rate = Column('换手率', Float, nullable=True)
+
+#     __table_args__ = (
+#       PrimaryKeyConstraint('日期', name=f'pk_{__tablename__}_date'),
+#       # Index(f"idx_{__tablename__}_date", '日期'),
+#     )
+
+#   inspector = inspect(dbEngine.engine)
+#   if not inspector.has_table(table_name):
+#     DynamicTable.__table__.create(dbEngine.engine)
+#   # history_table_map[table_name] = DynamicTable
+
+#   return table_name
+
+# def truncate_table(table: TableBase) -> TableBase:
+#   table.__table__.drop(dbEngine.engine, checkfirst=True)
+#   table.__table__.create(dbEngine.engine)
+#   return table
+
+# def get_history_data_table(type: int, code: str, period: str, adjust: str) -> TableBase:
+#   table_name = make_history_data_table_name(type, code, period, adjust)
+#   if table_name in histtory_table_map:
+#     return histtory_table_map[table_name]
+#   else:
+#     table = make_history_data_table(type, code, period, adjust)
+#     histtory_table_map[table_name] = table
+#     return table
+
+def fetch_history_data(type: int, code: str, period: str, adjust: str) -> TableBase:
+  pass

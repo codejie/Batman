@@ -100,6 +100,17 @@ class TestUserHoldingTable(unittest.TestCase):
     # Call the download_history_data function
     Stock.download_history_data(code, start_date, end_date, period, adjust)
 
+    code = "000002"
+    Stock.download_history_data(code, start_date, end_date, period, adjust)
+
+    # table_name = Data.make_history_data_table_name(Data.TYPE_STOCK, code, period, adjust)
+    # print(table_name)
+    # table = Data.history_table_map[table_name]
+    # results = dbEngine.select_stmt(select(table))
+    # for res in results:
+    #   r = res[0]
+    #   print(r.code, r.name, r.type, r.market)
+
     # Verify that data has been inserted into the corresponding table
     # table_name = f"stock_{period}_{adjust}_{code}"
     # table = Data.get_history_data_table(2, code, period, adjust)
