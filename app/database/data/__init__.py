@@ -58,12 +58,10 @@ def check_download_records(type: int, code: str, period: str, adjust: str, start
            and Define.DownloadRecordsTable.period == period
            and Define.DownloadRecordsTable.adjust == adjust)
   if start:
-    stmt = stmt.where(Define.DownloadRecordsTable.start >= start)
+    stmt = stmt.where(Define.DownloadRecordsTable.start <= start)
   if end:
-    stmt = stmt.where(Define.DownloadRecordsTable.end <= end)
+    stmt = stmt.where(Define.DownloadRecordsTable.end >= end)
   result = dbEngine.select_scalar(stmt)
-  if result:
-    return result
   return result if result else None
 
 def make_history_data_table_name(type: int, code: str, period: str, adjust: str) -> str:
@@ -112,3 +110,6 @@ def get_history_data(type: int, code: str, start: str, end: str, period: str, ad
     download_history_data(type, code, start, end, period, adjust)
   return fetch_history_data(type, code, start, end, period, adjust)
 
+def check_get_latest_history_data(type: int, code: str, period: str, adjust: str) -> list[Define.HistoryData]:
+
+  
