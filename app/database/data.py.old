@@ -1,12 +1,12 @@
 """
 Data
 """
-
 from typing import Optional
 from pydantic import BaseModel
-from sqlalchemy import Column, DateTime, Float, Index, Integer, PrimaryKeyConstraint, String, func, inspect, select, text
+from sqlalchemy import Column, DateTime, Float, Index, Integer, PrimaryKeyConstraint, String, func, inspect, select, text, update
 from app.database import TableBase, dbEngine
 import akshare as ak
+import app.database.data.utils as Utils
 
 
 TYPE_INDEX: int = 1
@@ -65,17 +65,26 @@ def update_download_records(type: int, code: str, period: str, adjust: str, star
   stmt = select(DownloadRecordsTable).where(DownloadRecordsTable.type == type).where(DownloadRecordsTable.code == code).where(DownloadRecordsTable.period == period).where(DownloadRecordsTable.adjust == adjust)
   result = dbEngine.select_scalar(stmt)
   if result:
-    return result.id
+    stmt = update(DownloadRecordsTable).where(DownloadRecordsTable.id == result.id).values(
+      start=start,
+      end=end
+    )
+    return dbEngine.update_stmt(stmt)
   else:
     record = DownloadRecordsTable(type=type, code=code, period=period, adjust=adjust, start=start, end=end)
     return dbEngine.insert_instance(record)
 
 def check_download_records(type: int, code: str, period: str, adjust: str, start: str, end: str) -> Optional[DownloadRecordsTable]:
   stmt = select(DownloadRecordsTable).where(DownloadRecordsTable.type == type).where(DownloadRecordsTable.code == code).where(DownloadRecordsTable.period == period).where(DownloadRecordsTable.adjust == adjust)
+  if start:
+    stmt = stmt.where(DownloadRecordsTable.start >= start)
+  if end:
+    stmt = stmt.where(DownloadRecordsTable.end <= end)
   result = dbEngine.select_scalar(stmt)
   if result:
     return result
   return result if result else None
+
 
 """
 Data common classes and functions
@@ -105,7 +114,7 @@ def make_history_data_table_name(type: int, code: str, period: str, adjust: str)
 def download_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> int:
   data = None
   if type == TYPE_STOCK:
-    data = ak.stock_zh_a_hist(symbol=code, period=period, adjust=adjust, start_date=start, end_date=end)
+    data = ak.stock_zh_a_hist(symbol=code, period=period, adjust=adjust, start_date=Utils.convert_history_date_2(start), end_date=Utils.convert_history_date_2(end))
   elif type == TYPE_INDEX:
     data = None
 
@@ -114,6 +123,8 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
     table_name = make_history_data_table_name(type, code, period, adjust)
     data.set_index('日期', inplace=True)
     data.to_sql(table_name, dbEngine.engine, if_exists='replace', index=True, index_label='日期')
+
+    update_download_records(type, code, period, adjust, start, end)
 
     return len(data)
   else:
@@ -169,13 +180,20 @@ def fetch_history_data(type: int, code: str, start: str, end: str, period: str, 
     return []
 
   if start and end:
-    stmt = text(f"SELECT * FROM {table_name} WHERE 日期 >= '{start}' AND 日期 <= '{end}' ORDER BY 日期 DESC")
+    stmt = text(f"SELECT * FROM {table_name} WHERE 日期 >= '{start}' AND 日期 <= '{end}' ORDER BY 日期 ASC")
   elif start:
-    stmt = text(f"SELECT * FROM {table_name} WHERE 日期 >= '{start}' ORDER BY 日期 DESC")
+    stmt = text(f"SELECT * FROM {table_name} WHERE 日期 >= '{start}' ORDER BY 日期 ASC")
   elif end:
-    stmt = text(f"SELECT * FROM {table_name} WHERE 日期 <= '{end}' ORDER BY 日期 DESC")
+    stmt = text(f"SELECT * FROM {table_name} WHERE 日期 <= '{end}' ORDER BY 日期 ASC")
   else:
-    stmt = text(f"SELECT * FROM {table_name} ORDER BY 日期 DESC")
+    stmt = text(f"SELECT * FROM {table_name} ORDER BY 日期 ASC")
 
   result = dbEngine.select_stmt(stmt)
   return result
+
+def get_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str) -> list[HistoryData]:
+  checked = check_download_records(type, code, period, adjust, start, end)
+  if not checked:
+    download_history_data(type, code, start, end, period, adjust)
+  return fetch_history_data(type, code, start, end, period, adjust)
+
