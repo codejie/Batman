@@ -31,5 +31,10 @@ class TestHistoryData(unittest.TestCase):
         # today = datetime.now()
         # self.assertTrue(date >= today - timedelta(days=7))
 
+    def test_get_latest_history_data(self):
+        data = Data.get_latest_history_data(Data.Define.TYPE_STOCK, self.test_code, 'daily', 'qfq')
+        print(data)
+        self.assertTrue(data is not None)
+
 if __name__ == '__main__':
     unittest.main()

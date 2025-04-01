@@ -9,6 +9,13 @@ TYPE_INDEX: int = 1
 TYPE_STOCK: int = 2
 
 """
+Data Options
+"""
+dataOptions = {
+  'offline': False
+}
+
+"""
 Stock & Index Information Table
 """
 class InfoTable(TableBase):

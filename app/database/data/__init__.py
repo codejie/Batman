@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Optional
 from sqlalchemy import delete, select, text, update
 from app.database import TableBase, dbEngine
@@ -58,9 +59,9 @@ def check_download_records(type: int, code: str, period: str, adjust: str, start
            and Define.DownloadRecordsTable.period == period
            and Define.DownloadRecordsTable.adjust == adjust)
   if start:
-    stmt = stmt.where(Define.DownloadRecordsTable.start >= start)
+    stmt = stmt.where(Define.DownloadRecordsTable.start <= start)
   if end:
-    stmt = stmt.where(Define.DownloadRecordsTable.end <= end)
+    stmt = stmt.where(Define.DownloadRecordsTable.end >= end)
   result = dbEngine.select_scalar(stmt)
   if result:
     return result
@@ -91,7 +92,7 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
   else:
     return 0
 
-def fetch_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str) -> list[Define.HistoryData]:
+def fetch_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str, limit: int = None) -> list[Define.HistoryData]:
   table_name = make_history_data_table_name(type, code, period, adjust)
 
   if start and end:
@@ -103,12 +104,25 @@ def fetch_history_data(type: int, code: str, start: str, end: str, period: str, 
   else:
     stmt = text(f"SELECT * FROM {table_name} ORDER BY 日期 ASC")
 
-  result = dbEngine.select_stmt(stmt)
-  return result
+  results = dbEngine.select_stmt(stmt)
+  if limit:
+    return results[-limit:] 
+  return results
 
-def get_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str) -> list[Define.HistoryData]:
+def get_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str, limit: int = None) -> list[Define.HistoryData]:
   checked = check_download_records(type, code, period, adjust, start, end)
   if not checked:
     download_history_data(type, code, start, end, period, adjust)
-  return fetch_history_data(type, code, start, end, period, adjust)
+  return fetch_history_data(type, code, start, end, period, adjust, limit)
 
+def get_latest_history_data(type: int, code: str, period: str, adjust: str) -> Optional[Define.HistoryData]:
+  # date = datetime.today()
+  # while not Utils.is_workday(date):
+  #   date = date - timedelta(days=1)
+  date = Utils.get_latest_workday()
+  start = Utils.date_to_string_1(date - timedelta(weeks=52))
+  end = Utils.date_to_string_1(date)
+  results = get_history_data(type, code, start, end, period, adjust, 1)
+  if len(results) > 0:
+    return results.pop()
+  return None
