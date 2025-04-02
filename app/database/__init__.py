@@ -20,21 +20,21 @@ class DBEngine:
   def shutdown(self) -> None:
       pass
   
-  def insert_stmt(self, stmt: object) -> None:
+  def insert_stmt(self, stmt: object) ->int:
     try:
       with Session(self.engine) as session:
         result = session.execute(stmt)
         session.commit()
-        # return result.inserted_primary_key[0]
+        return result.inserted_primary_key[0] if result.inserted_primary_key else 0
     except Exception as e:
       raise AppException(e)
 
-  def insert_instance(self, instance: TableBase) -> None:
+  def insert_instance(self, instance: TableBase) -> int:
     try:
       with Session(self.engine) as session:
         session.add(instance)
         session.commit()
-        # return instance.id
+        return instance.id if instance.id else 0
     except Exception as e:
       raise AppException(e)
     

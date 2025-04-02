@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy import Column, Float, ForeignKey, Index, Integer, PrimaryKeyConstraint, String, DateTime, case, delete, select, update
 from sqlalchemy.sql import func
 from app.database import dbEngine, TableBase
-from app.database import info as Info
+from app.database.data import define as Data
 
 HOLDING_FLAG_ACTIVE: int = 1
 HOLDING_FLAG_REMOVED: int = 2
@@ -13,7 +13,7 @@ OPERATION_ACTION_SELL: int = 2
 class HoldingTable(TableBase):
   __tablename__ = 'user_holding_table'
 
-  id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True)
+  id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
   uid = Column(Integer, nullable=False, default=99)
   type = Column(Integer, nullable=False, default=1)
   code = Column(String, nullable=False)
@@ -99,7 +99,7 @@ def create(uid: int, type: int, code: str, action: int, quantity: int, price: fl
 
 def records(uid: int, id: int = None, type: int = None, code: str = None, flag: int = None) -> list[UserHoldingRecord]:
   stmt = select(HoldingTable,
-                Info.InfoTable.name.label('name'),
+                Data.InfoTable.name.label('name'),
                 func.coalesce(
                   func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, HoldingOperationTable.quantity), else_=-HoldingOperationTable.quantity)),
                   0).label('quantity'),
@@ -107,7 +107,7 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
                   func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, HoldingOperationTable.expense), else_=-HoldingOperationTable.expense)),
                   0.0).label('expense')
               ).select_from(HoldingTable
-              ).join(Info.InfoTable, Info.InfoTable.code == HoldingTable.code and Info.InfoTable.type == HoldingTable.type, isouter=True
+              ).join(Data.InfoTable, Data.InfoTable.code == HoldingTable.code and Data.InfoTable.type == HoldingTable.type, isouter=True
               ).join(HoldingOperationTable, HoldingOperationTable.holding == HoldingTable.id, isouter=True
               ).filter(HoldingTable.uid == uid
               ).group_by(HoldingTable.id

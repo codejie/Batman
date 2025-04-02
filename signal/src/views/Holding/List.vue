@@ -92,7 +92,7 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
 <script setup lang="ts">
 import { apiHistory } from '@/api/data'
 import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove, apiRecord } from '@/api/holding'
-import { HOLDING_FLAG_REMOVED } from '@/api/holding/types'
+import { HOLDING_FLAG_REMOVED, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
 import {
@@ -100,6 +100,7 @@ import {
   ElRadioGroup, ElRadioButton
  } from 'element-plus'
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
+import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 
 const createDialogVisible = ref<boolean>(false)
 const operationDialogVisible = ref<boolean>(false)
@@ -109,10 +110,10 @@ const createForm = ref<CreateForm>({
 })
 const operationForm = ref<OperationForm>({
   holding: 0,
-  type: 0,
+  type: TYPE_STOCK,
   code: '',
   name: '',
-  action: 0,
+  action: OPERATION_ACTION_BUY,
   quantity: 0,
   price: 0,
   expense: 0,
@@ -145,7 +146,7 @@ onMounted(async () => {
 
 async function onAdd() {
   const ret = await apiCreate({
-    type: createForm.value.type == '股票' ? 1 : 0,
+    type: createForm.value.type == '股票' ? TYPE_STOCK : TYPE_INDEX,
     code: createForm.value.code
   })
   createDialogVisible.value = false
@@ -169,6 +170,7 @@ function onQuantityBlur() {
 }
 
 async function onAddOperation() {
+  console.log(operationForm.value)
   const ret = await apiOperationCreate({
     holding: operationForm.value.holding,
     action: operationForm.value.action,
@@ -231,7 +233,7 @@ function onExpandChanged(rows: HoldingOperationData, expandedRows: HoldingOperat
                 <ElTableColumn type="index" width="40" />
                 <ElTableColumn label="操作" prop="action" width="60">
                   <template #default="{ row }">
-                    {{ row.action == 1 ? '买入' : '卖出' }}
+                    {{ row.action == OPERATION_ACTION_BUY ? '买入' : '卖出' }}
                   </template>
                 </ElTableColumn>
                 <ElTableColumn label="数量" prop="quantity" min-width="80" />
@@ -314,8 +316,8 @@ function onExpandChanged(rows: HoldingOperationData, expandedRows: HoldingOperat
           </ElFormItem>
           <ElFormItem label="操作">
             <ElRadioGroup v-model="operationForm.action">
-              <ElRadioButton :value="0">买入</ElRadioButton>
-              <ElRadioButton :value="1">卖出</ElRadioButton>
+              <ElRadioButton :value="OPERATION_ACTION_BUY">买入</ElRadioButton>
+              <ElRadioButton :value="OPERATION_ACTION_SELL">卖出</ElRadioButton>
             </ElRadioGroup>
           </ElFormItem>
           <ElFormItem label="数量" @change="onQuantityBlur">

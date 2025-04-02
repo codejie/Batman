@@ -122,7 +122,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         meta: {
           title: t('router.holding_list'),
           noCache: true,
-          affix: true
+          affix: false
         }
       },
       {
@@ -132,7 +132,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         meta: {
           title: t('router.holding_operation'),
           noCache: true,
-          affix: true
+          affix: false
         }
       }
     ]

@@ -12,3 +12,6 @@ class ResponseModel(BaseModel):
 
 def verify_token(x_token: str=Header()) -> str:
     return x_token
+
+def verify_system_token(x_token: str=Header()) -> str:
+   return x_token

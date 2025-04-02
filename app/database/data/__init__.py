@@ -34,7 +34,9 @@ def get_name(type: int, code: str) -> Optional[str]:
     return Stock.get_name(code)
   else:
     raise ValueError(f"Unknown type: {type}")
-
+"""
+download history data
+"""
 def update_download_records(type: int, code: str, period: str, adjust: str, start: str, end: str) -> Optional[int]:
   stmt = select(Define.DownloadRecordsTable) \
     .where(Define.DownloadRecordsTable.type == type
