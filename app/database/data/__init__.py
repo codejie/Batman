@@ -63,8 +63,6 @@ def check_download_records(type: int, code: str, period: str, adjust: str, start
   if end:
     stmt = stmt.where(Define.DownloadRecordsTable.end >= end)
   result = dbEngine.select_scalar(stmt)
-  if result:
-    return result
   return result if result else None
 
 def make_history_data_table_name(type: int, code: str, period: str, adjust: str) -> str:
