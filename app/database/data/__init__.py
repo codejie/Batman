@@ -104,7 +104,10 @@ def fetch_history_data(type: int, code: str, start: str, end: str, period: str, 
   else:
     stmt = text(f"SELECT * FROM {table_name} ORDER BY 日期 ASC")
 
-  results = dbEngine.select_stmt(stmt)
+  rows = dbEngine.select_stmt(stmt)
+  results = []
+  for row in rows:
+    results.append(Define.HistoryData.model_validate(row))
   if limit:
     return results[-limit:] 
   return results

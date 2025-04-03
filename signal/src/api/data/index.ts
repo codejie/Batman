@@ -1,11 +1,11 @@
-import { HistroyRequest, HistroyResult } from "./types"
+import request from '@/axios'
+import { GetLatestHistoryDataRequest, GetLatestHistoryDataResult } from "./types"
 
-export const apiHistory = (data: HistroyRequest): Promise<IResponse<HistroyResult>> => {
-  // return request.post({ url: '/holding/list', data })
-  return Promise.resolve({
-    code: 0,
-    result: [
-      { price: 0 }
-    ]
-  } as IResponse<HistroyResult>)
+export const apiGetLatestHistoryData = (
+  data: GetLatestHistoryDataRequest
+): Promise<IResponse<GetLatestHistoryDataResult>> => {
+  return request.post({
+    url: '/data/get_latest_history_data',
+    data
+  })
 }

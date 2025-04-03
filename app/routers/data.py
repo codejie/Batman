@@ -1,5 +1,7 @@
+from typing import Optional
 from fastapi import APIRouter, Depends
 from app.database import data as Data
+from app.database.data.define import HistoryData
 from app.routers.common import RequestModel, ResponseModel, verify_token, verify_system_token
 
 """
@@ -45,11 +47,11 @@ class DownloadHistoryRequest(RequestModel):
   adjust: str = 'qfq'
 
 class DownloadHistoryResponse(ResponseModel):
-  count: int
+  result: int
 
 @router.post("/download_history", response_model=DownloadHistoryResponse, dependencies=[Depends(verify_system_token)])
 async def download_history_api(request: DownloadHistoryRequest):
-  count = Data.download_history_data(
+  result = Data.download_history_data(
     type=request.type,
     code=request.code,
     start=request.start,
@@ -57,7 +59,7 @@ async def download_history_api(request: DownloadHistoryRequest):
     period=request.period,
     adjust=request.adjust
   )
-  return DownloadHistoryResponse(count=count)
+  return DownloadHistoryResponse(result=result)
 
 """
 get history data
@@ -71,11 +73,11 @@ class GetHistoryDataRequest(RequestModel):
   adjust: str = 'qfq'
 
 class GetHistoryDataResponse(ResponseModel):
-  data: list
+  result: list[HistoryData] = []
 
 @router.post("/get_history_data", response_model=GetHistoryDataResponse)
 async def get_history_data_api(request: GetHistoryDataRequest):
-  data = Data.get_history_data(
+  result = Data.get_history_data(
     type=request.type,
     code=request.code,
     start=request.start,
@@ -83,7 +85,7 @@ async def get_history_data_api(request: GetHistoryDataRequest):
     period=request.period,
     adjust=request.adjust
   )
-  return GetHistoryDataResponse(data=data)
+  return GetHistoryDataResponse(result=result)
 
 class GetLatestHistoryDataRequest(RequestModel):
   type: int
@@ -92,14 +94,15 @@ class GetLatestHistoryDataRequest(RequestModel):
   adjust: str = 'qfq'
 
 class GetLatestHistoryDataResponse(ResponseModel):
-  data: list
+  result: Optional[HistoryData] = None
 
 @router.post("/get_latest_history_data", response_model=GetLatestHistoryDataResponse)
 async def get_latest_history_data_api(request: GetLatestHistoryDataRequest):
-  data = Data.get_latest_history_data(
+  result = Data.get_latest_history_data(
     type=request.type,
     code=request.code,
     period=request.period,
     adjust=request.adjust
   )
-  return GetLatestHistoryDataResponse(data=data)
+  print(type(result))
+  return GetLatestHistoryDataResponse(result=result)

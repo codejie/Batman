@@ -86,10 +86,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     component: Layout,
     redirect: '/home',
     meta: {
-      title: t('router.home'),
-      icon: 'clarity:home-line',
-      noCache: true,
-      affix: true
+      hidden: true
     },
     children: [
       {
@@ -108,11 +105,12 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     name: 'Holding',
     path: '/holding',
     component: Layout,
-    redirect: '/holding/list',
+    // redirect: '/holding/list',
     meta: {
-      title: t('router.holding'),
-      icon: 'carbon:currency-yen',
-      alwaysShow: true
+      // title: t('router.holding'),
+      // icon: 'carbon:currency-yen',
+      // alwaysShow: true,
+      // canTo: true
     },
     children: [
       {
@@ -121,45 +119,58 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/Holding/List.vue'),
         meta: {
           title: t('router.holding_list'),
-          noCache: true,
-          affix: false
+          icon: 'carbon:currency-yen',
+          // noCache: true,
+          // affix: false
         }
       },
-      {
-        name: 'Operation',
-        path: 'operation',
-        component: () => import('@/views/Holding/Operation.vue'),
-        meta: {
-          title: t('router.holding_operation'),
-          noCache: true,
-          affix: false
-        }
-      }
+      // {
+      //   name: 'Operation',
+      //   path: 'operation',
+      //   component: () => import('@/views/Holding/Operation.vue'),
+      //   meta: {
+      //     title: t('router.holding_operation'),
+      //     noCache: true,
+      //     affix: false
+      //   }
+      // },
+      // {
+      //   name: 'Detail',
+      //   path: 'detail',
+      //   component: () => import('@/views/Holding/Detail.vue'),
+      //   meta: {
+      //     titile: t('router.holding_detail'),
+      //     noCache: true,
+      //     affix: false,
+      //     hidden: true,
+      //     canTo: true
+      //   }
+      // }
     ]
   },
-  {
-    path: '/dashboard',
-    component: Layout,
-    redirect: '/dashboard/analysis',
-    name: 'Dashboard',
-    meta: {
-      title: t('router.dashboard'),
-      icon: 'vi-ant-design:dashboard-filled',
-      alwaysShow: true
-    },
-    children: [
-      {
-        path: 'analysis',
-        component: () => import('@/views/Dashboard/Analysis.vue'),
-        name: 'Analysis',
-        meta: {
-          title: t('router.analysis'),
-          noCache: true,
-          affix: true
-        }
-      }
-    ]
-  },
+  // {
+  //   path: '/dashboard',
+  //   component: Layout,
+  //   redirect: '/dashboard/analysis',
+  //   name: 'Dashboard',
+  //   meta: {
+  //     title: t('router.dashboard'),
+  //     icon: 'vi-ant-design:dashboard-filled',
+  //     alwaysShow: true
+  //   },
+  //   children: [
+  //     {
+  //       path: 'analysis',
+  //       component: () => import('@/views/Dashboard/Analysis.vue'),
+  //       name: 'Analysis',
+  //       meta: {
+  //         title: t('router.analysis'),
+  //         noCache: true,
+  //         affix: true
+  //       }
+  //     }
+  //   ]
+  // },
   // {
   //   path: '/external-link',
   //   component: Layout,

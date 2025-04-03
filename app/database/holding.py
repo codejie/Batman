@@ -104,7 +104,7 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
                   func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, HoldingOperationTable.quantity), else_=-HoldingOperationTable.quantity)),
                   0).label('quantity'),
                 func.coalesce(
-                  func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, HoldingOperationTable.expense), else_=-HoldingOperationTable.expense)),
+                  func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, -HoldingOperationTable.expense), else_=HoldingOperationTable.expense)),
                   0.0).label('expense')
               ).select_from(HoldingTable
               ).join(Data.InfoTable, Data.InfoTable.code == HoldingTable.code and Data.InfoTable.type == HoldingTable.type, isouter=True

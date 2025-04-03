@@ -64,3 +64,6 @@ class HistoryData(BaseModel):
   涨跌幅: float
   涨跌额: float
   换手率: float
+
+  class Config:
+    from_attributes = True

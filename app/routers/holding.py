@@ -7,31 +7,6 @@ from app.routers.common import DEFAULT_UID, RequestModel, ResponseModel, verify_
 
 router: APIRouter = APIRouter(prefix="/holding", tags=["Holding"], dependencies=[Depends(verify_token)])
 
-# class CreateRequest(RequestModel):
-#     # uid: int
-#     type: int
-#     code: str
-#     action: int
-#     quantity: int
-#     price: float
-#     expense: float
-#     comment: Optional[str] = None
-
-# class CreateResponse(ResponseModel):
-#   result: int
-
-# @router.post("/create", response_model=CreateResponse)
-# async def create(request: CreateRequest):
-#   result = db.create(uid=DEFAULT_UID,
-#                      type=request.type,
-#                      code=request.code,
-#                      action=request.action,
-#                      quantity=request.quantity,
-#                      price=request.price,
-#                      expense=request.expense,
-#                      comment=request.comment)
-#   return CreateResponse(result=result)
-
 class CreateRequest(RequestModel):
   type: int
   code: str
@@ -115,17 +90,24 @@ class HoldingOperationTableModel(BaseModel):
   comment: Optional[str] = None
   created: datetime.datetime
 
+  class Config:
+    from_attributes = True
+
 class OperationListResponse(ResponseModel):
   result: List[HoldingOperationTableModel] = []
 
 @router.post("/operation/list", response_model=OperationListResponse)
 async def operation_list(request: OperationListRequest):
   records = db.select_operation(uid=DEFAULT_UID, holding=request.holding)
-  result = []
+  results = []
   for record in records:
     r = record[0]
-    result.append(HoldingOperationTableModel(id=r.id, holding=r.holding, action=r.action, quantity=r.quantity, price=r.price, expense=r.expense, comment=r.comment, created=r.created))
-  return OperationListResponse(result=result)
+    results.append(HoldingOperationTableModel(id=r.id, holding=r.holding, action=r.action, quantity=r.quantity, price=r.price, expense=r.expense, comment=r.comment, created=r.created))
+  # rows = db.select_operation(uid=DEFAULT_UID, holding=request.holding)
+  # results = []
+  # for row in rows:
+  #   results.append(HoldingOperationTableModel.model_validate(row))
+  return OperationListResponse(result=results)
 
 class OperationRemoveRequest(RequestModel):
   id: int

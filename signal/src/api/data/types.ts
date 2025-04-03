@@ -1,17 +1,25 @@
 export const TYPE_INDEX: number = 1
 export const TYPE_STOCK: number = 2
 
-export interface HistroyRequest {
+export interface HistoryData {
+  日期: string
+  开盘: number
+  收盘: number
+  最高: number
+  最低: number
+  成交量: number
+  成交额: number
+  振幅: number
+  涨跌幅: number
+  涨跌额: number
+  换手率: number  
+}
+
+export interface GetLatestHistoryDataRequest {
   type: number
   code: string
-  flag?: number // last, all
+  period?: string
+  adjust?: string
 }
 
-export interface HistroyData {
-  price: number
-}
-
-export type HistroyResult = HistroyData[]
-
-
-// export interface LastHistoryRequest
+export type  GetLatestHistoryDataResult = HistoryData | undefined

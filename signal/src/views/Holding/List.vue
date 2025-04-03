@@ -11,7 +11,7 @@ interface HoldingData {
   expense: number
 
   price_avg: number | string
-  price_cur?: number
+  price_cur?: number | string
   revenue?: number | string// price_cur * quantity
   profit?: number | string// revenue - expense
   profit_percent?: number | string
@@ -59,14 +59,15 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
     flag
   })
   for (const item of ret.result) {
-    const ret_current = await apiHistory({
+    const ret_current = await apiGetLatestHistoryData({
       type: item.type,
       code: item.code
     })
-    const current = ret_current.result[0]
-    console.log(current)
-    const avg = (item.expense / item.quantity)
-    const precent = ((current.price * item.quantity - item.expense) / item.expense)
+    const price = ret_current.result ? ret_current.result.收盘 : undefined
+    console.log(price)
+    const avg = (-item.expense / item.quantity) || undefined
+    const precent = price ? ((price * item.quantity + item.expense) / -item.expense) : undefined
+    const profit = price ? (price * item.quantity + item.expense) : undefined
     results.push({
       id: item.id,
       type: item.type,
@@ -78,9 +79,9 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
       quantity: item.quantity,
       expense: item.expense,
       price_avg: avg ? avg.toFixed(2) : '-',
-      price_cur: current.price,
-      revenue: current.price * item.quantity,
-      profit: current.price * item.quantity - item.expense,
+      price_cur: price || '-',
+      revenue: price ? price * item.quantity : '-',
+      profit: profit || '-',
       profit_percent: precent ? ((precent * 100).toFixed(2) + '%') : '-'
     })
   }
@@ -90,7 +91,7 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
 </script>
 
 <script setup lang="ts">
-import { apiHistory } from '@/api/data'
+import { apiGetLatestHistoryData } from '@/api/data'
 import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove, apiRecord } from '@/api/holding'
 import { HOLDING_FLAG_REMOVED, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
