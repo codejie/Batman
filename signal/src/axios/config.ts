@@ -35,10 +35,30 @@ const defaultRequestInterceptors = (config: InternalAxiosRequestConfig) => {
   return config
 }
 
+function isISODate(str) {
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|([+-])(\d{2}):(\d{2}))?$/.test(str);
+}
+
+function transformDate(data) {
+  for (const key in data) {
+    if (data.hasOwnProperty(key)) {
+      const value = data[key]
+      if (typeof value === 'string' && isISODate(value)) {
+        data[key] = new Date(value)
+      } else if (typeof value === 'object' && value !== null) {
+        transformDate(value)
+      }
+    }
+  }
+  return data
+}
+
 const defaultResponseInterceptors = (response: AxiosResponse) => {
   if (response?.config?.responseType === 'blob') {
     // 如果是文件流，直接过
     return response
+  } else if (typeof response.data === 'object') {
+    return transformDate(response.data)
   } else if (response.data.code === SUCCESS_CODE) {
     return response.data
   } else {

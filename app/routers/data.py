@@ -67,10 +67,10 @@ get history data
 class GetHistoryDataRequest(RequestModel):
   type: int
   code: str
-  start: str
-  end: str
-  period: str = 'daily'
-  adjust: str = 'qfq'
+  start: Optional[str] = None
+  end: Optional[str] = None
+  period: Optional[str] = 'daily'
+  adjust: Optional[str] = 'qfq'
 
 class GetHistoryDataResponse(ResponseModel):
   result: list[HistoryData] = []
@@ -104,5 +104,4 @@ async def get_latest_history_data_api(request: GetLatestHistoryDataRequest):
     period=request.period,
     adjust=request.adjust
   )
-  print(type(result))
   return GetLatestHistoryDataResponse(result=result)

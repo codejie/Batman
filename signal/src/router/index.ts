@@ -134,18 +134,19 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
       //     affix: false
       //   }
       // },
-      // {
-      //   name: 'Detail',
-      //   path: 'detail',
-      //   component: () => import('@/views/Holding/Detail.vue'),
-      //   meta: {
-      //     titile: t('router.holding_detail'),
-      //     noCache: true,
-      //     affix: false,
-      //     hidden: true,
-      //     canTo: true
-      //   }
-      // }
+      {
+        name: 'Detail',
+        path: 'detail',
+        component: () => import('@/views/Holding/Detail.vue'),
+        props: router => ({id: router.query.id }),
+        meta: {
+          title: t('router.holding_detail'),
+          noCache: true,
+          affix: false,
+          hidden: true,
+          canTo: true
+        }
+      }
     ]
   },
   // {

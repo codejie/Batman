@@ -14,7 +14,7 @@ interface HoldingData {
   price_cur?: number | string
   revenue?: number | string// price_cur * quantity
   profit?: number | string// revenue - expense
-  profit_percent?: number | string
+  profit_rate?: number | string
 }
 
 interface OperationData {
@@ -64,7 +64,6 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
       code: item.code
     })
     const price = ret_current.result ? ret_current.result.收盘 : undefined
-    console.log(price)
     const avg = (-item.expense / item.quantity) || undefined
     const precent = price ? ((price * item.quantity + item.expense) / -item.expense) : undefined
     const profit = price ? (price * item.quantity + item.expense) : undefined
@@ -82,7 +81,7 @@ async function getHoldingData(id?: number, type?: number, code?: string, flag?: 
       price_cur: price || '-',
       revenue: price ? price * item.quantity : '-',
       profit: profit || '-',
-      profit_percent: precent ? ((precent * 100).toFixed(2) + '%') : '-'
+      profit_rate: precent ? ((precent * 100).toFixed(2) + '%') : '-'
     })
   }
   return results
@@ -102,6 +101,9 @@ import {
  } from 'element-plus'
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
+import { useRouter } from 'vue-router'
+
+const { push } = useRouter()
 
 const createDialogVisible = ref<boolean>(false)
 const operationDialogVisible = ref<boolean>(false)
@@ -137,7 +139,7 @@ async function fetchHoldingData() {
 
   for (const item of ret.result) {
     const holding = data.value.find((x) => x.holding.id === item.holding)
-    holding!.items.push(item)
+    holding!.items.unshift(item)
   }
 }
 
@@ -197,6 +199,15 @@ async function onRemove(row: HoldingOperationData) {
     flag: HOLDING_FLAG_REMOVED
   })
   await fetchHoldingData()
+}
+
+async function onDetail(row: HoldingOperationData) {
+  push({
+    path: '/holding/detail',
+    query: {
+      id: row.holding.id
+    }
+  })
 }
 
 function getHoldingKey(row: HoldingOperationData): string {
@@ -279,6 +290,7 @@ function onExpandChanged(rows: HoldingOperationData, expandedRows: HoldingOperat
           </ElTableColumn>
           <ElTableColumn label="" width="160">
             <template #default="{ row }">
+              <ElButton size="small" @click="onDetail(row)">详情</ElButton>
               <ElButton size="small" @click="onRemove(row)">删除</ElButton>
             </template>
           </ElTableColumn>      

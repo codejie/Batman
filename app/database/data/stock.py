@@ -26,10 +26,12 @@ def get_name(code: str) -> Optional[str]:
 def download_history_data(code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> Optional[DataFrame]:
   data = ak.stock_zh_a_hist(symbol=code, period=period, adjust=adjust, start_date=start, end_date=end)
 
-  if data is not None:
+  if not data.empty:
     data = data.drop('股票代码', axis=1)
     data.set_index('日期', inplace=True)
-  return data  
+    return data
+  else:
+    return None
 
 # def fetch_history_data(code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> list[Define.HistoryData]:
 #   return Define.fetch_history_data(Define.TYPE_STOCK, code, start, end, period, adjust)

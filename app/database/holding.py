@@ -65,7 +65,7 @@ def select_holding(uid: int, type: int = None, code: str = None, flag: int = Non
   return dbEngine.select_stmt(stmt)
 
 def select_operation(uid: int, holding: int = None) -> list[HoldingOperationTable]:
-  stmt = select(HoldingOperationTable).order_by(HoldingOperationTable.created.desc())
+  stmt = select(HoldingOperationTable).order_by(HoldingOperationTable.created.asc())
   if holding:
     stmt = stmt.where(HoldingOperationTable.holding == holding)
   return dbEngine.select_stmt(stmt)
