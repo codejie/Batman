@@ -16,7 +16,7 @@ export interface ListRequest {
   flag?: number
 }
 
-export interface HoldingData {
+export interface HoldingItem {
   id: number
   type: number
   code: string
@@ -25,7 +25,7 @@ export interface HoldingData {
   updated: Date
 }
 
-export type ListResult = HoldingData[]
+export type ListResult = HoldingItem[]
 
 export interface FlagRequest {
   id: number
@@ -41,7 +41,7 @@ export interface RecordRequest {
   flag?: number
 }
 
-export interface HoldingRecord {
+export interface HoldingRecordItem {
   id: number
   type: number
   code: string
@@ -53,13 +53,13 @@ export interface HoldingRecord {
   updated: Date
 }
 
-export type RecordResult = HoldingRecord[]
+export type RecordResult = HoldingRecordItem[]
 
 export interface OperationListRequest {
   holding?: number
 }
 
-export interface HoldingOperationData {
+export interface HoldingOperationItem {
   id: number
   holding: number
   action: number
@@ -70,7 +70,7 @@ export interface HoldingOperationData {
   created: Date
 }
 
-export type OperationListResult = HoldingOperationData[]
+export type OperationListResult = HoldingOperationItem[]
 
 export interface OperationCreateRequest {
   holding: number

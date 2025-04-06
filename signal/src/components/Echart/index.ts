@@ -1,3 +1,3 @@
 import Echart from './src/Echart.vue'
-
-export { Echart }
+import type { EChartsOption } from 'echarts'
+export { Echart, EChartsOption }

@@ -1,35 +1,32 @@
 import request from '@/axios'
-import type { CreateRequest, CreateResult, OperationCreateRequest, OperationCreateResult } from './types'
-import type { ListRequest, ListResult } from './types'
-import type { RecordRequest, RecordResult } from './types'
-import type { OperationListRequest, OperationListResult } from './types'
-import type { OperationRemoveRequest, OperationRemoveResult } from './types'
-import type { FlagRequest, FlagResult } from './types'
+import * as Types from './types'
 
-export const apiList = (data: ListRequest): Promise<IResponse<ListResult>> => {
+export * from './types'
+
+export const apiList = (data: Types.ListRequest): Promise<IResponse<Types.ListResult>> => {
   return request.post({ url: '/holding/list', data })
 }
 
-export const apiCreate = (data: CreateRequest): Promise<IResponse<CreateResult>> => {
+export const apiCreate = (data: Types.CreateRequest): Promise<IResponse<Types.CreateResult>> => {
   return request.post({ url: '/holding/create', data })
 }
 
-export const apiFlag = (data: FlagRequest): Promise<IResponse<FlagResult>> => {
+export const apiFlag = (data: Types.FlagRequest): Promise<IResponse<Types.FlagResult>> => {
   return request.post({ url: '/holding/flag', data })
 }
 
-export const apiRecord = (data: RecordRequest): Promise<IResponse<RecordResult>> => {
+export const apiRecord = (data: Types.RecordRequest): Promise<IResponse<Types.RecordResult>> => {
   return request.post({ url: '/holding/record', data })
 }
 
-export const apiOperationList = (data: OperationListRequest): Promise<IResponse<OperationListResult>> => {
+export const apiOperationList = (data: Types.OperationListRequest): Promise<IResponse<Types.OperationListResult>> => {
   return request.post({ url: '/holding/operation/list', data })
 }
 
-export const apiOperationCreate = (data: OperationCreateRequest): Promise<IResponse<OperationCreateResult>> => {
+export const apiOperationCreate = (data: Types.OperationCreateRequest): Promise<IResponse<Types.OperationCreateResult>> => {
   return request.post({ url: '/holding/operation/create', data })
 }
 
-export const apiOperationRemove = (data: OperationRemoveRequest): Promise<IResponse<OperationRemoveResult>> => {
+export const apiOperationRemove = (data: Types.OperationRemoveRequest): Promise<IResponse<Types.OperationRemoveResult>> => {
   return request.post({ url: '/holding/operation/remove', data })
 }

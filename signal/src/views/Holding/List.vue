@@ -1,36 +1,8 @@
 <script lang="ts">
-interface HoldingData {
-  id: number
-  type: number
-  code: string
-  name: string
-  flag: number
-  created: Date
-  updated: Date
-  quantity: number
-  expense: number
 
-  price_avg: number | string
-  price_cur?: number | string
-  revenue?: number | string// price_cur * quantity
-  profit?: number | string// revenue - expense
-  profit_rate?: number | string
-}
-
-interface OperationData {
-  id: number
-  holding: number
-  action: number
-  quantity: number
-  price: number
-  expense: number
-  comment?: string
-  created: Date
-}
-
-interface HoldingOperationData {
-  holding: HoldingData
-  items: OperationData[]
+interface HoldingOperationItem {
+  holding: HoldingItem
+  items: OperationItem[]
 }
 
 interface CreateForm {
@@ -50,48 +22,10 @@ interface OperationForm {
   comment?: string    
 }
 
-async function getHoldingData(id?: number, type?: number, code?: string, flag?: number): Promise<HoldingData[]> {
-  const results: HoldingData[] = []
-  const ret = await apiRecord({
-    id,
-    type,
-    code,
-    flag
-  })
-  for (const item of ret.result) {
-    const ret_current = await apiGetLatestHistoryData({
-      type: item.type,
-      code: item.code
-    })
-    const price = ret_current.result ? ret_current.result.收盘 : undefined
-    const avg = (-item.expense / item.quantity) || undefined
-    const precent = price ? ((price * item.quantity + item.expense) / -item.expense) : undefined
-    const profit = price ? (price * item.quantity + item.expense) : undefined
-    results.push({
-      id: item.id,
-      type: item.type,
-      code: item.code,
-      name: item.name,
-      flag: item.flag,
-      created: item.created,
-      updated: item.updated,
-      quantity: item.quantity,
-      expense: item.expense,
-      price_avg: avg ? avg.toFixed(2) : '-',
-      price_cur: price || '-',
-      revenue: price ? price * item.quantity : '-',
-      profit: profit || '-',
-      profit_rate: precent ? ((precent * 100).toFixed(2) + '%') : '-'
-    })
-  }
-  return results
-}
-
 </script>
 
 <script setup lang="ts">
-import { apiGetLatestHistoryData } from '@/api/data'
-import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove, apiRecord } from '@/api/holding'
+import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove } from '@/api/holding'
 import { HOLDING_FLAG_REMOVED, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
@@ -102,6 +36,7 @@ import {
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
+import { getHoldingData, HoldingItem, OperationItem } from '@/calc/holding'
 
 const { push } = useRouter()
 
@@ -122,7 +57,7 @@ const operationForm = ref<OperationForm>({
   expense: 0,
   comment: ''
 })
-const data = ref<HoldingOperationData[]>([])
+const data = ref<HoldingOperationItem[]>([])
 const expandRows = ref<string[]>([])
 
 async function fetchHoldingData() {
@@ -156,7 +91,7 @@ async function onAdd() {
   await fetchHoldingData()
 }
 
-function onOperation(row: HoldingOperationData) {
+function onOperation(row: HoldingOperationItem) {
   operationForm.value.holding = row.holding.id
   operationForm.value.type = row.holding.type
   operationForm.value.code = row.holding.code
@@ -186,14 +121,14 @@ async function onAddOperation() {
   await fetchHoldingData()
 }
 
-async function onOperationRemove(row: OperationData) {
+async function onOperationRemove(row: OperationItem) {
   await apiOperationRemove({
     id: row.id
   })
   await fetchHoldingData()
 }
 
-async function onRemove(row: HoldingOperationData) {
+async function onRemove(row: HoldingOperationItem) {
   await apiFlag({
     id: row.holding.id,
     flag: HOLDING_FLAG_REMOVED
@@ -201,7 +136,7 @@ async function onRemove(row: HoldingOperationData) {
   await fetchHoldingData()
 }
 
-async function onDetail(row: HoldingOperationData) {
+async function onDetail(row: HoldingOperationItem) {
   push({
     path: '/holding/detail',
     query: {
@@ -210,12 +145,12 @@ async function onDetail(row: HoldingOperationData) {
   })
 }
 
-function getHoldingKey(row: HoldingOperationData): string {
+function getHoldingKey(row: HoldingOperationItem): string {
   // console.log(row.holding.id)
   return row.holding.id.toString()
 }
 
-function onExpandChanged(rows: HoldingOperationData, expandedRows: HoldingOperationData[]) {
+function onExpandChanged(rows: HoldingOperationItem, expandedRows: HoldingOperationItem[]) {
   expandRows.value = expandedRows.map((x) => x.holding.id.toString())
 }
 </script>
@@ -266,18 +201,22 @@ function onExpandChanged(rows: HoldingOperationData, expandedRows: HoldingOperat
             </div>
           </template>
         </ElTableColumn>
-        <!-- <ElTableColumn prop="id" label="ID" width="50"></ElTableColumn> -->
-          <!-- <ElTableColumn prop="type" label="Type" width="50"></ElTableColumn> -->
-          <ElTableColumn prop="holding.code" label="代码" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="holding.name" label="名称" min-width="80"></ElTableColumn>
-          <!-- <ElTableColumn prop="flag" label="Flag" width="50"></ElTableColumn> -->
-          <ElTableColumn prop="holding.quantity" label="数量" min-width="60"></ElTableColumn>
-          <ElTableColumn prop="holding.expense" label="成本" min-width="60"></ElTableColumn>
-          <ElTableColumn prop="holding.price_avg" label="均价" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="holding.price_cur" label="现价" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="holding.revenue" label="收益" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="holding.profit" label="利润" min-width="80"></ElTableColumn>
-          <ElTableColumn prop="holding.profit_percent" label="利润率 %" min-width="100"></ElTableColumn>
+        <!-- <ElTableColumn prop="id" label="ID" width="50" /> -->
+          <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
+          <ElTableColumn prop="holding.code" label="代码" min-width="80" />
+          <ElTableColumn prop="holding.name" label="名称" min-width="80" />
+          <!-- <ElTableColumn prop="flag" label="Flag" width="50" /> -->
+          <ElTableColumn prop="holding.quantity" label="数量" min-width="60" />
+          <ElTableColumn prop="holding.expense" label="成本" min-width="60" />
+          <ElTableColumn prop="holding.price_avg" label="均价" min-width="80" />
+          <ElTableColumn prop="holding.price_cur" label="现价" min-width="80">
+            <template #default="{ row }">
+              {{ `${row.holding.price_cur}[${row.holding.price_date.substring(5)}]` }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="holding.revenue" label="收益" min-width="80" />
+          <ElTableColumn prop="holding.profit" label="利润" min-width="80" />
+          <ElTableColumn prop="holding.profit_rate" label="利润率 %" min-width="100" />
           <ElTableColumn prop="holding.created" label="创建时间" min-width="120">
             <template #default="{ row }">
               {{ formatToDate(row.holding.created) }}

@@ -1,4 +1,7 @@
-export interface DataItem {
+import { HoldingOperationItem } from "@/api/holding/types"
+
+// Holding and Operation Data
+export interface HoldingItem {
   id: number
   type: number
   code: string
@@ -10,11 +13,26 @@ export interface DataItem {
   expense: number
 
   price_avg: number | string
+  price_date?: string
   price_cur?: number | string
   revenue?: number | string// price_cur * quantity
   profit?: number | string// revenue - expense
   profit_rate?: number | string
 }
+
+export type OperationItem = HoldingOperationItem
+// export interface OperationItem {
+//   id: number
+//   holding: number
+//   action: number
+//   quantity: number
+//   price: number
+//   expense: number
+//   comment?: string
+//   created: Date
+// }
+
+// Trace Data
 
 export interface TraceDataItem {
   date: string

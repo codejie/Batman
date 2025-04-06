@@ -1,40 +1,105 @@
-import { apiOperationList } from "@/api/holding"
+import { apiOperationList, apiRecord } from "@/api/holding"
 import { formatDateToYYYYMMDD } from "../comm"
 import { OPERATION_ACTION_BUY } from "@/api/holding/types"
 import * as Types from "@/calc/holding/types"
-import { apiGetHistoryData } from "@/api/data"
+import { apiGetHistoryData, apiGetLatestHistoryData } from "@/api/data"
+import { HistoryData } from "@/api/data/types"
 
 export * from "@/calc/holding/types"
 
+// Holding and Operation Data
+export async function getHoldingData(id?: number, type?: number, code?: string, flag?: number): Promise<Types.HoldingItem[]> {
+  const results: Types.HoldingItem[] = []
+  const ret = await apiRecord({
+    id,
+    type,
+    code,
+    flag
+  })
+  for (const item of ret.result) {
+    const ret_current = await apiGetLatestHistoryData({
+      type: item.type,
+      code: item.code
+    })
+    const price = ret_current.result ? ret_current.result.收盘 : undefined
+    const avg = (-item.expense / item.quantity) || undefined
+    const precent = price ? ((price * item.quantity + item.expense) / -item.expense) : undefined
+    const profit = price ? (price * item.quantity + item.expense) : undefined
+    results.push({
+      id: item.id,
+      type: item.type,
+      code: item.code,
+      name: item.name,
+      flag: item.flag,
+      created: item.created,
+      updated: item.updated,
+      quantity: item.quantity,
+      expense: item.expense,
+      price_avg: avg ? avg.toFixed(2) : '-',
+      price_date: ret_current.result?.日期,
+      price_cur: price || '-',
+      revenue: price ? price * item.quantity : '-',
+      profit: profit || '-',
+      profit_rate: precent ? ((precent * 100).toFixed(2) + '%') : '-'
+    })
+  }
+  return results
+}
+
+// Trace Data
 export function getTraceData(holding: number): Promise<Types.TraceDataItem[]> {
   return new Promise((resolve, reject) => {
-    const ret: Types.TraceDataItem[] = []
+    // const ret: Types.TraceDataItem[] = []
     apiOperationList({ holding })
       .then((res) => {
-        for (const item of res.result) {
-          const date = formatDateToYYYYMMDD(item.created)
-          const index = ret.findIndex(elment => elment.date === date)
-          if (index != -1) {
-            console.log('quantity', item.quantity, ret[index].quantity, item.action)
-            ret[index].quantity += ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
-            console.log('quantity', item.quantity, ret[index].quantity)
-            ret[index].expense += ((item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense)
-            console.log('index', index, ret[index])
-          } else {
-            ret.push({
-              date: date,
-              quantity: (item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity,
-              expense: (item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense
-            })
-          }
-        }
+        const ret = calcTraceData(res.result)
         resolve(ret)
+        // for (const item of res.result) {
+        //   const date = formatDateToYYYYMMDD(item.created)
+        //   const index = ret.findIndex(elment => elment.date === date)
+        //   if (index != -1) {
+        //     console.log('quantity', item.quantity, ret[index].quantity, item.action)
+        //     ret[index].quantity += ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
+        //     console.log('quantity', item.quantity, ret[index].quantity)
+        //     ret[index].expense += ((item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense)
+        //     console.log('index', index, ret[index])
+        //   } else {
+        //     ret.push({
+        //       date: date,
+        //       quantity: (item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity,
+        //       expense: (item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense
+        //     })
+        //   }
+        // }
+        // resolve(ret)
       })
       .catch((err) => {
         console.error("Error fetching holding trace data:", err)
         reject(err)
       })
   })
+}
+
+export function calcTraceData(operationData: Types.OperationItem[]): Types.TraceDataItem[] {
+  const ret: Types.TraceDataItem[] = []
+  for (const item of operationData) {
+    const date = formatDateToYYYYMMDD(item.created)
+    const index = ret.findIndex(elment => elment.date === date)
+    if (index != -1) {
+      console.log('quantity', item.quantity, ret[index].quantity, item.action)
+      ret[index].quantity += ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
+      console.log('quantity', item.quantity, ret[index].quantity)
+      ret[index].expense += ((item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense)
+      console.log('index', index, ret[index])
+    } else {
+      ret.push({
+        date: date,
+        quantity: (item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity,
+        expense: (item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense
+      })
+    }
+  }
+  return ret
 }
 
 export async function getProfitTraceData(type: number, code: string, holding?: number): Promise<Types.ProfitTraceItem[]> {
@@ -55,12 +120,30 @@ export async function getProfitTraceData(type: number, code: string, holding?: n
     start: start,
     end: end
   })
-  console.log('historyData', historyData)
   const ret: Types.ProfitTraceItem[] = []
   for (const item of traceData) {
-    console.log('item', item)
     const history = historyData.result.find(elment => elment.日期 === item.date)
-    console.log('history', history)
+    let price = history ? history.收盘 : undefined
+    ret.push({
+      ...item,
+      price: price || '-',
+      price_avg: item.quantity != 0 ? (-item.expense / item.quantity).toFixed(2) : '-',
+      revenue: price ? price * item.quantity : '-',
+      profit: price ? (price * item.quantity + item.expense) : '-',
+      profit_rate: price ? ((price * item.quantity + item.expense) / -item.expense) : '-'
+    })
+  }
+  return ret
+}
+
+export function calcProfitTraceData(operationData: Types.OperationItem[], historyData: HistoryData[]): Types.ProfitTraceItem[] {
+  const traceData = calcTraceData(operationData)
+  if (traceData.length === 0) {
+    return []
+  }
+  const ret: Types.ProfitTraceItem[] = []
+  for (const item of traceData) {
+    const history = historyData.find(elment => elment.日期 === item.date)
     let price = history ? history.收盘 : undefined
     ret.push({
       ...item,
