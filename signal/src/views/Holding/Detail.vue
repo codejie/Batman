@@ -33,8 +33,8 @@ async function fetchData() {
   // operation
   operationData.value = (await apiOperationList({holding: holding.value})).result as OperationItem[]
   // history
-  const start = Utils.formatToDate(operationData.value[0].created)
-  const end = Utils.formatToDate(operationData.value[operationData.value.length - 1].created)
+  const start = Utils.formatToDate(Utils.dateUtil(operationData.value[0].created).subtract(3, 'month'))
+  const end = Utils.formatToDate(Utils.dateUtil(operationData.value[operationData.value.length - 1].created).add(3, 'month'))
   historyData.value = (await apiGetHistoryData({
     type: holdingData.value[0]!.type,
     code: holdingData.value[0]!.code,
@@ -60,7 +60,7 @@ async function onTest() {
 </script>
 
 <template>
-  <ContentDetailWrap title="Operation">
+  <ContentDetailWrap style="height: 300px;">
     <template #header>
       <ElButton type="primary" @click="go(-1)">返回</ElButton>
       <ElButton type="primary" @click="onTest">Test</ElButton>
@@ -94,7 +94,7 @@ async function onTest() {
       </ElTable>
     </ElRow>
     <ElRow :gutter="24">
-      <DetailChart :profitData="profitTraceData" :historyData="historyData" :width="'100%'" :height="'500px'" />
+      <DetailChart :profitData="profitTraceData" :historyData="historyData" :width="'100%'" :height="'300px'" />
     </ElRow>
   </ContentDetailWrap>
 </template>
