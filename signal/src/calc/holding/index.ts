@@ -54,24 +54,6 @@ export function getTraceData(holding: number): Promise<Types.TraceDataItem[]> {
       .then((res) => {
         const ret = calcTraceData(res.result)
         resolve(ret)
-        // for (const item of res.result) {
-        //   const date = formatDateToYYYYMMDD(item.created)
-        //   const index = ret.findIndex(elment => elment.date === date)
-        //   if (index != -1) {
-        //     console.log('quantity', item.quantity, ret[index].quantity, item.action)
-        //     ret[index].quantity += ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
-        //     console.log('quantity', item.quantity, ret[index].quantity)
-        //     ret[index].expense += ((item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense)
-        //     console.log('index', index, ret[index])
-        //   } else {
-        //     ret.push({
-        //       date: date,
-        //       quantity: (item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity,
-        //       expense: (item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense
-        //     })
-        //   }
-        // }
-        // resolve(ret)
       })
       .catch((err) => {
         console.error("Error fetching holding trace data:", err)
