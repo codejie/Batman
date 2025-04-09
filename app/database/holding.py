@@ -51,8 +51,8 @@ class UserHoldingRecord(BaseModel):
 def insert_holding(uid: int, type: int, code: str, flag: int = HOLDING_FLAG_ACTIVE) -> int:
   return dbEngine.insert_instance(HoldingTable(uid=uid, type=type, code=code, flag=flag))
 
-def insert_operation(id: int, action: int, quantity: int, price: float, expense: float, comment: str = None) -> int:
-  return dbEngine.insert_instance(HoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment))
+def insert_operation(id: int, action: int, quantity: int, price: float, expense: float, comment: str = None, created: datetime.datetime = None) -> int:
+  return dbEngine.insert_instance(HoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment, created=created))
 
 def select_holding(uid: int, type: int = None, code: str = None, flag: int = None) -> list[HoldingTable]:
   stmt = select(HoldingTable).where(HoldingTable.uid == uid)

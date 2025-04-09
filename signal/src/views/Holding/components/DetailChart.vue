@@ -52,7 +52,7 @@ const chartOption = ref<EChartsOption>({
         left: '4%',
         top: '45%',
         right: '4%',
-        bottom: '25%'
+        bottom: '35%'
       },
       {
         id: 2,
@@ -134,6 +134,22 @@ const chartOption = ref<EChartsOption>({
         // nameLocation : 'middle',
         show: true,
         gridIndex: 2,
+        position: 'left',
+        // nameGap: 30,
+        scale: true,
+        splitArea: {
+          show: true
+        },
+        axisLabel: { show: true },
+        axisLine: { show: true },
+        axisTick: { show: true },
+        splitLine: { show: true }
+      },      
+      {
+        type: 'value',
+        // nameLocation : 'middle',
+        show: true,
+        gridIndex: 2,
         position: 'right',
         // nameGap: 30,
         scale: true,
@@ -141,9 +157,9 @@ const chartOption = ref<EChartsOption>({
         //   show: true
         // },
         axisLabel: { show: true },
-        axisLine: { show: false },
+        axisLine: { show: true },
         axisTick: { show: true },
-        splitLine: { show: false }
+        splitLine: { show: true }
       }
     ],
     axisPointer: {
@@ -208,17 +224,36 @@ const chartOption = ref<EChartsOption>({
         // data: volumeData.value
       },
       {
-        type: 'value',
+        type: 'line',
         // nameLocation : 'middle',
-        name: 'Quantity',
+        name: 'PriceAvg',
         show: true,
         xAxisIndex: 2,
-        yAxisIndex: 2,        
-        position: 'right',
+        yAxisIndex: 2,
         // nameGap: 30,
         scale: true,
         splitArea: {
           show: true
+        },
+        axisLabel: { show: true },
+        axisLine: { show: false },
+        axisTick: { show: true },
+        splitLine: { show: false }
+      },      
+      {
+        type: 'bar',
+        // nameLocation : 'middle',
+        name: 'Quantity',
+        show: true,
+        xAxisIndex: 2,
+        yAxisIndex: 3,        
+        // nameGap: 30,
+        scale: true,
+        splitArea: {
+          show: true
+        },
+        itemStyle: {
+          color: quantityColor
         },
         axisLabel: { show: true },
         axisLine: { show: false },
@@ -233,7 +268,7 @@ function makeMASeries() {
   for (const index in maItems) {
     chartOption.value.series.push({
       type: 'line',
-      name: maItems[index],
+      name: `ma-${maItems[index]}`,
       xAxisIndex: 0,
       yAxisIndex: 0,
       showSymbol: false,
@@ -243,6 +278,7 @@ function makeMASeries() {
       data: maData.value[index]
     })
   }
+  console.log('series', chartOption.value.series)
 }
 
 
@@ -253,9 +289,9 @@ function calcKLineData(data: HistoryData[]) {
 
   const closeData = data.map(item => item.收盘)
   maData.value = []
-  // for (const ma of maItems) {
-  //   maData.value.push(Calc.calcMAData(ma, closeData))
-  // }
+  for (const ma of maItems) {
+    maData.value.push(Calc.calcMAData(ma, closeData))
+  }
 
   chartOption.value.xAxis[0].data = xData.value
   chartOption.value.xAxis[1].data = xData.value
@@ -264,15 +300,16 @@ function calcKLineData(data: HistoryData[]) {
   chartOption.value.series[0].data = klineData.value
   chartOption.value.series[1].data = volumeData.value
 
-  // makeMASeries()
+  makeMASeries()
 }
 
 function calcProfitTraceData(data: ProfitTraceItem[]) {
+  priceAvgData.value = data.map(item => [item.date, item.price_avg])
   quantityData.value = data.map(item => [item.date, item.quantity])
-  console.log(quantityData.value)
-  chartOption.value.series[2].data = quantityData.value
-}
 
+  chartOption.value.series[2].data = priceAvgData.value
+  chartOption.value.series[3].data = quantityData.value
+}
 
 watch(
   () => props.historyData,

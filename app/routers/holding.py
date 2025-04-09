@@ -52,6 +52,7 @@ class OperationCreateRequest(RequestModel):
   price: float
   expense: Optional[float] = None
   comment: Optional[str] = None
+  created: Optional[datetime.datetime] = None
 
 class OperationCreateResponse(ResponseModel):
   result: int
@@ -60,7 +61,7 @@ class OperationCreateResponse(ResponseModel):
 async def operation(request: OperationCreateRequest):
   if request.expense is None:
     request.expense = request.price * request.quantity
-  result = db.insert_operation(id=request.holding, action=request.action, quantity=request.quantity, price=request.price, expense=request.expense, comment=request.comment)
+  result = db.insert_operation(id=request.holding, action=request.action, quantity=request.quantity, price=request.price, expense=request.expense, comment=request.comment, created=request.created)
   return OperationCreateResponse(result=result)
 
 class RecordRequest(RequestModel):

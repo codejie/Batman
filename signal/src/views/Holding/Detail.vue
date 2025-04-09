@@ -94,7 +94,7 @@ async function onTest() {
       </ElTable>
     </ElRow>
     <ElRow :gutter="24">
-      <DetailChart :profitData="profitTraceData" :historyData="historyData" :width="'100%'" :height="'300px'" />
+      <DetailChart :profitData="profitTraceData" :historyData="historyData" :width="'100%'" :height="'500px'" />
     </ElRow>
   </ContentDetailWrap>
 </template>

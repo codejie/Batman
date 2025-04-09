@@ -79,6 +79,7 @@ export interface OperationCreateRequest {
   price: number
   expense: number
   comment?: string
+  created?: Date
 }
 
 export type OperationCreateResult = number

@@ -16,6 +16,7 @@ interface OperationForm {
   code: string
   name: string
   action: number
+  date: Date
   quantity: number
   price: number
   expense: number
@@ -31,7 +32,7 @@ import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
 import {
   ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn,
-  ElRadioGroup, ElRadioButton
+  ElRadioGroup, ElRadioButton, ElDatePicker
  } from 'element-plus'
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
@@ -52,6 +53,7 @@ const operationForm = ref<OperationForm>({
   code: '',
   name: '',
   action: OPERATION_ACTION_BUY,
+  date: new Date(),
   quantity: 0,
   price: 0,
   expense: 0,
@@ -115,7 +117,8 @@ async function onAddOperation() {
     quantity: operationForm.value.quantity,
     price: operationForm.value.price,
     expense: operationForm.value.expense,
-    comment: operationForm.value.comment
+    comment: operationForm.value.comment,
+    created: operationForm.value.date
   })
   operationDialogVisible.value = false
   await fetchHoldingData()
@@ -267,10 +270,22 @@ function onExpandChanged(rows: HoldingOperationItem, expandedRows: HoldingOperat
             <ElInput v-model="operationForm.name" :disabled="true" />
           </ElFormItem>
           <ElFormItem label="操作">
-            <ElRadioGroup v-model="operationForm.action">
-              <ElRadioButton :value="OPERATION_ACTION_BUY">买入</ElRadioButton>
-              <ElRadioButton :value="OPERATION_ACTION_SELL">卖出</ElRadioButton>
-            </ElRadioGroup>
+            <ElRow :gutter="24">
+              <ElCol :span="10">
+                <ElRadioGroup v-model="operationForm.action">
+                  <ElRadioButton :value="OPERATION_ACTION_BUY">买入</ElRadioButton>
+                  <ElRadioButton :value="OPERATION_ACTION_SELL">卖出</ElRadioButton>
+                </ElRadioGroup>
+              </ElCol>
+              <ElCol :span="14">
+                <ElDatePicker
+                  v-model="operationForm.date"
+                  type="date"
+                  placeholder="选择日期"
+                  style="width: 100%"
+                />
+              </ElCol>
+            </ElRow>
           </ElFormItem>
           <ElFormItem label="数量" @change="onQuantityBlur">
             <ElInput v-model="operationForm.quantity" />
