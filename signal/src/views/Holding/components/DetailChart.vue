@@ -35,8 +35,10 @@ const klineData = ref<any[]>()
 const volumeData = ref<any[]>()
 const maData = ref<string[][]>([]) // 5, 10, 30, 60
 
-const quantityData = ref<number[]>()
 const priceAvgData = ref<string[]>()
+const revenueData = ref<number[] | string[]>()
+const profitData = ref<number[] | string[]>()
+const quantityData = ref<number[]>()
 
 const chartOption = ref<EChartsOption>({
   grid: [
@@ -52,12 +54,12 @@ const chartOption = ref<EChartsOption>({
         left: '4%',
         top: '45%',
         right: '4%',
-        bottom: '35%'
+        bottom: '25%'
       },
       {
         id: 2,
         left: '4%',
-        top: '70%',
+        top: '80%',
         right: '4%',
         bottom: '2%'
       }
@@ -65,7 +67,7 @@ const chartOption = ref<EChartsOption>({
     xAxis: [
       {
         type: 'category',
-        gridIndex: 0,
+        gridIndex: 1,
         // data: xData.value,
         boundaryGap: false,
         axisLine: { onZero: true },
@@ -75,7 +77,7 @@ const chartOption = ref<EChartsOption>({
       },
       {
         type: 'category',
-        gridIndex: 1,
+        gridIndex: 2,
         // data: xData.value,
         boundaryGap: false,
         axisLine: { onZero: true },
@@ -85,7 +87,7 @@ const chartOption = ref<EChartsOption>({
       },
       {
         type: 'category',
-        gridIndex: 2,
+        gridIndex: 0,
         // data: xData.value,
         boundaryGap: false,
         axisLine: { onZero: true },
@@ -99,7 +101,7 @@ const chartOption = ref<EChartsOption>({
         type: 'value',
         // nameLocation : 'middle',
         show: true,
-        gridIndex: 0,
+        gridIndex: 1,
         position: 'left',
         nameGap: 30,
         scale: true,
@@ -116,7 +118,7 @@ const chartOption = ref<EChartsOption>({
         type: 'value',
         // nameLocation : 'middle',
         show: true,
-        gridIndex: 1,
+        gridIndex: 2,
         position: 'left',
         nameGap: 30,
         scale: true,
@@ -132,7 +134,41 @@ const chartOption = ref<EChartsOption>({
       { // price avg
         type: 'value',
         show: true,
-        gridIndex: 2,
+        gridIndex: 0,
+        position: 'left',
+        alignTicks: true,
+        // nameGap: 30,
+        scale: true,
+        offset: -120,
+        // splitArea: {
+        //   show: true
+        // },
+        axisLabel: { show: true },
+        axisLine: { show: true },
+        axisTick: { show: true },
+        splitLine: { show: true }
+      },
+      { // profit
+        type: 'value',
+        show: true,
+        gridIndex: 0,
+        position: 'left',
+        alignTicks: true,
+        // nameGap: 30,
+        offset: -60,
+        scale: true,
+        // splitArea: {
+        //   show: true
+        // },
+        axisLabel: { show: true },
+        axisLine: { show: true },
+        axisTick: { show: true },
+        splitLine: { show: true }
+      },
+      { // revenue
+        type: 'value',
+        show: true,
+        gridIndex: 0,
         position: 'left',
         alignTicks: true,
         // nameGap: 30,
@@ -143,16 +179,15 @@ const chartOption = ref<EChartsOption>({
         axisLabel: { show: true },
         axisLine: { show: true },
         axisTick: { show: true },
-        splitLine: { show: false }
-      },
+        splitLine: { show: true }
+      },      
       { // quantity
         type: 'value',
         show: true,
-        gridIndex: 2,
+        gridIndex: 0,
         position: 'right',
         alignTicks: true,
         // nameGap: 30,
-        offset: -60,
         scale: true,
         // splitArea: {
         //   show: true
@@ -238,7 +273,49 @@ const chartOption = ref<EChartsOption>({
         },
         lineStyle: {
           width: 1
-        },        
+        },
+        connectNulls: true,
+        axisLabel: { show: true },
+        axisLine: { show: false },
+        axisTick: { show: true },
+        splitLine: { show: false }
+      },
+      {
+        type: 'line',
+        // nameLocation : 'middle',
+        name: 'Profit',
+        show: true,
+        xAxisIndex: 2,
+        yAxisIndex: 3,
+        // nameGap: 30,
+        scale: true,
+        splitArea: {
+          show: true
+        },
+        lineStyle: {
+          width: 1
+        },
+        connectNulls: true,
+        axisLabel: { show: true },
+        axisLine: { show: false },
+        axisTick: { show: true },
+        splitLine: { show: false }
+      },
+      {
+        type: 'line',
+        // nameLocation : 'middle',
+        name: 'Revenue',
+        show: true,
+        xAxisIndex: 2,
+        yAxisIndex: 4,
+        // nameGap: 30,
+        scale: true,
+        splitArea: {
+          show: true
+        },
+        lineStyle: {
+          width: 1
+        },
         connectNulls: true,
         axisLabel: { show: true },
         axisLine: { show: false },
@@ -250,7 +327,7 @@ const chartOption = ref<EChartsOption>({
         name: 'Quantity',
         show: true,
         xAxisIndex: 2,
-        yAxisIndex: 3,        
+        yAxisIndex: 5,        
         // nameGap: 30,
         scale: true,
         splitArea: {
@@ -309,10 +386,14 @@ function calcKLineData(data: HistoryData[]) {
 
 function calcProfitTraceData(data: ProfitTraceItem[]) {
   priceAvgData.value = data.map(item => [item.date, item.price_avg])
+  revenueData.value = data.map(item => [item.date, item.revenue])
+  profitData.value = data.map(item => [item.date, item.profit])
   quantityData.value = data.map(item => [item.date, item.quantity])
 
   chartOption.value.series[2].data = priceAvgData.value
-  chartOption.value.series[3].data = quantityData.value
+  chartOption.value.series[3].data = profitData.value
+  chartOption.value.series[4].data = revenueData.value
+  chartOption.value.series[5].data = quantityData.value
 }
 
 watch(
