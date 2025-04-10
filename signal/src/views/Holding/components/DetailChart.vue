@@ -129,29 +129,30 @@ const chartOption = ref<EChartsOption>({
         axisTick: { show: false },
         splitLine: { show: false }
       },
-      {
+      { // price avg
         type: 'value',
-        // nameLocation : 'middle',
         show: true,
         gridIndex: 2,
         position: 'left',
+        alignTicks: true,
         // nameGap: 30,
         scale: true,
-        splitArea: {
-          show: true
-        },
+        // splitArea: {
+        //   show: true
+        // },
         axisLabel: { show: true },
         axisLine: { show: true },
         axisTick: { show: true },
-        splitLine: { show: true }
-      },      
-      {
+        splitLine: { show: false }
+      },
+      { // quantity
         type: 'value',
-        // nameLocation : 'middle',
         show: true,
         gridIndex: 2,
         position: 'right',
+        alignTicks: true,
         // nameGap: 30,
+        offset: -60,
         scale: true,
         // splitArea: {
         //   show: true
@@ -235,6 +236,10 @@ const chartOption = ref<EChartsOption>({
         splitArea: {
           show: true
         },
+        lineStyle: {
+          width: 1
+        },        
+        connectNulls: true,
         axisLabel: { show: true },
         axisLine: { show: false },
         axisTick: { show: true },
@@ -242,7 +247,6 @@ const chartOption = ref<EChartsOption>({
       },      
       {
         type: 'bar',
-        // nameLocation : 'middle',
         name: 'Quantity',
         show: true,
         xAxisIndex: 2,
