@@ -54,12 +54,12 @@ const chartOption = ref<EChartsOption>({
         left: '4%',
         top: '45%',
         right: '4%',
-        bottom: '25%'
+        bottom: '20%'
       },
       {
         id: 2,
         left: '4%',
-        top: '80%',
+        top: '85%',
         right: '4%',
         bottom: '2%'
       }

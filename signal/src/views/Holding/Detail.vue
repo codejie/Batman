@@ -3,6 +3,7 @@ import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton, ElRow, ElTable, ElTableColumn } from 'element-plus'
+import { OPERATION_ACTION_BUY } from '@/api/holding/types'
 import { calcProfitTraceData, getHoldingData, OperationItem, ProfitTraceItem } from '@/calc/holding'
 import { apiGetHistoryData, HistoryData } from '@/api/data'
 import { HoldingItem } from '@/calc/holding'
@@ -32,30 +33,35 @@ async function fetchData() {
   console.log('holdingData', holdingData.value)
   // operation
   operationData.value = (await apiOperationList({holding: holding.value})).result as OperationItem[]
+  operationData.value = operationData.value.reverse()
   // history
-  const start = Utils.formatToDate(Utils.dateUtil(operationData.value[0].created).subtract(3, 'month'))
-  const end = Utils.formatToDate(Utils.dateUtil(operationData.value[operationData.value.length - 1].created).add(3, 'month'))
+  let start = Utils.dateUtil(operationData.value[0].created)
+  let end = Utils.dateUtil(operationData.value[operationData.value.length - 1].created)
+  if (start.diff(end, 'month') < 3) {
+    start = Utils.dateUtil(operationData.value[0].created).subtract(3, 'month')
+    end = Utils.dateUtil(operationData.value[operationData.value.length - 1].created).add(3, 'month')
+  }
   historyData.value = (await apiGetHistoryData({
     type: holdingData.value[0]!.type,
     code: holdingData.value[0]!.code,
-    start: start,
-    end: end
+    start: Utils.formatToDate(start),
+    end: Utils.formatToDate(end)
   })).result as HistoryData[]
   // trace
   profitTraceData.value = calcProfitTraceData(operationData.value, historyData.value)
 }
 
+function getHistoryData(date: Date): HistoryData | undefined {
+  return historyData.value.find(item => item.日期 === Utils.formatToDate(date))
+}
+
 onMounted(() => {
   fetchData().then(() => {
-    console.log('holdingData', holdingData.value)
-    console.log('operationData', operationData.value)
-    console.log('profitTraceData', profitTraceData.value)
+    // console.log('holdingData', holdingData.value)
+    // console.log('operationData', operationData.value)
+    // console.log('profitTraceData', profitTraceData.value)
   })
 })
-
-async function onTest() {
-
-}
 
 </script>
 
@@ -63,7 +69,7 @@ async function onTest() {
   <ContentDetailWrap style="height: 300px;">
     <template #header>
       <ElButton type="primary" @click="go(-1)">返回</ElButton>
-      <ElButton type="primary" @click="onTest">Test</ElButton>
+      <!-- <ElButton type="primary" @click="onTest">Test</ElButton> -->
     </template>
     <ElRow :gutter="24">
       <ElTable :data="holdingData" stripe :border="true">
@@ -95,6 +101,30 @@ async function onTest() {
     </ElRow>
     <ElRow :gutter="24">
       <DetailChart :profitData="profitTraceData" :historyData="historyData" :width="'100%'" :height="'500px'" />
+    </ElRow>
+    <ElRow :gutter="24">
+      <ElTable :data="operationData" stripe :border="true">
+        <ElTableColumn type="index" width="40" />
+        <ElTableColumn label="操作" prop="action" width="60">
+          <template #default="{ row }"> 
+            {{ row.action == OPERATION_ACTION_BUY ? '买入' : '卖出' }}
+          </template> 
+        </ElTableColumn>
+        <ElTableColumn label="数量" prop="quantity" min-width="80" />
+        <ElTableColumn label="买入/卖出" prop="price" min-width="80" />
+        <ElTableColumn label="收盘价" min-width="80">
+          <template #default="{ row }">
+            {{ getHistoryData(row.created)?.收盘 }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="费用" prop="expense" min-width="80" />
+        <ElTableColumn label="操作时间" prop="created" min-width="120">
+          <template #default="{ row }">
+            {{ Utils.formatToDateTime(row.created) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="备注" prop="comment" />
+      </ElTable>
     </ElRow>
   </ContentDetailWrap>
 </template>
