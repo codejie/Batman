@@ -44,7 +44,7 @@ function transformDate(data) {
     if (data.hasOwnProperty(key)) {
       const value = data[key]
       if (typeof value === 'string' && isISODate(value)) {
-        console.log('value', value)
+        // console.log('value', value)
         data[key] = new Date(new Date(value).getTime() + 8 * 60 * 60 * 1000) // +8 TIMEZONE
       } else if (typeof value === 'object' && value !== null) {
         transformDate(value)

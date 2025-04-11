@@ -69,11 +69,11 @@ export function calcTraceData(operationData: Types.OperationItem[]): Types.Trace
     const date = formatDateToYYYYMMDD(item.created)
     const index = ret.findIndex(elment => elment.date === date)
     if (index != -1) {
-      console.log('quantity', item.quantity, ret[index].quantity, item.action)
+      // console.log('quantity', item.quantity, ret[index].quantity, item.action)
       ret[index].quantity += ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
-      console.log('quantity', item.quantity, ret[index].quantity)
+      // console.log('quantity', item.quantity, ret[index].quantity)
       ret[index].expense += ((item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense)
-      console.log('index', index, ret[index])
+      // console.log('index', index, ret[index])
     } else {
       ret.push({
         date: date,
@@ -125,9 +125,10 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
     return []
   }
   const ret: Types.ProfitTraceItem[] = []
-
-  let start = dateUtil(traceData[0].date)
-  const end = dateUtil(traceData[traceData.length - 1].date)
+  console.log('traceData', traceData)
+  let start = dateUtil(traceData[traceData.length - 1].date)
+  const end = dateUtil(traceData[0].date)
+  console.log('start', start, 'end', end)
   let prev: Types.TraceDataItem | undefined= undefined
   while (start <= end) {
     const date = formatToDate(start)
@@ -141,6 +142,7 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
     if (prev) {
       ret.push({
         ...prev,
+        date: date,
         price: price || '-',
         price_avg: prev.quantity != 0 ? (-prev.expense / prev.quantity).toFixed(2) : '-',
         revenue: price ? price * prev.quantity : '-',
@@ -163,5 +165,6 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
   //     profit_rate: price ? ((price * item.quantity + item.expense) / -item.expense) : '-'
   //   })
   // }
+
   return ret
 }
