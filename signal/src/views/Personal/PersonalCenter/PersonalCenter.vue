@@ -34,7 +34,6 @@ const saveAvatar = async () => {
   try {
     avatarLoading.value = true
     const base64 = unref(uploadAvatarRef)?.getBase64()
-    console.log(base64)
     // 这里可以调用修改头像接口
     fetchDetailUserApi()
     ElMessage.success('修改成功')

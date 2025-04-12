@@ -44,7 +44,6 @@ const data = computed(() => props.modelValue)
 const localModelValue = computed({
   get: () => data.value,
   set: (val) => {
-    console.log(val)
     emits('update:modelValue', val)
   }
 })
@@ -62,7 +61,6 @@ const iconClick = (collapsed: boolean) => {
 }
 
 const selectedChange = (newVal: any, oldVal: any) => {
-  console.log(newVal, oldVal)
   emits('selected-value', newVal, oldVal)
 }
 </script>

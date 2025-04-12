@@ -32,7 +32,9 @@ import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
 import {
   ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn,
-  ElRadioGroup, ElRadioButton, ElDatePicker
+  ElRadioGroup, ElRadioButton, ElDatePicker,
+  ElMessage,
+  ElMessageBox
  } from 'element-plus'
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
@@ -110,7 +112,6 @@ function onQuantityBlur() {
 }
 
 async function onAddOperation() {
-  console.log(operationForm.value)
   const ret = await apiOperationCreate({
     holding: operationForm.value.holding,
     action: operationForm.value.action,
@@ -125,18 +126,39 @@ async function onAddOperation() {
 }
 
 async function onOperationRemove(row: OperationItem) {
-  await apiOperationRemove({
-    id: row.id
-  })
-  await fetchHoldingData()
+  const confirm = await ElMessageBox.confirm(
+    '是否确认删除?',
+    '提示',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+  if (confirm) {
+    await apiOperationRemove({
+      id: row.id
+    })
+    await fetchHoldingData()
+  }
 }
 
 async function onRemove(row: HoldingOperationItem) {
-  await apiFlag({
-    id: row.holding.id,
-    flag: HOLDING_FLAG_REMOVED
-  })
-  await fetchHoldingData()
+  const confirm = await ElMessageBox.confirm(
+    '是否确认删除?',
+    '提示',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+  if (confirm) {
+    await apiFlag({
+      id: row.holding.id,
+      flag: HOLDING_FLAG_REMOVED
+    })
+    await fetchHoldingData()
+  }
 }
 
 async function onDetail(row: HoldingOperationItem) {

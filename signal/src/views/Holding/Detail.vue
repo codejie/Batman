@@ -3,7 +3,6 @@ import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton, ElRow, ElTable, ElTableColumn } from 'element-plus'
-import { OPERATION_ACTION_BUY } from '@/api/holding/types'
 import { calcProfitTraceData, getHoldingData, OperationItem, ProfitTraceItem } from '@/calc/holding'
 import { apiGetHistoryData, HistoryData } from '@/api/data'
 import { HoldingItem } from '@/calc/holding'
@@ -24,13 +23,13 @@ const holdingData = ref<HoldingItem[]>()
 const operationData = ref<OperationItem[]>([])
 const historyData = ref<HistoryData[]>([])
 const profitTraceData = ref<ProfitTraceItem[]>([])
+const profitTableData = ref<ProfitTraceItem[]>([]) 
 
 const holding = computed(() => Number(props.id))
 
 async function fetchData() {
   // holding
   holdingData.value = await getHoldingData(holding.value)
-  console.log('holdingData', holdingData.value)
   // operation
   operationData.value = (await apiOperationList({holding: holding.value})).result as OperationItem[]
   operationData.value = operationData.value.reverse()
@@ -41,19 +40,22 @@ async function fetchData() {
     start = Utils.dateUtil(operationData.value[0].created).subtract(3, 'month')
     end = Utils.dateUtil(operationData.value[operationData.value.length - 1].created).add(3, 'month')
   }
-  historyData.value = (await apiGetHistoryData({
+  console.log('===============', start, end)
+  const historyRet = await apiGetHistoryData({
     type: holdingData.value[0]!.type,
     code: holdingData.value[0]!.code,
     start: Utils.formatToDate(start),
     end: Utils.formatToDate(end)
-  })).result as HistoryData[]
+  })
+  historyData.value = historyRet.result
   // trace
   profitTraceData.value = calcProfitTraceData(operationData.value, historyData.value)
+  profitTableData.value = profitTraceData.value.filter(item => !item.is_filled).reverse()
 }
 
-function getHistoryData(date: Date): HistoryData | undefined {
-  return historyData.value.find(item => item.日期 === Utils.formatToDate(date))
-}
+// function getHistoryData(date: Date): HistoryData | undefined {
+//   return historyData.value.find(item => item.日期 === Utils.formatToDate(date))
+// }
 
 onMounted(() => {
   fetchData().then(() => {
@@ -73,6 +75,20 @@ onMounted(() => {
     </template>
     <ElRow :gutter="24">
       <ElTable :data="holdingData" stripe :border="true">
+        <ElTableColumn type="expand">
+          <div class="mx-24px my-8px">
+            <ElTable :data="profitTableData" stripe :border="true">
+              <ElTableColumn  type="index" width="40" />
+              <ElTableColumn prop="date" label="日期" min-width="120" />
+              <ElTableColumn prop="expense" label="成本" min-width="60" />
+              <ElTableColumn prop="price_avg" label="均价" min-width="80" />
+              <ElTableColumn prop="price" label="时价" min-width="80" />
+              <ElTableColumn prop="revenue" label="收益" min-width="80" />
+              <ElTableColumn prop="profit" label="利润" min-width="80" />
+              <ElTableColumn prop="profit_rate" label="利润率 %" min-width="100" />
+            </ElTable>            
+          </div>
+        </ElTableColumn>
         <ElTableColumn prop="code" label="代码" min-width="80" />
         <ElTableColumn prop="name" label="名称" min-width="80" />
         <!-- <ElTableColumn prop="flag" label="Flag" width="50" /> -->
@@ -100,31 +116,7 @@ onMounted(() => {
       </ElTable>
     </ElRow>
     <ElRow :gutter="24">
-      <DetailChart :profitData="profitTraceData" :historyData="historyData" :width="'100%'" :height="'500px'" />
-    </ElRow>
-    <ElRow :gutter="24">
-      <ElTable :data="operationData" stripe :border="true">
-        <ElTableColumn type="index" width="40" />
-        <ElTableColumn label="操作" prop="action" width="60">
-          <template #default="{ row }"> 
-            {{ row.action == OPERATION_ACTION_BUY ? '买入' : '卖出' }}
-          </template> 
-        </ElTableColumn>
-        <ElTableColumn label="数量" prop="quantity" min-width="80" />
-        <ElTableColumn label="买入/卖出" prop="price" min-width="80" />
-        <ElTableColumn label="收盘价" min-width="80">
-          <template #default="{ row }">
-            {{ getHistoryData(row.created)?.收盘 }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="费用" prop="expense" min-width="80" />
-        <ElTableColumn label="操作时间" prop="created" min-width="120">
-          <template #default="{ row }">
-            {{ Utils.formatToDateTime(row.created) }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="备注" prop="comment" />
-      </ElTable>
+      <DetailChart :history-data="historyData" :profit-data="profitTraceData" :width="'100%'" :height="'500px'" />
     </ElRow>
   </ContentDetailWrap>
 </template>

@@ -15,6 +15,10 @@ const props = defineProps({
     type: Array as () => HistoryData[],
     required: true
   },
+  // operationData: {
+  //   type: Array as () => OperationItem[],
+  //   required: true
+  // },
   width: {
     type: [String, Number],
     default: '100%'
@@ -98,7 +102,7 @@ const chartOption = ref<EChartsOption>({
     ],
     yAxis: [
       {
-        type: 'value',
+        type: 'value', // kline
         // nameLocation : 'middle',
         show: true,
         gridIndex: 1,
@@ -359,7 +363,6 @@ function makeMASeries() {
       data: maData.value[index]
     })
   }
-  console.log('series', chartOption.value.series)
 }
 
 
@@ -384,7 +387,9 @@ function calcKLineData(data: HistoryData[]) {
   makeMASeries()
 }
 
-function calcProfitTraceData(data: ProfitTraceItem[]) {
+function calcTraceData(data: ProfitTraceItem[]) {
+  // profitTraceData.value = calcProfitTraceData(data, historyData)
+  
   priceAvgData.value = data.map(item => [item.date, item.price_avg])
   revenueData.value = data.map(item => [item.date, item.revenue])
   profitData.value = data.map(item => [item.date, item.profit])
@@ -399,18 +404,22 @@ function calcProfitTraceData(data: ProfitTraceItem[]) {
 watch(
   () => props.historyData,
   (value) => {
-    calcKLineData(value)
-    // setKLineData()
+    if (value) {
+      calcKLineData(value)
+    }
 })
 
 watch(
   () => props.profitData,
   (value) => {
-    calcProfitTraceData(value)
-    // setKLineData()
+    if (value) {
+      if(props.historyData) {
+        calcTraceData(value)
+      }
+    }
 })
 
 </script>
 <template>
-  <Echart :options="chartOption" class="my-4" ref="kline" :height="height" />
+    <Echart :options="chartOption" class="my-4" ref="kline" :height="height" />
 </template>

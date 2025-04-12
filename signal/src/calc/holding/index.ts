@@ -85,51 +85,19 @@ export function calcTraceData(operationData: Types.OperationItem[]): Types.Trace
   return ret
 }
 
-export async function getProfitTraceData(type: number, code: string, holding?: number): Promise<Types.ProfitTraceItem[]> {
-  if (holding === undefined) {
-    // holding = await apiGet(type, code)
-    holding = 1
-  }
-  const traceData = await getTraceData(holding)
-  if (traceData.length === 0) {
-    return []
-  }
-  const start = traceData[0].date
-  const end = traceData[traceData.length - 1].date
-
-  const historyData = await apiGetHistoryData({
-    type: type,
-    code: code,
-    start: start,
-    end: end
-  })
-  const ret: Types.ProfitTraceItem[] = []
-  for (const item of traceData) {
-    const history = historyData.result.find(elment => elment.日期 === item.date)
-    let price = history ? history.收盘 : undefined
-    ret.push({
-      ...item,
-      price: price || '-',
-      price_avg: item.quantity != 0 ? (-item.expense / item.quantity).toFixed(2) : '-',
-      revenue: price ? price * item.quantity : '-',
-      profit: price ? (price * item.quantity + item.expense) : '-',
-      profit_rate: price ? ((price * item.quantity + item.expense) / -item.expense) : '-'
-    })
-  }
-  return ret
-}
-
 export function calcProfitTraceData(operationData: Types.OperationItem[], historyData: HistoryData[]): Types.ProfitTraceItem[] {
   const traceData = calcTraceData(operationData)
   if (traceData.length === 0) {
     return []
   }
   const ret: Types.ProfitTraceItem[] = []
-  console.log('traceData', traceData)
+  console.log('historyData', historyData)
   let start = dateUtil(traceData[traceData.length - 1].date)
-  const end = dateUtil(traceData[0].date)
-  console.log('start', start, 'end', end)
+  console.log('latest', historyData[historyData.length - 1]?.日期)
+  const end = dateUtil(historyData[historyData.length - 1]?.日期)
+
   let prev: Types.TraceDataItem | undefined= undefined
+  let is_filled = false
   while (start <= end) {
     const date = formatToDate(start)
     const history = historyData.find(elment => elment.日期 === date)
@@ -138,6 +106,9 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
     const item = traceData.find(elment => elment.date === date)
     if (item) {
       prev = item
+      is_filled = false
+    } else {
+      is_filled = true
     }
     if (prev) {
       ret.push({
@@ -147,7 +118,8 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
         price_avg: prev.quantity != 0 ? (-prev.expense / prev.quantity).toFixed(2) : '-',
         revenue: price ? price * prev.quantity : '-',
         profit: price ? (price * prev.quantity + prev.expense) : '-',
-        profit_rate: price ? ((price * prev.quantity + prev.expense) / -prev.expense) : '-'
+        profit_rate: price ? ((price * prev.quantity + prev.expense) / -prev.expense) : '-',
+        is_filled
       })      
     }
     start = start.add(1, 'day')

@@ -49,5 +49,6 @@ export interface ProfitTraceItem {
   revenue: number | string
   profit: number | string
   profit_rate: number | string
+  is_filled: boolean
 }
 
