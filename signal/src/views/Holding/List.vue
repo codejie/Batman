@@ -32,14 +32,12 @@ import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
 import {
   ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn,
-  ElRadioGroup, ElRadioButton, ElDatePicker,
-  ElMessage,
-  ElMessageBox
+  ElRadioGroup, ElRadioButton, ElDatePicker, ElMessageBox, ElDescriptions, ElDescriptionsItem, ElDivider
  } from 'element-plus'
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
-import { getHoldingData, HoldingItem, OperationItem } from '@/calc/holding'
+import { calcProfitTotalData, getHoldingData, HoldingItem, OperationItem, ProfitTotalData } from '@/calc/holding'
 
 const { push } = useRouter()
 
@@ -62,6 +60,7 @@ const operationForm = ref<OperationForm>({
   comment: ''
 })
 const data = ref<HoldingOperationItem[]>([])
+const total = ref<ProfitTotalData>()
 const expandRows = ref<string[]>([])
 
 async function fetchHoldingData() {
@@ -73,6 +72,8 @@ async function fetchHoldingData() {
       items: []
     })
   }
+
+  total.value = calcProfitTotalData(holding)
 
   const ret = await apiOperationList({})
 
@@ -182,8 +183,13 @@ function onExpandChanged(rows: HoldingOperationItem, expandedRows: HoldingOperat
 
 <template>
   <ContentWrap title="持仓">
+    <ElDescriptions :column="1" title="">
+      <ElDescriptionsItem label="总盈亏"><ElText tag="b">{{ total?.profit }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="总盈亏率"><ElText tag="b">{{ total?.profit_rate.toFixed(2) + '%' }}</ElText></ElDescriptionsItem>
+    </ElDescriptions>
+    <ElDivider calss="mx-8px" />
     <ElRow :gutter="24">
-      <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加</ElButton>
+      <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加持股</ElButton>
     </ElRow>
     <ElRow :gutter="24">
       <ElTable :data="data" :row-key="getHoldingKey" :expand-row-keys="expandRows" @expand-change="onExpandChanged" stripe :border="true">
@@ -192,12 +198,8 @@ function onExpandChanged(rows: HoldingOperationItem, expandedRows: HoldingOperat
           <template #default="{ row }">
             <div class="mx-24px my-8px">
               <ElRow :gutter="24">
-                <ElCol :span="12">
-                  <h4>操作记录({{ row.items.length }})</h4>
-                </ElCol>
-                <ElCol :span="12">
-                  <ElButton type="primary" style="float: right;" @click="onOperation(row)">增加操作</ElButton>
-                </ElCol>
+                  <ElText tag="b">操作记录 ({{ row.items.length }})</ElText>
+                  <ElButton size="small" class="mx-8" type="primary" @click="onOperation(row)">增加操作</ElButton>
               </ElRow>
             </div>
             <div class="mx-24px my-8px">       
@@ -233,15 +235,23 @@ function onExpandChanged(rows: HoldingOperationItem, expandedRows: HoldingOperat
           <!-- <ElTableColumn prop="flag" label="Flag" width="50" /> -->
           <ElTableColumn prop="holding.quantity" label="数量" min-width="60" />
           <ElTableColumn prop="holding.expense" label="成本" min-width="60" />
-          <ElTableColumn prop="holding.price_avg" label="均价" min-width="80" />
+          <ElTableColumn prop="holding.price_avg" label="均价" min-width="80">
+            <template #default="{ row }">
+              {{ `${row.holding.price_avg? row.holding.price_avg.toFixed(2) : '-'}` }}
+            </template>
+          </ElTableColumn>
           <ElTableColumn prop="holding.price_cur" label="现价" min-width="80">
             <template #default="{ row }">
               {{ `${row.holding.price_cur}[${row.holding.price_date.substring(5)}]` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="holding.revenue" label="收益" min-width="80" />
-          <ElTableColumn prop="holding.profit" label="利润" min-width="80" />
-          <ElTableColumn prop="holding.profit_rate" label="利润率 %" min-width="100" />
+          <ElTableColumn prop="holding.revenue" label="市值" min-width="80" />
+          <ElTableColumn prop="holding.profit" label="盈亏" min-width="80" />
+          <ElTableColumn prop="holding.profit_rate" label="盈亏率 %" min-width="100">
+            <template #default="{ row }">
+              {{ `${row.holding.profit_rate? row.holding.profit_rate.toFixed(2) + '%' : '-'}` }}
+            </template>
+          </ElTableColumn>
           <ElTableColumn prop="holding.created" label="创建时间" min-width="120">
             <template #default="{ row }">
               {{ formatToDate(row.holding.created) }}

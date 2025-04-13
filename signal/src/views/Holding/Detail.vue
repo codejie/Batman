@@ -83,9 +83,9 @@ onMounted(() => {
               <ElTableColumn prop="expense" label="成本" min-width="60" />
               <ElTableColumn prop="price_avg" label="均价" min-width="80" />
               <ElTableColumn prop="price" label="时价" min-width="80" />
-              <ElTableColumn prop="revenue" label="收益" min-width="80" />
-              <ElTableColumn prop="profit" label="利润" min-width="80" />
-              <ElTableColumn prop="profit_rate" label="利润率 %" min-width="100" />
+              <ElTableColumn prop="revenue" label="市值" min-width="80" />
+              <ElTableColumn prop="profit" label="盈亏" min-width="80" />
+              <ElTableColumn prop="profit_rate" label="盈亏率 %" min-width="100" />
             </ElTable>            
           </div>
         </ElTableColumn>
@@ -100,9 +100,9 @@ onMounted(() => {
             {{ `${row.price_cur}[${row.price_date.substring(5)}]` }}
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="revenue" label="收益" min-width="80" />
-        <ElTableColumn prop="profit" label="利润" min-width="80" />
-        <ElTableColumn prop="profit_rate" label="利润率 %" min-width="100" />
+        <ElTableColumn prop="revenue" label="市值" min-width="80" />
+        <ElTableColumn prop="profit" label="盈亏" min-width="80" />
+        <ElTableColumn prop="profit_rate" label="盈亏率 %" min-width="100" />
         <ElTableColumn prop="created" label="创建时间" min-width="120">
           <template #default="{ row }">
             {{ Utils.formatToDate(row.created) }}

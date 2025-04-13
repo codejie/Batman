@@ -12,12 +12,12 @@ export interface HoldingItem {
   quantity: number
   expense: number
 
-  price_avg: number | string
+  price_avg?: number
   price_date?: string
-  price_cur?: number | string
-  revenue?: number | string// price_cur * quantity
-  profit?: number | string// revenue - expense
-  profit_rate?: number | string
+  price_cur?: number
+  revenue?: number// price_cur * quantity
+  profit?: number// revenue - expense
+  profit_rate?: number
 }
 
 export type OperationItem = HoldingOperationItem
@@ -44,11 +44,19 @@ export interface ProfitTraceItem {
   date: string
   quantity: number
   expense: number
-  price: number | string
-  price_avg: number | string
-  revenue: number | string
-  profit: number | string
-  profit_rate: number | string
+  price?: number
+  price_avg?: number
+  revenue?: number
+  profit?: number
+  profit_rate?: number
   is_filled: boolean
 }
 
+export interface ProfitTotalData {
+  // funds: number,
+  // available: number, // 可用funds
+  expense: number,
+  revenue: number, //市值
+  profit: number
+  profit_rate: number
+}

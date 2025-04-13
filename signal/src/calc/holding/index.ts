@@ -2,7 +2,7 @@ import { apiOperationList, apiRecord } from "@/api/holding"
 import { formatDateToYYYYMMDD } from "../comm"
 import { OPERATION_ACTION_BUY } from "@/api/holding/types"
 import * as Types from "@/calc/holding/types"
-import { apiGetHistoryData, apiGetLatestHistoryData } from "@/api/data"
+import { apiGetLatestHistoryData } from "@/api/data"
 import { HistoryData } from "@/api/data/types"
 import  { dateUtil, formatToDate } from '@/utils/dateUtil'
 
@@ -36,12 +36,12 @@ export async function getHoldingData(id?: number, type?: number, code?: string, 
       updated: item.updated,
       quantity: item.quantity,
       expense: item.expense,
-      price_avg: avg ? avg.toFixed(2) : '-',
+      price_avg: avg || undefined,
       price_date: ret_current.result?.日期,
-      price_cur: price || '-',
-      revenue: price ? price * item.quantity : '-',
-      profit: profit || '-',
-      profit_rate: precent ? ((precent * 100).toFixed(2) + '%') : '-'
+      price_cur: price,
+      revenue: price ? price * item.quantity : undefined,
+      profit: profit || undefined,
+      profit_rate: precent || undefined
     })
   }
   return results
@@ -69,11 +69,8 @@ export function calcTraceData(operationData: Types.OperationItem[]): Types.Trace
     const date = formatDateToYYYYMMDD(item.created)
     const index = ret.findIndex(elment => elment.date === date)
     if (index != -1) {
-      // console.log('quantity', item.quantity, ret[index].quantity, item.action)
       ret[index].quantity += ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
-      // console.log('quantity', item.quantity, ret[index].quantity)
       ret[index].expense += ((item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense)
-      // console.log('index', index, ret[index])
     } else {
       ret.push({
         date: date,
@@ -114,29 +111,34 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
       ret.push({
         ...prev,
         date: date,
-        price: price || '-',
-        price_avg: prev.quantity != 0 ? (-prev.expense / prev.quantity).toFixed(2) : '-',
-        revenue: price ? price * prev.quantity : '-',
-        profit: price ? (price * prev.quantity + prev.expense) : '-',
-        profit_rate: price ? ((price * prev.quantity + prev.expense) / -prev.expense) : '-',
+        price: price || undefined,
+        price_avg: prev.quantity != 0 ? -prev.expense / prev.quantity : undefined,
+        revenue: price ? price * prev.quantity : undefined,
+        profit: price ? (price * prev.quantity + prev.expense) : undefined,
+        profit_rate: price ? ((price * prev.quantity + prev.expense) / -prev.expense) : undefined,
         is_filled
       })      
     }
     start = start.add(1, 'day')
   }
-
-  // for (const item of traceData) {
-  //   const history = historyData.find(elment => elment.日期 === item.date)
-  //   let price = history ? history.收盘 : undefined
-  //   ret.push({
-  //     ...item,
-  //     price: price || '-',
-  //     price_avg: item.quantity != 0 ? (-item.expense / item.quantity).toFixed(2) : '-',
-  //     revenue: price ? price * item.quantity : '-',
-  //     profit: price ? (price * item.quantity + item.expense) : '-',
-  //     profit_rate: price ? ((price * item.quantity + item.expense) / -item.expense) : '-'
-  //   })
-  // }
-
   return ret
+}
+
+export function calcProfitTotalData(data: Types.HoldingItem[]): Types.ProfitTotalData{
+  let expense = 0
+  let revenue = 0
+  let profit = 0
+  let profit_rate = 0
+  for (const item of data) {
+    expense += item.expense
+    revenue += item.revenue || 0
+    profit += item.profit || 0
+  }
+  profit_rate = profit / -expense
+  return {
+    expense: expense,
+    revenue: revenue,
+    profit: profit,
+    profit_rate: profit_rate
+  }
 }

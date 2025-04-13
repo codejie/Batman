@@ -266,7 +266,7 @@ const chartOption = ref<EChartsOption>({
       {
         type: 'line',
         // nameLocation : 'middle',
-        name: 'PriceAvg',
+        name: '均价',
         show: true,
         xAxisIndex: 2,
         yAxisIndex: 2,
@@ -287,7 +287,7 @@ const chartOption = ref<EChartsOption>({
       {
         type: 'line',
         // nameLocation : 'middle',
-        name: 'Profit',
+        name: '盈亏',
         show: true,
         xAxisIndex: 2,
         yAxisIndex: 3,
@@ -308,7 +308,7 @@ const chartOption = ref<EChartsOption>({
       {
         type: 'line',
         // nameLocation : 'middle',
-        name: 'Revenue',
+        name: '市值',
         show: true,
         xAxisIndex: 2,
         yAxisIndex: 4,
@@ -328,7 +328,7 @@ const chartOption = ref<EChartsOption>({
       },      
       {
         type: 'bar',
-        name: 'Quantity',
+        name: '持有',
         show: true,
         xAxisIndex: 2,
         yAxisIndex: 5,        
@@ -366,7 +366,7 @@ function makeMASeries() {
 }
 
 
-function calcKLineData(data: HistoryData[]) {
+function setKLineData(data: HistoryData[]) {
   xData.value = data.map(item => item.日期)
   klineData.value = data.map(item => [item.开盘, item.收盘, item.最低, item.最高])
   volumeData.value = data.map(item => [item.日期, item.成交量, item.开盘 <= item.收盘 ? 1 : -1])
@@ -387,7 +387,7 @@ function calcKLineData(data: HistoryData[]) {
   makeMASeries()
 }
 
-function calcTraceData(data: ProfitTraceItem[]) {
+function setTraceData(data: ProfitTraceItem[]) {
   // profitTraceData.value = calcProfitTraceData(data, historyData)
   
   priceAvgData.value = data.map(item => [item.date, item.price_avg])
@@ -405,7 +405,7 @@ watch(
   () => props.historyData,
   (value) => {
     if (value) {
-      calcKLineData(value)
+      setKLineData(value)
     }
 })
 
@@ -414,7 +414,7 @@ watch(
   (value) => {
     if (value) {
       if(props.historyData) {
-        calcTraceData(value)
+        setTraceData(value)
       }
     }
 })
