@@ -1,8 +1,9 @@
 <script lang="ts">
 
-interface HoldingOperationItem {
+interface HoldingInfoItem {
   holding: HoldingItem
   items: OperationItem[]
+  integred?: IntegredItem
 }
 
 interface CreateForm {
@@ -59,7 +60,7 @@ const operationForm = ref<OperationForm>({
   expense: 0,
   comment: ''
 })
-const data = ref<HoldingOperationItem[]>([])
+const data = ref<HoldingInfoItem[]>([])
 const total = ref<ProfitTotalData>()
 const expandRows = ref<string[]>([])
 
@@ -96,7 +97,7 @@ async function onAdd() {
   await fetchHoldingData()
 }
 
-function onOperation(row: HoldingOperationItem) {
+function onOperation(row: HoldingInfoItem) {
   operationForm.value.holding = row.holding.id
   operationForm.value.type = row.holding.type
   operationForm.value.code = row.holding.code
@@ -143,7 +144,7 @@ async function onOperationRemove(row: OperationItem) {
   }
 }
 
-async function onRemove(row: HoldingOperationItem) {
+async function onRemove(row: HoldingInfoItem) {
   const confirm = await ElMessageBox.confirm(
     '是否确认删除?',
     '提示',
@@ -162,7 +163,7 @@ async function onRemove(row: HoldingOperationItem) {
   }
 }
 
-async function onDetail(row: HoldingOperationItem) {
+async function onDetail(row: HoldingInfoItem) {
   push({
     path: '/holding/detail',
     query: {
@@ -171,12 +172,12 @@ async function onDetail(row: HoldingOperationItem) {
   })
 }
 
-function getHoldingKey(row: HoldingOperationItem): string {
+function getHoldingKey(row: HoldingInfoItem): string {
   // console.log(row.holding.id)
   return row.holding.id.toString()
 }
 
-function onExpandChanged(rows: HoldingOperationItem, expandedRows: HoldingOperationItem[]) {
+function onExpandChanged(rows: HoldingInfoItem, expandedRows: HoldingInfoItem[]) {
   expandRows.value = expandedRows.map((x) => x.holding.id.toString())
 }
 </script>

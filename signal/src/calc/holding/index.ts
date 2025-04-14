@@ -142,3 +142,5 @@ export function calcProfitTotalData(data: Types.HoldingItem[]): Types.ProfitTota
     profit_rate: profit_rate
   }
 }
+
+export function calcIntegredData()

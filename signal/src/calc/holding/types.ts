@@ -21,16 +21,12 @@ export interface HoldingItem {
 }
 
 export type OperationItem = HoldingOperationItem
-// export interface OperationItem {
-//   id: number
-//   holding: number
-//   action: number
-//   quantity: number
-//   price: number
-//   expense: number
-//   comment?: string
-//   created: Date
-// }
+
+export interface IntegredItem  {
+  quantity_rate: number
+  expense_rate: number
+  revenue_rate: number
+}
 
 // Trace Data
 
