@@ -48,9 +48,9 @@ async def remove(request: FlagRequest):
 class OperationCreateRequest(RequestModel):
   holding: int
   action: int
-  quantity: int
+  quantity: int # 买入为正,卖出为负，router不处理
   price: float
-  expense: Optional[float] = None
+  expense: Optional[float] = None # 买入为负,卖出为正，router不处理
   comment: Optional[str] = None
   created: Optional[datetime.datetime] = None
 

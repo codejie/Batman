@@ -38,7 +38,7 @@ import {
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
-import { calcProfitTotalData, getHoldingData, HoldingItem, OperationItem, ProfitTotalData } from '@/calc/holding'
+import { calcProfitTotalData, getHoldingData, HoldingItem, IntegredItem, OperationItem, ProfitTotalData } from '@/calc/holding'
 
 const { push } = useRouter()
 

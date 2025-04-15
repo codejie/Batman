@@ -31,9 +31,9 @@ class HoldingOperationTable(TableBase):
   id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True)
   holding = Column(Integer, ForeignKey(HoldingTable.id), nullable=False)
   action = Column(Integer, nullable=False)
-  quantity = Column(Integer, nullable=False)
-  price = Column(Float, nullable=False)
-  expense = Column(Float, nullable=False)
+  quantity = Column(Integer, nullable=False) # 买入为正，卖出为负
+  price = Column(Float, nullable=False) # 买入/卖出价
+  expense = Column(Float, nullable=False) # 买入为负，卖出为正
   comment = Column(String, nullable=True)
   created = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -52,6 +52,8 @@ def insert_holding(uid: int, type: int, code: str, flag: int = HOLDING_FLAG_ACTI
   return dbEngine.insert_instance(HoldingTable(uid=uid, type=type, code=code, flag=flag))
 
 def insert_operation(id: int, action: int, quantity: int, price: float, expense: float, comment: str = None, created: datetime.datetime = None) -> int:
+  quantity = -quantity if action == OPERATION_ACTION_SELL else quantity
+  expense = expense if action == OPERATION_ACTION_SELL else -expense
   return dbEngine.insert_instance(HoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment, created=created))
 
 def select_holding(uid: int, type: int = None, code: str = None, flag: int = None) -> list[HoldingTable]:
@@ -98,20 +100,35 @@ def create(uid: int, type: int, code: str, action: int, quantity: int, price: fl
   return id
 
 def records(uid: int, id: int = None, type: int = None, code: str = None, flag: int = None) -> list[UserHoldingRecord]:
+  # stmt = select(HoldingTable,
+  #               Data.InfoTable.name.label('name'),
+  #               func.coalesce(
+  #                 func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, HoldingOperationTable.quantity), else_=-HoldingOperationTable.quantity)),
+  #                 0).label('quantity'),
+  #               func.coalesce(
+  #                 func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, -HoldingOperationTable.expense), else_=HoldingOperationTable.expense)),
+  #                 0.0).label('expense')
+  #             ).select_from(HoldingTable
+  #             ).join(Data.InfoTable, Data.InfoTable.code == HoldingTable.code and Data.InfoTable.type == HoldingTable.type, isouter=True
+  #             ).join(HoldingOperationTable, HoldingOperationTable.holding == HoldingTable.id, isouter=True
+  #             ).filter(HoldingTable.uid == uid
+  #             ).group_by(HoldingTable.id
+  #             ).order_by(HoldingTable.updated.desc())
   stmt = select(HoldingTable,
                 Data.InfoTable.name.label('name'),
                 func.coalesce(
-                  func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, HoldingOperationTable.quantity), else_=-HoldingOperationTable.quantity)),
+                  func.sum(HoldingOperationTable.quantity),
                   0).label('quantity'),
                 func.coalesce(
-                  func.sum(case((HoldingOperationTable.action == OPERATION_ACTION_BUY, -HoldingOperationTable.expense), else_=HoldingOperationTable.expense)),
+                  func.sum(HoldingOperationTable.expense),
                   0.0).label('expense')
               ).select_from(HoldingTable
               ).join(Data.InfoTable, Data.InfoTable.code == HoldingTable.code and Data.InfoTable.type == HoldingTable.type, isouter=True
               ).join(HoldingOperationTable, HoldingOperationTable.holding == HoldingTable.id, isouter=True
               ).filter(HoldingTable.uid == uid
               ).group_by(HoldingTable.id
-              ).order_by(HoldingTable.updated.desc())
+              ).order_by(HoldingTable.updated.asc())  
+
   if id:
     stmt = stmt.where(HoldingTable.id == id)
   if type:

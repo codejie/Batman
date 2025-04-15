@@ -2,7 +2,7 @@
 Exception
 """
 class AppException(Exception):
-    def __init__(self, code: int = -1, message: str | None = None) -> None:
+    def __init__(self, code: int = -1, message: str = None) -> None:
         self.code = code
         self.message = message
 

@@ -338,7 +338,12 @@ const chartOption = ref<EChartsOption>({
           show: true
         },
         itemStyle: {
-          color: quantityColor
+          color: (item) => {
+            if (item.value.length > 2)
+              return item.value[2] > 0 ? upColor : downColor
+            else
+              return upColor
+          }
         },
         axisLabel: { show: true },
         axisLine: { show: false },
@@ -393,7 +398,7 @@ function setTraceData(data: ProfitTraceItem[]) {
   priceAvgData.value = data.map(item => [item.date, item.price_avg])
   revenueData.value = data.map(item => [item.date, item.revenue])
   profitData.value = data.map(item => [item.date, item.profit])
-  quantityData.value = data.map(item => [item.date, item.quantity])
+  quantityData.value = data.map(item => [item.date, Math.abs(item.quantity), item.quantity > 0 ? 1 : -1])
 
   chartOption.value.series[2].data = priceAvgData.value
   chartOption.value.series[3].data = profitData.value

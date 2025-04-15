@@ -1,4 +1,18 @@
-import { HoldingOperationItem } from "@/api/holding/types"
+import { HoldingRecordItem, HoldingOperationItem } from "@/api/holding/types"
+
+export interface CalcItem {
+  price: number
+  price_date: string
+  price_cur: number
+  revenue: number
+  profit: number
+  profit_rate: number
+}
+
+export interface HoldingListItem {
+  record: HoldingRecordItem
+  calc: CalcItem
+}
 
 // Holding and Operation Data
 export interface HoldingItem {
@@ -9,7 +23,7 @@ export interface HoldingItem {
   flag: number
   created: Date
   updated: Date
-  quantity: number
+  holding: number
   expense: number
 
   price_avg?: number
@@ -30,14 +44,16 @@ export interface IntegredItem  {
 
 // Trace Data
 
-export interface TraceDataItem {
+export interface OperationMergedDataItem {
   date: string
-  quantity: number
+  quantity: number // operation quantity
   expense: number
+  holding: number
 }
 
 export interface ProfitTraceItem {
   date: string
+  holding: number
   quantity: number
   expense: number
   price?: number
@@ -51,8 +67,9 @@ export interface ProfitTraceItem {
 export interface ProfitTotalData {
   // funds: number,
   // available: number, // 可用funds
-  expense: number,
-  revenue: number, //市值
+  holding: number
+  expense: number
+  revenue: number //市值
   profit: number
   profit_rate: number
 }

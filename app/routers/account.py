@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Body, Depends, Header
 from pydantic import BaseModel
 from datetime import datetime
@@ -12,14 +13,14 @@ class LoginRequest(RequestModel):
 
 class LoginResult(BaseModel):
     accessToken: str
-    refreshToken: str | None = None
-    expired: datetime | None = None
+    refreshToken: Optional[str] = None
+    expired: Optional[datetime] = None
     # uid: int
-    avatar: str | None = None
+    avatar: Optional[str] = None
     # role
 
 class LoginResponse(ResponseModel):
-    result: LoginResult | None = None
+    result: Optional[LoginResult] = None
 
 @router.post('/login', response_model=LoginResponse, response_model_exclude_unset=True)
 async def login(body: LoginRequest = Body()):
@@ -49,9 +50,9 @@ class InfoRequest(RequestModel):
 class InfoResult(BaseModel):
     roles: list[str] = ['admin', 'signal']
     name: str = 'BATMAN'
-    avatar: str | None = 'https://icons.iconarchive.com/icons/diversity-avatars/avatars/256/batman-icon.png'
-    introduction: str | None = None
-    email: str | None = None
+    avatar: Optional[str] = 'https://icons.iconarchive.com/icons/diversity-avatars/avatars/256/batman-icon.png'
+    introduction: Optional[str] = None
+    email: Optional[str] = None
 
 class InfoResponse(ResponseModel):
     result: InfoResult

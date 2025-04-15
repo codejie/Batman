@@ -32,7 +32,8 @@ async function fetchData() {
   holdingData.value = await getHoldingData(holding.value)
   // operation
   operationData.value = (await apiOperationList({holding: holding.value})).result as OperationItem[]
-  operationData.value = operationData.value.reverse()
+  console.log(operationData.value)
+  // operationData.value = operationData.value.reverse()
   // history
   let start = Utils.dateUtil(operationData.value[0].created)
   let end = Utils.dateUtil(operationData.value[operationData.value.length - 1].created)
@@ -80,19 +81,41 @@ onMounted(() => {
             <ElTable :data="profitTableData" stripe :border="true">
               <ElTableColumn  type="index" width="40" />
               <ElTableColumn prop="date" label="日期" min-width="120" />
-              <ElTableColumn prop="expense" label="成本" min-width="60" />
-              <ElTableColumn prop="price_avg" label="均价" min-width="80" />
+              <ElTableColumn prop="quantity" label="操作" min-width="60" />
+              <ElTableColumn prop="holding" label="持有" min-width="60" />
+              <ElTableColumn prop="expense" label="成本" min-width="60">
+                <template #default="{ row }">
+                  {{ row.expense.toFixed(2) }}
+                </template>
+              </ElTableColumn>
+              <ElTableColumn prop="price_avg" label="均价" min-width="80">
+                <template #default="{ row }">
+                  {{ row.price_avg.toFixed(2) }}
+                </template>
+              </ElTableColumn>
               <ElTableColumn prop="price" label="时价" min-width="80" />
-              <ElTableColumn prop="revenue" label="市值" min-width="80" />
-              <ElTableColumn prop="profit" label="盈亏" min-width="80" />
-              <ElTableColumn prop="profit_rate" label="盈亏率 %" min-width="100" />
+              <ElTableColumn prop="revenue" label="市值" min-width="80">
+                <template #default="{ row }">
+                  {{ row.revenue.toFixed(2) }}
+                </template>
+              </ElTableColumn>
+              <ElTableColumn prop="profit" label="盈亏" min-width="80">
+                <template #default="{ row }">
+                  {{ row.profit.toFixed(2) }}
+                </template>
+              </ElTableColumn>
+              <ElTableColumn prop="profit_rate" label="盈亏率 %" min-width="100">
+                <template #default="{ row }">
+                  {{ row.profit_rate.toFixed(2) + '%' }}
+                </template>
+              </ElTableColumn>
             </ElTable>            
           </div>
         </ElTableColumn>
         <ElTableColumn prop="code" label="代码" min-width="80" />
         <ElTableColumn prop="name" label="名称" min-width="80" />
         <!-- <ElTableColumn prop="flag" label="Flag" width="50" /> -->
-        <ElTableColumn prop="quantity" label="数量" min-width="60" />
+        <ElTableColumn prop="holding" label="持有" min-width="60" />
         <ElTableColumn prop="expense" label="成本" min-width="60" />
         <ElTableColumn prop="price_avg" label="均价" min-width="80" />
         <ElTableColumn prop="price_cur" label="现价" min-width="80">

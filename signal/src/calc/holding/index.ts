@@ -34,7 +34,7 @@ export async function getHoldingData(id?: number, type?: number, code?: string, 
       flag: item.flag,
       created: item.created,
       updated: item.updated,
-      quantity: item.quantity,
+      holding: item.quantity,
       expense: item.expense,
       price_avg: avg || undefined,
       price_date: ret_current.result?.日期,
@@ -47,35 +47,24 @@ export async function getHoldingData(id?: number, type?: number, code?: string, 
   return results
 }
 
-// Trace Data
-export function getTraceData(holding: number): Promise<Types.TraceDataItem[]> {
-  return new Promise((resolve, reject) => {
-    // const ret: Types.TraceDataItem[] = []
-    apiOperationList({ holding })
-      .then((res) => {
-        const ret = calcTraceData(res.result)
-        resolve(ret)
-      })
-      .catch((err) => {
-        console.error("Error fetching holding trace data:", err)
-        reject(err)
-      })
-  })
-}
-
-export function calcTraceData(operationData: Types.OperationItem[]): Types.TraceDataItem[] {
-  const ret: Types.TraceDataItem[] = []
+export function mergeOperationData(operationData: Types.OperationItem[]): Types.OperationMergedDataItem[] {
+  const ret: Types.OperationMergedDataItem[] = []
+  let holding: number = 0
   for (const item of operationData) {
     const date = formatDateToYYYYMMDD(item.created)
     const index = ret.findIndex(elment => elment.date === date)
     if (index != -1) {
       ret[index].quantity += ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
+      holding += ret[index].quantity
       ret[index].expense += ((item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense)
+      ret[index].holding = holding
     } else {
+      holding += ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
       ret.push({
         date: date,
         quantity: (item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity,
-        expense: (item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense
+        expense: (item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense,
+        holding: holding
       })
     }
   }
@@ -83,17 +72,21 @@ export function calcTraceData(operationData: Types.OperationItem[]): Types.Trace
 }
 
 export function calcProfitTraceData(operationData: Types.OperationItem[], historyData: HistoryData[]): Types.ProfitTraceItem[] {
-  const traceData = calcTraceData(operationData)
+  const traceData = mergeOperationData(operationData)
   if (traceData.length === 0) {
     return []
   }
+  console.log('traceData', traceData)
   const ret: Types.ProfitTraceItem[] = []
-  console.log('historyData', historyData)
-  let start = dateUtil(traceData[traceData.length - 1].date)
-  console.log('latest', historyData[historyData.length - 1]?.日期)
-  const end = dateUtil(historyData[historyData.length - 1]?.日期)
+  let start = dateUtil(traceData[0].date)
 
-  let prev: Types.TraceDataItem | undefined= undefined
+  let end = dateUtil(historyData[historyData.length - 1]?.日期)
+  console.log('holding', traceData[traceData.length - 1].holding)
+  if (traceData[traceData.length - 1].holding === 0) {
+    end = dateUtil(traceData[traceData.length - 1].date)
+  }
+
+  let prev: Types.OperationMergedDataItem | undefined= undefined
   let is_filled = false
   while (start <= end) {
     const date = formatToDate(start)
