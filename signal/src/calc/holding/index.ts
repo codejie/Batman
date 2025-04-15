@@ -47,6 +47,43 @@ export async function getHoldingData(id?: number, type?: number, code?: string, 
   return results
 }
 
+export async function getHoldListData(id?: number, type?: number, code?: string, flag?: number): Promise<Types.HoldingListItem[]> {
+  const ret: Types.HoldingListItem[] = []
+  const { result } = await apiRecord({
+    id,
+    type,
+    code,
+    flag
+  })
+  
+  for (const res of result ) {
+    const ret_current = await apiGetLatestHistoryData({
+      type: res.type,
+      code: res.code
+    })
+    const price = ret_current.result ? ret_current.result.收盘 : undefined
+    const calc: Types.CalcItem = {
+      price_avg: res.expense / res.quantity,
+      price_cur: price,
+      date_cur: ret_current.result?.日期,
+      revenue: price ? price * res.quantity : undefined,
+      profit: price ? (price * res.quantity + res.expense) : undefined,
+      profit_rate: price ? ((price * res.quantity + res.expense) / -res.expense) : undefined
+    }
+    const ret_opera = await apiOperationList({
+      holding: res.id
+    })
+    const opera = ret_opera.result
+
+    ret.push({
+      record: res,
+      items: opera,
+      calc: calc
+    })
+  }
+  return ret
+} 
+
 export function mergeOperationData(operationData: Types.OperationItem[]): Types.OperationMergedDataItem[] {
   const ret: Types.OperationMergedDataItem[] = []
   let holding: number = 0
@@ -108,7 +145,7 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
         price_avg: prev.quantity != 0 ? -prev.expense / prev.quantity : undefined,
         revenue: price ? price * prev.quantity : undefined,
         profit: price ? (price * prev.quantity + prev.expense) : undefined,
-        profit_rate: price ? ((price * prev.quantity + prev.expense) / -prev.expense) : undefined,
+        profit_rate: price ? ((price * prev.quantity + prev.expense) / prev.expense) : undefined,
         is_filled
       })      
     }
@@ -117,23 +154,24 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
   return ret
 }
 
-export function calcProfitTotalData(data: Types.HoldingItem[]): Types.ProfitTotalData{
+export function calcProfitTotalData(data: Types.HoldingListItem[]): Types.ProfitTotalData{
+  let holding
   let expense = 0
   let revenue = 0
   let profit = 0
   let profit_rate = 0
   for (const item of data) {
-    expense += item.expense
-    revenue += item.revenue || 0
-    profit += item.profit || 0
+    holding += item.record.quantity
+    expense += item.record.expense
+    revenue += item.calc.revenue || 0
+    profit += item.calc.profit || 0
   }
-  profit_rate = profit / -expense
+  profit_rate = profit / expense
   return {
+    holding: holding,
     expense: expense,
     revenue: revenue,
     profit: profit,
     profit_rate: profit_rate
   }
 }
-
-export function calcIntegredData()

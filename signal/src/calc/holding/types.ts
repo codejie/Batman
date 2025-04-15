@@ -1,38 +1,39 @@
 import { HoldingRecordItem, HoldingOperationItem } from "@/api/holding/types"
 
 export interface CalcItem {
-  price: number
-  price_date: string
-  price_cur: number
-  revenue: number
-  profit: number
-  profit_rate: number
+  price_avg: number // 
+  date_cur?: string
+  price_cur?: number
+  revenue?: number
+  profit?: number
+  profit_rate?: number
 }
 
 export interface HoldingListItem {
   record: HoldingRecordItem
+  items: HoldingOperationItem[]
   calc: CalcItem
 }
 
 // Holding and Operation Data
-export interface HoldingItem {
-  id: number
-  type: number
-  code: string
-  name: string
-  flag: number
-  created: Date
-  updated: Date
-  holding: number
-  expense: number
+// export interface HoldingItem {
+//   id: number
+//   type: number
+//   code: string
+//   name: string
+//   flag: number
+//   created: Date
+//   updated: Date
+//   holding: number
+//   expense: number
 
-  price_avg?: number
-  price_date?: string
-  price_cur?: number
-  revenue?: number// price_cur * quantity
-  profit?: number// revenue - expense
-  profit_rate?: number
-}
+//   price_avg?: number
+//   price_date?: string
+//   price_cur?: number
+//   revenue?: number// price_cur * quantity
+//   profit?: number// revenue - expense
+//   profit_rate?: number
+// }
 
 export type OperationItem = HoldingOperationItem
 

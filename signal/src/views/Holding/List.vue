@@ -1,10 +1,10 @@
 <script lang="ts">
 
-interface HoldingInfoItem {
-  holding: HoldingItem
-  items: OperationItem[]
-  integred?: IntegredItem
-}
+// interface HoldingInfoItem {
+//   holding: HoldingItem
+//   items: OperationItem[]
+//   integred?: IntegredItem
+// }
 
 interface CreateForm {
   type: string
@@ -28,7 +28,7 @@ interface OperationForm {
 
 <script setup lang="ts">
 import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove } from '@/api/holding'
-import { HOLDING_FLAG_REMOVED, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL } from '@/api/holding/types'
+import { HOLDING_FLAG_REMOVED, HoldingRecordItem, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
 import {
@@ -38,7 +38,7 @@ import {
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
-import { calcProfitTotalData, getHoldingData, HoldingItem, IntegredItem, OperationItem, ProfitTotalData } from '@/calc/holding'
+import { getHoldListData, calcProfitTotalData, getHoldingData, HoldingItem, HoldingListItem, IntegredItem, OperationItem, ProfitTotalData } from '@/calc/holding'
 
 const { push } = useRouter()
 
@@ -60,28 +60,30 @@ const operationForm = ref<OperationForm>({
   expense: 0,
   comment: ''
 })
-const data = ref<HoldingInfoItem[]>([])
+const data = ref<HoldingListItem[]>([]) // ref<HoldingInfoItem[]>([])
 const total = ref<ProfitTotalData>()
 const expandRows = ref<string[]>([])
 
 async function fetchHoldingData() {
-  data.value = []
-  const holding = await getHoldingData()
-  for (const item of holding) {
-    data.value.push({
-      holding: item,
-      items: []
-    })
-  }
+  data.value = await getHoldListData()
+  total.value = calcProfitTotalData(data.value)
+  // data.value = []
+  // const holding = await getHoldingData()
+  // for (const item of holding) {
+  //   data.value.push({
+  //     holding: item,
+  //     items: []
+  //   })
+  // }
 
-  total.value = calcProfitTotalData(holding)
+  // total.value = calcProfitTotalData(holding)
 
-  const ret = await apiOperationList({})
+  // const ret = await apiOperationList({})
 
-  for (const item of ret.result) {
-    const holding = data.value.find((x) => x.holding.id === item.holding)
-    holding!.items.unshift(item)
-  }
+  // for (const item of ret.result) {
+  //   const holding = data.value.find((x) => x.holding.id === item.holding)
+  //   holding!.items.unshift(item)
+  // }
 }
 
 onMounted(async () => {
@@ -97,11 +99,11 @@ async function onAdd() {
   await fetchHoldingData()
 }
 
-function onOperation(row: HoldingInfoItem) {
-  operationForm.value.holding = row.holding.id
-  operationForm.value.type = row.holding.type
-  operationForm.value.code = row.holding.code
-  operationForm.value.name = row.holding.name
+function onOperation(row: HoldingRecordItem) {
+  operationForm.value.holding = row.id
+  operationForm.value.type = row.type
+  operationForm.value.code = row.code
+  operationForm.value.name = row.name
   operationDialogVisible.value = true
 }
 
@@ -144,7 +146,7 @@ async function onOperationRemove(row: OperationItem) {
   }
 }
 
-async function onRemove(row: HoldingInfoItem) {
+async function onRemove(id: number) {
   const confirm = await ElMessageBox.confirm(
     '是否确认删除?',
     '提示',
@@ -156,29 +158,28 @@ async function onRemove(row: HoldingInfoItem) {
   )
   if (confirm) {
     await apiFlag({
-      id: row.holding.id,
+      id: id,
       flag: HOLDING_FLAG_REMOVED
     })
     await fetchHoldingData()
   }
 }
 
-async function onDetail(row: HoldingInfoItem) {
+async function onDetail(id: number) {
   push({
     path: '/holding/detail',
     query: {
-      id: row.holding.id
+      id: id
     }
   })
 }
 
-function getHoldingKey(row: HoldingInfoItem): string {
-  // console.log(row.holding.id)
-  return row.holding.id.toString()
+function getHoldingKey(id: number): string {
+  return id.toString() // row.holding.id.toString()
 }
 
-function onExpandChanged(rows: HoldingInfoItem, expandedRows: HoldingInfoItem[]) {
-  expandRows.value = expandedRows.map((x) => x.holding.id.toString())
+function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[]) {
+  expandRows.value = expandedRows.map((x) => x.record.id.toString())
 }
 </script>
 
@@ -200,7 +201,7 @@ function onExpandChanged(rows: HoldingInfoItem, expandedRows: HoldingInfoItem[])
             <div class="mx-24px my-8px">
               <ElRow :gutter="24">
                   <ElText tag="b">操作记录 ({{ row.items.length }})</ElText>
-                  <ElButton size="small" class="mx-8" type="primary" @click="onOperation(row)">增加操作</ElButton>
+                  <ElButton size="small" class="mx-8" type="primary" @click="onOperation(row.record)">增加操作</ElButton>
               </ElRow>
             </div>
             <div class="mx-24px my-8px">       
@@ -222,7 +223,7 @@ function onExpandChanged(rows: HoldingInfoItem, expandedRows: HoldingInfoItem[])
                 <ElTableColumn label="备注" prop="comment" />
                 <ElTableColumn label="" min-width="160">
                   <template #default="{ row }">
-                    <ElButton size="small" @click="onOperationRemove(row)">删除</ElButton>
+                    <ElButton size="small" @click="onOperationRemove(row.record.id)">删除</ElButton>
                   </template>
                 </ElTableColumn>
               </ElTable>
@@ -231,42 +232,42 @@ function onExpandChanged(rows: HoldingInfoItem, expandedRows: HoldingInfoItem[])
         </ElTableColumn>
         <!-- <ElTableColumn prop="id" label="ID" width="50" /> -->
           <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
-          <ElTableColumn prop="holding.code" label="代码" min-width="80" />
-          <ElTableColumn prop="holding.name" label="名称" min-width="80" />
+          <ElTableColumn prop="record.code" label="代码" min-width="80" />
+          <ElTableColumn prop="record.name" label="名称" min-width="80" />
           <!-- <ElTableColumn prop="flag" label="Flag" width="50" /> -->
-          <ElTableColumn prop="holding.quantity" label="数量" min-width="60" />
-          <ElTableColumn prop="holding.expense" label="成本" min-width="60" />
-          <ElTableColumn prop="holding.price_avg" label="均价" min-width="80">
+          <ElTableColumn prop="record.quantity" label="数量" min-width="60" />
+          <ElTableColumn prop="record.expense" label="成本" min-width="60" />
+          <ElTableColumn label="均价" min-width="80">
             <template #default="{ row }">
-              {{ `${row.holding.price_avg? row.holding.price_avg.toFixed(2) : '-'}` }}
+              {{ `${row.calc.price_avg? row.calc.price_avg.toFixed(2) : '-'}` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="holding.price_cur" label="现价" min-width="80">
+          <ElTableColumn label="现价" min-width="80">
             <template #default="{ row }">
-              {{ `${row.holding.price_cur}[${row.holding.price_date.substring(5)}]` }}
+              {{ `${row.calc.price_cur}[${row.calc.date_cur.substring(5)}]` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="holding.revenue" label="市值" min-width="80" />
-          <ElTableColumn prop="holding.profit" label="盈亏" min-width="80" />
-          <ElTableColumn prop="holding.profit_rate" label="盈亏率 %" min-width="100">
+          <ElTableColumn prop="calc.revenue" label="市值" min-width="80" />
+          <ElTableColumn prop="calc.profit" label="盈亏" min-width="80" />
+          <ElTableColumn label="盈亏率 %" min-width="100">
             <template #default="{ row }">
-              {{ `${row.holding.profit_rate? row.holding.profit_rate.toFixed(2) + '%' : '-'}` }}
+              {{ `${row.calc.profit_rate? row.calc.profit_rate.toFixed(2) + '%' : '-'}` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="holding.created" label="创建时间" min-width="120">
+          <ElTableColumn prop="record.created" label="创建时间" min-width="120">
             <template #default="{ row }">
-              {{ formatToDate(row.holding.created) }}
+              {{ formatToDate(row.record.created) }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="holding.updated" label="更新时间" min-width="120">
+          <ElTableColumn label="更新时间" min-width="120">
             <template #default="{ row }">
-              {{ formatToDate(row.holding.updated) }}
+              {{ formatToDate(row.record.updated) }}
             </template>
           </ElTableColumn>
           <ElTableColumn label="" width="160">
             <template #default="{ row }">
-              <ElButton size="small" @click="onDetail(row)">详情</ElButton>
-              <ElButton size="small" @click="onRemove(row)">删除</ElButton>
+              <ElButton size="small" @click="onDetail(row.record.id)">详情</ElButton>
+              <ElButton size="small" @click="onRemove(row.record.id)">删除</ElButton>
             </template>
           </ElTableColumn>      
       </ElTable>
