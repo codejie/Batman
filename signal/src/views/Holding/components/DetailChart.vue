@@ -31,7 +31,8 @@ const props = defineProps({
 
 const upColor = '#ec0000'
 const downColor = '#00da3c'
-const quantityColor = '#aaaaff'
+const holdingColor1 = '#1a5276'
+const holdingColor2 = '#943126'
 const maItems: number[] = [5, 10, 30, 60]
 
 const xData = ref<string[] | number[]>()
@@ -185,7 +186,7 @@ const chartOption = ref<EChartsOption>({
         axisTick: { show: true },
         splitLine: { show: true }
       },      
-      { // quantity
+      { // holding
         type: 'value',
         show: true,
         gridIndex: 0,
@@ -340,7 +341,7 @@ const chartOption = ref<EChartsOption>({
         itemStyle: {
           color: (item) => {
             if (item.value.length > 2)
-              return item.value[2] > 0 ? upColor : downColor
+              return item.value[2] > 0 ? holdingColor1 : holdingColor2
             else
               return upColor
           }

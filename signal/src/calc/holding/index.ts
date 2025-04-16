@@ -8,45 +8,6 @@ import  { dateUtil, formatToDate } from '@/utils/dateUtil'
 
 export * from "@/calc/holding/types"
 
-// Holding and Operation Data
-export async function getHoldingData(id?: number, type?: number, code?: string, flag?: number): Promise<Types.HoldingItem[]> {
-  const results: Types.HoldingItem[] = []
-  const ret = await apiRecord({
-    id,
-    type,
-    code,
-    flag
-  })
-  for (const item of ret.result) {
-    const ret_current = await apiGetLatestHistoryData({
-      type: item.type,
-      code: item.code
-    })
-    const price = ret_current.result ? ret_current.result.收盘 : undefined
-    const avg = (-item.expense / item.quantity) || undefined
-    const precent = price ? ((price * item.quantity + item.expense) / -item.expense) : undefined
-    const profit = price ? (price * item.quantity + item.expense) : undefined
-    results.push({
-      id: item.id,
-      type: item.type,
-      code: item.code,
-      name: item.name,
-      flag: item.flag,
-      created: item.created,
-      updated: item.updated,
-      holding: item.quantity,
-      expense: item.expense,
-      price_avg: avg || undefined,
-      price_date: ret_current.result?.日期,
-      price_cur: price,
-      revenue: price ? price * item.quantity : undefined,
-      profit: profit || undefined,
-      profit_rate: precent || undefined
-    })
-  }
-  return results
-}
-
 export async function getHoldListData(id?: number, type?: number, code?: string, flag?: number): Promise<Types.HoldingListItem[]> {
   const ret: Types.HoldingListItem[] = []
   const { result } = await apiRecord({
@@ -68,12 +29,12 @@ export async function getHoldListData(id?: number, type?: number, code?: string,
       date_cur: ret_current.result?.日期,
       revenue: price ? price * res.quantity : undefined,
       profit: price ? (price * res.quantity + res.expense) : undefined,
-      profit_rate: price ? ((price * res.quantity + res.expense) / -res.expense) : undefined
+      profit_rate: price ? ((price * res.quantity + res.expense) / res.expense) : undefined
     }
     const ret_opera = await apiOperationList({
       holding: res.id
     })
-    const opera = ret_opera.result
+    const opera = ret_opera.result.reverse()
 
     ret.push({
       record: res,

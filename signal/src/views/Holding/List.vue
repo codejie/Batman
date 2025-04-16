@@ -1,11 +1,5 @@
 <script lang="ts">
 
-// interface HoldingInfoItem {
-//   holding: HoldingItem
-//   items: OperationItem[]
-//   integred?: IntegredItem
-// }
-
 interface CreateForm {
   type: string
   code: string
@@ -27,7 +21,7 @@ interface OperationForm {
 </script>
 
 <script setup lang="ts">
-import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove } from '@/api/holding'
+import { apiCreate, apiFlag, apiOperationCreate, apiOperationRemove } from '@/api/holding'
 import { HOLDING_FLAG_REMOVED, HoldingRecordItem, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
@@ -38,7 +32,7 @@ import {
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
-import { getHoldListData, calcProfitTotalData, getHoldingData, HoldingItem, HoldingListItem, IntegredItem, OperationItem, ProfitTotalData } from '@/calc/holding'
+import { getHoldListData, calcProfitTotalData, HoldingListItem, OperationItem, ProfitTotalData } from '@/calc/holding'
 
 const { push } = useRouter()
 
@@ -67,23 +61,6 @@ const expandRows = ref<string[]>([])
 async function fetchHoldingData() {
   data.value = await getHoldListData()
   total.value = calcProfitTotalData(data.value)
-  // data.value = []
-  // const holding = await getHoldingData()
-  // for (const item of holding) {
-  //   data.value.push({
-  //     holding: item,
-  //     items: []
-  //   })
-  // }
-
-  // total.value = calcProfitTotalData(holding)
-
-  // const ret = await apiOperationList({})
-
-  // for (const item of ret.result) {
-  //   const holding = data.value.find((x) => x.holding.id === item.holding)
-  //   holding!.items.unshift(item)
-  // }
 }
 
 onMounted(async () => {
@@ -174,8 +151,8 @@ async function onDetail(id: number) {
   })
 }
 
-function getHoldingKey(id: number): string {
-  return id.toString() // row.holding.id.toString()
+function getHoldingKey(row: HoldingListItem): string {
+  return row.record.id.toString() // row.holding.id.toString()
 }
 
 function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[]) {
