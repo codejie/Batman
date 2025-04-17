@@ -1,7 +1,7 @@
 import { HoldingRecordItem, HoldingOperationItem } from "@/api/holding/types"
 
 export interface CalcItem {
-  price_avg: number // 
+  price_avg?: number // 
   date_cur?: string
   price_cur?: number
   revenue?: number
@@ -36,6 +36,8 @@ export interface ProfitTraceItem {
   revenue?: number
   profit?: number
   profit_rate?: number
+  pre_profit?: number,
+  pre_profit_rate?: number
   is_filled: boolean
 }
 

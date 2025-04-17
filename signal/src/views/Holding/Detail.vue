@@ -30,24 +30,36 @@ async function fetchData() {
   holdingData.value = await getHoldListData(holding.value)
   
   const operationData = holdingData.value[0]!.items
-  // operationData.value = operationData.value.reverse()
-  // history
-  let start = Utils.dateUtil(operationData[0].created)
-  let end = Utils.dateUtil(operationData[operationData.length - 1].created)
-  if (start.diff(end, 'month') < 3) {
-    start = Utils.dateUtil(operationData[0].created).subtract(3, 'month')
-    end = Utils.dateUtil(operationData[operationData.length - 1].created).add(3, 'month')
+  if (operationData.length > 0) {
+    // history
+    let start = Utils.dateUtil(operationData[0].created)
+    let end = Utils.dateUtil(operationData[operationData.length - 1].created)
+    if (start.diff(end, 'month') < 3) {
+      start = Utils.dateUtil(operationData[0].created).subtract(3, 'month')
+      end = Utils.dateUtil(operationData[operationData.length - 1].created).add(3, 'month')
+    }
+    const historyRet = await apiGetHistoryData({
+      type: holdingData.value[0]!.record.type,
+      code: holdingData.value[0]!.record.code,
+      start: Utils.formatToDate(start),
+      end: Utils.formatToDate(end)
+    })
+    historyData.value = historyRet.result
+    // trace
+    console.log('operationData', operationData)
+    profitTraceData.value = calcProfitTraceData(operationData, historyData.value)
+    profitTableData.value = profitTraceData.value.filter(item => !item.is_filled).reverse()
+  } else {
+    const end = Utils.dateUtil()
+    const start = Utils.dateUtil().subtract(3, 'month')
+    const historyRet = await apiGetHistoryData({
+      type: holdingData.value[0]!.record.type,
+      code: holdingData.value[0]!.record.code,
+      start: Utils.formatToDate(start),
+      end: Utils.formatToDate(end)
+    })
+    historyData.value = historyRet.result    
   }
-  const historyRet = await apiGetHistoryData({
-    type: holdingData.value[0]!.record.type,
-    code: holdingData.value[0]!.record.code,
-    start: Utils.formatToDate(start),
-    end: Utils.formatToDate(end)
-  })
-  historyData.value = historyRet.result
-  // trace
-  profitTraceData.value = calcProfitTraceData(operationData, historyData.value)
-  profitTableData.value = profitTraceData.value.filter(item => !item.is_filled).reverse()
 }
 
 onMounted(() => {
@@ -68,7 +80,7 @@ onMounted(() => {
           <div class="mx-24px my-8px">
             <ElTable :data="profitTableData" stripe :border="true">
               <ElTableColumn  type="index" width="40" />
-              <ElTableColumn prop="date" label="日期" min-width="120" />
+              <ElTableColumn prop="date" label="日期" min-width="80" />
               <ElTableColumn prop="quantity" label="操作" min-width="60" />
               <ElTableColumn prop="holding" label="持有" min-width="60" />
               <ElTableColumn label="成本" min-width="60">
@@ -89,14 +101,24 @@ onMounted(() => {
               </ElTableColumn>
               <ElTableColumn label="盈亏" min-width="80">
                 <template #default="{ row }">
-                  {{ row.profit.toFixed(2) }}
+                  {{ row.profit?.toFixed(2) }}
                 </template>
               </ElTableColumn>
               <ElTableColumn label="盈亏率 %" min-width="100">
                 <template #default="{ row }">
-                  {{ row.profit_rate.toFixed(2) + '%' }}
+                  {{ (row.profit_rate * 100)?.toFixed(2) + '%' }}
                 </template>
               </ElTableColumn>
+              <ElTableColumn label="昨差" min-width="100">
+                <template #default="{ row }">
+                  {{ row.pre_profit?.toFixed(2) }}
+                </template>
+              </ElTableColumn>
+              <ElTableColumn label="昨差率 %" min-width="100">
+                <template #default="{ row }">
+                  {{ row.pre_profit_rate ? (row.pre_profit_rate * 100).toFixed(2) + '%' : '-'}}
+                </template>
+              </ElTableColumn>              
             </ElTable>            
           </div>
         </ElTableColumn>
@@ -105,17 +127,29 @@ onMounted(() => {
         <!-- <ElTableColumn prop="flag" label="Flag" width="50" /> -->
         <ElTableColumn prop="record.quantity" label="持有" min-width="60" />
         <ElTableColumn prop="record.expense" label="成本" min-width="60" />
-        <ElTableColumn prop="calc.price_avg" label="均价" min-width="80" />
-        <ElTableColumn prop="calc.price_cur" label="现价" min-width="80">
+        <ElTableColumn prop="calc.price_avg" label="均价" min-width="80">
           <template #default="{ row }">
-            {{ `${row.calc.price_cur} [${row.calc.date_cur.substring(5)}]` }}
+            {{ `${row.calc.price_avg? row.calc.price_avg.toFixed(2) : '-'}` }}
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.revenue" label="市值" min-width="80" />
-        <ElTableColumn prop="calc.profit" label="盈亏" min-width="80" />
+        <ElTableColumn prop="calc.price_cur" label="现价" min-width="80">
+          <template #default="{ row }">
+            {{ `${row.calc.price_cur} | ${row.calc.date_cur.substring(5)}` }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="calc.revenue" label="市值" min-width="80">
+          <template #default="{ row }">
+            {{ `${row.calc.revenue? row.calc.revenue.toFixed(2) : '-'}` }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="calc.profit" label="盈亏" min-width="80">
+          <template #default="{ row }">
+            {{ `${row.calc.profit? row.calc.profit.toFixed(2) : '-'}` }}
+          </template>
+        </ElTableColumn>
         <ElTableColumn prop="calc.profit_rate" label="盈亏率 %" min-width="100">
           <template #default="{ row }">
-            {{ `${row.calc.profit_rate? row.calc.profit_rate.toFixed(2) + '%' : '-'}` }}
+            {{ `${row.calc.profit_rate? (row.calc.profit_rate * 100).toFixed(2) + '%' : '-'}` }}
           </template>
         </ElTableColumn>
         <ElTableColumn prop="record.created" label="创建时间" min-width="120">

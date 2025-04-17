@@ -56,14 +56,15 @@ def update_download_records(type: int, code: str, period: str, adjust: str, star
 
 def check_download_records(type: int, code: str, period: str, adjust: str, start: str, end: str) -> Optional[Define.DownloadRecordsTable]:
   stmt = select(Define.DownloadRecordsTable) \
-    .where(Define.DownloadRecordsTable.type == type
-           and Define.DownloadRecordsTable.code == code
-           and Define.DownloadRecordsTable.period == period
-           and Define.DownloadRecordsTable.adjust == adjust)
+    .where(Define.DownloadRecordsTable.type == type) \
+    .where(Define.DownloadRecordsTable.code == code) \
+    .where(Define.DownloadRecordsTable.period == period) \
+    .where(Define.DownloadRecordsTable.adjust == adjust)
   if start:
     stmt = stmt.where(Define.DownloadRecordsTable.start <= start)
   if end:
     stmt = stmt.where(Define.DownloadRecordsTable.end >= end)
+  print(stmt)
   result = dbEngine.select_scalar(stmt)
   return result if result else None
 

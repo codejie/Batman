@@ -59,8 +59,12 @@ const total = ref<ProfitTotalData>()
 const expandRows = ref<string[]>([])
 
 async function fetchHoldingData() {
-  data.value = await getHoldListData()
+  data.value = (await (await getHoldListData()))
   total.value = calcProfitTotalData(data.value)
+  data.value = data.value.reverse()
+  data.value.forEach((v) => {
+    v.items = v.items.reverse()
+  })
 }
 
 onMounted(async () => {
@@ -163,7 +167,7 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
 <template>
   <ContentWrap title="持仓">
     <ElDescriptions :column="1" title="">
-      <ElDescriptionsItem label="总盈亏"><ElText tag="b">{{ total?.profit }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="总盈亏"><ElText tag="b">{{ total?.profit.toFixed(2) }}</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="总盈亏率"><ElText tag="b">{{ total?.profit_rate.toFixed(2) + '%' }}</ElText></ElDescriptionsItem>
     </ElDescriptions>
     <ElDivider calss="mx-8px" />
@@ -221,14 +225,22 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
           </ElTableColumn>
           <ElTableColumn label="现价" min-width="80">
             <template #default="{ row }">
-              {{ `${row.calc.price_cur}[${row.calc.date_cur.substring(5)}]` }}
+              {{ `${row.calc.price_cur} | ${row.calc.date_cur?.substring(5)}` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="calc.revenue" label="市值" min-width="80" />
-          <ElTableColumn prop="calc.profit" label="盈亏" min-width="80" />
+          <ElTableColumn prop="calc.revenue" label="市值" min-width="80">
+            <template #default="{ row }">
+              {{ `${row.calc.revenue? row.calc.revenue.toFixed(2) : '-'}` }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="calc.profit" label="盈亏" min-width="80">
+            <template #default="{ row }">
+              {{ `${row.calc.profit? row.calc.profit.toFixed(2) : '-'}` }}
+            </template>
+          </ElTableColumn>
           <ElTableColumn label="盈亏率 %" min-width="100">
             <template #default="{ row }">
-              {{ `${row.calc.profit_rate? row.calc.profit_rate.toFixed(2) + '%' : '-'}` }}
+              {{ `${row.calc.profit_rate? (row.calc.profit_rate * 100).toFixed(2) + '%' : '-'}` }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="record.created" label="创建时间" min-width="120">

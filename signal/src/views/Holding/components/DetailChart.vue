@@ -43,7 +43,7 @@ const maData = ref<string[][]>([]) // 5, 10, 30, 60
 const priceAvgData = ref<string[]>()
 const revenueData = ref<number[] | string[]>()
 const profitData = ref<number[] | string[]>()
-const quantityData = ref<number[]>()
+const holdingData = ref<number[]>()
 
 const chartOption = ref<EChartsOption>({
   grid: [
@@ -119,7 +119,7 @@ const chartOption = ref<EChartsOption>({
         axisTick: { show: true },
         splitLine: { show: false }
       },
-      {
+      {// volume
         type: 'value',
         // nameLocation : 'middle',
         show: true,
@@ -148,6 +148,7 @@ const chartOption = ref<EChartsOption>({
         // splitArea: {
         //   show: true
         // },
+        min: 0,
         axisLabel: { show: true },
         axisLine: { show: true },
         axisTick: { show: true },
@@ -165,6 +166,7 @@ const chartOption = ref<EChartsOption>({
         // splitArea: {
         //   show: true
         // },
+        min: 0,
         axisLabel: { show: true },
         axisLine: { show: true },
         axisTick: { show: true },
@@ -181,6 +183,7 @@ const chartOption = ref<EChartsOption>({
         // splitArea: {
         //   show: true
         // },
+        min: 0,
         axisLabel: { show: true },
         axisLine: { show: true },
         axisTick: { show: true },
@@ -197,6 +200,7 @@ const chartOption = ref<EChartsOption>({
         // splitArea: {
         //   show: true
         // },
+        min: 0,
         axisLabel: { show: true },
         axisLine: { show: true },
         axisTick: { show: true },
@@ -399,12 +403,12 @@ function setTraceData(data: ProfitTraceItem[]) {
   priceAvgData.value = data.map(item => [item.date, item.price_avg])
   revenueData.value = data.map(item => [item.date, item.revenue])
   profitData.value = data.map(item => [item.date, item.profit])
-  quantityData.value = data.map(item => [item.date, Math.abs(item.quantity), item.quantity > 0 ? 1 : -1])
+  holdingData.value = data.map(item => [item.date, Math.abs(item.holding), item.holding > 0 ? 1 : -1])
 
   chartOption.value.series[2].data = priceAvgData.value
   chartOption.value.series[3].data = profitData.value
   chartOption.value.series[4].data = revenueData.value
-  chartOption.value.series[5].data = quantityData.value
+  chartOption.value.series[5].data = holdingData.value
 }
 
 watch(
