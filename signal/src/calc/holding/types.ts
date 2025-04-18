@@ -23,12 +23,14 @@ export interface OperationMergedDataItem {
   date: string
   quantity: number // operation quantity
   expense: number
+  amount: number // expense amount
   holding: number
 }
 
 export interface ProfitTraceItem {
   date: string
   holding: number
+  amount: number
   quantity: number
   expense: number
   price?: number

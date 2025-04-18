@@ -81,13 +81,18 @@ onMounted(() => {
             <ElTable :data="profitTableData" stripe :border="true">
               <ElTableColumn  type="index" width="40" />
               <ElTableColumn prop="date" label="日期" min-width="80" />
-              <ElTableColumn prop="quantity" label="操作" min-width="60" />
-              <ElTableColumn prop="holding" label="持有" min-width="60" />
+              <ElTableColumn prop="quantity" label="操作" min-width="40" />
               <ElTableColumn label="成本" min-width="60">
                 <template #default="{ row }">
                   {{ row.expense.toFixed(2) }}
                 </template>
               </ElTableColumn>
+              <ElTableColumn prop="holding" label="持有" min-width="60" />              
+              <ElTableColumn label="总额" min-width="80">
+                <template #default="{ row }">
+                  {{ row.amount.toFixed(2) }}
+                </template>
+              </ElTableColumn>              
               <ElTableColumn label="均价" min-width="80">
                 <template #default="{ row }">
                   {{ row.price_avg.toFixed(2) }}
@@ -109,7 +114,7 @@ onMounted(() => {
                   {{ (row.profit_rate * 100)?.toFixed(2) + '%' }}
                 </template>
               </ElTableColumn>
-              <ElTableColumn label="昨差" min-width="100">
+              <ElTableColumn label="昨差" min-width="80">
                 <template #default="{ row }">
                   {{ row.pre_profit?.toFixed(2) }}
                 </template>

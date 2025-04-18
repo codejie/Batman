@@ -39,7 +39,7 @@ function _calcPreProfit(profit?: number, pre_profit?: number): number | undefine
 function _calcPreProfitRate(expense: number, profit?: number, pre_profit?: number): number | undefined {
   if (!profit) return undefined
   if (!pre_profit) return undefined
-  return (profit - pre_profit) / expense
+  return (profit - pre_profit) / -expense
 }
 
 export async function getHoldListData(id?: number, type?: number, code?: string, flag?: number): Promise<Types.HoldingListItem[]> {
@@ -82,21 +82,26 @@ export async function getHoldListData(id?: number, type?: number, code?: string,
 export function mergeOperationData(operationData: Types.OperationItem[]): Types.OperationMergedDataItem[] {
   const ret: Types.OperationMergedDataItem[] = []
   let holding: number = 0
+  let amount: number = 0
   for (const item of operationData) {
     const date = formatDateToYYYYMMDD(item.created)
     const index = ret.findIndex(elment => elment.date === date)
     if (index != -1) {
       ret[index].quantity += item.quantity // ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
       holding += ret[index].quantity
-
       ret[index].expense += item.expense // ((item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense)
+      amount += ret[index].expense
+
       ret[index].holding = holding
+      ret[index].amount = amount
     } else {
-      holding += ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
+      holding += item.quantity // ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
+      amount += item.expense
       ret.push({
         date: date,
         quantity: item.quantity, //  (item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity,
         expense: item.expense, // (item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense,
+        amount: amount,
         holding: holding
       })
     }
@@ -121,6 +126,7 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
   let prev: Types.OperationMergedDataItem | undefined = undefined
   let is_filled = false
   let pre_profit: number | undefined = undefined
+  let pre_price: number | undefined = undefined
   while (start <= end) {
     const date = formatToDate(start)
     console.log('date', date)
@@ -135,20 +141,21 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
       is_filled = true
     }
     if (prev) {
-      const profit = _calcProfit(prev.quantity, prev.expense, price)
+      const profit = _calcProfit(prev.holding, prev.amount, price)
       ret.push({
         ...prev,
         date: date,
         price: price || undefined,
-        price_avg: _calcPriceAvg(prev.expense, prev.quantity), // prev.quantity != 0 ? -prev.expense / prev.quantity : undefined,
-        revenue: _calcRevenue(prev.quantity, price), // price ? price * prev.quantity : undefined,
+        price_avg: _calcPriceAvg(prev.amount, prev.holding), // prev.quantity != 0 ? -prev.expense / prev.quantity : undefined,
+        revenue: _calcRevenue(prev.holding, price), // price ? price * prev.quantity : undefined,
         profit: profit, // _calcProfit(prev.quantity, prev.expense, price), // price ? (price * prev.quantity + prev.expense) : undefined,
-        profit_rate: _calcProfitRate(prev.quantity, prev.expense, price), // price ? ((price * prev.quantity + prev.expense) / prev.expense) : undefined,
+        profit_rate: _calcProfitRate(prev.holding, prev.amount, price), // price ? ((price * prev.quantity + prev.expense) / prev.expense) : undefined,
         pre_profit: _calcPreProfit(profit, pre_profit),
-        pre_profit_rate: _calcPreProfitRate(prev.expense, profit, pre_profit),
+        pre_profit_rate: _calcPreProfitRate(prev.amount, profit, pre_profit),
         is_filled
       })
-      pre_profit = profit    
+      pre_profit = profit
+      pre_price = price    
     }
     start = start.add(1, 'day')
   }
