@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from sqlalchemy import delete, select, text, update
-from app.database import TableBase, dbEngine
-import akshare as ak
+from app.database import dbEngine
 import app.database.data.utils as Utils
 import app.database.data.define as Define
 import app.database.data.stock as Stock

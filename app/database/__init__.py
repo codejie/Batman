@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session
 
 from app.exception import AppException
@@ -20,6 +20,10 @@ class DBEngine:
   def shutdown(self) -> None:
       pass
   
+  def check_table_exist(self, table: str) -> bool:
+    inspector = inspect(self.engine)
+    return inspector.has_table(table)
+
   def insert_stmt(self, stmt: object) ->int:
     try:
       with Session(self.engine) as session:
