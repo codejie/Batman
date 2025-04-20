@@ -14,7 +14,7 @@ interface OperationForm {
   date: Date
   quantity: number
   price: number
-  expense: number
+  expense: number | string
   comment?: string    
 }
 
@@ -33,6 +33,7 @@ import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
 import { getHoldListData, calcProfitTotalData, HoldingListItem, OperationItem, ProfitTotalData } from '@/calc/holding'
+import { string } from 'vue-types'
 
 const { push } = useRouter()
 
@@ -89,11 +90,11 @@ function onOperation(row: HoldingRecordItem) {
 }
 
 function onPriceBlur() {
-  operationForm.value.expense = operationForm.value.quantity * operationForm.value.price
+  operationForm.value.expense = (operationForm.value.quantity * operationForm.value.price).toFixed(2)
 }
 
 function onQuantityBlur() {
-  operationForm.value.expense = operationForm.value.quantity * operationForm.value.price
+  operationForm.value.expense = (operationForm.value.quantity * operationForm.value.price).toFixed(2)
 }
 
 async function onAddOperation() {
@@ -102,7 +103,7 @@ async function onAddOperation() {
     action: operationForm.value.action,
     quantity: operationForm.value.quantity,
     price: operationForm.value.price,
-    expense: operationForm.value.expense,
+    expense: (typeof operationForm.value.expense === 'string' ? parseFloat(operationForm.value.expense) : operationForm.value.expense),
     comment: operationForm.value.comment,
     created: operationForm.value.date
   })
@@ -110,7 +111,8 @@ async function onAddOperation() {
   await fetchHoldingData()
 }
 
-async function onOperationRemove(row: OperationItem) {
+async function onOperationRemove(id: number) {
+  console.log('id', id)
   const confirm = await ElMessageBox.confirm(
     '是否确认删除?',
     '提示',
@@ -121,7 +123,7 @@ async function onOperationRemove(row: OperationItem) {
     })
   if (confirm) {
     await apiOperationRemove({
-      id: row.id
+      id: id
     })
     await fetchHoldingData()
   }
@@ -204,7 +206,7 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
                 <ElTableColumn label="备注" prop="comment" />
                 <ElTableColumn label="" min-width="160">
                   <template #default="{ row }">
-                    <ElButton size="small" @click="onOperationRemove(row.record.id)">删除</ElButton>
+                    <ElButton size="small" @click="onOperationRemove(row.id)">删除</ElButton>
                   </template>
                 </ElTableColumn>
               </ElTable>
@@ -314,10 +316,14 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
             <ElInput v-model="operationForm.quantity" />
           </ElFormItem>
           <ElFormItem label="价格" @change="onPriceBlur">
-            <ElInput v-model="operationForm.price" />
+            <ElInput v-model="operationForm.price">
+              <template #append>元</template>
+            </ElInput>
           </ElFormItem>
           <ElFormItem label="费用">
-            <ElInput v-model="operationForm.expense" />
+            <ElInput v-model="operationForm.expense">
+              <template #append>元</template>
+            </ElInput>
           </ElFormItem>
           <ElFormItem label="备注">
             <ElInput v-model="operationForm.comment" />

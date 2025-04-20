@@ -4,18 +4,18 @@ from pandas import DataFrame
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from app.database import dbEngine
-from app.database.data import make_history_data_table_name
+from app.database.data import make_history_data_table_name, update_download_records
 from app.exception import AppException
-
 
 # def insert_download_record(type, code, period, adjust, start, end):
 #   dbEngine.insert_instance(Define.DownloadRecordsTable(type=type, code=code, period=period, adjust=adjust, start=start, end=end))
 
 def make_history_data(start: datetime, end: datetime, close: float) -> DataFrame:
-  ret = DataFrame(columns=['日期', '开盘', '收盘', '最高', '最低', '成交量', '成交额', '振幅', '涨跌幅', '涨跌额', '换手率'])
+  ret = DataFrame(columns=['日期', '开盘', '收盘', '最高', '最低', '成交量', '成交额', '振幅', '涨跌幅', '涨跌额', '换手率'], index=['日期'])
   while start <= end:
-    s = start.strftime('%Y-%m-%d')
-    ret.loc[s] = [s, close, close, close, close, 0, 0, 0, 0, 0, 0]
+    if start.weekday() < 5:
+      s = start.strftime('%Y-%m-%d')
+      ret.loc[s] = [s, close, close, close, close, 0, 0, 0, 0, 0, 0]
     start = start + timedelta(days=1)
 
   return ret
@@ -69,8 +69,15 @@ class TestMockHistoryData(unittest.TestCase):
 
 
   def test_make_history_data(self):
-    ret = make_history_data(datetime(2025, 1, 1), datetime(2025, 3, 10), 100)
+    ret = make_history_data(datetime(2025, 1, 1), datetime(2025, 5, 10), 1)
     print(ret)
+
+    table = make_history_data_table_name(2, '100001', 'daily', 'qfq')
+    self.assertTrue(table == 'stock_daily_qfq_100001')
+
+    ret.to_sql(table, dbEngine.engine, if_exists='replace', index=False, index_label='日期')
+    update_download_records(2, '100001', 'daily', 'qfq', '2025-01-01', '2025-03-10')
+
     self.assertTrue(True)
 # def download_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> int:
 #   data = None
