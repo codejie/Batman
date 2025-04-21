@@ -33,7 +33,7 @@ import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
 import { calcFundsData, FundsData } from '@/calc/funds'
-import { getHoldListData, calcProfitTotalData, HoldingListItem } from '@/calc/holding'
+import { getHoldListData, HoldingListItem } from '@/calc/holding'
 import { apiGetFunds } from '@/api/funds'
 
 const { push } = useRouter()
@@ -175,10 +175,11 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
   <ContentWrap title="全景">
     <ElDescriptions :column="1" title="">
       <ElDescriptionsItem label="资产"><ElText tag="b">{{ funds?.amount.toFixed(2) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="市值"><ElText tag="b">{{ funds?.expense.toFixed(2) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="成本"><ElText tag="b">{{ funds?.expense.toFixed(2) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="市值"><ElText tag="b">{{ funds?.revenue.toFixed(2) }}</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="可用"><ElText tag="b">{{ funds?.available.toFixed(2) }}</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="盈亏"><ElText tag="b">{{ funds?.profit.toFixed(2) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ funds?.profit_rate.toFixed(2) + '%' }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ funds ? ((funds.profit_rate) * 100).toFixed(2) + '%' : '-' }}</ElText></ElDescriptionsItem>
     </ElDescriptions>
     <ElDivider calss="mx-8px" />
     <ElRow :gutter="24">

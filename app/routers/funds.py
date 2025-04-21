@@ -37,9 +37,9 @@ class GetResponse(ResponseModel):
 @router.post('/get', response_model=GetResponse)
 async def get(request: GetRequest):
   result = db.get(uid=DEFAULT_UID, type=request.type)
-  if len(result) == 0:
+  if result is None:
     return GetResponse(result=None)
-  return GetResponse(result=FundsTableModel(id=result[0].id, type=result[0].type, amount=result[0].amount, updated=result[0].updated))
+  return GetResponse(result=FundsTableModel(id=result.id, type=result.type, amount=result.amount, updated=result.updated))
 
 class OperationCreateRequest(RequestModel):
   funds: int

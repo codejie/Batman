@@ -1,5 +1,4 @@
-from pandas import Index
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, func, select, update
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Index, Integer, String, func, select, update
 from app.database import TableBase, dbEngine
 
 FUNDS_STOCK: int = 1
@@ -36,9 +35,9 @@ Functions
 def get(uid: int, type: int = FUNDS_STOCK) -> FundsTable | None:
   stmt = select(FundsTable).where(FundsTable.uid == uid).where(FundsTable.type == type)
   result = dbEngine.select_scalar(stmt)
-  if len(result) == 0:
+  if result is None:
     return None
-  return result[0]
+  return result
 
 def update(uid: int, amount: float, type: int = FUNDS_STOCK) -> int:
   stmt = update(FundsTable).where(FundsTable.uid == uid).where(FundsTable.type == type).values(amount=amount, updated=func.now())
