@@ -32,8 +32,9 @@ import {
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
-import { getHoldListData, calcProfitTotalData, HoldingListItem, OperationItem, ProfitTotalData } from '@/calc/holding'
-import { string } from 'vue-types'
+import { calcFundsData, FundsData } from '@/calc/funds'
+import { getHoldListData, calcProfitTotalData, HoldingListItem } from '@/calc/holding'
+import { apiGetFunds } from '@/api/funds'
 
 const { push } = useRouter()
 
@@ -56,12 +57,16 @@ const operationForm = ref<OperationForm>({
   comment: ''
 })
 const data = ref<HoldingListItem[]>([]) // ref<HoldingInfoItem[]>([])
-const total = ref<ProfitTotalData>()
+// const total = ref<ProfitTotalData>()
+const funds = ref<FundsData>()
 const expandRows = ref<string[]>([])
 
 async function fetchHoldingData() {
-  data.value = (await (await getHoldListData()))
-  total.value = calcProfitTotalData(data.value)
+  data.value = await getHoldListData()
+  // total.value = calcProfitTotalData(data.value)
+  const fret = await apiGetFunds({})
+  funds.value = calcFundsData(fret.result, data.value)
+
   data.value = data.value.reverse()
   data.value.forEach((v) => {
     v.items = v.items.reverse()
@@ -167,10 +172,13 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
 </script>
 
 <template>
-  <ContentWrap title="持仓">
+  <ContentWrap title="全景">
     <ElDescriptions :column="1" title="">
-      <ElDescriptionsItem label="总盈亏"><ElText tag="b">{{ total?.profit.toFixed(2) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="总盈亏率"><ElText tag="b">{{ total?.profit_rate.toFixed(2) + '%' }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="资产"><ElText tag="b">{{ funds?.amount.toFixed(2) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="市值"><ElText tag="b">{{ funds?.expense.toFixed(2) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="可用"><ElText tag="b">{{ funds?.available.toFixed(2) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="盈亏"><ElText tag="b">{{ funds?.profit.toFixed(2) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ funds?.profit_rate.toFixed(2) + '%' }}</ElText></ElDescriptionsItem>
     </ElDescriptions>
     <ElDivider calss="mx-8px" />
     <ElRow :gutter="24">

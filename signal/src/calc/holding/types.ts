@@ -43,12 +43,12 @@ export interface ProfitTraceItem {
   is_filled: boolean
 }
 
-export interface ProfitTotalData {
-  // funds: number,
-  // available: number, // 可用funds
-  holding: number
-  expense: number
-  revenue: number //市值
-  profit: number
-  profit_rate: number
-}
+// export interface ProfitTotalData {
+//   // funds: number,
+//   // available: number, // 可用funds
+//   holding: number
+//   expense: number
+//   revenue: number //市值
+//   profit: number
+//   profit_rate: number
+// }

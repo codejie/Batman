@@ -79,18 +79,4 @@ class TestMockHistoryData(unittest.TestCase):
     update_download_records(2, '100001', 'daily', 'qfq', '2025-01-01', '2025-03-10')
 
     self.assertTrue(True)
-# def download_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> int:
-#   data = None
-#   if type == Define.TYPE_STOCK:
-#     data = Stock.download_history_data(code=code, period=period, adjust=adjust, start=Utils.convert_history_date_2(start), end=Utils.convert_history_date_2(end))
-#   elif type == Define.TYPE_INDEX:
-#     data = None
 
-#   if data is not None:
-#     table_name = make_history_data_table_name(type, code, period, adjust)
-#     data.to_sql(table_name, dbEngine.engine, if_exists='replace', index=True, index_label='日期')
-
-#     update_download_records(type, code, period, adjust, start, end)
-
-#     return len(data)
-#   else:

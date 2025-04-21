@@ -1,11 +1,9 @@
 import { apiOperationList, apiRecord } from "@/api/holding"
 import { formatDateToYYYYMMDD } from "../comm"
-import { OPERATION_ACTION_BUY } from "@/api/holding/types"
 import * as Types from "@/calc/holding/types"
 import { apiGetLatestHistoryData } from "@/api/data"
 import { HistoryData } from "@/api/data/types"
 import  { dateUtil, formatToDate } from '@/utils/dateUtil'
-import { func } from "vue-types"
 
 export * from "@/calc/holding/types"
 
