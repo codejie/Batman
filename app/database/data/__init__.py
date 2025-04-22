@@ -63,7 +63,6 @@ def check_download_records(type: int, code: str, period: str, adjust: str, start
     stmt = stmt.where(Define.DownloadRecordsTable.start <= start)
   if end:
     stmt = stmt.where(Define.DownloadRecordsTable.end >= end)
-  print(stmt)
   result = dbEngine.select_scalar(stmt)
   return result if result else None
 
