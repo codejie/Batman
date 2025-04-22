@@ -128,7 +128,7 @@ export default {
     analysis: '分析页',
     workplace: '工作台',
     holding: '持仓',
-    holding_list: '持仓列表',
+    holding_list: '持仓信息',
     holding_operation: '持仓操作',
     holding_detail: '记录详情',
     home: '首页'

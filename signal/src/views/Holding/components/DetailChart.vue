@@ -31,7 +31,7 @@ const props = defineProps({
 
 const upColor = '#ec0000'
 const downColor = '#00da3c'
-const holdingColor1 = '#1a5276'
+const holdingColor1 = '#3498db'
 const holdingColor2 = '#943126'
 const maItems: number[] = [5, 10, 30, 60]
 
@@ -148,7 +148,7 @@ const chartOption = ref<EChartsOption>({
         // splitArea: {
         //   show: true
         // },
-        min: 0,
+        // min: 0,
         axisLabel: { show: true },
         axisLine: { show: true },
         axisTick: { show: true },
@@ -166,7 +166,7 @@ const chartOption = ref<EChartsOption>({
         // splitArea: {
         //   show: true
         // },
-        min: 0,
+        // min: 0,
         axisLabel: { show: true },
         axisLine: { show: true },
         axisTick: { show: true },
@@ -183,7 +183,7 @@ const chartOption = ref<EChartsOption>({
         // splitArea: {
         //   show: true
         // },
-        min: 0,
+        // min: 0,
         axisLabel: { show: true },
         axisLine: { show: true },
         axisTick: { show: true },

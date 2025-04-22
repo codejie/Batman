@@ -3,7 +3,7 @@ import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton, ElRow, ElTable, ElTableColumn } from 'element-plus'
-import { calcProfitTraceData, getHoldListData, HoldingListItem, ProfitTraceItem } from '@/calc/holding'
+import { calcProfitData, calcProfitTraceData, getHoldListData, HoldingListItem, ProfitTraceItem } from '@/calc/holding'
 import { apiGetHistoryData, HistoryData } from '@/api/data'
 import * as Utils from '@/utils/dateUtil'
 import DetailChart from './components/DetailChart.vue'
@@ -21,6 +21,7 @@ const holdingData = ref<HoldingListItem[]>()
 // const operationData = ref<OperationItem[]>([])
 const historyData = ref<HistoryData[]>([])
 const profitTraceData = ref<ProfitTraceItem[]>([])
+const profitTableToggle = ref<boolean>(false) // false: only show operation data, true: show operation trace data
 const profitTableData = ref<ProfitTraceItem[]>([]) 
 
 const holding = computed(() => Number(props.id))
@@ -48,7 +49,12 @@ async function fetchData() {
     // trace
     console.log('operationData', operationData)
     profitTraceData.value = calcProfitTraceData(operationData, historyData.value)
-    profitTableData.value = profitTraceData.value.filter(item => !item.is_filled).reverse()
+    if (profitTableToggle.value) {
+      profitTableData.value = profitTraceData.value//.reverse()
+    } else {
+      profitTableData.value = calcProfitData(operationData, historyData.value)
+    }
+    // profitTableData.value = profitTableData.value.reverse()
   } else {
     const end = Utils.dateUtil()
     const start = Utils.dateUtil().subtract(3, 'month')
@@ -59,6 +65,27 @@ async function fetchData() {
       end: Utils.formatToDate(end)
     })
     historyData.value = historyRet.result    
+  }
+}
+
+function onProfitTableShow() {
+  profitTableToggle.value = !profitTableToggle.value
+  if (profitTableToggle.value) {
+      profitTableData.value = profitTraceData.value
+  } else {
+    if (holdingData.value && holdingData.value.length > 0)
+      profitTableData.value = calcProfitData(holdingData.value[0].items, historyData.value)
+    else
+      profitTableData.value = []
+  }
+  // profitTableData.value = profitTableData.value.reverse()
+}
+
+function profitTableTitle(): string {
+  if (profitTableToggle.value) {
+    return `跟踪记录(${profitTableData.value.length})`
+  } else {
+    return `操作记录(${profitTableData.value.length})`
   }
 }
 
@@ -77,11 +104,19 @@ onMounted(() => {
     <ElRow :gutter="24">
       <ElTable :data="holdingData" stripe :border="true">
         <ElTableColumn type="expand">
+          <div class="mx-4px my-4px">
+            <ElButton size="small" class="mx-8" type="primary" @click="onProfitTableShow()">{{ profitTableTitle() }}</ElButton>
+          </div>
           <div class="mx-24px my-8px">
-            <ElTable :data="profitTableData" stripe :border="true">
+            <ElTable :data="profitTableData" stripe :border="true" :default-sort="{ prop: 'date', order: 'descending' }">
               <ElTableColumn  type="index" width="40" />
-              <ElTableColumn prop="date" label="日期" min-width="80" />
-              <ElTableColumn prop="quantity" label="操作" min-width="40" />
+              <ElTableColumn prop="date" label="日期" min-width="60" />
+              <ElTableColumn prop="quantity" label="操作" min-width="50" />
+              <ElTableColumn prop="price" label="买入" min-width="60">
+                <template #default="{ row }">
+                  {{ row.price.toFixed(2) }}
+                </template>
+              </ElTableColumn>
               <ElTableColumn label="成本" min-width="60">
                 <template #default="{ row }">
                   {{ row.expense.toFixed(2) }}
@@ -93,12 +128,12 @@ onMounted(() => {
                   {{ row.amount.toFixed(2) }}
                 </template>
               </ElTableColumn>              
-              <ElTableColumn label="均价" min-width="80">
+              <ElTableColumn label="均价" min-width="60">
                 <template #default="{ row }">
                   {{ row.price_avg.toFixed(2) }}
                 </template>
               </ElTableColumn>
-              <ElTableColumn prop="price" label="时价" min-width="80" />
+              <ElTableColumn prop="price_close" label="时价" min-width="60" />
               <ElTableColumn label="市值" min-width="80">
                 <template #default="{ row }">
                   {{ row.revenue.toFixed(2) }}
@@ -116,12 +151,12 @@ onMounted(() => {
               </ElTableColumn>
               <ElTableColumn label="昨差" min-width="80">
                 <template #default="{ row }">
-                  {{ row.pre_profit?.toFixed(2) }}
+                  {{ row.pre_profit !== undefined ? row.pre_profit?.toFixed(2) : '-'}}
                 </template>
               </ElTableColumn>
               <ElTableColumn label="昨差率 %" min-width="100">
                 <template #default="{ row }">
-                  {{ row.pre_profit_rate ? (row.pre_profit_rate * 100).toFixed(2) + '%' : '-'}}
+                  {{ row.pre_profit_rate !== undefined ? `${(row.pre_profit_rate * 100).toFixed(2)}%` : '-'}}
                 </template>
               </ElTableColumn>              
             </ElTable>            
@@ -137,9 +172,9 @@ onMounted(() => {
             {{ `${row.calc.price_avg? row.calc.price_avg.toFixed(2) : '-'}` }}
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.price_cur" label="现价" min-width="80">
+        <ElTableColumn prop="calc.price_cur" label="现价/日期" min-width="80">
           <template #default="{ row }">
-            {{ `${row.calc.price_cur} | ${row.calc.date_cur.substring(5)}` }}
+            {{ `${row.calc.price_cur} / ${row.calc.date_cur.substring(5)}` }}
           </template>
         </ElTableColumn>
         <ElTableColumn prop="calc.revenue" label="市值" min-width="80">

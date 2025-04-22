@@ -23,6 +23,7 @@ export interface OperationMergedDataItem {
   date: string
   quantity: number // operation quantity
   expense: number
+  price: number
   amount: number // expense amount
   holding: number
 }
@@ -33,22 +34,13 @@ export interface ProfitTraceItem {
   amount: number
   quantity: number
   expense: number
-  price?: number
+  price?: number // 买入
+  price_close?: number // 时价
   price_avg?: number
-  revenue?: number
+  revenue?: number // 市值
   profit?: number
   profit_rate?: number
   pre_profit?: number,
   pre_profit_rate?: number
   is_filled: boolean
 }
-
-// export interface ProfitTotalData {
-//   // funds: number,
-//   // available: number, // 可用funds
-//   holding: number
-//   expense: number
-//   revenue: number //市值
-//   profit: number
-//   profit_rate: number
-// }

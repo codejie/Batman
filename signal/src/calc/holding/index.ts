@@ -8,36 +8,37 @@ import  { dateUtil, formatToDate } from '@/utils/dateUtil'
 export * from "@/calc/holding/types"
 
 function _calcPriceAvg(expense: number, quantity: number): number | undefined {
-  if (quantity === 0) return undefined
+  if (quantity === 0) return 0
   return -expense / quantity
 }
 
 function _calcRevenue(quantity: number, price?: number): number | undefined {
-  if (!price) return undefined
+  if (price === undefined) return undefined
   return price * quantity
 }
 
 function _calcProfit(quantity: number, expense: number, price?: number): number | undefined {
-  if (!price) return undefined
+  if (price === undefined) return undefined
   return price * quantity + expense
 }
 
 function _calcProfitRate(quantity: number, expense: number, price?: number): number | undefined {
-  if (!price) return undefined
-  if (expense === 0) return undefined
-  return (price * quantity + expense) / -expense
+  if (price === undefined) return undefined
+  if (expense === 0) return 0
+  return (price * quantity + expense) / expense
 }
 
 function _calcPreProfit(profit?: number, pre_profit?: number): number | undefined {
-  if (!profit) return undefined
-  if (!pre_profit) return undefined
+  if (profit === undefined) return undefined
+  if (pre_profit === undefined) return undefined
   return profit - pre_profit
 }
 
-function _calcPreProfitRate(expense: number, profit?: number, pre_profit?: number): number | undefined {
-  if (!profit) return undefined
-  if (!pre_profit) return undefined
-  return (profit - pre_profit) / -expense
+function _calcPreProfitRate(profit?: number, pre_profit?: number): number | undefined {
+  if (profit === undefined) return undefined
+  if (pre_profit === undefined) return undefined
+  if (pre_profit === 0) return 0
+  return (profit - pre_profit) / pre_profit
 }
 
 export async function getHoldListData(id?: number, type?: number, code?: string, flag?: number): Promise<Types.HoldingListItem[]> {
@@ -84,21 +85,26 @@ export function mergeOperationData(operationData: Types.OperationItem[]): Types.
   for (const item of operationData) {
     const date = formatDateToYYYYMMDD(item.created)
     const index = ret.findIndex(elment => elment.date === date)
+    holding += item.quantity
+    amount += item.expense  
+
     if (index != -1) {
-      ret[index].quantity += item.quantity // ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
-      holding += ret[index].quantity
-      ret[index].expense += item.expense // ((item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense)
-      amount += ret[index].expense
+      ret[index].quantity += item.quantity
+      // holding += ret[index].quantity
+      ret[index].expense += item.expense
+      // amount += ret[index].expense
+      ret[index].price = -ret[index].expense / ret[index].quantity
 
       ret[index].holding = holding
       ret[index].amount = amount
     } else {
-      holding += item.quantity // ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
-      amount += item.expense
+      // holding += item.quantity // ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
+      // amount += item.expense
       ret.push({
         date: date,
-        quantity: item.quantity, //  (item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity,
-        expense: item.expense, // (item.action === OPERATION_ACTION_BUY) ? -item.expense : item.expense,
+        quantity: item.quantity,
+        expense: item.expense,
+        price: -item.expense / item.quantity,
         amount: amount,
         holding: holding
       })
@@ -108,10 +114,10 @@ export function mergeOperationData(operationData: Types.OperationItem[]): Types.
 }
 
 export function calcProfitTraceData(operationData: Types.OperationItem[], historyData: HistoryData[]): Types.ProfitTraceItem[] {
-  const traceData = mergeOperationData(operationData)
-  if (traceData.length === 0) {
+  if (operationData.length === 0) {
     return []
   }
+  const traceData = mergeOperationData(operationData)
   console.log('traceData', traceData)
   const ret: Types.ProfitTraceItem[] = []
   let start = dateUtil(traceData[0].date)
@@ -127,57 +133,67 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
   let pre_price: number | undefined = undefined
   while (start <= end) {
     const date = formatToDate(start)
-    console.log('date', date)
+    // console.log('date', date)
     const history = historyData.find(elment => elment.日期 === date)
-    let price = history ? history.收盘 : undefined
-
-    const item = traceData.find(elment => elment.date === date)
-    if (item) {
-      prev = item
-      is_filled = false
-    } else {
-      is_filled = true
-    }
-    if (prev) {
-      const profit = _calcProfit(prev.holding, prev.amount, price)
-      ret.push({
-        ...prev,
-        date: date,
-        price: price || undefined,
-        price_avg: _calcPriceAvg(prev.amount, prev.holding), // prev.quantity != 0 ? -prev.expense / prev.quantity : undefined,
-        revenue: _calcRevenue(prev.holding, price), // price ? price * prev.quantity : undefined,
-        profit: profit, // _calcProfit(prev.quantity, prev.expense, price), // price ? (price * prev.quantity + prev.expense) : undefined,
-        profit_rate: _calcProfitRate(prev.holding, prev.amount, price), // price ? ((price * prev.quantity + prev.expense) / prev.expense) : undefined,
-        pre_profit: _calcPreProfit(profit, pre_profit),
-        pre_profit_rate: _calcPreProfitRate(prev.amount, profit, pre_profit),
-        is_filled
-      })
-      pre_profit = profit
-      pre_price = price    
+    if (history) {
+      let price = history.收盘
+      const item = traceData.find(elment => elment.date === date)
+      if (item) {
+        prev = item
+        is_filled = false
+      } else {
+        is_filled = true
+      }
+      if (prev) {
+        const profit = _calcProfit(prev.holding, prev.amount, price)
+        ret.push({
+          ...prev,
+          date: date,
+          price_close: price || undefined,
+          price_avg: _calcPriceAvg(prev.amount, prev.holding), 
+          revenue: _calcRevenue(prev.holding, price),
+          profit: profit,
+          profit_rate: _calcProfitRate(prev.holding, prev.amount, price),
+          pre_profit: _calcPreProfit(profit, pre_profit),
+          pre_profit_rate: _calcPreProfitRate(profit, pre_profit),
+          is_filled
+        })
+        pre_profit = profit
+        pre_price = price    
+      }
     }
     start = start.add(1, 'day')
   }
   return ret
 }
 
-export function calcProfitTotalData(data: Types.HoldingListItem[]): Types.ProfitTotalData{
-  let holding
-  let expense = 0
-  let revenue = 0
-  let profit = 0
-  let profit_rate = 0
-  for (const item of data) {
-    holding += item.record.quantity
-    expense += item.record.expense
-    revenue += item.calc.revenue || 0
-    profit += item.calc.profit || 0
+export function calcProfitData(operationData: Types.OperationItem[], historyData: HistoryData[]): Types.ProfitTraceItem[] {
+  if (operationData.length === 0) {
+    return []
   }
-  profit_rate = profit / expense
-  return {
-    holding: holding,
-    expense: expense,
-    revenue: revenue,
-    profit: profit,
-    profit_rate: profit_rate
+  const traceData = mergeOperationData(operationData)
+  const ret: Types.ProfitTraceItem[] = []
+  let pre_price: number | undefined = undefined
+  let pre_profit: number | undefined = undefined
+  for (const data of traceData) {
+    const history = historyData.find(elment => elment.日期 === data.date)
+    const price = history ? history.收盘 : undefined
+    const profit = _calcProfit(data.holding, data.amount, price)
+    ret.push({
+      ...data,
+      date: data.date,
+      price_close: price,
+      price_avg: _calcPriceAvg(data.amount, data.holding), 
+      revenue: _calcRevenue(data.holding, price),
+      profit: profit,
+      profit_rate: _calcProfitRate(data.holding, data.amount, price),
+      pre_profit: _calcPreProfit(profit, pre_profit),
+      pre_profit_rate: _calcPreProfitRate(profit, pre_profit),
+      is_filled: false
+    })
+
+    pre_price = price
+    pre_profit = profit
   }
+  return ret  
 }

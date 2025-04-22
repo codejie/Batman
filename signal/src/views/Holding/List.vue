@@ -172,16 +172,16 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
 </script>
 
 <template>
-  <ContentWrap title="全景">
-    <ElDescriptions :column="1" title="">
+  <ContentWrap>
+    <ElDescriptions :column="3" title="资金信息" :border="true" label-width="6%">
       <ElDescriptionsItem label="资产"><ElText tag="b">{{ funds?.amount.toFixed(2) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="成本"><ElText tag="b">{{ funds?.expense.toFixed(2) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="成本"><ElText tag="b">{{ -funds?.expense.toFixed(2) }} / {{ -((funds?.expense / funds?.amount) * 100).toFixed(2) }}%</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="可用"><ElText tag="b">{{ funds?.available.toFixed(2) }} / {{ ((funds?.available / funds?.amount) * 100).toFixed(2) }}%</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="市值"><ElText tag="b">{{ funds?.revenue.toFixed(2) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="可用"><ElText tag="b">{{ funds?.available.toFixed(2) }}</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="盈亏"><ElText tag="b">{{ funds?.profit.toFixed(2) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ funds ? ((funds.profit_rate) * 100).toFixed(2) + '%' : '-' }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ funds?.profit_rate ? ((funds.profit_rate) * 100).toFixed(2) + '%' : '-' }}</ElText></ElDescriptionsItem>
     </ElDescriptions>
-    <ElDivider calss="mx-8px" />
+    <ElDivider calss="mx-8px" content-position="left">持股记录</ElDivider>
     <ElRow :gutter="24">
       <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加持股</ElButton>
     </ElRow>
@@ -199,15 +199,23 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
             <div class="mx-24px my-8px">       
               <ElTable size="small" :data="row.items" stripe :border="true">
                 <ElTableColumn type="index" width="40" />
-                <ElTableColumn label="操作" prop="action" width="60">
+                <ElTableColumn label="操作" prop="action" width="80">
                   <template #default="{ row }">
                     {{ row.action == OPERATION_ACTION_BUY ? '买入' : '卖出' }}
                   </template>
                 </ElTableColumn>
                 <ElTableColumn label="数量" prop="quantity" min-width="80" />
-                <ElTableColumn label="价格" prop="price" min-width="80" />
-                <ElTableColumn label="费用" prop="expense" min-width="80" />
-                <ElTableColumn label="创建时间" prop="created" min-width="120">
+                <ElTableColumn label="买入" prop="price" min-width="80">
+                  <template #default="{ row }">
+                    {{ row.price.toFixed(2) }}
+                  </template>
+                </ElTableColumn>
+                <ElTableColumn label="费用" prop="expense" min-width="80">
+                  <template #default="{ row }">
+                    {{ row.expense.toFixed(2) }}
+                  </template>
+                </ElTableColumn>
+                <ElTableColumn label="操作时间" prop="created" min-width="120">
                   <template #default="{ row }">
                     {{ formatToDateTime(row.created) }}
                   </template>
@@ -224,32 +232,39 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
         </ElTableColumn>
         <!-- <ElTableColumn prop="id" label="ID" width="50" /> -->
           <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
-          <ElTableColumn prop="record.code" label="代码" min-width="80" />
-          <ElTableColumn prop="record.name" label="名称" min-width="80" />
-          <!-- <ElTableColumn prop="flag" label="Flag" width="50" /> -->
-          <ElTableColumn prop="record.quantity" label="数量" min-width="60" />
-          <ElTableColumn prop="record.expense" label="成本" min-width="60" />
-          <ElTableColumn label="均价" min-width="80">
+          <ElTableColumn prop="record.code" label="代码" min-width="60" />
+          <ElTableColumn prop="record.name" label="名称" min-width="60" />
+          <ElTableColumn prop="record.quantity" label="持仓/占比" min-width="80">
+            <template #default="{ row }">
+              {{ `${row.record.quantity} / ${((row.record.quantity / funds?.holding) * 100).toFixed(2)}%` }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="record.expense" label="成本/占比" min-width="80">
+            <template #default="{ row }">
+            {{ `${-row.record.expense} / ${((row.record.expense / funds?.expense) * 100).toFixed(2)}%` }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn label="均价" min-width="60">
             <template #default="{ row }">
               {{ `${row.calc.price_avg? row.calc.price_avg.toFixed(2) : '-'}` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn label="现价" min-width="80">
+          <ElTableColumn label="现价/日期" min-width="60">
             <template #default="{ row }">
-              {{ `${row.calc.price_cur} | ${row.calc.date_cur?.substring(5)}` }}
+              {{ `${row.calc.price_cur.toFixed(2)} / ${row.calc.date_cur?.substring(5)}` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="calc.revenue" label="市值" min-width="80">
+          <ElTableColumn prop="calc.revenue" label="市值/占比" min-width="80">
             <template #default="{ row }">
-              {{ `${row.calc.revenue? row.calc.revenue.toFixed(2) : '-'}` }}
+              {{ `${row.calc.revenue.toFixed(2)} / ${((row.calc.revenue / funds?.revenue) * 100).toFixed(2)}%` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="calc.profit" label="盈亏" min-width="80">
+          <ElTableColumn prop="calc.profit" label="盈亏/占比" min-width="80">
             <template #default="{ row }">
-              {{ `${row.calc.profit? row.calc.profit.toFixed(2) : '-'}` }}
+              {{ `${row.calc.profit.toFixed(2)} /  ${((row.calc.profit / funds?.profit) * 100).toFixed(2)}%` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn label="盈亏率 %" min-width="100">
+          <ElTableColumn label="盈亏率 %" min-width="60">
             <template #default="{ row }">
               {{ `${row.calc.profit_rate? (row.calc.profit_rate * 100).toFixed(2) + '%' : '-'}` }}
             </template>

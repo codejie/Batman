@@ -40,7 +40,8 @@ def get(uid: int, type: int = FUNDS_STOCK) -> FundsTable | None:
   return result
 
 def update(uid: int, amount: float, type: int = FUNDS_STOCK) -> int:
-  stmt = update(FundsTable).where(FundsTable.uid == uid).where(FundsTable.type == type).values(amount=amount, updated=func.now())
+  stmt = update(FundsTable).where(FundsTable.uid == uid).where(FundsTable.type == type).values(amount=func.coalesce(FundsTable.amount, 0) + amount, updated=func.now())
+  # stmt = update(FundsTable).where(FundsTable.uid == uid).where(FundsTable.type == type).values(amount=amount, updated=func.now())
   return dbEngine.update_stmt(stmt)
 
 def insert(uid: int, type: int = FUNDS_STOCK, amount: float = 0) -> int:
