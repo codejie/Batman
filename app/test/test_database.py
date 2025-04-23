@@ -1,10 +1,9 @@
 import unittest
-
+import zipfile
 from sqlalchemy import select
-from app.database import dbEngine, info as Info, stock as Stock
+from app.database import dbEngine, holding
 from app.database import holding as HoldingTable
-from app.database import data as Data
-
+from app.database.data import index as Index, stock as Stock
 
 class TestUserHoldingTable(unittest.TestCase):
   def setUp(self):
@@ -139,6 +138,29 @@ class TestUserHoldingTable(unittest.TestCase):
 
     # Assert that the results are not empty
     self.assertTrue(len(results) > 0)
+
+  def test_table_export(self):
+    model = holding.HoldingTable
+    file_name = './app/db/test.json'
+    result = dbEngine.export_json(model, file_name)
+    print(result)
+    self.assertTrue(True)
+    
+  def test_table_import(self):
+    model = holding.HoldingTable
+    file_name = './app/db/test.json'
+    result = dbEngine.import_json(model, file_name)
+    print(result)
+    self.assertTrue(True)
+
+  def test_zip(self):
+    file_name = './app/db/test.zip'
+    files = ['./app/db/funds_operation_table.json', './app/db/funds_table.json']
+    with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as zip:
+      for file in files:
+        zip.write(file)
+
+    self.assertTrue(True)
 
 if __name__ == '__main__':
   unittest.main()

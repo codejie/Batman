@@ -1,10 +1,25 @@
-from typing import Optional
-from sqlalchemy import create_engine, inspect, text
+import datetime
+import json
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import DeclarativeBase, Session
 
 from app.exception import AppException
 
 DATABASE_URL: str = 'sqlite:///./app/db/batman.db'
+
+def convert_datetime_to_serializable(value): 
+  """Convert non-serializable objects to JSON-serializable formats."""
+  if isinstance(value, datetime.datetime):
+      return value.strftime("%Y-%m-%d %H:%M:%S.%f")  # Format as 2025-04-15 09:15:24.855000
+  return value
+
+def parse_datetime_from_serializable(value, is_datetime):
+    """Convert datetime string in '2025-04-15 09:15:24.855000' format to datetime object."""
+    if value is None:
+        return None
+    if is_datetime:
+      return datetime.datetime.strptime(value, "%Y-%m-%d %H:%M:%S.%f")
+    return value
 
 class TableBase(DeclarativeBase):
   pass
@@ -97,5 +112,43 @@ class DBEngine:
         session.commit()
     except Exception as e:
       raise AppException(e)
+
+  def trunc_table(self, table) -> None:
+    try:
+      with Session(self.engine) as session:
+        session.query(table).delete()
+        session.commit()
+    except Exception as e:
+      raise AppException(e)
     
+  def export_json(self, table: TableBase, file_name: str) -> int:
+    with Session(self.engine) as session:
+      records = session.query(table).all()
+      columns = table.__table__.columns.keys()
+      records_list = [
+        {column: convert_datetime_to_serializable(getattr(record, column)) for column in columns}
+        for record in records
+      ]
+      with open(file_name, 'w', encoding='utf-8') as f:
+        json.dump(records_list, f, indent=2, ensure_ascii=False)
+
+      return len(records_list)
+
+  def import_json(self, table: TableBase, file_name: str, is_replace: bool = True) -> int:
+    if is_replace:
+      self.trunc_table(table)
+
+    with open(file_name, 'r', encoding='utf-8') as f:
+      data = json.load(f)
+
+      datetime_columns = [column.name for column in table.__table__.columns if column.type.python_type == datetime.datetime]
+
+      # instances = []
+      for record in data:
+        instance = table(**{k: parse_datetime_from_serializable(v, (k in datetime_columns)) for k, v in record.items()})
+        self.insert_instance(instance)
+
+      # return self.bulk_insert_data(model, instances)
+    return len(data)
+  
 dbEngine = DBEngine()
