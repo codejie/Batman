@@ -30,7 +30,7 @@ function onUploadRemove() {
         <ElCol :span="2">
           <ElButton type="primary" @click="onExport">导出</ElButton>
         </ElCol>
-        <ElCol :span="2">
+        <ElCol :span="4">
           <ElUpload
             ref="uploadRef"
             :action=urlDbImport
@@ -45,7 +45,7 @@ function onUploadRemove() {
             <ElButton class="ml-12px" v-if="showSubmit" type="danger" @click="uploadRef?.submit()">提交</ElButton>
           </ElUpload>
         </ElCol>
-        <ElCol :span="20" />
+        <ElCol :span="18" />
       </ElRow>
     </div>
   </ContentWrap>

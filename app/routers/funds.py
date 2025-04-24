@@ -19,7 +19,7 @@ class CreateResponse(ResponseModel):
 
 @router.post('/create', response_model=CreateResponse)
 async def create(request: CreateRequest):
-  result = db.insert_funds(uid=DEFAULT_UID, type=request.type, amount=request.amount)
+  result = db.insert(uid=DEFAULT_UID, type=request.type, amount=request.amount)
   return CreateResponse(result=result)
 
 class GetRequest(RequestModel):

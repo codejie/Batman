@@ -140,6 +140,67 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     ]
   },
   {
+    name: 'data',
+    path: '/data',
+    component: Layout,
+    meta: {
+      title: '数据',
+      icon: 'carbon:table-alias'      
+    },
+    children: [
+      {
+        path: 'third',
+        name: 'third',
+        component: getParentLayout(),
+        meta: {
+          title: '技术数据'
+        },
+        children: [
+          {
+            path: 'new-high',
+            name: 'new-high',
+            component: () => import('@/views/Third/Stock/NewHigh.vue'),
+            meta: {
+              title: '创新高'
+            }
+          },
+          {
+            path: 'uptrend',
+            name: 'uptrend',
+            component: () => import('@/views/Third/Stock/Uptrend.vue'),
+            meta: {
+              title: '连续上涨'
+            }
+          },
+          {
+            path: 'high_volume',
+            name: 'high_volume',
+            component: () => import('@/views/Third/Stock/HighVolume.vue'),
+            meta: {
+              title: '持续放量'
+            }
+          },
+          {
+            path: 'rise_volume_price',
+            name: 'rise_volume_price',
+            component: () => import('@/views/Third/Stock/RiseVolumePrice.vue'),
+            meta: {
+              title: '量价齐升'
+            }
+          },
+          {
+            path: 'limit_up_pool',
+            name: 'limit_up_pool',
+            component: () => import('@/views/Third/Stock/LimitUpPool.vue'),
+            meta: {
+              title: '涨停股池'
+            }
+          }          
+        ]
+      }
+    ]
+  },  
+  {
     name: 'System',
     path: '/sytem',
     component: Layout,

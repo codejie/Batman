@@ -75,8 +75,8 @@ const expandRows = ref<string[]>([])
 async function fetchHoldingData() {
   const fret = await apiGetFunds({})
   if (fret.result) {
-    funds.value = calcFundsData(fret.result, data.value)
     data.value = await getHoldListData()
+    funds.value = calcFundsData(fret.result, data.value)
     data.value = data.value.reverse()
     data.value.forEach((v) => {
       v.items = v.items.reverse()
@@ -100,9 +100,9 @@ async function onFunds() {
         amount: fundsForm.value.funds
       })
     }
+    fundsDialogVisible.value = false
+    await fetchHoldingData()    
   }
-  fundsDialogVisible.value = false
-  await fetchHoldingData()
 }
 
 async function onAdd() {
