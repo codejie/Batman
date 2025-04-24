@@ -18,11 +18,20 @@ export interface OperationItem  {
   created: Date
 }
 
+export interface CreateRequest {
+  type?: number
+  amount: number
+}
+export type CreateResult = number
+
 export interface GetRequest {
   type?: number
 }
-
 export type GetResult = FundsItem
 
-
+export interface UpdateRequest {
+  type?: number,
+  amount: number
+}
+export type UpdateResult = number
 

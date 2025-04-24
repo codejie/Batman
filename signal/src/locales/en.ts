@@ -133,6 +133,7 @@ export default {
     holding_list: 'Holding List',
     holding_operation: 'Holding Operation',
     holding_detail: 'Hoding Detail',
+    system_configuration: 'System Configuration',
     home: 'Home'
   },
   permission: {

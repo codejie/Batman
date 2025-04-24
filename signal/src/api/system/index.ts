@@ -1,6 +1,6 @@
 import axios from 'axios'
 import request from '@/axios'
-import { DbExportRequest, DbExportResult, DbImportRequest, DbImportResult } from './types'
+import { DbExportRequest,  DbImportRequest, DbImportResult } from './types'
 import { PATH_URL } from '@/axios/service';
 
 export const apiDbExport = (data: DbExportRequest) => {
@@ -10,11 +10,12 @@ export const apiDbExport = (data: DbExportRequest) => {
     baseURL: PATH_URL,
     url: '/system/db/export',
     method: 'POST',
-    responseType: 'blob' // 表示服务器响应的数据类型
+    responseType: 'blob', // 表示服务器响应的数据类型
+    data
   })
   .then((response) => {
     // 尝试从Content-Disposition头中获取文件名
-    // console.log('response', response)
+    console.log('response', response)
     const contentDisposition = response.headers['content-disposition'];
     let filename = 'export.zip';
     if (contentDisposition) {
@@ -36,6 +37,8 @@ export const apiDbExport = (data: DbExportRequest) => {
     console.error(error);
   });  
 }
+
+export const urlDbImport = `${PATH_URL}/system/db/import`
 
 export const apiDbImport = (data: DbImportRequest): Promise<IResponse<DbImportResult>> => {
   return request.post({ url: '/system/db/import', data })

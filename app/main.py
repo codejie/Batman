@@ -23,6 +23,7 @@ app.add_middleware(
   allow_credentials=True,
   allow_methods=["*"],
   allow_headers=["*"],
+  expose_headers=["Content-Disposition"]  # Add this line
 )
 
 # @app.middleware("http")

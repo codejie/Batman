@@ -1,5 +1,9 @@
 <script lang="ts">
 
+interface FundsForm {
+  funds?: number
+}
+
 interface CreateForm {
   type: string
   code: string
@@ -34,16 +38,23 @@ import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
 import { calcFundsData, FundsData } from '@/calc/funds'
 import { getHoldListData, HoldingListItem } from '@/calc/holding'
-import { apiGetFunds } from '@/api/funds'
+import { apiCreateFunds, apiGetFunds, apiUpdateFunds } from '@/api/funds'
 
 const { push } = useRouter()
 
+const fundsDialogVisible = ref<boolean>(false)
 const createDialogVisible = ref<boolean>(false)
 const operationDialogVisible = ref<boolean>(false)
+
+const fundsForm = ref<FundsForm>({
+  funds: undefined
+})
+
 const createForm = ref<CreateForm>({
   type: '股票',
   code: ''
 })
+
 const operationForm = ref<OperationForm>({
   holding: 0,
   type: TYPE_STOCK,
@@ -62,20 +73,37 @@ const funds = ref<FundsData>()
 const expandRows = ref<string[]>([])
 
 async function fetchHoldingData() {
-  data.value = await getHoldListData()
-  // total.value = calcProfitTotalData(data.value)
   const fret = await apiGetFunds({})
-  funds.value = calcFundsData(fret.result, data.value)
-
-  data.value = data.value.reverse()
-  data.value.forEach((v) => {
-    v.items = v.items.reverse()
-  })
+  if (fret.result) {
+    funds.value = calcFundsData(fret.result, data.value)
+    data.value = await getHoldListData()
+    data.value = data.value.reverse()
+    data.value.forEach((v) => {
+      v.items = v.items.reverse()
+   })    
+  } else
+    funds.value = undefined
 }
 
 onMounted(async () => {
   await fetchHoldingData()
 })
+
+async function onFunds() {
+  if (fundsForm.value.funds) {
+    if (funds.value) {
+      await apiUpdateFunds({
+        amount: fundsForm.value.funds
+      })
+    } else {
+      await apiCreateFunds({
+        amount: fundsForm.value.funds
+      })
+    }
+  }
+  fundsDialogVisible.value = false
+  await fetchHoldingData()
+}
 
 async function onAdd() {
   const ret = await apiCreate({
@@ -169,12 +197,18 @@ function getHoldingKey(row: HoldingListItem): string {
 function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[]) {
   expandRows.value = expandedRows.map((x) => x.record.id.toString())
 }
+
 </script>
 
 <template>
   <ContentWrap>
     <ElDescriptions :column="3" title="资金信息" :border="true" label-width="6%">
-      <ElDescriptionsItem label="资产"><ElText tag="b">{{ funds?.amount.toFixed(2) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="资产">
+        <template #default>
+          <ElText tag="b">{{ funds?.amount.toFixed(2) }}</ElText>
+          <ElButton size="small" style="float: right" @click="fundsDialogVisible = true">调整</ElButton>
+        </template>
+      </ElDescriptionsItem>
       <ElDescriptionsItem label="成本"><ElText tag="b">{{ -funds?.expense.toFixed(2) }} / {{ -((funds?.expense / funds?.amount) * 100).toFixed(2) }}%</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="可用"><ElText tag="b">{{ funds?.available.toFixed(2) }} / {{ ((funds?.available / funds?.amount) * 100).toFixed(2) }}%</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="市值"><ElText tag="b">{{ funds?.revenue.toFixed(2) }}</ElText></ElDescriptionsItem>
@@ -287,6 +321,24 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
           </ElTableColumn>      
       </ElTable>
     </ElRow>
+    <ElDialog v-model="fundsDialogVisible" :destroy-on-close="true" width="25%">
+      <template #header>
+        <ElText tag="b">基金数据</ElText>
+      </template>
+      <template #default>
+        <ElForm :model="fundsForm" label-position="right" label-width="auto">
+          <ElFormItem label="资金调整">
+            <ElInput v-model="fundsForm.funds" placeholder="增加资金为正，提取资金为负..">
+              <template #append>元</template>
+            </ElInput>
+          </ElFormItem>
+        </ElForm>
+      </template>
+      <template #footer>
+        <ElButton @click="fundsDialogVisible=false">取消</ElButton>
+        <ElButton type="primary" @click="onFunds">确定</ElButton>
+      </template>         
+    </ElDialog>
     <ElDialog v-model="createDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
         <ElText tag="b">新增持股记录</ElText>

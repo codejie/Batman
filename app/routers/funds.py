@@ -11,7 +11,7 @@ from app.database import funds as db
 router: APIRouter = APIRouter(prefix="/funds", tags=["Funds"], dependencies=[Depends(verify_token)])
 
 class CreateRequest(RequestModel):
-  type: int = FUNDS_STOCK
+  type: Optional[int] = FUNDS_STOCK
   amount: float
 
 class CreateResponse(ResponseModel):
@@ -40,6 +40,18 @@ async def get(request: GetRequest):
   if result is None:
     return GetResponse(result=None)
   return GetResponse(result=FundsTableModel(id=result.id, type=result.type, amount=result.amount, updated=result.updated))
+
+class UpdateRequest(RequestModel):
+  type: Optional[int] = FUNDS_STOCK
+  amount: float
+
+class UpdateResponse(ResponseModel):
+  result: int
+
+@router.post('/update', response_model=UpdateResponse)
+async def update(request: UpdateRequest):
+  result = db.update(uid=DEFAULT_UID, type=request.type, amount=request.amount)
+  return UpdateResponse(result=result)
 
 class OperationCreateRequest(RequestModel):
   funds: int

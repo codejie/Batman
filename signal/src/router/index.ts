@@ -124,16 +124,6 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           // affix: false
         }
       },
-      // {
-      //   name: 'Operation',
-      //   path: 'operation',
-      //   component: () => import('@/views/Holding/Operation.vue'),
-      //   meta: {
-      //     title: t('router.holding_operation'),
-      //     noCache: true,
-      //     affix: false
-      //   }
-      // },
       {
         name: 'Detail',
         path: 'detail',
@@ -145,6 +135,25 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           affix: false,
           hidden: true,
           canTo: true
+        }
+      }
+    ]
+  },
+  {
+    name: 'System',
+    path: '/sytem',
+    component: Layout,
+    meta: {},
+    children: [
+      {
+        name: 'Configuration',
+        path: 'configuration',
+        component: () => import('@/views/System/Configuration.vue'),
+        meta: {
+          title: t('router.system_configuration'),
+          icon: 'carbon:settings',
+          // noCache: true,
+          // affix: false
         }
       }
     ]
