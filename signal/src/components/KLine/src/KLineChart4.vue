@@ -2,19 +2,21 @@
 import { ref } from 'vue';
 import { Echart, EChartsOption } from '@/components/Echart';
 
-const props = defineProps({
-  width: {
-    type: [String, Number],
-    default: '100%'
-  },
-  height: {
-    type: [String, Number],
-    default: '500px'
-  }
-})
-
 const upColor = '#ec0000'
 const downColor = '#00da3c'
+
+// const blankOption = {
+//   title: [],
+//   grid: [],
+//   xAxis: [],
+//   yAxis: [],
+//   series: [],
+//   legend: {
+//     bottom: '0%',
+//     icon: 'circle',
+//     data: []
+//   }
+// }
 
 function makeKLineOption(grid: number, name: string, data: any[]) {
   return {
@@ -234,6 +236,17 @@ function addStepLine(grid: number, name: string, data: any[], legend: boolean = 
   }  
 }
 
+// function remove(name: string, wildcard: boolean = false) {
+//   if (!wildcard) {
+//     options.value.legend!.data = options.value.legend!.data.filter( item => item != name)
+//     options.value.series = options.value.series!.filter( item => item.name != name )
+//   }
+//   else {
+//     options.value.legend!.data = options.value.legend!.data.filter( item => ! item.includes(name) )
+//     options.value.series = options.value.series!.filter( item => ! item.name.includes(name) )
+//   }
+// }
+
 function remove(name: string, mode: number = 0) {
   let func // = (item) => item != name
   let func1
@@ -275,5 +288,5 @@ defineExpose({
 
 </script>
 <template>
-  <Echart :options="options" :width="width" :height="height" />  
+  <Echart :options="options" />
 </template>
