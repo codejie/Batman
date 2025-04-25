@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { apiNewHigh } from '@/api/third/stock';
 import { onMounted, ref } from 'vue';
-import { ElTableV2, ElAutoResizer, ElDialog, ElButton, ElText } from 'element-plus';
+import { ElTableV2, ElAutoResizer, ElDialog, ElButton, ElText, RowEventHandlerParams } from 'element-plus';
 import { KLinePanel2, ReqParam } from '@/components/KLine'
 
 const props = defineProps({
@@ -67,7 +67,10 @@ async function fetchNewHigh() {
   data.value = temp
 }
 
-function onRowClick(row: any) {
+function onRowClick(event: any) {
+  console.log(event)
+  const row = event.rowData
+  console.log(row)
   dialogTitle.value = `${row['股票代码']}(${row['股票简称']})`
   // klineParam.value = {
   //   code: row['股票代码'],
@@ -79,12 +82,14 @@ function onRowClick(row: any) {
     name: row['股票简称'],
     type: 1
   }
+  console.log(reqParam.value)
   klineDialogVisible.value = true
 }
 
 onMounted(async () => {
   await fetchNewHigh()
 })
+
 </script>
 <template>
   <ElText tag="b" class="title">{{ name }}</ElText>
@@ -94,7 +99,7 @@ onMounted(async () => {
   </ElTable> -->
   <ElAutoResizer>
     <template #default="{width}">
-      <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :height="600"/>
+      <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :height="600" :row-event-handlers="{ onClick: onRowClick }" />
     </template>
   </ElAutoResizer>  
   <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%">

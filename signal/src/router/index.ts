@@ -144,7 +144,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     path: '/data',
     component: Layout,
     meta: {
-      title: '数据',
+      title: '三方数据',
       icon: 'carbon:table-alias'      
     },
     children: [

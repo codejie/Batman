@@ -4,7 +4,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton, ElRow, ElTable, ElTableColumn } from 'element-plus'
 import { calcProfitData, calcProfitTraceData, getHoldListData, HoldingListItem, ProfitTraceItem } from '@/calc/holding'
-import { apiGetHistoryData, HistoryData } from '@/api/data'
+import { apiGetHistoryData, HistoryDataItem } from '@/api/data'
 import * as Utils from '@/utils/dateUtil'
 import DetailChart from './components/DetailChart.vue'
 
@@ -19,7 +19,7 @@ const props = defineProps({
 
 const holdingData = ref<HoldingListItem[]>()
 // const operationData = ref<OperationItem[]>([])
-const historyData = ref<HistoryData[]>([])
+const historyData = ref<HistoryDataItem[]>([])
 const profitTraceData = ref<ProfitTraceItem[]>([])
 const profitTableToggle = ref<boolean>(false) // false: only show operation data, true: show operation trace data
 const profitTableData = ref<ProfitTraceItem[]>([]) 

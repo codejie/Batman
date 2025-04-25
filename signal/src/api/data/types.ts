@@ -1,7 +1,7 @@
 export const TYPE_INDEX: number = 1
 export const TYPE_STOCK: number = 2
 
-export interface HistoryData {
+export interface HistoryDataItem {
   日期: string
   开盘: number
   收盘: number
@@ -21,7 +21,7 @@ export interface GetLatestHistoryDataRequest {
   period?: string
   adjust?: string
 }
-export type  GetLatestHistoryDataResult = HistoryData | undefined
+export type  GetLatestHistoryDataResult = HistoryDataItem | undefined
 
 export interface GetHistoryDataRequest {
   type: number
@@ -31,4 +31,4 @@ export interface GetHistoryDataRequest {
   period?: string
   adjust?: string  
 }
-export type GetHistoryDataResult = HistoryData[]
+export type GetHistoryDataResult = HistoryDataItem[]

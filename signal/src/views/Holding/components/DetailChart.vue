@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HistoryData } from '@/api/data';
+import { HistoryDataItem } from '@/api/data';
 import { ProfitTraceItem } from '@/calc/holding';
 import { Echart } from '@/components/Echart';
 import { EChartsOption } from 'echarts';
@@ -12,7 +12,7 @@ const props = defineProps({
     required: true
   },
   historyData: {
-    type: Array as () => HistoryData[],
+    type: Array as () => HistoryDataItem[],
     required: true
   },
   // operationData: {
@@ -376,7 +376,7 @@ function makeMASeries() {
 }
 
 
-function setKLineData(data: HistoryData[]) {
+function setKLineData(data: HistoryDataItem[]) {
   xData.value = data.map(item => item.日期)
   klineData.value = data.map(item => [item.开盘, item.收盘, item.最低, item.最高])
   volumeData.value = data.map(item => [item.日期, item.成交量, item.开盘 <= item.收盘 ? 1 : -1])

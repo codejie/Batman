@@ -2,7 +2,7 @@ import { apiOperationList, apiRecord } from "@/api/holding"
 import { formatDateToYYYYMMDD } from "../comm"
 import * as Types from "@/calc/holding/types"
 import { apiGetLatestHistoryData } from "@/api/data"
-import { HistoryData } from "@/api/data/types"
+import { HistoryDataItem } from "@/api/data/types"
 import  { dateUtil, formatToDate } from '@/utils/dateUtil'
 
 export * from "@/calc/holding/types"
@@ -113,7 +113,7 @@ export function mergeOperationData(operationData: Types.OperationItem[]): Types.
   return ret
 }
 
-export function calcProfitTraceData(operationData: Types.OperationItem[], historyData: HistoryData[]): Types.ProfitTraceItem[] {
+export function calcProfitTraceData(operationData: Types.OperationItem[], historyData: HistoryDataItem[]): Types.ProfitTraceItem[] {
   if (operationData.length === 0) {
     return []
   }
@@ -167,7 +167,7 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
   return ret
 }
 
-export function calcProfitData(operationData: Types.OperationItem[], historyData: HistoryData[]): Types.ProfitTraceItem[] {
+export function calcProfitData(operationData: Types.OperationItem[], historyData: HistoryDataItem[]): Types.ProfitTraceItem[] {
   if (operationData.length === 0) {
     return []
   }

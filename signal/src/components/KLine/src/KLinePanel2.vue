@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, PropType, ref, watch } from 'vue';
 import { ElRow, ElCol, ElButton, ElCheckboxGroup, ElCheckboxButton, ElRadioGroup, ElRadioButton, ElMessage, ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus';
-import { apiCreate } from '../../../api/customized';
-import { apiHistory } from '../../../api/data/stock'
+// import { apiCreate } from '../../../api/customized';
+// import { apiHistory } from '../../../api/data/stock'
 import { KLineChart4, ReqParam } from '..';
-import { HistoryDataModel } from '../../../api/data/stock/types';
-import { apiMACD } from '@/api/libs/talib';
+// import { HistoryDataModel } from '../../../api/data/stock/types';
+// import { apiMACD } from '@/api/libs/talib';
+import { apiGetHistoryData, HistoryDataItem } from '@/api/data';
 
 type InitParam = {
   // startGroup: string[],
@@ -48,7 +49,7 @@ const grid2Mode = ref<string>(props.initParam.volume ? 'Volume' : 'MACD')
 
 const kchart = ref<typeof KLineChart4>()
 
-let historyData: HistoryDataModel[] = []
+let historyData: HistoryDataItem[] = []
 let xData: string[] = []
 let klineData: any[] = []
 let volumeData: any[] = []
@@ -74,13 +75,16 @@ function calcMAData(ma: number, data: number[]) {
 }
 
 async function fetchHistoryData() {
-  const ret = await apiHistory({
+  const ret = await apiGetHistoryData({
+    type: props.reqParam!.type,
     code: props.reqParam!.code,
     start: props.reqParam!.start,
     end: props.reqParam!.end
   })
+  console.log('ret', ret)
 
   historyData = ret.result
+  console.log('historyData', historyData)
 }
 
 function setAxis(data: string[]) {
@@ -102,11 +106,11 @@ function setKLine(data: any[]) {
   }
 }
 
-function setMALines(data: HistoryDataModel[]) {
+function setMALines(data: HistoryDataItem[]) {
   kchart.value?.remove('MA', true)
 
   if (maLines.value.length > 0) {
-    const closeData = data.map(item => item.close)
+    const closeData = data.map(item => item.收盘)
     for (const ma of maLines.value) {
       kchart.value?.addLine(0, `MA${ma}`, calcMAData(ma, closeData))
     }
@@ -117,8 +121,8 @@ function setVolumeData(data: any[]) {
   kchart.value?.addBar(1, 'Volume', data, true)  
 }
 
-async function setMACD(data: HistoryDataModel[]) {
-  const closeData = data.map(item => item.close)
+async function setMACD(data: HistoryDataItem[]) {
+  const closeData = data.map(item => item.收盘)
   const ret = await apiMACD({
     value: closeData    
   })
@@ -145,7 +149,7 @@ function resetGrid2(mode: string) {
     setVolumeData(volumeData)
   } else {
     kchart.value?.remove('Volume')
-    setMACD(historyData)
+    // setMACD(historyData)
   }
 }
 
@@ -169,10 +173,10 @@ function resetChart() {
   }
 }
 
-function updateChartOptions(data: HistoryDataModel[]) {
-  xData = data.map(item => item.date)
-  klineData = data.map(({open, close, low, high}) => ([open, close, low, high]))
-  volumeData = data.map(item => [item.date, item.volume, item.open <= item.close ? 1 : -1])
+function updateChartOptions(data: HistoryDataItem[]) {
+  xData = data.map(item => item.日期)
+  klineData = data.map(({开盘, 收盘, 最低, 最高}) => ([open, close, low, high]))
+  volumeData = data.map(item => [item.日期, item.成交量, item.开盘 <= item.收盘 ? 1 : -1])
 
   resetChart()
 }
