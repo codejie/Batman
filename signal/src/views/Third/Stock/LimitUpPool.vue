@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TYPE_STOCK } from '@/api/data';
 import { apiLimitUpPool } from '@/api/third/stock';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
@@ -108,12 +109,13 @@ onMounted(async () => {
   await fetch()
 })
 
-function onRowClick(row: any) {
+function onRowClick(event: any) {
+  const row = event.rowData
   dialogTitle.value = `${row['代码']}(${row['名称']})`
   reqParam.value = {
     code: row['代码'],
     name: row['名称'],
-    type: 1
+    type: TYPE_STOCK
   }
   klineDialogVisible.value = true
 }
@@ -147,7 +149,7 @@ async function onDateChanged(value) {
     </div>
     <ElAutoResizer>
       <template #default="{width}">
-        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :height="600"/>
+        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :row-event-handlers="{ onClick: onRowClick }" :height="700"/>
       </template>
     </ElAutoResizer>
     <!-- <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="1600" :height="600"/> -->
@@ -156,9 +158,9 @@ async function onDateChanged(value) {
       <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
     </ElTable> -->
     <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
-      <KLinePanel2 :req-param="reqParam" />
+      <KLinePanel2 :req-param="reqParam!" />
       <template #footer>
-        <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
+        <ElButton type="primary" @click="klineDialogVisible=false">关闭</ElButton>
       </template>    
     </ElDialog>    
   </ContentWrap>

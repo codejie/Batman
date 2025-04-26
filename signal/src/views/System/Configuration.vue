@@ -9,7 +9,6 @@ const showSubmit = ref(false)
 
 async function onExport() {
   const ret = await apiDbExport({});
-  console.log('ret', ret);
 }
 
 function onUploadChange() {

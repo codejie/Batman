@@ -39,12 +39,15 @@ import { useRouter } from 'vue-router'
 import { calcFundsData, FundsData } from '@/calc/funds'
 import { getHoldListData, HoldingListItem } from '@/calc/holding'
 import { apiCreateFunds, apiGetFunds, apiUpdateFunds } from '@/api/funds'
+import { KLineDialog } from '@/components/KLine'
 
 const { push } = useRouter()
 
 const fundsDialogVisible = ref<boolean>(false)
 const createDialogVisible = ref<boolean>(false)
 const operationDialogVisible = ref<boolean>(false)
+const klineDialogVisible = ref<boolean>(false)
+const reqParam = ref<any>({})
 
 const fundsForm = ref<FundsForm>({
   funds: undefined
@@ -145,7 +148,6 @@ async function onAddOperation() {
 }
 
 async function onOperationRemove(id: number) {
-  console.log('id', id)
   const confirm = await ElMessageBox.confirm(
     '是否确认删除?',
     '提示',
@@ -196,6 +198,21 @@ function getHoldingKey(row: HoldingListItem): string {
 
 function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[]) {
   expandRows.value = expandedRows.map((x) => x.record.id.toString())
+}
+
+function onRecordClick(row: HoldingRecordItem) {
+  reqParam.value = {
+    code: row.code,
+    name: row.name,
+    type: row.type,
+  //   start: row.record.created,
+  //   end: new Date()
+  }
+  klineDialogVisible.value = true
+}
+
+function onKLineDialogClose() {
+  klineDialogVisible.value = false
 }
 
 </script>
@@ -266,7 +283,11 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
         </ElTableColumn>
         <!-- <ElTableColumn prop="id" label="ID" width="50" /> -->
           <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
-          <ElTableColumn prop="record.code" label="代码" min-width="60" />
+          <ElTableColumn prop="record.code" label="代码" min-width="60">
+            <template #default="{ row }">
+              <ElText tag="b" @click="onRecordClick(row.record)">{{ row.record.code }}</ElText>
+            </template>
+          </ElTableColumn>
           <ElTableColumn prop="record.name" label="名称" min-width="60" />
           <ElTableColumn prop="record.quantity" label="持仓/占比" min-width="80">
             <template #default="{ row }">
@@ -285,17 +306,17 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
           </ElTableColumn>
           <ElTableColumn label="现价/日期" min-width="60">
             <template #default="{ row }">
-              {{ `${row.calc.price_cur.toFixed(2)} / ${row.calc.date_cur?.substring(5)}` }}
+              {{ `${row.calc.price_cur?.toFixed(2)} / ${row.calc.date_cur?.substring(5)}` }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="calc.revenue" label="市值/占比" min-width="80">
             <template #default="{ row }">
-              {{ `${row.calc.revenue.toFixed(2)} / ${((row.calc.revenue / funds?.revenue) * 100).toFixed(2)}%` }}
+              {{ `${row.calc.revenue?.toFixed(2)} / ${((row.calc.revenue / funds?.revenue) * 100).toFixed(2)}%` }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="calc.profit" label="盈亏/占比" min-width="80">
             <template #default="{ row }">
-              {{ `${row.calc.profit.toFixed(2)} /  ${((row.calc.profit / funds?.profit) * 100).toFixed(2)}%` }}
+              {{ `${row.calc.profit?.toFixed(2)} /  ${((row.calc.profit / funds?.profit) * 100).toFixed(2)}%` }}
             </template>
           </ElTableColumn>
           <ElTableColumn label="盈亏率 %" min-width="60">
@@ -411,5 +432,6 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
         <ElButton type="primary" @click="onAddOperation">确定</ElButton>
       </template>        
     </ElDialog>
+    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" :title="reqParam?.name" @update:on-close="onKLineDialogClose" width="60%" />
   </ContentWrap>
 </template>

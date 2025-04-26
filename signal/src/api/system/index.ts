@@ -15,7 +15,6 @@ export const apiDbExport = (data: DbExportRequest) => {
   })
   .then((response) => {
     // 尝试从Content-Disposition头中获取文件名
-    console.log('response', response)
     const contentDisposition = response.headers['content-disposition'];
     let filename = 'export.zip';
     if (contentDisposition) {

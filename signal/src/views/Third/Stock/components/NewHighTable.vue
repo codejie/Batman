@@ -3,6 +3,7 @@ import { apiNewHigh } from '@/api/third/stock';
 import { onMounted, ref } from 'vue';
 import { ElTableV2, ElAutoResizer, ElDialog, ElButton, ElText, RowEventHandlerParams } from 'element-plus';
 import { KLinePanel2, ReqParam } from '@/components/KLine'
+import { TYPE_STOCK } from '@/api/data';
 
 const props = defineProps({
   category: {
@@ -68,21 +69,13 @@ async function fetchNewHigh() {
 }
 
 function onRowClick(event: any) {
-  console.log(event)
   const row = event.rowData
-  console.log(row)
   dialogTitle.value = `${row['股票代码']}(${row['股票简称']})`
-  // klineParam.value = {
-  //   code: row['股票代码'],
-  //   name: row['股票简称'],
-  //   type: 1
-  // }
   reqParam.value = {
     code: row['股票代码'],
     name: row['股票简称'],
-    type: 1
+    type: TYPE_STOCK
   }
-  console.log(reqParam.value)
   klineDialogVisible.value = true
 }
 
@@ -92,20 +85,22 @@ onMounted(async () => {
 
 </script>
 <template>
-  <ElText tag="b" class="title">{{ name }}</ElText>
-  <!-- <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
+  <!-- <ElText tag="b" class="title">{{ name }}</ElText> -->
+  <!-- <ElAutoResizer>
+  <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick" height="700">
     <ElTableColumn type="index" width="60" />
     <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
-  </ElTable> -->
+  </ElTable>
+</ElAutoResizer> -->
   <ElAutoResizer>
     <template #default="{width}">
-      <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :height="600" :row-event-handlers="{ onClick: onRowClick }" />
+      <ElTableV2 class="table" :columns="columns" :data="data" :fixed="true" :width="width" :height="700" :row-event-handlers="{ onClick: onRowClick }" />
     </template>
   </ElAutoResizer>  
-  <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%">
+  <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
     <KLinePanel2 :req-param="reqParam!" />
     <template #footer>
-      <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
+      <ElButton type="primary" @click="klineDialogVisible=false">关闭</ElButton>
     </template>    
   </ElDialog>
 </template>

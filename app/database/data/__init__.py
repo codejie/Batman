@@ -75,6 +75,10 @@ def make_history_data_table_name(type: int, code: str, period: str, adjust: str)
     raise ValueError(f"Unknown type: {type}")
 
 def download_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> int:
+  if start is None:
+    start = Utils.date_to_string_1(datetime.today() - timedelta(weeks=52))
+  if end is None:
+    end = Utils.date_to_string_1(datetime.today())
   data = None
   if type == Define.TYPE_STOCK:
     data = Stock.download_history_data(code=code, period=period, adjust=adjust, start=Utils.convert_history_date_2(start), end=Utils.convert_history_date_2(end))
@@ -122,7 +126,7 @@ def get_latest_history_data(type: int, code: str, period: str, adjust: str) -> O
   # while not Utils.is_workday(date):
   #   date = date - timedelta(days=1)
   date = Utils.get_latest_workday()
-  start = Utils.date_to_string_1(date - timedelta(weeks=52))
+  start = Utils.date_to_string_1(date - timedelta(weeks=1))
   end = Utils.date_to_string_1(date)
   results = get_history_data(type, code, start, end, period, adjust, 1)
   if len(results) > 0:

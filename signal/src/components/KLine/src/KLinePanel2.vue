@@ -81,10 +81,8 @@ async function fetchHistoryData() {
     start: props.reqParam!.start,
     end: props.reqParam!.end
   })
-  console.log('ret', ret)
 
   historyData = ret.result
-  console.log('historyData', historyData)
 }
 
 function setAxis(data: string[]) {
@@ -175,7 +173,7 @@ function resetChart() {
 
 function updateChartOptions(data: HistoryDataItem[]) {
   xData = data.map(item => item.日期)
-  klineData = data.map(({开盘, 收盘, 最低, 最高}) => ([open, close, low, high]))
+  klineData = data.map(({开盘, 收盘, 最低, 最高}) => ([开盘, 收盘, 最低, 最高]))
   volumeData = data.map(item => [item.日期, item.成交量, item.开盘 <= item.收盘 ? 1 : -1])
 
   resetChart()

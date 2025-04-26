@@ -118,11 +118,9 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
     return []
   }
   const traceData = mergeOperationData(operationData)
-  console.log('traceData', traceData)
   const ret: Types.ProfitTraceItem[] = []
   let start = dateUtil(traceData[0].date)
   let end = dateUtil(historyData[historyData.length - 1]?.日期)
-  console.log('holding', traceData[traceData.length - 1].holding)
   if (traceData[traceData.length - 1].holding === 0) {
     end = dateUtil(traceData[traceData.length - 1].date)
   }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TYPE_STOCK } from '@/api/data';
 import { apiHighVolume } from '@/api/third/stock';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
@@ -61,12 +62,13 @@ onMounted(async () => {
   await fetch()
 })
 
-function onRowClick(row: any) {
+function onRowClick(event: any) {
+  const row = event.rowData
   dialogTitle.value = `${row['股票代码']}(${row['股票简称']})`
   reqParam.value = {
     code: row['股票代码'],
     name: row['股票简称'],
-    type: 1
+    type: TYPE_STOCK
   }
   klineDialogVisible.value = true
 }
@@ -87,7 +89,7 @@ async function onDaysChanged() {
     </div>
     <ElAutoResizer>
       <template #default="{width}">
-        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :height="600"/>
+        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :row-event-handlers="{ onClick: onRowClick }" :height="700"/>
       </template>
     </ElAutoResizer>     
     <!-- <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">

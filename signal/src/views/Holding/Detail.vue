@@ -47,7 +47,6 @@ async function fetchData() {
     })
     historyData.value = historyRet.result
     // trace
-    console.log('operationData', operationData)
     profitTraceData.value = calcProfitTraceData(operationData, historyData.value)
     if (profitTableToggle.value) {
       profitTableData.value = profitTraceData.value//.reverse()

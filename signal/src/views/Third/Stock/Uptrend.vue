@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TYPE_STOCK } from '@/api/data';
 import { apiUptrend } from '@/api/third/stock';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
@@ -61,12 +62,13 @@ onMounted(async () => {
   await fetch()
 })
 
-function onRowClick(row: any) {
+function onRowClick(event: any) {
+  const row = event.rowData
   dialogTitle.value = `${row['股票代码']}(${row['股票简称']})`
   reqParam.value = {
     code: row['股票代码'],
     name: row['股票简称'],
-    type: 1
+    type: TYPE_STOCK
   }
   klineDialogVisible.value = true
 }
@@ -91,13 +93,13 @@ async function onDaysChanged() {
     </ElTable> -->
     <ElAutoResizer>
       <template #default="{width}">
-        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :height="600"/>
+        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :row-event-handlers="{ onClick: onRowClick }" :height="700"/>
       </template>
     </ElAutoResizer>  
     <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
-      <KLinePanel2 :req-param="reqParam" />
+      <KLinePanel2 :req-param="reqParam!" />
       <template #footer>
-        <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
+        <ElButton type="primary" @click="klineDialogVisible=false">关闭</ElButton>
       </template>    
     </ElDialog>    
   </ContentWrap>

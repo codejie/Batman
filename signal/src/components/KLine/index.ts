@@ -6,9 +6,10 @@ import { HistoryDataItem } from '@/api/data'
 import KLineChart4 from './src/KLineChart4.vue'
 // import KLinePanel from './src/KLinePanel.vue'
 import KLinePanel2 from './src/KLinePanel2.vue'
+import KLineDialog from './src/KLineDialog.vue'
 
 // export { KLineChart, KLineChart2, KLineChart3, KLineChart4, KLinePanel, KLinePanel2 }
-export { KLineChart4, KLinePanel2 }
+export { KLineChart4, KLinePanel2, KLineDialog }
 
 export type ReqParam = {
   type: number,
