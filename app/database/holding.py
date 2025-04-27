@@ -15,7 +15,7 @@ class HoldingTable(TableBase):
 
   id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
   uid = Column(Integer, nullable=False, default=99)
-  type = Column(Integer, nullable=False, default=1)
+  type = Column(Integer, nullable=False)
   code = Column(String, nullable=False)
   flag = Column(Integer, nullable=False, default=HOLDING_FLAG_ACTIVE)
   created = Column(DateTime(timezone=True), server_default=func.now())

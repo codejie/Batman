@@ -4,11 +4,11 @@ from app.database import data as Data
 from app.database.data.define import HistoryData
 from app.routers.common import RequestModel, ResponseModel, verify_token, verify_system_token
 
+router: APIRouter = APIRouter(prefix="/data", tags=["Data"], dependencies=[Depends(verify_token)])
+
 """
 Name
 """
-router: APIRouter = APIRouter(prefix="/data", tags=["Data"], dependencies=[Depends(verify_token)])
-
 class GetNameRequest(RequestModel):
   type: int
   code: str
