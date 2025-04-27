@@ -1,4 +1,4 @@
-type DataFrameSetModel = {
+export type DataFrameSetModel = {
   columns: string[],
   data: any[]
 }

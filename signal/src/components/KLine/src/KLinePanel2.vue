@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { onMounted, PropType, ref, watch } from 'vue';
 import { ElRow, ElCol, ElButton, ElCheckboxGroup, ElCheckboxButton, ElRadioGroup, ElRadioButton, ElMessage, ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus';
-// import { apiCreate } from '../../../api/customized';
-// import { apiHistory } from '../../../api/data/stock'
 import { KLineChart4, ReqParam } from '..';
-// import { HistoryDataModel } from '../../../api/data/stock/types';
-// import { apiMACD } from '@/api/libs/talib';
+import { apiMACD } from '@/api/libs/talib';
 import { apiGetHistoryData, HistoryDataItem } from '@/api/data';
 
 type InitParam = {
@@ -30,7 +27,7 @@ const props = defineProps({
         maGroup: [5, 10, 20, 30, 45, 60], // [5, 7, 9, 10, 12, 15, 17, 20, 26, 30, 45, 60],
         maLines: [5, 10, 20],
         zoom: false,
-        volume: true
+        volume: false
       }
     }
   }
@@ -129,9 +126,12 @@ async function setMACD(data: HistoryDataItem[]) {
   const dea: any[] = []
   const macd: any[] = []
   for (let i = 0; i < data.length; ++ i) {
-    dif.push([data[i]['date'], parseFloat(arrayData[i][0]).toFixed(2)])
-    dea.push([data[i]['date'], parseFloat(arrayData[i][1]).toFixed(2)])
-    macd.push([data[i]['date'], parseFloat(arrayData[i][2]).toFixed(2), arrayData[i][2] >= 0 ? 1 : -1]);
+    // if (typeof(arrayData[i][1]) !== 'string') {
+    //   dea.push([data[i]['date'], parseFloat(arrayData[i][1]).toFixed(2)])  
+    // }
+    dif.push([data[i]['日期'], parseFloat(arrayData[i][0]).toFixed(2)])
+    dea.push([data[i]['日期'], parseFloat(arrayData[i][1]).toFixed(2)])
+    macd.push([data[i]['日期'], parseFloat(arrayData[i][2]).toFixed(2), arrayData[i][2] >= 0 ? 1 : -1]);
   }
   kchart.value?.addLine(1, 'DIF', dif)
   kchart.value?.addLine(1, 'DEA', dea)
@@ -147,7 +147,7 @@ function resetGrid2(mode: string) {
     setVolumeData(volumeData)
   } else {
     kchart.value?.remove('Volume')
-    // setMACD(historyData)
+    setMACD(historyData)
   }
 }
 

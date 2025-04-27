@@ -2,11 +2,13 @@
 import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElButton, ElRow, ElTable, ElTableColumn } from 'element-plus'
+import { ElButton, ElRow, ElTable, ElTableColumn, ElText } from 'element-plus'
 import { calcProfitData, calcProfitTraceData, getHoldListData, HoldingListItem, ProfitTraceItem } from '@/calc/holding'
 import { apiGetHistoryData, HistoryDataItem } from '@/api/data'
 import * as Utils from '@/utils/dateUtil'
 import DetailChart from './components/DetailChart.vue'
+import { KLineDialog } from '@/components/KLine'
+import { HoldingRecordItem } from '@/api/holding'
 
 const { go } = useRouter()
 
@@ -18,11 +20,13 @@ const props = defineProps({
 })
 
 const holdingData = ref<HoldingListItem[]>()
-// const operationData = ref<OperationItem[]>([])
 const historyData = ref<HistoryDataItem[]>([])
 const profitTraceData = ref<ProfitTraceItem[]>([])
 const profitTableToggle = ref<boolean>(false) // false: only show operation data, true: show operation trace data
 const profitTableData = ref<ProfitTraceItem[]>([]) 
+
+const klineDialogVisible = ref<boolean>(false)
+const reqParam = ref<any>({})
 
 const holding = computed(() => Number(props.id))
 
@@ -91,6 +95,21 @@ function profitTableTitle(): string {
 onMounted(() => {
   fetchData().then(() => {})
 })
+
+function onRecordClick(row: HoldingRecordItem) {
+  reqParam.value = {
+    code: row.code,
+    name: row.name,
+    type: row.type,
+    // start: row.created,
+    // end: new Date()
+  }
+  klineDialogVisible.value = true
+}
+
+function onKLineDialogClose() {
+  klineDialogVisible.value = false
+}
 
 </script>
 
@@ -161,7 +180,11 @@ onMounted(() => {
             </ElTable>            
           </div>
         </ElTableColumn>
-        <ElTableColumn prop="record.code" label="代码" min-width="80" />
+        <ElTableColumn prop="record.code" label="代码" min-width="80">
+          <template #default="{ row }">
+            <ElText tag="b" @click="onRecordClick(row.record)">{{ row.record.code }}</ElText>
+          </template>
+        </ElTableColumn>
         <ElTableColumn prop="record.name" label="名称" min-width="80" />
         <!-- <ElTableColumn prop="flag" label="Flag" width="50" /> -->
         <ElTableColumn prop="record.quantity" label="持有" min-width="60" />
@@ -206,6 +229,7 @@ onMounted(() => {
     <ElRow :gutter="24">
       <DetailChart :history-data="historyData" :profit-data="profitTraceData" :width="'100%'" :height="'500px'" />
     </ElRow>
+    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" :title="reqParam?.name" @update:on-close="onKLineDialogClose" width="60%" />    
   </ContentDetailWrap>
 </template>
 

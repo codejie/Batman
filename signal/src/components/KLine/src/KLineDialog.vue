@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { PropType, ref, watch } from 'vue'
 import { ElDialog, ElButton } from 'element-plus'
-import { KLinePanel2 } from '@/components/KLine'
-import { ReqParam } from '..';
+import { ReqParam, KLinePanel2 } from '..';
 
 const props = defineProps({
   reqParam: {
