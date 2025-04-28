@@ -17,7 +17,7 @@ class CustomizedRecordTable(TableBase):
 
 class CustomizedRecord:
   id: int
-  uid: int
+  # uid: int
   type: int
   code: str
   name: str
@@ -35,16 +35,12 @@ def select(uid: int, type: int = None, code: str = None) -> list[CustomizedRecor
     stmt = stmt.where(CustomizedRecordTable.code == code)
   return dbEngine.select_stmt(stmt)
 
-def delete(uid: int, type: int = None, code: str = None) -> int:
-  stmt = delete(CustomizedRecordTable).where(CustomizedRecordTable.uid == uid)
-  if type:
-    stmt = stmt.where(CustomizedRecordTable.type == type)
-  if code: 
-    stmt = stmt.where(CustomizedRecordTable.code == code)
+def delete(uid: int, id: int) -> int:
+  stmt = delete(CustomizedRecordTable).where(CustomizedRecordTable.uid == uid).where(CustomizedRecordTable.id == id)
   return dbEngine.delete(stmt=stmt)
 
 def update_comment(id: int, comment: str = None) -> int:
-  stmt = update(CustomizedRecordTable).values(comment=comment).where(CustomizedRecordTable.id == id)
+  stmt = update(CustomizedRecordTable).values(comment=comment, updted=func.now()).where(CustomizedRecordTable.id == id)
   return dbEngine.update(stmt=stmt)
 
 def records(uid: int, type: int = None, code: str = None) -> list[CustomizedRecord]:
@@ -59,7 +55,7 @@ def records(uid: int, type: int = None, code: str = None) -> list[CustomizedReco
   for row in results:
     ret.append(CustomizedRecord(
       id=row[0].id,
-      uid=row[0].uid,
+      # uid=row[0].uid,
       type=row[0].type,
       code=row[0].code,
       name=row[1],

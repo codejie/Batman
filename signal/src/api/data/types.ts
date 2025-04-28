@@ -21,7 +21,7 @@ export interface GetLatestHistoryDataRequest {
   period?: string
   adjust?: string
 }
-export type  GetLatestHistoryDataResult = HistoryDataItem | undefined
+export type  GetLatestHistoryDataResult = HistoryDataItem
 
 export interface GetHistoryDataRequest {
   type: number
