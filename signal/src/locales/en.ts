@@ -134,6 +134,8 @@ export default {
     holding_operation: 'Holding Operation',
     holding_detail: 'Hoding Detail',
     system_configuration: 'System Configuration',
+    Customized: 'Customized',
+    customized_list: 'Customized List',
     home: 'Home'
   },
   permission: {

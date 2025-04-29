@@ -102,6 +102,25 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     ]
   },
   {
+    name: 'Customized',
+    path: '/customized',
+    component: Layout,
+    meta: {},
+    children: [
+      {
+        name: 'CustomizedList',
+        path: 'list',
+        component: () => import('@/views/Customized/List.vue'),
+        meta: {
+          title: t('router.customized_list'),
+          icon: 'carbon:chart-custom',
+          // noCache: true,
+          // affix: false
+        }
+      }
+    ]
+  },  
+  {
     name: 'Holding',
     path: '/holding',
     component: Layout,

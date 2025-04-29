@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from fastapi import APIRouter, Depends
 from app.database import customized as db
 from app.routers.common import DEFAULT_UID, RequestModel, ResponseModel, verify_token
@@ -23,7 +23,7 @@ class RecordsRequest(RequestModel):
   code: Optional[str] = None
 
 class RecordsResponse(ResponseModel):
-  result: list[db.CustomizedRecord]
+  result: List[db.CustomizedRecord] = []
 
 @router.post('/records', response_model=RecordsResponse)
 async def records(request: RecordsRequest):

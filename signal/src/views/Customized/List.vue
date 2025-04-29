@@ -11,8 +11,8 @@ interface Item {
 </script>
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn } from 'element-plus'
-import { apiCreate, apiRecords, RecordsItem } from '@/api/customized';
+import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn, ElMessageBox } from 'element-plus'
+import { apiCreate, apiRecords, RecordsItem, apiRemove } from '@/api/customized';
 import { apiGetLatestHistoryData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized';
@@ -46,6 +46,24 @@ async function onAdd() {
   createDialogVisible.value = false  
 }
 
+async function onRemove(id: number) {
+  const confirm = await ElMessageBox.confirm(
+    '是否确认删除?',
+    '提示',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+  if (confirm) {
+    await apiRemove({
+      id: id
+    })
+    await fetch()
+  }  
+}
+
 onMounted(async () => {
   await fetch()
 })
@@ -76,7 +94,7 @@ onMounted(async () => {
         </ElTableColumn>        
         <ElTableColumn prop="action" label="操作" width="100">
           <template #default="{row}">
-            <ElButton type="danger">删除</ElButton>
+            <ElButton type="danger" @click="onRemove(row.record.id)">删除</ElButton>
           </template>
         </ElTableColumn>
       </ElTable>

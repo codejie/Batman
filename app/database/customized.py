@@ -1,6 +1,8 @@
 
 from datetime import datetime
-from sqlalchemy import Column, DateTime, Integer, String, func, update, select as sql_select
+from typing import Optional
+from pydantic import BaseModel
+from sqlalchemy import Column, DateTime, Integer, String, func, update, select as sql_select, delete as sql_delete
 from app.database import TableBase
 from app.database import dbEngine
 from app.database.data import define as Data
@@ -15,13 +17,13 @@ class CustomizedRecordTable(TableBase):
   comment = Column(String, nullable=True)
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.current_timestamp())
 
-class CustomizedRecord:
+class CustomizedRecord(BaseModel):
   id: int
   # uid: int
   type: int
   code: str
   name: str
-  comment: str
+  comment: Optional[str] = None
   updated: datetime
 
 def insert(uid:int, code: str, type: int = 1, comment: str = None) -> int:
@@ -36,15 +38,17 @@ def select(uid: int, type: int = None, code: str = None) -> list[CustomizedRecor
   return dbEngine.select_stmt(stmt)
 
 def delete(uid: int, id: int) -> int:
-  stmt = delete(CustomizedRecordTable).where(CustomizedRecordTable.uid == uid).where(CustomizedRecordTable.id == id)
-  return dbEngine.delete(stmt=stmt)
+  stmt = sql_delete(CustomizedRecordTable).where(CustomizedRecordTable.uid == uid).where(CustomizedRecordTable.id == id)
+  return dbEngine.delete_stmt(stmt=stmt)
 
 def update_comment(id: int, comment: str = None) -> int:
   stmt = update(CustomizedRecordTable).values(comment=comment, updted=func.now()).where(CustomizedRecordTable.id == id)
-  return dbEngine.update(stmt=stmt)
+  return dbEngine.update_stmt(stmt=stmt)
 
 def records(uid: int, type: int = None, code: str = None) -> list[CustomizedRecord]:
-  stmt = select(CustomizedRecordTable, Data.InfoTable.name.label('name')).where(CustomizedRecordTable.uid == uid)
+  stmt = sql_select(CustomizedRecordTable, Data.InfoTable.name.label('name')
+                    ).join(Data.InfoTable, Data.InfoTable.code == CustomizedRecordTable.code and Data.InfoTable.type == CustomizedRecordTable.type, isouter=True
+                    ).where(CustomizedRecordTable.uid == uid)
   if type:
     stmt = stmt.where(CustomizedRecordTable.type == type)
   if code: 

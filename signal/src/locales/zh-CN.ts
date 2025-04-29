@@ -132,6 +132,8 @@ export default {
     holding_operation: '持仓操作',
     holding_detail: '记录详情',
     system_configuration: '系统配置',
+    Customized: '自选',
+    customized_list: '自选列表',
     home: '首页'
   },
   permission: {

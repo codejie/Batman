@@ -4,7 +4,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from app.database import dbEngine, funds, holding
+from app.database import dbEngine, funds, holding, customized
 from app.routers.common import RequestModel, ResponseModel, verify_token
 
 router: APIRouter = APIRouter(prefix="/system", tags=["System"]) #, dependencies=[Depends(verify_token)])
@@ -13,7 +13,8 @@ Export_Import_Tables = [
   holding.HoldingTable,
   holding.HoldingOperationTable,
   funds.FundsTable,
-  funds.FundsOperationTable
+  funds.FundsOperationTable,
+  customized.CustomizedRecordTable
 ]
 
 Export_Import_Path = './app/db'
