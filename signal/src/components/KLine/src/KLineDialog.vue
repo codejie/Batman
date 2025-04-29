@@ -41,7 +41,7 @@ function onClose() {
 
 </script>
 <template>
-    <ElDialog v-model="showDialog" :title="title" :width="width" :destroy-on-close="true">
+    <ElDialog v-model="showDialog" :title="title" :width="width" :destroy-on-close="true" @closed="onClose">
     <KLinePanel2 :req-param="reqParam!" />
     <template #footer>
       <ElButton type="primary" @click="onClose">关闭</ElButton>

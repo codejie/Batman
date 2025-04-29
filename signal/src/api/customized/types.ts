@@ -16,6 +16,7 @@ export type RecordsItem = {
   name: string
   comment?: string
   updateTime: string
+  holding?: number
 }
 
 export interface RemoveRequest {

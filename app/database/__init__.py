@@ -1,5 +1,6 @@
 import datetime
 import json
+from sqlite3 import IntegrityError
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import DeclarativeBase, Session
 

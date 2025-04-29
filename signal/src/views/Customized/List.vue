@@ -17,6 +17,8 @@ import { apiGetLatestHistoryData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized';
 import { formatToDateTime } from '@/utils/dateUtil'
+import { KLineDialog } from '@/components/KLine'
+import { HoldingRecordItem } from '@/api/holding';
 
 const createDialogVisible = ref<boolean>(false)
 const createForm = ref<CreateForm>({
@@ -24,6 +26,8 @@ const createForm = ref<CreateForm>({
   code: ''
 })
 const data = ref<Item[]>([])
+const klineDialogVisible = ref<boolean>(false)
+const reqParam = ref<any>({})
 
 async function fetch() {
   const ret = await apiRecords({})
@@ -43,7 +47,8 @@ async function onAdd() {
     type: createForm.value.type == '股票' ? TYPE_STOCK : TYPE_INDEX,
     code: createForm.value.code
   })
-  createDialogVisible.value = false  
+  createDialogVisible.value = false
+  await fetch()
 }
 
 async function onRemove(id: number) {
@@ -64,6 +69,21 @@ async function onRemove(id: number) {
   }  
 }
 
+function onRecordClick(row: HoldingRecordItem) {
+  reqParam.value = {
+    code: row.code,
+    name: row.name,
+    type: row.type,
+  //   start: row.record.created,
+  //   end: new Date()
+  }
+  klineDialogVisible.value = true
+}
+
+function onKLineDialogClose() {
+  klineDialogVisible.value = false
+}
+
 onMounted(async () => {
   await fetch()
 })
@@ -77,7 +97,16 @@ onMounted(async () => {
     <div>
       <ElTable :data="data" :border="true" stripe>
         <ElTableColumn type="index" width="40" />
-        <ElTableColumn prop="record.code" label="代码" width="100" />
+        <ElTableColumn prop="record.holding" label="持有" width="60">
+          <template #default="{ row }">
+            {{ (row.record.holding ? '是' : '否') }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="record.code" label="代码" width="100">
+          <template #default="{ row }">
+              <ElText tag="b" @click="onRecordClick(row.record)">{{ row.record.code }}</ElText>
+            </template>
+        </ElTableColumn>
         <ElTableColumn prop="record.name" label="名称" width="200" />
         <!-- <ElTableColumn prop="type" label="类型" width="100" /> -->
         <ElTableColumn label="现价/日期" min-width="60">
@@ -117,6 +146,7 @@ onMounted(async () => {
         <ElButton @click="createDialogVisible=false">取消</ElButton>
         <ElButton type="primary" @click="onAdd">确定</ElButton>
       </template>      
-    </ElDialog> 
+    </ElDialog>
+    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" :title="reqParam?.name" @update:on-close="onKLineDialogClose" width="60%" />    
   </ContentWrap>    
 </template>
