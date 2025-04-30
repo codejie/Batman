@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { apiDownloadList, TYPE_STOCK, TYPE_INDEX } from '@/api/data';
 import { apiDbExport, urlDbImport } from '@/api/system';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElButton, ElDivider, ElUpload, ElRow, ElCol, UploadInstance } from 'element-plus'
@@ -17,6 +18,12 @@ function onUploadChange() {
 
 function onUploadRemove() {
   showSubmit.value = false
+}
+
+async function onDownloadList(type: number) {
+  await apiDownloadList({
+    type: type
+  })
 }
 
 </script>
@@ -45,6 +52,17 @@ function onUploadRemove() {
           </ElUpload>
         </ElCol>
         <ElCol :span="18" />
+      </ElRow>
+    </div>
+    <ElDivider content-position="left">数据更新</ElDivider>
+    <div  class="ma-12px" >
+      <ElRow :gutter="24">
+        <ElCol :span="2">
+          <ElButton type="primary" @click="onDownloadList(TYPE_STOCK)">股票列表信息</ElButton>
+        </ElCol>
+        <ElCol :span="2">
+          <ElButton type="primary" @click="onDownloadList(TYPE_INDEX)">指数列表信息</ElButton>
+        </ElCol>        
       </ElRow>
     </div>
   </ContentWrap>

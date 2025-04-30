@@ -15,7 +15,7 @@ const props = defineProps({
   title: {
     type: String,
     required: false,
-    default: 'K线图'
+    default: null
   },
   width: {
     type: String,
@@ -24,7 +24,7 @@ const props = defineProps({
   }
 })
 
-const showDialog = ref<boolean>(props.visible)
+const showDialog = ref<boolean>(props.visible && props.reqParam != undefined)
 
 watch(
   () =>props.visible,
@@ -41,7 +41,7 @@ function onClose() {
 
 </script>
 <template>
-    <ElDialog v-model="showDialog" :title="title" :width="width" :destroy-on-close="true" @closed="onClose">
+    <ElDialog v-model="showDialog" :title="title || `${reqParam.name} (${reqParam.code})`" :width="width" :destroy-on-close="true" @closed="onClose">
     <KLinePanel2 :req-param="reqParam!" />
     <template #footer>
       <ElButton type="primary" @click="onClose">关闭</ElButton>

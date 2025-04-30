@@ -57,9 +57,9 @@ def update_comment(id: int, comment: str = None) -> int:
 
 def records(uid: int, type: int = None, code: str = None) -> list[CustomizedRecord]:
   stmt = sql_select(CustomizedRecordTable, Data.InfoTable.name.label('name'), func.coalesce(HoldingTable.id, None).label('holding')).select_from(CustomizedRecordTable
-                    ).join(Data.InfoTable, Data.InfoTable.code == CustomizedRecordTable.code and Data.InfoTable.type == CustomizedRecordTable.type, isouter=True
+                    ).join(Data.InfoTable, Data.InfoTable.code == CustomizedRecordTable.code and Data.InfoTable.type == CustomizedRecordTable.type, isouter=False
                     ).join(HoldingTable, HoldingTable.code == CustomizedRecordTable.code and HoldingTable.type == CustomizedRecordTable.type and HoldingTable.flag == HOLDING_FLAG_ACTIVE, isouter=True
-                    ).where(CustomizedRecordTable.uid == uid)
+                    ).where(CustomizedRecordTable.uid == uid).group_by(CustomizedRecordTable.id)
   if type:
     stmt = stmt.where(CustomizedRecordTable.type == type)
   if code: 

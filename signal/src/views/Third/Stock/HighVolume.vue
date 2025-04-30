@@ -64,7 +64,7 @@ onMounted(async () => {
 
 function onRowClick(event: any) {
   const row = event.rowData
-  dialogTitle.value = `${row['股票代码']}(${row['股票简称']})`
+  dialogTitle.value = `${row['股票简称']} (${row['股票代码']})`
   reqParam.value = {
     code: row['股票代码'],
     name: row['股票简称'],
@@ -97,7 +97,7 @@ async function onDaysChanged() {
       <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
     </ElTable> -->
     <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
-      <KLinePanel2 :req-param="reqParam" />
+      <KLinePanel2 :req-param="reqParam!" />
       <template #footer>
         <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
       </template>    

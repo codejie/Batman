@@ -1,6 +1,11 @@
 export const TYPE_INDEX: number = 1
 export const TYPE_STOCK: number = 2
 
+export interface DownloadListRequest {
+  type: number
+}
+export type DownloadListResult = void
+
 export interface HistoryDataItem {
   日期: string
   开盘: number

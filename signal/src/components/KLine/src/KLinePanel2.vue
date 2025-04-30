@@ -4,6 +4,7 @@ import { ElRow, ElCol, ElButton, ElCheckboxGroup, ElCheckboxButton, ElRadioGroup
 import { KLineChart4, ReqParam } from '..';
 import { apiMACD } from '@/api/libs/talib';
 import { apiGetHistoryData, HistoryDataItem } from '@/api/data';
+import { apiCreate } from '@/api/customized';
 
 type InitParam = {
   // startGroup: string[],
@@ -251,7 +252,7 @@ function onGridModeChanged(mode) {
     <ElCol :span="4">
       <div style="float: left;">
         <!-- {{ title }} -->
-        <ElButton size="small" @click="onCustomizedClick">Add to Customized</ElButton>
+        <ElButton size="small" @click="onCustomizedClick">加入自选</ElButton>
       </div>
     </ElCol>
     <ElCol :span="5">
@@ -279,7 +280,7 @@ function onGridModeChanged(mode) {
       </ElCheckboxGroup>        
     </ElCol>
   </ElRow>
-  <ElRow :gutter="24" style="margin-top: 12px;">
+  <ElRow style="margin-top: 12px;">
     <KLineChart4 ref="kchart" />
   </ElRow> 
 </template>

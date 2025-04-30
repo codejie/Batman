@@ -211,10 +211,6 @@ function onRecordClick(row: HoldingRecordItem) {
   klineDialogVisible.value = true
 }
 
-function onKLineDialogClose() {
-  klineDialogVisible.value = false
-}
-
 </script>
 
 <template>
@@ -432,6 +428,6 @@ function onKLineDialogClose() {
         <ElButton type="primary" @click="onAddOperation">确定</ElButton>
       </template>        
     </ElDialog>
-    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" :title="reqParam?.name" @update:on-close="onKLineDialogClose" width="60%" />
+    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" width="60%" />
   </ContentWrap>
 </template>

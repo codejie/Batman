@@ -11,7 +11,7 @@ interface Item {
 </script>
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn, ElMessageBox } from 'element-plus'
+import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn, ElMessageBox, ElSelect, ElOption } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove } from '@/api/customized';
 import { apiGetLatestHistoryData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
@@ -80,10 +80,6 @@ function onRecordClick(row: HoldingRecordItem) {
   klineDialogVisible.value = true
 }
 
-function onKLineDialogClose() {
-  klineDialogVisible.value = false
-}
-
 onMounted(async () => {
   await fetch()
 })
@@ -95,7 +91,7 @@ onMounted(async () => {
       <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加自选</ElButton>    
     </div>
     <div>
-      <ElTable :data="data" :border="true" stripe>
+      <ElTable :data="data" :border="true" stripe :default-sort="{ prop: 'record.updated', order: 'descending' }">
         <ElTableColumn type="index" width="40" />
         <ElTableColumn prop="record.holding" label="持有" width="60">
           <template #default="{ row }">
@@ -135,7 +131,10 @@ onMounted(async () => {
       <template #default>
         <ElForm :model="createForm" label-position="right" label-width="auto">
           <ElFormItem label="类型">
-            <ElInput v-model="createForm.type" :disabled="true" />
+            <ElSelect v-model="createForm.type">
+              <ElOption label="股票" value="股票" />
+              <ElOption label="指数" value="指数" />
+            </ElSelect>
           </ElFormItem>
           <ElFormItem label="代码">
             <ElInput v-model="createForm.code" :maxlength="6" />
@@ -147,6 +146,6 @@ onMounted(async () => {
         <ElButton type="primary" @click="onAdd">确定</ElButton>
       </template>      
     </ElDialog>
-    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" :title="reqParam?.name" @update:on-close="onKLineDialogClose" width="60%" />    
+    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" width="60%" />    
   </ContentWrap>    
 </template>

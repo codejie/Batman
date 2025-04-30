@@ -3,6 +3,13 @@ import * as Types from './types'
 
 export * from './types'
 
+export const apiDownloadList = (data: Types.DownloadListRequest): Promise<IResponse<Types.DownloadListResult>> => {
+  return request.post({
+    url: '/data/download_list',
+    data
+  })
+}
+
 export const apiGetLatestHistoryData = (
   data: Types.GetLatestHistoryDataRequest
 ): Promise<IResponse<Types.GetLatestHistoryDataResult>> => {

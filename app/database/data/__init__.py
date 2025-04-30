@@ -26,13 +26,14 @@ def download_list(type: int) -> None:
   else:
     raise ValueError(f"Unknown type: {type}")
 
-def get_name(type: int, code: str) -> Optional[str]:
-  if type == Define.TYPE_INDEX:
-    return Index.get_name(code)
-  elif type == Define.TYPE_STOCK:
-    return Stock.get_name(code)
-  else:
-    raise ValueError(f"Unknown type: {type}")
+# def get_name(type: int, code: str) -> Optional[str]:
+#   if type == Define.TYPE_INDEX:
+#     return Index.get_name(code)
+#   elif type == Define.TYPE_STOCK:
+#     return Stock.get_name(code)
+#   else:
+#     raise ValueError(f"Unknown type: {type}")
+  
 """
 download history data
 """
@@ -83,7 +84,7 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
   if type == Define.TYPE_STOCK:
     data = Stock.download_history_data(code=code, period=period, adjust=adjust, start=Utils.convert_history_date_2(start), end=Utils.convert_history_date_2(end))
   elif type == Define.TYPE_INDEX:
-    data = None
+    data = Index.download_history_data(code=code, period=period, start=Utils.convert_history_date_2(start), end=Utils.convert_history_date_2(end))
 
   if data is not None:
     table_name = make_history_data_table_name(type, code, period, adjust)
