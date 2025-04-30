@@ -5,8 +5,9 @@ from pydantic import BaseModel
 from sqlalchemy import Column, DateTime, Index, Integer, String, func, update, select as sql_select, delete as sql_delete
 from app.database import TableBase
 from app.database import dbEngine
-from app.database.data import define as Data
+from app.database.data import define as Data, is_item_exist
 from app.database.holding import HOLDING_FLAG_ACTIVE, HoldingTable
+from app.exception import AppException
 
 class CustomizedRecordTable(TableBase):
   __tablename__ = 'user_customized_record'
@@ -37,7 +38,11 @@ def insert(uid:int, code: str, type: int = 1, comment: str = None) -> int:
   result = dbEngine.select_scalar(stmt)
   if result:
     return result.id
-  return dbEngine.insert_instance(CustomizedRecordTable(uid=uid, type=type, code=code, comment=comment))
+  exists = is_item_exist(type=type, code=code)
+  if exists:
+    return dbEngine.insert_instance(CustomizedRecordTable(uid=uid, type=type, code=code, comment=comment))
+  else:
+    raise AppException(f"Item not found: {type}, {code}")
 
 def select(uid: int, type: int = None, code: str = None) -> list[CustomizedRecordTable]:
   stmt = sql_select(CustomizedRecordTable).where(CustomizedRecordTable.uid == uid)
@@ -56,15 +61,15 @@ def update_comment(id: int, comment: str = None) -> int:
   return dbEngine.update_stmt(stmt=stmt)
 
 def records(uid: int, type: int = None, code: str = None) -> list[CustomizedRecord]:
-  stmt = sql_select(CustomizedRecordTable, Data.InfoTable.name.label('name'), func.coalesce(HoldingTable.id, None).label('holding')).select_from(CustomizedRecordTable
-                    ).join(Data.InfoTable, Data.InfoTable.code == CustomizedRecordTable.code and Data.InfoTable.type == CustomizedRecordTable.type, isouter=False
-                    ).join(HoldingTable, HoldingTable.code == CustomizedRecordTable.code and HoldingTable.type == CustomizedRecordTable.type and HoldingTable.flag == HOLDING_FLAG_ACTIVE, isouter=True
-                    ).where(CustomizedRecordTable.uid == uid).group_by(CustomizedRecordTable.id)
+  stmt = sql_select(CustomizedRecordTable, Data.InfoTable.name.label('name'), func.coalesce(HoldingTable.id, None).label('holding')
+                    ).select_from(CustomizedRecordTable
+                    ).join(Data.InfoTable, (Data.InfoTable.code == CustomizedRecordTable.code) & (Data.InfoTable.type == CustomizedRecordTable.type), isouter=False
+                    ).join(HoldingTable, (HoldingTable.code == CustomizedRecordTable.code) & (HoldingTable.type == CustomizedRecordTable.type) & (HoldingTable.flag == HOLDING_FLAG_ACTIVE), isouter=True
+                    ).where(CustomizedRecordTable.uid == uid)
   if type:
     stmt = stmt.where(CustomizedRecordTable.type == type)
   if code: 
     stmt = stmt.where(CustomizedRecordTable.code == code)
-  print(stmt)
   ret: list[CustomizedRecord] = []
   results = dbEngine.select_stmt(stmt)
   for row in results:

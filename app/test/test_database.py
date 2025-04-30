@@ -97,10 +97,10 @@ class TestUserHoldingTable(unittest.TestCase):
     adjust = "qfq"
 
     # Call the download_history_data function
-    Stock.download_history_data(code, start_date, end_date, period, adjust)
+    Stock.download_history_data(code=code, start=start_date, end=end_date, period=period, adjust=adjust)
 
     code = "000002"
-    Stock.download_history_data(code, start_date, end_date, period, adjust)
+    Stock.download_history_data(code=code, start=start_date, end=end_date, period=period, adjust=adjust)
 
     # table_name = Data.make_history_data_table_name(Data.TYPE_STOCK, code, period, adjust)
     # print(table_name)

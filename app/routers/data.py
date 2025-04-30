@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Depends
 from app.database import data as Data
-from app.database.data.define import HistoryData
+from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData
 from app.routers.common import RequestModel, ResponseModel, verify_token, verify_system_token
 
 router: APIRouter = APIRouter(prefix="/data", tags=["Data"], dependencies=[Depends(verify_token)])
@@ -44,7 +44,7 @@ class DownloadHistoryRequest(RequestModel):
   start: str
   end: str
   period: str = 'daily'
-  adjust: str = 'qfq'
+  adjust: Optional[str] = None
 
 class DownloadHistoryResponse(ResponseModel):
   result: int
@@ -70,13 +70,18 @@ class GetHistoryDataRequest(RequestModel):
   start: Optional[str] = None
   end: Optional[str] = None
   period: Optional[str] = 'daily'
-  adjust: Optional[str] = 'qfq'
+  adjust: Optional[str] = None
 
 class GetHistoryDataResponse(ResponseModel):
   result: list[HistoryData] = []
 
 @router.post("/get_history_data", response_model=GetHistoryDataResponse)
 async def get_history_data_api(request: GetHistoryDataRequest):
+  if request.period is None:
+    request.period = PERIOD_DAILY
+  if request.type == TYPE_STOCK and request.adjust is None:
+    request.adjust = ADJUST_QFQ
+    
   result = Data.get_history_data(
     type=request.type,
     code=request.code,

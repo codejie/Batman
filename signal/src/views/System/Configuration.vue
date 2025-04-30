@@ -2,7 +2,7 @@
 import { apiDownloadList, TYPE_STOCK, TYPE_INDEX } from '@/api/data';
 import { apiDbExport, urlDbImport } from '@/api/system';
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElButton, ElDivider, ElUpload, ElRow, ElCol, UploadInstance } from 'element-plus'
+import { ElButton, ElDivider, ElUpload, ElRow, ElCol, UploadInstance, ElMessage } from 'element-plus'
 import { ref } from 'vue';
 
 const uploadRef = ref<UploadInstance>()
@@ -21,9 +21,23 @@ function onUploadRemove() {
 }
 
 async function onDownloadList(type: number) {
-  await apiDownloadList({
+  const ret =await apiDownloadList({
     type: type
   })
+  if (ret.code == 0) {
+    ElMessage.success('下载成功.')
+  } else {
+    ElMessage.error('下载失败.')
+  }
+}
+
+async function onHistoryDelete() {
+  const ret = await apiHistoryDataClean({})
+  if (ret.code == 0) {
+    ElMessage.success('清除成功.')
+  } else {
+    ElMessage.error('清除失败.')
+  }
 }
 
 </script>
@@ -65,5 +79,16 @@ async function onDownloadList(type: number) {
         </ElCol>        
       </ElRow>
     </div>
+    <ElDivider content-position="left">数据清除</ElDivider>
+    <div  class="ma-12px" >
+      <ElRow :gutter="24">
+        <ElCol :span="2">
+          <ElButton type="primary" @click="onHistoryDelete()">清除历史数据</ElButton>
+        </ElCol>
+        <!-- <ElCol :span="2">
+          <ElButton type="primary" @click="onDownloadList(TYPE_INDEX)">指数列表信息</ElButton>
+        </ElCol>         -->
+      </ElRow>
+    </div>    
   </ContentWrap>
 </template>

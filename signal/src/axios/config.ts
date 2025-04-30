@@ -58,9 +58,10 @@ const defaultResponseInterceptors = (response: AxiosResponse) => {
   if (response?.config?.responseType === 'blob') {
     // 如果是文件流，直接过
     return response
-  } else if (typeof response.data === 'object') {
-    return transformDate(response.data)
   } else if (response.data.code === SUCCESS_CODE) {
+    if (typeof response.data === 'object') {
+      return transformDate(response.data)
+    }
     return response.data
   } else {
     ElMessage.error(response?.data?.message)

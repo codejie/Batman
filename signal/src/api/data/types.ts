@@ -1,6 +1,12 @@
 export const TYPE_INDEX: number = 1
 export const TYPE_STOCK: number = 2
 
+export const PERIOD_DAILY: string = 'daily'
+export const PERIOD_WEEKLY: string = 'weekly'
+export const PERIOD_MONTHLY: string = 'monthly'
+
+export const ADJUST_QFQ: string = 'qfq'
+
 export interface DownloadListRequest {
   type: number
 }

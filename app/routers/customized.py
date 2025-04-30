@@ -15,8 +15,11 @@ class CreateResponse(ResponseModel):
 
 @router.post('/create', response_model=CreateResponse)
 async def create(request: CreateRequest):
-  result = db.insert(uid=DEFAULT_UID, type=request.type, code=request.code, comment=request.comment)
-  return CreateResponse(result=result)
+  try:
+    result = db.insert(uid=DEFAULT_UID, type=request.type, code=request.code, comment=request.comment)
+    return CreateResponse(result=result)
+  except Exception as e:
+    raise e
 
 class RecordsRequest(RequestModel):
   type: Optional[int] = None

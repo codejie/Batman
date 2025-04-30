@@ -23,7 +23,7 @@ def download_list() -> None:
 def get_name(code: str) -> Optional[str]:
   return Define.get_name(Define.TYPE_STOCK, code)
 
-def download_history_data(code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> Optional[DataFrame]:
+def download_history_data(code: str, start: str, end: str, period: str = 'daily', adjust: str = None) -> Optional[DataFrame]:
   data = ak.stock_zh_a_hist(symbol=code, period=period, adjust=adjust, start_date=start, end_date=end)
 
   if not data.empty:

@@ -8,6 +8,12 @@ from app.database import TableBase
 TYPE_INDEX: int = 1
 TYPE_STOCK: int = 2
 
+PERIOD_DAILY: str = 'daily'
+PERIOD_WEEKLY: str = 'weekly'
+PERIOD_MONTHLY: str = 'monthly'
+
+ADJUST_QFQ: str = 'qfq'
+
 """
 Data Options
 """
@@ -39,7 +45,7 @@ class DownloadRecordsTable(TableBase):
   type = Column(Integer, nullable=False)
   code = Column(String, nullable=False)
   period = Column(String, nullable=False)
-  adjust = Column(String, nullable=False)
+  adjust = Column(String, nullable=True)
   start = Column(String, nullable=False)
   end = Column(String, nullable=False)
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

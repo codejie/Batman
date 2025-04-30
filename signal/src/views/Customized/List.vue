@@ -103,21 +103,25 @@ onMounted(async () => {
               <ElText tag="b" @click="onRecordClick(row.record)">{{ row.record.code }}</ElText>
             </template>
         </ElTableColumn>
-        <ElTableColumn prop="record.name" label="名称" width="200" />
-        <!-- <ElTableColumn prop="type" label="类型" width="100" /> -->
-        <ElTableColumn label="现价/日期" min-width="60">
+        <ElTableColumn prop="record.name" label="名称" min-width="100" />
+        <ElTableColumn prop="type" label="类型" min-width="100">
+          <template #default="{ row }">
+            {{ row.record.type == TYPE_STOCK ? '股票' : '指数' }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="现价/日期" min-width="100">
             <template #default="{ row }">
               {{ `${row.calc?.price.toFixed(2)} / ${row.calc?.date.substring(5)}` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="calc.price_change" label="涨跌额" width="100" />
-        <ElTableColumn prop="calc.price_change_rate" label="涨跌幅" width="100" />
-        <ElTableColumn label="操作时间" prop="record.updated" min-width="120">
+          <ElTableColumn prop="calc.price_change" label="涨跌额" min-width="100" />
+        <ElTableColumn prop="calc.price_change_rate" label="涨跌幅" min-width="100" />
+        <ElTableColumn label="操作时间" prop="record.updated" min-width="100">
           <template #default="{ row }">
             {{ formatToDateTime(row.record.updated) }}
           </template>
         </ElTableColumn>        
-        <ElTableColumn prop="action" label="操作" width="100">
+        <ElTableColumn prop="action" label="操作" min-width="100">
           <template #default="{row}">
             <ElButton type="danger" @click="onRemove(row.record.id)">删除</ElButton>
           </template>
