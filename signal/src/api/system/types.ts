@@ -10,3 +10,6 @@ export type DbExportResult = {
 
 export interface DbImportRequest {}
 export type DbImportResult = number
+
+export interface DbRemoveAllHistoryDataRequest {}
+export type DbRemoveAllHistoryDataResult = number

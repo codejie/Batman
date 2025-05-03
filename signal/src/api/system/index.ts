@@ -1,6 +1,6 @@
 import axios from 'axios'
 import request from '@/axios'
-import { DbExportRequest,  DbImportRequest, DbImportResult } from './types'
+import { DbExportRequest,  DbImportRequest, DbImportResult, DbRemoveAllHistoryDataRequest, DbRemoveAllHistoryDataResult } from './types'
 import { PATH_URL } from '@/axios/service';
 
 export const apiDbExport = (data: DbExportRequest) => {
@@ -41,4 +41,8 @@ export const urlDbImport = `${PATH_URL}/system/db/import`
 
 export const apiDbImport = (data: DbImportRequest): Promise<IResponse<DbImportResult>> => {
   return request.post({ url: '/system/db/import', data })
+}
+
+export const apiDbRemoveAllHistoryData = (data: DbRemoveAllHistoryDataRequest): Promise<IResponse<DbRemoveAllHistoryDataResult>> => {
+  return request.post({ url: '/data/remove_history_data', data })
 }

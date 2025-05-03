@@ -103,6 +103,15 @@ class DBEngine:
     except Exception as e:
       raise AppException(e)
     
+  def execute_stmt(self, stmt: object) -> int:
+    try:
+      with Session(self.engine) as session:
+        result = session.execute(stmt)
+        session.commit()
+        return result.rowcount
+    except Exception as e:
+      raise AppException(e)
+    
   def bulk_insert_data(self, table, data: list[dict]) -> None:
     try:
       with Session(self.engine) as session:

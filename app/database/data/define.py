@@ -41,7 +41,7 @@ Stock & Index download records
 """
 class DownloadRecordsTable(TableBase):
   __tablename__ = 'item_download_records'
-  # id = Column(Integer, primary_key=True, autoincrement=True)
+  id = Column(Integer, primary_key=True, autoincrement=True)
   type = Column(Integer, nullable=False)
   code = Column(String, nullable=False)
   period = Column(String, nullable=False)
@@ -51,8 +51,8 @@ class DownloadRecordsTable(TableBase):
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
   __table_args__ = (
-    PrimaryKeyConstraint('type', 'code', name='pk_download_records_type_code'),
-    # Index('idx_download_records_type_code', 'type', 'code'),
+    # PrimaryKeyConstraint('type', 'code', name='pk_download_records_type_code'),
+    Index('idx_download_records_type_code', 'type', 'code'),
   )
 
 """

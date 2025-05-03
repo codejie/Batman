@@ -110,3 +110,14 @@ async def get_latest_history_data_api(request: GetLatestHistoryDataRequest):
     adjust=request.adjust
   )
   return GetLatestHistoryDataResponse(result=result)
+
+class RemoveHistoryDataRequest(RequestModel):
+  pass
+
+class RemoveHistoryDataResponse(ResponseModel):
+  result: int = 0
+
+@router.post("/remove_history_data", response_model=RemoveHistoryDataResponse, dependencies=[Depends(verify_system_token)])
+async def remove_history_data_api(request: RemoveHistoryDataRequest):
+  result = Data.remove_all_history_data()
+  return RemoveHistoryDataResponse(result=result)

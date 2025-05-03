@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from sqlalchemy import delete, select, text, update
+from sqlalchemy import delete, inspect, select, text, update
 from app.database import dbEngine
 import app.database.data.utils as Utils
 import app.database.data.define as Define
@@ -62,6 +62,9 @@ def update_download_records(type: int, code: str, period: str, start: str, end: 
     return dbEngine.insert_instance(record)
 
 def check_download_records(type: int, code: str, period: str, start: str, end: str, adjust: str = None) -> Optional[Define.DownloadRecordsTable]:
+  exist = dbEngine.check_table_exist(Define.DownloadRecordsTable.__tablename__)
+  if not exist:
+    return None  
   stmt = select(Define.DownloadRecordsTable) \
     .where(Define.DownloadRecordsTable.type == type) \
     .where(Define.DownloadRecordsTable.code == code) \
@@ -78,9 +81,9 @@ def check_download_records(type: int, code: str, period: str, start: str, end: s
 
 def make_history_data_table_name(type: int, code: str, period: str, adjust: str = None) -> str:
   if type == Define.TYPE_STOCK:
-    return f"stock_{period}_{adjust}_{code}"
+    return f"history_stock_{period}_{adjust}_{code}"
   elif type == Define.TYPE_INDEX:
-    return f"index_{period}_{code}"
+    return f"history_index_{period}_{code}"
   else:
     raise ValueError(f"Unknown type: {type}")
 
@@ -127,7 +130,7 @@ def fetch_history_data(type: int, code: str, start: str, end: str, period: str, 
 
 def get_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, limit: int = None) -> list[Define.HistoryData]:
   checked = check_download_records(type=type, code=code, period=period, adjust=adjust, start=start, end=end)
-  if not checked:
+  if checked is None:
     download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust)
   return fetch_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
 
@@ -142,3 +145,18 @@ def get_latest_history_data(type: int, code: str, period: str, adjust: str) -> O
   if len(results) > 0:
     return results.pop()
   return None
+
+def remove_all_history_data() -> int:
+  dbEngine.trunc_table(Define.DownloadRecordsTable)
+
+  inspector = inspect(dbEngine.engine)
+  table_names = inspector.get_table_names()
+
+  table_names = [table_name for table_name in table_names if table_name.startswith("history_")]
+  count = 0
+  for table_name in table_names:
+    stmt = text(f"DROP TABLE IF EXISTS {table_name}")
+    dbEngine.execute_stmt(stmt)
+    count += 1
+
+  return count
