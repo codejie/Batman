@@ -19,8 +19,8 @@ export function calcFundsData(funds: Types.FundsItem, holdigns: HoldingListItem[
   // profit_rate = profit / expense
 
   const ret = {
-    total: funds.amount + revenue,
-    amount: funds.amount,
+    total: funds.amount + profit,
+    amount: funds.amount, // 本金
     holding: holding,
     expense: expense,
     available: funds.amount + expense,

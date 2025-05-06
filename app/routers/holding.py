@@ -62,9 +62,10 @@ async def operation(request: OperationCreateRequest):
   if request.expense is None:
     request.expense = request.price * request.quantity
   result = db.insert_operation(id=request.holding, action=request.action, quantity=request.quantity, price=request.price, expense=request.expense, comment=request.comment, created=request.created)
-  # funds operation
-  amount = -request.expense if request.action == db.OPERATION_ACTION_BUY else request.expense
-  funds.update(uid=DEFAULT_UID, amount=amount)
+  # funds operation # 本金是不变量
+  # amount = -request.expense if request.action == db.OPERATION_ACTION_BUY else request.expense
+  # funds.update(uid=DEFAULT_UID, amount=amount)
+
   return OperationCreateResponse(result=result)
 
 class RecordRequest(RequestModel):

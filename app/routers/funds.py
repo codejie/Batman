@@ -28,7 +28,8 @@ class GetRequest(RequestModel):
 class FundsTableModel(BaseModel):
   id: int
   type: int
-  amount: float 
+  amount: float
+  available: Optional[float] = None
   updated: datetime.datetime
 
 class GetResponse(ResponseModel):
@@ -39,7 +40,7 @@ async def get(request: GetRequest):
   result = db.get(uid=DEFAULT_UID, type=request.type)
   if result is None:
     return GetResponse(result=None)
-  return GetResponse(result=FundsTableModel(id=result.id, type=result.type, amount=result.amount, updated=result.updated))
+  return GetResponse(result=FundsTableModel(id=result.id, type=result.type, amount=result.amount, available=result.available, updated=result.updated))
 
 class UpdateRequest(RequestModel):
   type: Optional[int] = FUNDS_STOCK

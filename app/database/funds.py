@@ -12,7 +12,7 @@ class FundsTable(TableBase):
   uid = Column(Integer, nullable=False, default=99)
   type = Column(Integer, nullable=False, default=FUNDS_STOCK)
   amount = Column(Float, nullable=False, default=0)
-  # avaliable = Column(float, nullable=False, default=0)
+  available = Column(float, nullable=False, default=0)
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
   __table_args__ = (
@@ -40,11 +40,14 @@ def get(uid: int, type: int = FUNDS_STOCK) -> FundsTable | None:
   return result
 
 def update(uid: int, amount: float, type: int = FUNDS_STOCK) -> int:
-  stmt = sql_update(FundsTable).where(FundsTable.uid == uid).where(FundsTable.type == type).values(amount=func.coalesce(FundsTable.amount, 0) + amount, updated=func.now())
+  stmt = sql_update(FundsTable) \
+   .where(FundsTable.uid == uid) \
+  .where(FundsTable.type == type) \
+  .values(amount=func.coalesce(FundsTable.amount, 0) + amount, available=func.coalesce(FundsTable.available, 0) + amount, updated=func.now())
   return dbEngine.update_stmt(stmt)
 
 def insert(uid: int, type: int = FUNDS_STOCK, amount: float = 0) -> int:
-  return dbEngine.insert_instance(FundsTable(uid=uid, type=type, amount=amount))
+  return dbEngine.insert_instance(FundsTable(uid=uid, type=type, amount=amount, available=amount))
 
 def insert_operation(funds: int, action: int, amount: float, comment: str = None) -> int:
   return dbEngine.insert_instance(FundsOperationTable(funds=funds, action=action, amount=amount, comment=comment))

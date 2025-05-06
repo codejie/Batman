@@ -290,7 +290,7 @@ function onRecordClick(row: HoldingRecordItem) {
               {{ `${row.record.quantity} / ${((row.record.quantity / funds?.holding) * 100).toFixed(2)}%` }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="record.expense" label="成本/占比" min-width="100">
+          <ElTableColumn prop="record.expense" label="成本/占比" min-width="120">
             <template #default="{ row }">
             {{ `${-row.record.expense} / ${((row.record.expense / funds?.expense) * 100).toFixed(2)}%` }}
             </template>

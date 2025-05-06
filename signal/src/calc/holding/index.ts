@@ -25,7 +25,7 @@ function _calcProfit(quantity: number, expense: number, price?: number): number 
 function _calcProfitRate(quantity: number, expense: number, price?: number): number | undefined {
   if (price === undefined) return undefined
   if (expense === 0) return 0
-  return (price * quantity + expense) / expense
+  return (price * quantity + expense) / -expense
 }
 
 function _calcPreProfit(profit?: number, pre_profit?: number): number | undefined {

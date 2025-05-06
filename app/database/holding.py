@@ -138,7 +138,7 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
   if flag:
     stmt = stmt.where(HoldingTable.flag == flag)
   
-  print(str(stmt))
+  # print(str(stmt))
   results = dbEngine.select_stmt(stmt)
   
   ret: list[UserHoldingRecord] = []
