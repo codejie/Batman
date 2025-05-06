@@ -5,7 +5,7 @@ const OPERATION_ACTION_OUT: number = 2
 export interface FundsItem {
   id: number,
   type: number,
-  amount: number
+  amount: number // 资金，本金
   updated: Date
 }
 

@@ -1,6 +1,6 @@
 import datetime
 from pydantic import BaseModel
-from sqlalchemy import Column, Float, ForeignKey, Index, Integer, PrimaryKeyConstraint, String, DateTime, case, delete, select, update
+from sqlalchemy import Column, Float, ForeignKey, Index, Integer, PrimaryKeyConstraint, String, DateTime, and_, case, delete, select, update
 from sqlalchemy.sql import func
 from app.database import dbEngine, TableBase
 from app.database.data import define as Data
@@ -123,7 +123,7 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
                   func.sum(HoldingOperationTable.expense),
                   0.0).label('expense')
               ).select_from(HoldingTable
-              ).join(Data.InfoTable, Data.InfoTable.code == HoldingTable.code and Data.InfoTable.type == HoldingTable.type, isouter=True
+              ).join(Data.InfoTable, and_(Data.InfoTable.code == HoldingTable.code, Data.InfoTable.type == HoldingTable.type), isouter=True
               ).join(HoldingOperationTable, HoldingOperationTable.holding == HoldingTable.id, isouter=True
               ).filter(HoldingTable.uid == uid
               ).group_by(HoldingTable.id
@@ -138,7 +138,7 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
   if flag:
     stmt = stmt.where(HoldingTable.flag == flag)
   
-  # print(str(stmt))
+  print(str(stmt))
   results = dbEngine.select_stmt(stmt)
   
   ret: list[UserHoldingRecord] = []

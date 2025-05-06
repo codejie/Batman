@@ -8,7 +8,8 @@ export type FundsItem = Types.FundsItem
 export type OperationItem = Types.OperationItem
 
 export interface FundsData {
-  amount: number // total
+  total: number // 总额
+  amount: number // 本金，资金
   holding: number // 持仓
   expense: number // 费用
   available: number  

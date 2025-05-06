@@ -4,6 +4,7 @@ import * as Types  from "./types"
 export * from "./types"
 
 export function calcFundsData(funds: Types.FundsItem, holdigns: HoldingListItem[]): Types.FundsData {
+  // let total = 0
   let holding = 0
   let expense = 0
   let revenue = 0
@@ -18,6 +19,7 @@ export function calcFundsData(funds: Types.FundsItem, holdigns: HoldingListItem[
   // profit_rate = profit / expense
 
   const ret = {
+    total: funds.amount + revenue,
     amount: funds.amount,
     holding: holding,
     expense: expense,

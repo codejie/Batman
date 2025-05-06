@@ -44,9 +44,9 @@ async function onDownloadList(type: number) {
       type: type
     })
     if (ret.code == 0) {
-      ElMessage.success('下载成功.')
+      ElMessage.success('更新成功.')
     } else {
-      ElMessage.error('下载失败.')
+      ElMessage.error('更新失败.')
     }
   }
 }
