@@ -1,7 +1,7 @@
 <script lang="ts">
 
 interface FundsForm {
-  funds?: number
+  amount?: number
 }
 
 interface CreateForm {
@@ -36,7 +36,7 @@ import {
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
-import { calcFundsData, FundsData } from '@/calc/funds'
+import { calcFundsData, FUNDS_STOCK, FundsData } from '@/calc/funds'
 import { getHoldListData, HoldingListItem } from '@/calc/holding'
 import { apiCreateFunds, apiGetFunds, apiUpdateFunds } from '@/api/funds'
 import { KLineDialog } from '@/components/KLine'
@@ -50,7 +50,7 @@ const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
 
 const fundsForm = ref<FundsForm>({
-  funds: undefined
+  amount: undefined
 })
 
 const createForm = ref<CreateForm>({
@@ -93,16 +93,11 @@ onMounted(async () => {
 })
 
 async function onFunds() {
-  if (fundsForm.value.funds) {
-    if (funds.value) {
-      await apiUpdateFunds({
-        amount: fundsForm.value.funds
-      })
-    } else {
-      await apiCreateFunds({
-        amount: fundsForm.value.funds
-      })
-    }
+  if (fundsForm.value.amount) {
+    await apiUpdateFunds({
+      type: FUNDS_STOCK,
+      amount: fundsForm.value.amount
+    })
     fundsDialogVisible.value = false
     await fetchHoldingData()    
   }
@@ -345,7 +340,7 @@ function onRecordClick(row: HoldingRecordItem) {
       <template #default>
         <ElForm :model="fundsForm" label-position="right" label-width="auto">
           <ElFormItem label="资金调整">
-            <ElInput v-model="fundsForm.funds" placeholder="增加资金为正，提取资金为负..">
+            <ElInput v-model="fundsForm.amount" placeholder="增加资金为正，提取资金为负..">
               <template #append>元</template>
             </ElInput>
           </ElFormItem>

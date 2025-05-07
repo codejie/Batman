@@ -10,17 +10,17 @@ from app.database import funds as db
 
 router: APIRouter = APIRouter(prefix="/funds", tags=["Funds"], dependencies=[Depends(verify_token)])
 
-class CreateRequest(RequestModel):
-  type: Optional[int] = FUNDS_STOCK
-  amount: float
+# class CreateRequest(RequestModel):
+#   type: Optional[int] = FUNDS_STOCK
+#   amount: float
 
-class CreateResponse(ResponseModel):
-  result: int
+# class CreateResponse(ResponseModel):
+#   result: int
 
-@router.post('/create', response_model=CreateResponse)
-async def create(request: CreateRequest):
-  result = db.insert(uid=DEFAULT_UID, type=request.type, amount=request.amount)
-  return CreateResponse(result=result)
+# @router.post('/create', response_model=CreateResponse)
+# async def create(request: CreateRequest):
+#   result = db.insert(uid=DEFAULT_UID, type=request.type, amount=request.amount)
+#   return CreateResponse(result=result)
 
 class GetRequest(RequestModel):
   type: Optional[int] = FUNDS_STOCK
@@ -45,31 +45,33 @@ async def get(request: GetRequest):
 class UpdateRequest(RequestModel):
   type: Optional[int] = FUNDS_STOCK
   amount: float
+  comment: Optional[str] = None
 
 class UpdateResponse(ResponseModel):
   result: int
 
 @router.post('/update', response_model=UpdateResponse)
 async def update(request: UpdateRequest):
-  result = db.update(uid=DEFAULT_UID, type=request.type, amount=request.amount)
+  result = db.update_funds(uid=DEFAULT_UID, type=request.type, amount=request.amount, comment=request.comment)
   return UpdateResponse(result=result)
 
-class OperationCreateRequest(RequestModel):
-  funds: int
-  action: int
-  amount: float
+# class OperationCreateRequest(RequestModel):
+#   funds: int
+#   # action: int
+#   amount: float
+#   comment: Optional[str]
 
-class OperationCreateResponse(ResponseModel):
-  result: int
+# class OperationCreateResponse(ResponseModel):
+#   result: int
 
-@router.post('/operation/create', response_model=OperationCreateResponse)
-async def operation(request: OperationCreateRequest):
-  amount = request.amount if request.action == OPERATION_ACTION_IN else -request.amount
-  result = db.insert_operation(funds=request.funds, action=request.action, amount=amount, comment=request.comment)
-  funds = db.get(request.funds)
-  amount = funds.amount + amount
-  db.update(uid=DEFAULT_UID, id=request.funds, amount=amount)
-  return OperationCreateResponse(result=result)
+# @router.post('/operation/create', response_model=OperationCreateResponse)
+# async def operation(request: OperationCreateRequest):
+#   # amount = request.amount if request.action == OPERATION_ACTION_IN else -request.amount
+#   result = db.insert_operation(funds=request.funds, action=request.action, amount=request.amount, comment=request.comment)
+#   # funds = db.get(request.funds)
+#   # amount = funds.amount + amount
+#   db.update(uid=DEFAULT_UID, id=request.funds, amount=request.amount)
+#   return OperationCreateResponse(result=result)
 
 class GetOperationRequest(RequestModel):
   funds: int
