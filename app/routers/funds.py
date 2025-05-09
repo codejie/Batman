@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from app.database.funds import FUNDS_STOCK, OPERATION_ACTION_IN
+from app.database.funds import FUNDS_STOCK
 from app.routers.common import DEFAULT_UID, RequestModel, ResponseModel, verify_token
 from app.database import funds as db
 

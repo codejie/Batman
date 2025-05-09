@@ -21,7 +21,7 @@ export function calcFundsData(funds: Types.FundsItem, holdigns: HoldingListItem[
   const ret = {
     id: funds.id,
     type: funds.type,
-    total: funds.amount + profit,
+    total: revenue + funds.available, //funds.amount + profit,
     amount: funds.amount, // 本金
     holding: holding,
     expense: expense,
@@ -29,7 +29,7 @@ export function calcFundsData(funds: Types.FundsItem, holdigns: HoldingListItem[
     available: funds.available,
     revenue: revenue,
     profit: profit,
-    profit_rate: (expense === 0 ? undefined : profit / expense)
+    profit_rate: (expense === 0 ? undefined : profit / -expense)
   }
   return ret
 }

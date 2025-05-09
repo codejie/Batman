@@ -30,7 +30,7 @@ import { HOLDING_FLAG_REMOVED, HoldingRecordItem, OPERATION_ACTION_BUY, OPERATIO
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
 import {
-  ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn,
+  ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn, ElTooltip,
   ElRadioGroup, ElRadioButton, ElDatePicker, ElMessageBox, ElDescriptions, ElDescriptionsItem, ElDivider
  } from 'element-plus'
 import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
@@ -38,7 +38,7 @@ import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
 import { calcFundsData, FUNDS_STOCK, FundsData } from '@/calc/funds'
 import { getHoldListData, HoldingListItem } from '@/calc/holding'
-import { apiCreateFunds, apiGetFunds, apiUpdateFunds } from '@/api/funds'
+import { apiGetFunds, apiUpdateFunds } from '@/api/funds'
 import { KLineDialog } from '@/components/KLine'
 
 const { push } = useRouter()
@@ -210,7 +210,11 @@ function onRecordClick(row: HoldingRecordItem) {
 <template>
   <ContentWrap>
     <ElDescriptions :column="3" title="资金信息" :border="true" label-width="6%">
-      <ElDescriptionsItem label="总资产" :span="3"><ElText tag="b">{{ funds?.total.toFixed(2) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="总资产" :span="3">
+        <ElTooltip effect="dark" content="可用 + 市值" placement="top">
+          <ElText tag="b">{{ funds?.total.toFixed(2) }}</ElText>
+        </ElTooltip>
+      </ElDescriptionsItem>
       <ElDescriptionsItem label="本金">
         <template #default>
           <ElText tag="b">{{ funds?.amount.toFixed(2) }}</ElText>
@@ -307,12 +311,16 @@ function onRecordClick(row: HoldingRecordItem) {
           </ElTableColumn>
           <ElTableColumn prop="calc.profit" label="盈亏/占比" min-width="120">
             <template #default="{ row }">
-              {{ `${row.calc.profit?.toFixed(2)} /  ${((row.calc.profit / funds?.profit) * 100).toFixed(2)}%` }}
+              <div :class="row.calc.profit > 0 ? 'red-text' : (row.calc.profit < 0 ? 'green-text' : '')">
+                {{ `${row.calc.profit?.toFixed(2)} /  ${((row.calc.profit / funds?.profit) * 100).toFixed(2)}%` }}
+              </div>
             </template>
           </ElTableColumn>
           <ElTableColumn label="盈亏率 %" min-width="80">
             <template #default="{ row }">
-              {{ `${row.calc.profit_rate? (row.calc.profit_rate * 100).toFixed(2) + '%' : '-'}` }}
+              <div :class="row.calc.profit_rate > 0 ? 'red-text' : (row.calc.profit_rate < 0 ? 'green-text' : '')">
+                {{ `${row.calc.profit_rate? (row.calc.profit_rate * 100).toFixed(2) + '%' : '-'}` }}
+              </div>
             </template>
           </ElTableColumn>
           <ElTableColumn prop="record.created" label="创建时间" min-width="120">
@@ -320,11 +328,11 @@ function onRecordClick(row: HoldingRecordItem) {
               {{ formatToDate(row.record.created) }}
             </template>
           </ElTableColumn>
-          <ElTableColumn label="更新时间" min-width="120">
+          <!-- <ElTableColumn label="更新时间" min-width="120">
             <template #default="{ row }">
               {{ formatToDate(row.record.updated) }}
             </template>
-          </ElTableColumn>
+          </ElTableColumn> -->
           <ElTableColumn label="" width="160">
             <template #default="{ row }">
               <ElButton size="small" @click="onDetail(row.record.id)">详情</ElButton>
@@ -426,3 +434,12 @@ function onRecordClick(row: HoldingRecordItem) {
     <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" width="60%" />
   </ContentWrap>
 </template>
+<style lang="css" scoped>
+.green-text {
+    color: green;
+}
+
+.red-text {
+    color: red;
+}
+</style>

@@ -12,7 +12,7 @@ class FundsTable(TableBase):
   uid = Column(Integer, nullable=False, default=99)
   type = Column(Integer, nullable=False, default=FUNDS_STOCK)
   amount = Column(Float, nullable=False, default=0)
-  available = Column(float, nullable=False, default=0)
+  available = Column(Float, nullable=False, default=0)
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
   __table_args__ = (
