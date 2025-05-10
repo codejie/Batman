@@ -108,8 +108,8 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
   else:
     return 0
 
-def fetch_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, limit: int = None) -> list[Define.HistoryData]:
-  table_name = make_history_data_table_name(type=type, code=code, period=period, adjust=adjust)
+def fetch_history_data(type1: int, code: str, start: str, end: str, period: str, adjust: str = None, limit: int = None) -> list[Define.HistoryData]:
+  table_name = make_history_data_table_name(type=type1, code=code, period=period, adjust=adjust)
 
   if start and end:
     stmt = text(f"SELECT * FROM {table_name} WHERE 日期 >= '{start}' AND 日期 <= '{end}' ORDER BY 日期 ASC")
@@ -121,9 +121,10 @@ def fetch_history_data(type: int, code: str, start: str, end: str, period: str, 
     stmt = text(f"SELECT * FROM {table_name} ORDER BY 日期 ASC")
 
   rows = dbEngine.select_stmt(stmt)
-  results = []
-  for row in rows:
-    results.append(Define.HistoryData.model_validate(row))
+  # results = []
+  # for row in rows:
+  #   results.append(Define.HistoryData.model_validate(row._asdict()))
+  results = [Define.HistoryData.model_validate(row._asdict()) for row in rows]
   if limit:
     return results[-limit:] 
   return results
@@ -132,7 +133,7 @@ def get_history_data(type: int, code: str, start: str, end: str, period: str, ad
   checked = check_download_records(type=type, code=code, period=period, adjust=adjust, start=start, end=end)
   if checked is None:
     download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust)
-  return fetch_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
+  return fetch_history_data(type1=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
 
 def get_latest_history_data(type: int, code: str, period: str, adjust: str) -> Optional[Define.HistoryData]:
   # date = datetime.today()
@@ -160,3 +161,18 @@ def remove_all_history_data() -> int:
     count += 1
 
   return count
+
+"""
+get spot data
+"""
+def get_spot_data(type: int, codes: list[str] = None) -> list[Define.SpotData]:
+  if type == Define.TYPE_STOCK:
+    data = Stock.download_spot_data(codes=codes)
+  elif type == Define.TYPE_INDEX:
+    data = Index.download_spot_data(codes=codes)
+  else:
+    raise ValueError(f"Unknown type: {type}")
+  if data is not None:
+    results = [Define.SpotData.model_validate(row) for row in data.to_dict(orient='records')]
+    return results
+  return []

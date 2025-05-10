@@ -27,3 +27,12 @@ export const apiGetHistoryData = (
     data
   })
 }
+
+export const apiGetSpotData = (
+  data: Types.GetSpotDataRequest
+): Promise<IResponse<Types.GetSpotDataResult>> => {
+  return request.post({
+    url: '/data/get_spot_data',
+    data
+  })
+}

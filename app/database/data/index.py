@@ -35,3 +35,12 @@ def download_history_data(code: str, start: str, end: str, period: str = 'daily'
     return data
   else:
     return None
+  
+def download_spot_data(codes: list[str] = None) -> Optional[DataFrame]:
+  # choice of {"沪深重要指数", "上证系列指数", "深证系列指数", "指数成份", "中证系列指数"}
+  data = ak.stock_zh_index_spot_em(symbol="沪深重要指数")
+  if not data.empty:
+    if codes is not None:
+      data = data[data['代码'].isin(codes)]
+    return data
+  return None

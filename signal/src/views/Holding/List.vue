@@ -288,19 +288,22 @@ function onRecordClick(row: HoldingRecordItem) {
         </ElTableColumn>
         <!-- <ElTableColumn prop="id" label="ID" width="50" /> -->
           <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
-          <ElTableColumn prop="record.code" label="代码" min-width="60">
+          <ElTableColumn prop="record.code" label="名称/代码" min-width="60">
             <template #header>
-              <ElText>代码</ElText>
+              <ElText>名称/代码</ElText>
             </template>
             <template #default="{ row }">
-              <ElText tag="b" @click="onRecordClick(row.record)">{{ row.record.code }}</ElText>
+              <div @click="onRecordClick(row.record)">
+                <div><ElText tag="b">{{ row.record.name }}</ElText></div>
+                <div><ElText tag="b">{{ row.record.code }}</ElText></div>
+              </div>
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="record.name" label="名称" min-width="80">
+          <!-- <ElTableColumn prop="record.name" label="名称" min-width="80">
             <template #header>
               <ElText>名称</ElText>
             </template>
-          </ElTableColumn>
+          </ElTableColumn> -->
           <ElTableColumn prop="record.quantity" label="持仓/占比" min-width="100">
             <template #header>
               <ElTooltip effect="dark" content="持仓/仓位%" placement="top">
@@ -398,7 +401,7 @@ function onRecordClick(row: HoldingRecordItem) {
     </ElRow>
     <ElDialog v-model="fundsDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
-        <ElText tag="b">基金数据</ElText>
+        <ElText tag="b">资金数据</ElText>
       </template>
       <template #default>
         <ElForm :model="fundsForm" label-position="right" label-width="auto">

@@ -13,12 +13,11 @@ interface Item {
 import { onMounted, ref } from 'vue';
 import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn, ElMessageBox, ElSelect, ElOption } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove } from '@/api/customized';
-import { apiGetLatestHistoryData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
+import { apiGetLatestHistoryData, apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized';
 import { formatToDateTime } from '@/utils/dateUtil'
 import { KLineDialog } from '@/components/KLine'
-import { HoldingRecordItem } from '@/api/holding';
 
 const createDialogVisible = ref<boolean>(false)
 const createForm = ref<CreateForm>({
@@ -33,13 +32,41 @@ async function fetch() {
   const ret = await apiRecords({})
   data.value = []
 
-  for (const item of ret.result) {
-    const history = await apiGetLatestHistoryData({ type: item.type, code: item.code })
-    data.value.push({
-      record: item,
-      calc: calcCustomizedData(history.result)
-    })
+  const stocks = ret.result.filter(item => item.type === TYPE_STOCK).map(item => item)
+  const indexes = ret.result.filter(item => item.type === TYPE_INDEX).map(item => item)
+
+  if (stocks.length > 0) {
+    const codes: string[] = stocks.map(item => item.code)
+    const stockRet = await apiGetSpotData({ type: TYPE_STOCK, codes: codes })
+    for (const item of stocks) {
+      const spot = stockRet.result.find(i => i.代码 === item.code)
+      data.value.push({
+        record: item,
+        calc: calcCustomizedData(spot)
+      })
+    }
   }
+
+  if (indexes.length > 0) {
+    const codes: string[] = indexes.map(item => item.code)
+    const indexRet = await apiGetSpotData({ type: TYPE_INDEX, codes: codes })
+    for (const item of indexes) {
+      const spot = indexRet.result.find(i => i.代码 === item.code)
+      data.value.push({
+        record: item,
+        calc: calcCustomizedData(spot)
+      })
+    }
+  }
+
+
+  // for (const item of ret.result) {
+  //   const history = await apiGetLatestHistoryData({ type: item.type, code: item.code })
+  //   data.value.push({
+  //     record: item,
+  //     calc: calcCustomizedData(history.result)
+  //   })
+  // }
 }
 
 async function onAdd() {
@@ -98,12 +125,23 @@ onMounted(async () => {
             {{ (row.record.holding ? '是' : '否') }}
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="record.code" label="代码" width="100">
+        <!-- <ElTableColumn prop="record.code" label="代码" width="100">
           <template #default="{ row }">
               <ElText tag="b" @click="onRecordClick(row.record)">{{ row.record.code }}</ElText>
             </template>
         </ElTableColumn>
-        <ElTableColumn prop="record.name" label="名称" min-width="100" />
+        <ElTableColumn prop="record.name" label="名称" min-width="100" /> -->
+        <ElTableColumn prop="record.code" label="名称/代码" min-width="60">
+          <template #header>
+            <ElText>名称/代码</ElText>
+          </template>
+          <template #default="{ row }">
+            <div @click="onRecordClick(row.record)">
+              <div><ElText tag="b">{{ row.record.name }}</ElText></div>
+              <div><ElText tag="b">{{ row.record.code }}</ElText></div>
+            </div>
+          </template>
+        </ElTableColumn>
         <ElTableColumn prop="type" label="类型" min-width="100">
           <template #default="{ row }">
             {{ row.record.type == TYPE_STOCK ? '股票' : '指数' }}

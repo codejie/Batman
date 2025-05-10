@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Depends
 from app.database import data as Data
-from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData
+from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData, SpotData
 from app.routers.common import RequestModel, ResponseModel, verify_token, verify_system_token
 
 router: APIRouter = APIRouter(prefix="/data", tags=["Data"], dependencies=[Depends(verify_token)])
@@ -121,3 +121,15 @@ class RemoveHistoryDataResponse(ResponseModel):
 async def remove_history_data_api(request: RemoveHistoryDataRequest):
   result = Data.remove_all_history_data()
   return RemoveHistoryDataResponse(result=result)
+
+class GetSpotDataRequest(RequestModel):
+  type: int
+  codes: Optional[list[str]] = None
+
+class GetSpotDataResponse(ResponseModel):
+  result: list[SpotData] = []
+
+@router.post("/get_spot_data", response_model=GetSpotDataResponse)
+async def get_spot_data_api(request: GetSpotDataRequest):
+  result = Data.get_spot_data(type=request.type, codes=request.codes)
+  return GetSpotDataResponse(result=result)

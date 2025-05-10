@@ -36,5 +36,10 @@ class TestHistoryData(unittest.TestCase):
         print(data)
         self.assertTrue(data is not None)
 
+    def test_download_spot_data(self):
+        data = Data.download_spot_data(Data.Define.TYPE_INDEX, ['000001', '399100'])
+        print(data)
+        self.assertTrue(data is not None)
+
 if __name__ == '__main__':
     unittest.main()

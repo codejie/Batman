@@ -1,6 +1,7 @@
 """
 Table & structure definitions
 """
+from typing import Optional
 from pydantic import BaseModel
 from sqlalchemy import Column, DateTime, Index, Integer, PrimaryKeyConstraint, String, func
 from app.database import TableBase
@@ -71,5 +72,37 @@ class HistoryData(BaseModel):
   涨跌额: float
   换手率: float
 
-  class Config:
-    from_attributes = True
+  # class Config:
+  #   from_attributes = True
+
+"""
+Spot Data Model
+"""
+class SpotData(BaseModel):
+  序号: int
+  代码: str
+  名称: str
+  最新价: float
+  涨跌幅: float
+  涨跌额: float
+  成交量: float
+  成交额: float
+  振幅: float
+  最高: float
+  最低: float
+  今开: float
+  昨收: float
+  量比: float
+  换手率: Optional[float] = None
+  市盈率: Optional[float] = None
+  市净率: Optional[float] = None
+  总市值: Optional[float] = None
+  流通市值: Optional[float] = None
+  涨速: Optional[float] = None
+  涨跌5分钟: Optional[float] = None
+  涨跌幅60日: Optional[float] = None
+  年初至今涨跌幅: Optional[float] = None
+
+  # class Config:
+  #   from_attributes = True
+
