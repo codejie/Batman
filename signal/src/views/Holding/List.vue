@@ -215,14 +215,24 @@ function onRecordClick(row: HoldingRecordItem) {
           <ElText tag="b">{{ funds?.total.toFixed(2) }}</ElText>
         </ElTooltip>
       </ElDescriptionsItem>
+      <ElDescriptionsItem label="可用">
+        <ElText tag="b">{{ funds?.available.toFixed(2) }} / </ElText>
+        <ElTooltip effect="dark" content="可用/本金%" placement="top">
+          <ElText tag="b">{{ ((funds?.available / funds?.amount) * 100).toFixed(2) }}%</ElText>
+        </ElTooltip>
+      </ElDescriptionsItem>
+      <ElDescriptionsItem label="成本">
+        <ElText tag="b">{{ -funds?.expense.toFixed(2) }} / </ElText>
+        <ElTooltip effect="dark" content="成本/本金%" placement="top">
+          <ElText tag="b">{{ -((funds?.expense / funds?.amount) * 100).toFixed(2) }}%</ElText>
+        </ElTooltip>
+      </ElDescriptionsItem>
       <ElDescriptionsItem label="本金">
         <template #default>
           <ElText tag="b">{{ funds?.amount.toFixed(2) }}</ElText>
           <ElButton size="small" style="float: right" @click="fundsDialogVisible = true">调整</ElButton>
         </template>
       </ElDescriptionsItem>
-      <ElDescriptionsItem label="成本"><ElText tag="b">{{ -funds?.expense.toFixed(2) }} / {{ -((funds?.expense / funds?.amount) * 100).toFixed(2) }}%</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="可用"><ElText tag="b">{{ funds?.available.toFixed(2) }} / {{ ((funds?.available / funds?.amount) * 100).toFixed(2) }}%</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="市值"><ElText tag="b">{{ funds?.revenue.toFixed(2) }}</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="盈亏"><ElText tag="b">{{ funds?.profit.toFixed(2) }}</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ funds?.profit_rate ? ((funds.profit_rate) * 100).toFixed(2) + '%' : '-' }}</ElText></ElDescriptionsItem>
@@ -279,37 +289,74 @@ function onRecordClick(row: HoldingRecordItem) {
         <!-- <ElTableColumn prop="id" label="ID" width="50" /> -->
           <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
           <ElTableColumn prop="record.code" label="代码" min-width="60">
+            <template #header>
+              <ElText>代码</ElText>
+            </template>
             <template #default="{ row }">
               <ElText tag="b" @click="onRecordClick(row.record)">{{ row.record.code }}</ElText>
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="record.name" label="名称" min-width="80" />
+          <ElTableColumn prop="record.name" label="名称" min-width="80">
+            <template #header>
+              <ElText>名称</ElText>
+            </template>
+          </ElTableColumn>
           <ElTableColumn prop="record.quantity" label="持仓/占比" min-width="100">
+            <template #header>
+              <ElTooltip effect="dark" content="持仓/仓位%" placement="top">
+                <ElText>持仓/占比</ElText>
+              </ElTooltip>
+            </template>
             <template #default="{ row }">
               {{ `${row.record.quantity} / ${((row.record.quantity / funds?.holding) * 100).toFixed(2)}%` }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="record.expense" label="成本/占比" min-width="120">
+            <template #header>
+              <ElTooltip effect="dark" content="成本/费用%" placement="top">
+                <ElText>成本/占比</ElText>
+              </ElTooltip>
+            </template>
             <template #default="{ row }">
             {{ `${-row.record.expense} / ${((row.record.expense / funds?.expense) * 100).toFixed(2)}%` }}
             </template>
           </ElTableColumn>
           <ElTableColumn label="均价" min-width="60">
+            <template #header>
+              <ElTooltip effect="dark" content="成本/持仓" placement="top">
+                <ElText>均价</ElText>
+              </ElTooltip>
+            </template>
             <template #default="{ row }">
               {{ `${row.calc.price_avg? row.calc.price_avg.toFixed(2) : '-'}` }}
             </template>
           </ElTableColumn>
           <ElTableColumn label="现价/日期" min-width="100">
+            <template #header>
+              <ElTooltip effect="dark" content="当日价格" placement="top">
+                <ElText>现价/日期</ElText>
+              </ElTooltip>
+            </template>
             <template #default="{ row }">
               {{ `${row.calc.price_cur?.toFixed(2)} / ${row.calc.date_cur?.substring(5)}` }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="calc.revenue" label="市值/占比" min-width="120">
+            <template #header>
+              <ElTooltip effect="dark" content="市值/总市值%" placement="top">
+                <ElText>市值/占比</ElText>
+              </ElTooltip>
+            </template>
             <template #default="{ row }">
               {{ `${row.calc.revenue?.toFixed(2)} / ${((row.calc.revenue / funds?.revenue) * 100).toFixed(2)}%` }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="calc.profit" label="盈亏/占比" min-width="120">
+            <template #header>
+              <ElTooltip effect="dark" content="盈亏/总盈亏%" placement="top">
+                <ElText>盈亏/占比</ElText>
+              </ElTooltip>
+            </template>
             <template #default="{ row }">
               <div :class="row.calc.profit > 0 ? 'red-text' : (row.calc.profit < 0 ? 'green-text' : '')">
                 {{ `${row.calc.profit?.toFixed(2)} /  ${((row.calc.profit / funds?.profit) * 100).toFixed(2)}%` }}
@@ -317,6 +364,11 @@ function onRecordClick(row: HoldingRecordItem) {
             </template>
           </ElTableColumn>
           <ElTableColumn label="盈亏率 %" min-width="80">
+            <template #header>
+              <ElTooltip effect="dark" content="盈亏/成本%" placement="top">
+                <ElText>盈亏率%</ElText>
+              </ElTooltip>
+            </template>
             <template #default="{ row }">
               <div :class="row.calc.profit_rate > 0 ? 'red-text' : (row.calc.profit_rate < 0 ? 'green-text' : '')">
                 {{ `${row.calc.profit_rate? (row.calc.profit_rate * 100).toFixed(2) + '%' : '-'}` }}
@@ -324,6 +376,9 @@ function onRecordClick(row: HoldingRecordItem) {
             </template>
           </ElTableColumn>
           <ElTableColumn prop="record.created" label="创建时间" min-width="120">
+            <template #header>
+              <ElText>创建时间</ElText>
+            </template>
             <template #default="{ row }">
               {{ formatToDate(row.record.created) }}
             </template>
