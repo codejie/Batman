@@ -14,6 +14,8 @@ export type RecordsItem = {
   type: number
   code: string
   name: string
+  target: number
+  order: number
   comment?: string
   updateTime: string
   holding?: number
@@ -29,3 +31,15 @@ export interface UpdateCommentRequest {
   comment?: string
 }
 export type UpdateCommentResult = number
+
+export interface UpdateTargetRequest {
+  id: number
+  target: number
+}
+export type UpdateTargetResult = number
+
+export interface UpdateOrderRequest {
+  id: number
+  order: number
+}
+export type UpdateOrderResult = number

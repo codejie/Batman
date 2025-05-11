@@ -53,5 +53,29 @@ class UpdateCommentResponse(ResponseModel):
 
 @router.post('/update_comment', response_model=UpdateCommentResponse)
 async def update_comment(request: UpdateCommentRequest):
-  result = db.update_comment(id=request.id, comment=request.comment)
+  result = db.update_comment(uid=DEFAULT_UID, id=request.id, comment=request.comment)
   return UpdateCommentResponse(result=result)
+
+class UpdateTargetRequest(RequestModel):
+  id: int
+  target: Optional[float] = None
+
+class UpdateTargetResponse(ResponseModel):
+  result: int
+
+@router.post('/update_target', response_model=UpdateTargetResponse)
+async def update_target(request: UpdateTargetRequest):
+  result = db.update_target(uid=DEFAULT_UID, id=request.id, target=request.target)
+  return UpdateTargetResponse(result=result)
+
+class UpdateOrderRequest(RequestModel):
+  id: int
+  order: Optional[int] = 0
+
+class UpdateOrderResponse(ResponseModel):
+  result: int
+
+@router.post('/update_order', response_model=UpdateOrderResponse)
+async def update_order(request: UpdateOrderRequest):
+  result = db.update_order(uid=DEFAULT_UID, id=request.id, order=request.order)
+  return UpdateOrderResponse(result=result)

@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
-from sqlalchemy import Column, DateTime, Index, Integer, String, func, update, select as sql_select, delete as sql_delete
+from sqlalchemy import Column, DateTime, Float, Index, Integer, String, func, update, select as sql_select, delete as sql_delete
 from app.database import TableBase
 from app.database import dbEngine
 from app.database.data import define as Data, is_item_exist
@@ -16,6 +16,8 @@ class CustomizedRecordTable(TableBase):
   uid = Column(Integer, nullable=False, default=99)
   type = Column(Integer, nullable=False)
   code = Column(String, nullable=False)
+  target = Column(Float, nullable=True)
+  order = Column(Integer, nullable=False, default=0)
   comment = Column(String, nullable=True)
   updated = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.current_timestamp())
 
@@ -29,6 +31,8 @@ class CustomizedRecord(BaseModel):
   type: int
   code: str
   name: str
+  target: Optional[float] = None
+  order: int = 0
   comment: Optional[str] = None
   updated: datetime
   holding: Optional[int] = None
@@ -56,8 +60,16 @@ def delete(uid: int, id: int) -> int:
   stmt = sql_delete(CustomizedRecordTable).where(CustomizedRecordTable.uid == uid).where(CustomizedRecordTable.id == id)
   return dbEngine.delete_stmt(stmt=stmt)
 
-def update_comment(id: int, comment: str = None) -> int:
-  stmt = update(CustomizedRecordTable).values(comment=comment, updted=func.now()).where(CustomizedRecordTable.id == id)
+def update_comment(uid: int, id: int, comment: str = None) -> int:
+  stmt = update(CustomizedRecordTable).values(comment=comment, updted=func.now()).where(CustomizedRecordTable.id == id).where(CustomizedRecordTable.uid == uid)
+  return dbEngine.update_stmt(stmt=stmt)
+
+def update_target(uid: int, id: int, target: float = None) -> int:
+  stmt = update(CustomizedRecordTable).values(target=target, updated=func.now()).where(CustomizedRecordTable.id == id).where(CustomizedRecordTable.uid == uid)
+  return dbEngine.update_stmt(stmt=stmt)
+
+def update_order(uid: int, id: int, order: int = 0) -> int:
+  stmt = update(CustomizedRecordTable).values(order=order, updated=func.now()).where(CustomizedRecordTable.id == id).where(CustomizedRecordTable.uid == uid)
   return dbEngine.update_stmt(stmt=stmt)
 
 def records(uid: int, type: int = None, code: str = None) -> list[CustomizedRecord]:
@@ -79,6 +91,8 @@ def records(uid: int, type: int = None, code: str = None) -> list[CustomizedReco
       type=row[0].type,
       code=row[0].code,
       name=row[1],
+      target=row[0].target,
+      order=row[0].order,
       holding=row[2],
       comment=row[0].comment,
       updated=row[0].updated

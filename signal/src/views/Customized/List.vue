@@ -4,26 +4,38 @@ interface CreateForm {
   code: string
 }
 
+interface UpdateTargetForm {
+  id: number
+  target: number
+}
+
 interface Item {
   record: RecordsItem
   calc?: CustomizedCalcItem
 }
 </script>
+
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn, ElMessageBox, ElSelect, ElOption } from 'element-plus'
-import { apiCreate, apiRecords, RecordsItem, apiRemove } from '@/api/customized';
-import { apiGetLatestHistoryData, apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
+import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '@/api/customized';
+import { apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized';
-import { formatToDateTime } from '@/utils/dateUtil'
 import { KLineDialog } from '@/components/KLine'
+import { HoldingRecordItem } from '@/api/holding';
 
 const createDialogVisible = ref<boolean>(false)
 const createForm = ref<CreateForm>({
   type: '股票',
   code: ''
 })
+const updateTargetDialogVisible = ref<boolean>(false)
+const updateTargetForm = ref<UpdateTargetForm>({
+  id: 0,
+  target: 0
+})
+
 const data = ref<Item[]>([])
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
@@ -58,15 +70,6 @@ async function fetch() {
       })
     }
   }
-
-
-  // for (const item of ret.result) {
-  //   const history = await apiGetLatestHistoryData({ type: item.type, code: item.code })
-  //   data.value.push({
-  //     record: item,
-  //     calc: calcCustomizedData(history.result)
-  //   })
-  // }
 }
 
 async function onAdd() {
@@ -107,61 +110,158 @@ function onRecordClick(row: HoldingRecordItem) {
   klineDialogVisible.value = true
 }
 
+function onTarget(id: number) {
+  updateTargetForm.value.id = id
+  updateTargetDialogVisible.value = true
+}
+async function submitUpdateTarget() {
+  updateTargetDialogVisible.value = false
+
+  const retConfirm = await ElMessageBox.confirm('确定修改目标价格?', '提示', {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+  if (retConfirm === "confirm") {
+    await apiUpdateTarget({
+      id: updateTargetForm.value.id,
+      target: updateTargetForm.value.target
+    })
+    await fetch()
+  }
+}
+
 onMounted(async () => {
   await fetch()
 })
+
+// 最新价 / 目标价 / 差值
+// 涨跌额 / 涨跌幅 / 振幅
+// 最高价 / 最低价 
+// 昨收 / 今开
+// 成交量 / 成交额 ？
+// 量比 / 换手率
+// 5分钟涨跌 / 涨速
+// 60日涨跌幅 / 年初至今涨跌幅
+
 </script>
 
 <template>
   <ContentWrap>
     <div>
-      <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加自选</ElButton>    
+      <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加自选</ElButton>
+      <ElText style="float: right; margin-right: 8px;">数据时间</ElText>
     </div>
     <div>
       <ElTable :data="data" :border="true" stripe :default-sort="{ prop: 'record.updated', order: 'descending' }">
         <ElTableColumn type="index" width="40" />
         <ElTableColumn prop="record.holding" label="持有" width="60">
+          <template #header>
+            <ElText>持有</ElText>
+          </template>
           <template #default="{ row }">
             {{ (row.record.holding ? '是' : '否') }}
           </template>
         </ElTableColumn>
-        <!-- <ElTableColumn prop="record.code" label="代码" width="100">
-          <template #default="{ row }">
-              <ElText tag="b" @click="onRecordClick(row.record)">{{ row.record.code }}</ElText>
-            </template>
-        </ElTableColumn>
-        <ElTableColumn prop="record.name" label="名称" min-width="100" /> -->
-        <ElTableColumn prop="record.code" label="名称/代码" min-width="60">
+        <ElTableColumn prop="record.code" label="名称/代码" min-width="90">
           <template #header>
-            <ElText>名称/代码</ElText>
+            <div><ElText>名称/代码</ElText></div>
+            <!-- <div><ElText>代码</ElText></div> -->
           </template>
           <template #default="{ row }">
             <div @click="onRecordClick(row.record)">
-              <div><ElText tag="b">{{ row.record.name }}</ElText></div>
-              <div><ElText tag="b">{{ row.record.code }}</ElText></div>
+              <div><ElText>{{ row.record.name }}/{{ row.record.code }}</ElText></div>
+              <!-- <div><ElText>{{ row.record.code }}</ElText></div> -->
             </div>
           </template>
         </ElTableColumn>
+        <ElTableColumn min-width="100">
+          <template #header>
+            <!-- <div><ElText>最新价</ElText></div> -->
+            <div><ElText>最新价/目标价/差值</ElText></div>
+          </template>
+          <template #default="{ row }">
+            <div>
+              <ElText>{{ row.calc.最新价.toFixed(2) }}</ElText>
+              <ElText v-if="row.record.target"> / {{ row.record.target.toFixed(2) }} / {{ (row.calc.最新价 - row.record.target).toFixed(2) }}</ElText>
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn min-width="100">
+          <template #header>
+            <div><ElText>昨收/今开</ElText></div>
+          </template>
+          <template #default="{ row }">
+            <div><ElText>{{ row.calc.昨收.toFixed(2) }} / {{ row.calc.今开.toFixed(2) }}</ElText></div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn min-width="150">
+          <template #header>
+            <div><ElText>最高价/最低价/差值</ElText></div>
+          </template>
+          <template #default="{ row }">
+            <div>
+              <ElText>{{ row.calc.最高.toFixed(2) }} / {{ row.calc.最低.toFixed(2) }} / </ElText>
+              <ElText>{{ row.calc.涨跌额.toFixed(2) }}</ElText>
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn min-width="100">
+          <template #header>
+            <!-- <div><ElText>涨跌额</ElText></div> -->
+            <div><ElText>涨跌幅/振幅</ElText></div>
+          </template>
+          <template #default="{ row }">
+            <!-- <div><ElText>{{ row.calc.涨跌额.toFixed(2) }}</ElText></div> -->
+            <div><ElText>{{ row.calc.涨跌幅.toFixed(2) }}% / {{ row.calc.振幅.toFixed(2) }}%</ElText></div>
+          </template>
+        </ElTableColumn>
+        <!-- <ElTableColumn min-width="100">
+          <template #header>
+            <div><ElText>成交量/成交额</ElText></div>
+          </template>
+          <template #default="{ row }">
+            {{ row.record.name }}
+          </template>
+        </ElTableColumn> -->
+        <ElTableColumn min-width="100">
+          <template #header>
+            <div><ElText>量比/换手率</ElText></div>
+          </template>
+          <template #default="{ row }">
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc.量比.toFixed(2) }} / {{ row.calc.换手率.toFixed(2) }}%</ElText></div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn min-width="100">
+          <template #header>
+            <div><ElText>5分钟涨跌/涨速</ElText></div>
+          </template>
+          <template #default="{ row }">
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc.涨跌5分钟.toFixed(2) }} / {{ row.calc.涨速.toFixed(2) }}%</ElText></div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn min-width="120">
+          <template #header>
+            <!-- <div><ElText>涨跌幅</ElText></div>             -->
+            <div><ElText>60日/年初至今涨跌幅</ElText></div>
+          </template>
+          <template #default="{ row }">
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc.涨跌幅60日.toFixed(2) }}% / {{ row.calc.年初至今涨跌幅.toFixed(2) }}%</ElText></div>
+          </template>
+        </ElTableColumn>
+<!-- 
         <ElTableColumn prop="type" label="类型" min-width="100">
           <template #default="{ row }">
             {{ row.record.type == TYPE_STOCK ? '股票' : '指数' }}
           </template>
-        </ElTableColumn>
-        <ElTableColumn label="现价/日期" min-width="100">
-            <template #default="{ row }">
-              {{ `${row.calc?.price.toFixed(2)} / ${row.calc?.date.substring(5)}` }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="calc.price_change" label="涨跌额" min-width="100" />
-        <ElTableColumn prop="calc.price_change_rate" label="涨跌幅" min-width="100" />
-        <ElTableColumn label="操作时间" prop="record.updated" min-width="100">
-          <template #default="{ row }">
-            {{ formatToDateTime(row.record.updated) }}
+        </ElTableColumn>         -->
+        <ElTableColumn prop="action" label="操作" min-width="140">
+          <template #header>
+            <ElText>操作</ElText>
           </template>
-        </ElTableColumn>        
-        <ElTableColumn prop="action" label="操作" min-width="100">
           <template #default="{row}">
-            <ElButton type="danger" @click="onRemove(row.record.id)">删除</ElButton>
+            <ElButton @click="onTarget(row.record.id)">设置目标价</ElButton>
+            <ElButton @click="onRemove(row.record.id)">删除</ElButton>
           </template>
         </ElTableColumn>
       </ElTable>
@@ -186,6 +286,24 @@ onMounted(async () => {
       <template #footer>
         <ElButton @click="createDialogVisible=false">取消</ElButton>
         <ElButton type="primary" @click="onAdd">确定</ElButton>
+      </template>      
+    </ElDialog>    
+    <ElDialog v-model="updateTargetDialogVisible" :destroy-on-close="true" width="25%">
+      <template #header>
+        <ElText>设置目标价格</ElText>
+      </template>
+      <template #default>
+        <ElForm :model="updateTargetForm" label-position="right" label-width="auto">
+          <ElFormItem label="目标价格">
+            <ElInput v-model="updateTargetForm.target" type="number">
+              <template #append>元</template>
+            </ElInput>
+          </ElFormItem>
+        </ElForm>
+      </template>
+      <template #footer>
+        <ElButton @click="updateTargetDialogVisible=false">取消</ElButton>
+        <ElButton type="primary" @click="submitUpdateTarget">确定</ElButton>
       </template>      
     </ElDialog>
     <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" width="60%" />    
