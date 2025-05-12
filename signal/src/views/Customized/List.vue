@@ -183,7 +183,8 @@ onMounted(async () => {
           <template #default="{ row }">
             <div>
               <ElText>{{ row.calc.最新价.toFixed(2) }}</ElText>
-              <ElText v-if="row.record.target"> / {{ row.record.target.toFixed(2) }} / {{ (row.calc.最新价 - row.record.target).toFixed(2) }}</ElText>
+              <ElText v-if="row.record.target"> / {{ row.record.target.toFixed(2) }}</ElText>
+              <ElText v-if="row.record.target" :class="(row.calc.最新价-row.record.target) >= 0 ? 'red-text' : 'green-text'"> / {{ (row.calc.最新价 - row.record.target).toFixed(2) }}</ElText>
             </div>
           </template>
         </ElTableColumn>
@@ -213,7 +214,7 @@ onMounted(async () => {
           </template>
           <template #default="{ row }">
             <!-- <div><ElText>{{ row.calc.涨跌额.toFixed(2) }}</ElText></div> -->
-            <div><ElText>{{ row.calc.涨跌幅.toFixed(2) }}% / {{ row.calc.振幅.toFixed(2) }}%</ElText></div>
+            <div><ElText :class="row.calc.涨跌幅 >=0 ? 'red-text' : 'green-text'">{{ row.calc.涨跌幅.toFixed(2) }}% / {{ row.calc.振幅.toFixed(2) }}%</ElText></div>
           </template>
         </ElTableColumn>
         <!-- <ElTableColumn min-width="100">
@@ -221,7 +222,7 @@ onMounted(async () => {
             <div><ElText>成交量/成交额</ElText></div>
           </template>
           <template #default="{ row }">
-            {{ row.record.name }}
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc.成交量.toFixed(2) }} / {{ row.calc.成交额.toFixed(2) }}</ElText></div>
           </template>
         </ElTableColumn> -->
         <ElTableColumn min-width="100">
@@ -309,3 +310,12 @@ onMounted(async () => {
     <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" width="60%" />    
   </ContentWrap>    
 </template>
+<style lang="css" scoped>
+.green-text {
+    color: green;
+}
+
+.red-text {
+    color: red;
+}
+</style>

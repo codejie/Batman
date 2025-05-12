@@ -1,7 +1,8 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, WebSocket
 from app.database import customized as db
-from app.routers.common import DEFAULT_UID, RequestModel, ResponseModel, verify_token
+from app.database.data.define import SpotData
+from app.routers.common import DEFAULT_UID, WS_SPOT_DATA, RequestModel, ResponseModel, WSClientManager, verify_token
 
 router: APIRouter = APIRouter(prefix="/customized", tags=["customized"], dependencies=[Depends(verify_token)])
 
@@ -79,3 +80,24 @@ class UpdateOrderResponse(ResponseModel):
 async def update_order(request: UpdateOrderRequest):
   result = db.update_order(uid=DEFAULT_UID, id=request.id, order=request.order)
   return UpdateOrderResponse(result=result)
+
+
+"""
+Customized websocket
+"""
+class CustomizedSpotDataClientManager(WSClientManager):
+  def __init__(self):
+    super().__init__(WS_SPOT_DATA)
+    self.customized: dict[int, list[str]] = {}
+
+  async def on_connect(self, websocket: WebSocket, uid: int):
+    await super().on_connect(websocket, uid)
+    customized: list[db.CustomizedRecordTable] = db.select(uid=uid)
+    codes = [r.code for r in customized]
+    self.customized[uid] = codes
+
+  async def broadcast(self, data: list[SpotData]):
+    for uid, socket in self.clients.items():
+      result: list[SpotData] = [d for d in data if d.code in self.customized[uid]]
+      if result:
+        await socket.send_json(result)
