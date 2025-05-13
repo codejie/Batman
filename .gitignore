@@ -2,6 +2,7 @@
 *.i
 batman.db
 db/
+tmp/
 dist-pro/
 
 node_modules
