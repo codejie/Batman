@@ -400,7 +400,7 @@ function setKLineData(data: HistoryDataItem[]) {
 function setTraceData(data: ProfitTraceItem[]) {
   // profitTraceData.value = calcProfitTraceData(data, historyData)
   
-  priceAvgData.value = data.map(item => [item.date, item.price_avg])
+  priceAvgData.value = data.map(item => [item.date, item.price_avg?.toFixed(2)])
   revenueData.value = data.map(item => [item.date, item.revenue])
   profitData.value = data.map(item => [item.date, item.profit])
   holdingData.value = data.map(item => [item.date, Math.abs(item.holding), item.holding > 0 ? 1 : -1])
