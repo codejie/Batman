@@ -166,6 +166,9 @@ def remove_all_history_data() -> int:
 get spot data
 """
 def get_spot_data(type: int, codes: list[str] = None) -> list[Define.SpotData]:
+  if codes is None and len(codes) == 0:
+    return []
+  
   if type == Define.TYPE_STOCK:
     data = Stock.download_spot_data(codes=codes)
   elif type == Define.TYPE_INDEX:

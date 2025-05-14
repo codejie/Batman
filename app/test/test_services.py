@@ -35,7 +35,7 @@ class TestService(unittest.TestCase):
 
     def test_instance(self):
        inst = MyInstance(app_service.exit_event)
-       app_service.instance(inst)
+       app_service.run_instance(inst)
 
        time.sleep(5) 
        app_service.shutdown()

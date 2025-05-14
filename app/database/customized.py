@@ -48,8 +48,10 @@ def insert(uid:int, code: str, type: int = 1, comment: str = None) -> int:
   else:
     raise AppException(f"Item not found: {type}, {code}")
 
-def select(uid: int, type: int = None, code: str = None) -> list[CustomizedRecordTable]:
-  stmt = sql_select(CustomizedRecordTable).where(CustomizedRecordTable.uid == uid)
+def select(uid: int = None, type: int = None, code: str = None) -> list[CustomizedRecordTable]:
+  stmt = sql_select(CustomizedRecordTable)
+  if uid:
+    stmt = stmt.where(CustomizedRecordTable.uid == uid)
   if type:
     stmt = stmt.where(CustomizedRecordTable.type == type)
   if code: 
