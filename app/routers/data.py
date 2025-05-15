@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from app.database import data as Data
 from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData, SpotData
 from app.routers.common import RequestModel, ResponseModel, verify_token, verify_system_token
-from app.routers.customized import CustomizedSpotDataClientManager
+# from app.routers.customized import CustomizedSpotDataClientManager
+from app.services.spot_data_fetch import spotDataFetchService
 
 router: APIRouter = APIRouter(prefix="/data", tags=["Data"], dependencies=[Depends(verify_token)])
 
@@ -144,17 +145,21 @@ Customized websocket
 
 # WebSocketVerifyTokenDepend = Annotated[str, Depends(verify_token)]
 
-spotDataClientManager = CustomizedSpotDataClientManager()
+# spotDataClientManager = CustomizedSpotDataClientManager()
 
 @router.websocket('/ws/spot_data')
 async def ws_spot_data(websocket: WebSocket, uid=verify_token):
-  await spotDataClientManager.on_connect(websocket, uid)
-  try:
-    while True:
-      data = Data.get_spot_data(type=TYPE_STOCK)
-      await spotDataClientManager.broadcast(data)
-      await asyncio.sleep(1)
-  except WebSocketDisconnect as e:
-    spotDataClientManager.on_disconnect(websocket, uid)
-  except Exception as e:
-    print(e)
+  await websocket.accept()
+  spotDataFetchService.add_client(uid, websocket)
+
+
+  # await spotDataClientManager.on_connect(websocket, uid)
+  # try:
+  #   while True:
+  #     data = Data.get_spot_data(type=TYPE_STOCK)
+  #     await spotDataClientManager.broadcast(data)
+  #     await asyncio.sleep(1)
+  # except WebSocketDisconnect as e:
+  #   spotDataClientManager.on_disconnect(websocket, uid)
+  # except Exception as e:
+  #   print(e)

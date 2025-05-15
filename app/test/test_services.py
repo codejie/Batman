@@ -1,7 +1,7 @@
 import threading
 import time
 import unittest
-from app.services import InstanceBase, Service, app_service
+from app.services import Instance, InstanceBase, Service, appServices
 
 def func(exit_event: threading.Event):
   while not exit_event.is_set():
@@ -15,31 +15,46 @@ class MyInstance(InstanceBase):
       time.sleep(1)
 
 class TestService(unittest.TestCase):
+    # def setUp(self) -> None:
+    #     appServices.start()
+
+    # def tearDown(self) -> None:
+    #     appServices.shutdown()
+
+    # # def test_shutdown(self):
+    # #     self.service.start()
+    # #     self.service.shutdown()
+    # #     self.assertFalse(self.service.is_running())
+
+    # def test_run(self):
+    #     appServices.run(target=func, exit_event=appServices.exit_event)
+
+    #     time.sleep(5)
+    #     appServices.shutdown()
+    #     self.assertTrue(True)
+
+    # def test_instance(self):
+    #   #  inst = MyInstance(app_service.exit_event)
+    #    appServices.run_instance(MyInstance)
+
+    #    time.sleep(5) 
+    #    appServices.shutdown()
+    #    self.assertTrue(True)
+
     def setUp(self) -> None:
-        app_service.start()
+        appServices.start()
 
-    def tearDown(self) -> None:
-        app_service.shutdown()
-
-    # def test_shutdown(self):
-    #     self.service.start()
-    #     self.service.shutdown()
-    #     self.assertFalse(self.service.is_running())
-
-    def test_run(self):
-        app_service.run(target=func, exit_event=app_service.exit_event)
-
-        time.sleep(5)
-        app_service.shutdown()
-        self.assertTrue(True)
+    # def tearDown(self) -> None:
+    #     appServices.shutdown()
 
     def test_instance(self):
-       inst = MyInstance(app_service.exit_event)
-       app_service.run_instance(inst)
+       base = appServices.run_instance(Instance, name="base", delay=2)
+      #  inst = MyInstance(app_service.exit_event)
+      #  appServices.run_instance(MyInstance)
 
        time.sleep(5) 
-       app_service.shutdown()
-       self.assertTrue(True)
+       appServices.shutdown()
+       self.assertTrue(True)    
        
 
 if __name__ == '__main__':

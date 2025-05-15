@@ -6,14 +6,17 @@ from app.routers import register_routers
 from app.logger import logger
 from app.exception import AppException
 from app.database import dbEngine
+from app.services import appServices
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   logger.info("Application is starting up...")
   dbEngine.start()
+  appServices.start()
   yield
-  dbEngine.shutdown()
   logger.info("Application is shutting down...")
+  appServices.shutdown()
+  dbEngine.shutdown()
 
 app = FastAPI(title='Batman API', version='v0.3', lifespan=lifespan)
 
