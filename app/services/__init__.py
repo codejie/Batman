@@ -84,6 +84,7 @@ class AppServices:
   def run_instance(self, type: Instance,  name: str, delay: int, **kwargs) -> Instance:
     instance = type(name=name, delay=delay, **kwargs)
     self.instances[name] = instance
+    asyncio.run(instance.start())
     instance.start()
     return instance
   

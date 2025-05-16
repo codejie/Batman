@@ -2,6 +2,7 @@ import threading
 import time
 import unittest
 from app.services import Instance, InstanceBase, Service, appServices
+from app.services.task_scheduler import serviceScheduler
 
 def func(exit_event: threading.Event):
   while not exit_event.is_set():
@@ -42,10 +43,14 @@ class TestService(unittest.TestCase):
     #    self.assertTrue(True)
 
     def setUp(self) -> None:
-        appServices.start()
+        # appServices.start()
+      # serviceScheduler.start()
+      pass
 
-    # def tearDown(self) -> None:
+    def tearDown(self) -> None:
+      # serviceScheduler.shutdown()
     #     appServices.shutdown()
+      pass
 
     def test_instance(self):
        base = appServices.run_instance(Instance, name="base", delay=2)
@@ -56,6 +61,13 @@ class TestService(unittest.TestCase):
        appServices.shutdown()
        self.assertTrue(True)    
        
+    def test_scheduler(self):
+      serviceScheduler.start()
+
+      time.sleep(5)
+      serviceScheduler.shutdown()
+      self.assertTrue(True)
+
 
 if __name__ == '__main__':
     unittest.main()
