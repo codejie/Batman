@@ -102,7 +102,7 @@ from app.services.service import Service
 from app.database import data as Data, customized as customizedData
 
 class SpotDataFetchService(Service):
-  __PERIOD: int = 2
+  __PERIOD: int = 5
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
@@ -159,30 +159,33 @@ class SpotDataFetchService(Service):
     return (index, self.spot_data[index])
       
   async def run(self, stop_event: asyncio.Event):
-    while not stop_event.is_set():
-      data = self.__get_spot_data()
-      print(data)
-      for client in self.clients:
-        uid = client[0]
-        if uid not in self.uid:
-          continue
-        d = [d for d in data[1] if (d.type, d.code) in self.uid[uid]]
-        if len(d) == 0:
-          continue
-        msg = {
-          'seconds': data[0],
-          'data': d
-        }
-        try:
-          await client.send_json(msg)
-        except WebSocketDisconnect:
-          print(f"Client {uid} disconnected")
-          await self.remove_client(uid, client)
-        except Exception as e:
-          print(f"Error sending data to client {uid}: {e}")
-          await self.remove_client(uid, client)
+    try:
+      while not stop_event.is_set():
+        data = self.__get_spot_data()
+        print(data)
+        for client in self.clients:
+          uid = client[0]
+          if uid not in self.uid:
+            continue
+          d = [d for d in data[1] if (d.type, d.code) in self.uid[uid]]
+          if len(d) == 0:
+            continue
+          msg = {
+            'seconds': data[0],
+            'data': d
+          }
+          try:
+            await client.send_json(msg)
+          except WebSocketDisconnect:
+            print(f"Client {uid} disconnected")
+            await self.remove_client(uid, client)
+          except Exception as e:
+            print(f"Error sending data to client {uid}: {e}")
+            await self.remove_client(uid, client)
 
-      await asyncio.sleep(SpotDataFetchService.__PERIOD)
-      print('running...')
+        await asyncio.sleep(SpotDataFetchService.__PERIOD)
+        print('running...')
+    except Exception as e:
+      print(e)
     print('service exit...')
 

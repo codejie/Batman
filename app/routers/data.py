@@ -4,8 +4,6 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from app.database import data as Data
 from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData, SpotData
 from app.routers.common import RequestModel, ResponseModel, verify_token, verify_system_token
-# from app.routers.customized import CustomizedSpotDataClientManager
-from app.services.spot_data_fetch import spotDataFetchService
 
 router: APIRouter = APIRouter(prefix="/data", tags=["Data"], dependencies=[Depends(verify_token)])
 
@@ -150,7 +148,7 @@ Customized websocket
 @router.websocket('/ws/spot_data')
 async def ws_spot_data(websocket: WebSocket, uid=verify_token):
   await websocket.accept()
-  spotDataFetchService.add_client(uid, websocket)
+  # spotDataFetchService.add_client(uid, websocket)
 
 
   # await spotDataClientManager.on_connect(websocket, uid)
