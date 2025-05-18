@@ -17,13 +17,53 @@ interface Item {
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn, ElMessageBox, ElSelect, ElOption } from 'element-plus'
+import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn, ElMessageBox, ElSelect, ElOption, ElMessage } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '@/api/customized';
 import { apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized';
 import { KLineDialog } from '@/components/KLine'
 import { HoldingRecordItem } from '@/api/holding';
+import { useWebSocket, UseWebSocketOptions } from '@vueuse/core';
+import { useUserStoreWithOut } from '@/store/modules/user';
+
+const connected = ref<boolean>(false)
+
+function onConnected(ws: WebSocket) {
+  connected.value = true
+}
+
+function onDisconnected(ws: WebSocket) {
+  connected.value = false
+}
+
+function onError(ws: WebSocket, event: Event) {
+  ElMessage.error('连接异常')
+}
+
+function onMessage(ws: WebSocket, event: MessageEvent) {
+  console.info('onMessage')
+  console.info(event.data)
+
+  // onData(JSON.parse(event.data)) // Test Record arrived
+}
+
+const opts: UseWebSocketOptions = {
+  autoConnect: false,
+  immediate: false,
+  autoClose: true,
+  autoReconnect: {
+    retries: 4,
+    delay: 1000
+  },
+  onConnected: onConnected,
+  onDisconnected: onDisconnected,
+  onError: onError,
+  onMessage: onMessage
+}
+
+const WS_URL_SPOT_DATA = 'ws://localhost:8000/services/ws/spot_data?token=' + useUserStoreWithOut().getTokenKey
+const { open } = useWebSocket(WS_URL_SPOT_DATA, opts)
 
 const createDialogVisible = ref<boolean>(false)
 const createForm = ref<CreateForm>({
@@ -144,11 +184,15 @@ onMounted(async () => {
 // 5分钟涨跌 / 涨速
 // 60日涨跌幅 / 年初至今涨跌幅
 
+async function onTest() {
+  await open()
+}
 </script>
 
 <template>
   <ContentWrap>
     <div>
+      <!-- <ElButton class="my-4" type="primary" @click="onTest">Test</ElButton> -->
       <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加自选</ElButton>
       <ElText style="float: right; margin-right: 8px;">数据时间</ElText>
     </div>

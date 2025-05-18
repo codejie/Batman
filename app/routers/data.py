@@ -1,6 +1,6 @@
 import asyncio
 from typing import Optional
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends
 from app.database import data as Data
 from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData, SpotData
 from app.routers.common import RequestModel, ResponseModel, verify_token, verify_system_token
@@ -145,9 +145,13 @@ Customized websocket
 
 # spotDataClientManager = CustomizedSpotDataClientManager()
 
-@router.websocket('/ws/spot_data')
-async def ws_spot_data(websocket: WebSocket, uid=verify_token):
-  await websocket.accept()
+# @router.websocket('/ws/spot_data')
+# async def ws_spot_data(websocket: WebSocket): #, uid=verify_token):
+#   uid = 99
+#   await websocket.accept()
+#   service: SpotDataFetchService = serviceScheduler.get_service(SpotDataFetchService.NAME)
+#   if service is None:
+#     service.add_client(uid, websocket)
   # spotDataFetchService.add_client(uid, websocket)
 
 

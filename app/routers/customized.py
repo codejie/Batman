@@ -85,19 +85,19 @@ async def update_order(request: UpdateOrderRequest):
 """
 Customized websocket
 """
-class CustomizedSpotDataClientManager(WSClientManager):
-  def __init__(self):
-    super().__init__(WS_SPOT_DATA)
-    self.customized: dict[int, list[str]] = {}
+# class CustomizedSpotDataClientManager(WSClientManager):
+#   def __init__(self):
+#     super().__init__(WS_SPOT_DATA)
+#     self.customized: dict[int, list[str]] = {}
 
-  async def on_connect(self, websocket: WebSocket, uid: int):
-    await super().on_connect(websocket, uid)
-    customized: list[db.CustomizedRecordTable] = db.select(uid=uid)
-    codes = [r.code for r in customized]
-    self.customized[uid] = codes
+#   async def on_connect(self, websocket: WebSocket, uid: int):
+#     await super().on_connect(websocket, uid)
+#     customized: list[db.CustomizedRecordTable] = db.select(uid=uid)
+#     codes = [r.code for r in customized]
+#     self.customized[uid] = codes
 
-  async def broadcast(self, data: list[SpotData]):
-    for uid, socket in self.clients.items():
-      result: list[SpotData] = [d for d in data if d.code in self.customized[uid]]
-      if result:
-        await socket.send_json(result)
+#   async def broadcast(self, data: list[SpotData]):
+#     for uid, socket in self.clients.items():
+#       result: list[SpotData] = [d for d in data if d.code in self.customized[uid]]
+#       if result:
+#         await socket.send_json(result)
