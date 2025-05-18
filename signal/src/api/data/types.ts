@@ -75,3 +75,9 @@ export interface GetSpotDataRequest {
   codes?: string[]
 }
 export type GetSpotDataResult = SpotDataItem[]
+
+export interface GetNameRequest {
+  type: number
+  code: string
+}
+export type GetNameResult = string

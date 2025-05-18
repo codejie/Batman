@@ -19,7 +19,7 @@ interface Item {
 import { onMounted, ref } from 'vue';
 import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn, ElMessageBox, ElSelect, ElOption, ElMessage } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '@/api/customized';
-import { apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
+import { apiGetName, apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized';
 import { KLineDialog } from '@/components/KLine'
@@ -75,10 +75,16 @@ const updateTargetForm = ref<UpdateTargetForm>({
   id: 0,
   target: 0
 })
+const viewDialogVisible = ref<boolean>(false)
+const viewForm = ref<CreateForm>({
+  type: '股票',
+  code: ''
+})
 
 const data = ref<Item[]>([])
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
+const fetchTime = ref<Date>()
 
 async function fetch() {
   const ret = await apiRecords({})
@@ -87,29 +93,44 @@ async function fetch() {
   const stocks = ret.result.filter(item => item.type === TYPE_STOCK).map(item => item)
   const indexes = ret.result.filter(item => item.type === TYPE_INDEX).map(item => item)
 
-  if (stocks.length > 0) {
-    const codes: string[] = stocks.map(item => item.code)
-    const stockRet = await apiGetSpotData({ type: TYPE_STOCK, codes: codes })
+  try {
+    if (stocks.length > 0) {
+      const codes: string[] = stocks.map(item => item.code)
+      const stockRet = await apiGetSpotData({ type: TYPE_STOCK, codes: codes })
+      for (const item of stocks) {
+        const spot = stockRet.result.find(i => i.代码 === item.code)
+        data.value.push({
+          record: item,
+          calc: calcCustomizedData(spot)
+        })
+      }
+    }
+    if (indexes.length > 0) {
+      const codes: string[] = indexes.map(item => item.code)
+      const indexRet = await apiGetSpotData({ type: TYPE_INDEX, codes: codes })
+      for (const item of indexes) {
+        const spot = indexRet.result.find(i => i.代码 === item.code)
+        data.value.push({
+          record: item,
+          calc: calcCustomizedData(spot)
+        })
+      }      
+    }
+  } catch (e) {
     for (const item of stocks) {
-      const spot = stockRet.result.find(i => i.代码 === item.code)
       data.value.push({
         record: item,
-        calc: calcCustomizedData(spot)
-      })
+        calc: undefined
+      })      
     }
-  }
-
-  if (indexes.length > 0) {
-    const codes: string[] = indexes.map(item => item.code)
-    const indexRet = await apiGetSpotData({ type: TYPE_INDEX, codes: codes })
-    for (const item of indexes) {
-      const spot = indexRet.result.find(i => i.代码 === item.code)
+    for (const item of stocks) {
       data.value.push({
         record: item,
-        calc: calcCustomizedData(spot)
-      })
+        calc: undefined
+      })      
     }
   }
+  fetchTime.value = new Date()
 }
 
 async function onAdd() {
@@ -119,6 +140,23 @@ async function onAdd() {
   })
   createDialogVisible.value = false
   await fetch()
+}
+
+async function onView() {
+  const type = viewForm.value.type == '股票' ? TYPE_STOCK : TYPE_INDEX 
+  const ret = await apiGetName({
+    type: type,
+    code: viewForm.value.code
+  })
+  viewDialogVisible.value = false
+  if (ret.result) {
+    reqParam.value = {
+      code: viewForm.value.code,
+      name: ret.result,
+      type: type,
+    }
+    klineDialogVisible.value = true    
+  }
 }
 
 async function onRemove(id: number) {
@@ -191,10 +229,12 @@ async function onTest() {
 
 <template>
   <ContentWrap>
-    <div>
-      <!-- <ElButton class="my-4" type="primary" @click="onTest">Test</ElButton> -->
-      <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加自选</ElButton>
-      <ElText style="float: right; margin-right: 8px;">数据时间</ElText>
+    <div class="my-4">
+      <ElButton class="my-4" type="primary" @click="onTest">Test</ElButton>
+      <ElButton type="primary" @click="createDialogVisible=true">增加自选</ElButton>
+      <ElButton @click="viewDialogVisible=true">快速查看</ElButton>
+      <ElButton style="float: right;" @click="fetch()">刷新</ElButton>
+      <ElText style="float: right; margin-right: 8px;">{{ fetchTime?.getHours() }}:{{ fetchTime?.getMinutes() }}:{{ fetchTime?.getSeconds() }}</ElText>
     </div>
     <div>
       <ElTable :data="data" :border="true" stripe :default-sort="{ prop: 'record.updated', order: 'descending' }">
@@ -226,9 +266,9 @@ async function onTest() {
           </template>
           <template #default="{ row }">
             <div>
-              <ElText>{{ row.calc.最新价.toFixed(2) }}</ElText>
+              <ElText>{{ row.calc?.最新价.toFixed(2) }}</ElText>
               <ElText v-if="row.record.target"> / {{ row.record.target.toFixed(2) }}</ElText>
-              <ElText v-if="row.record.target" :class="(row.calc.最新价-row.record.target) >= 0 ? 'red-text' : 'green-text'"> / {{ (row.calc.最新价 - row.record.target).toFixed(2) }}</ElText>
+              <ElText v-if="row.record.target" :class="(row.calc?.最新价-row.record.target) >= 0 ? 'red-text' : 'green-text'"> / {{ (row.calc?.最新价 - row.record.target).toFixed(2) }}</ElText>
             </div>
           </template>
         </ElTableColumn>
@@ -237,7 +277,7 @@ async function onTest() {
             <div><ElText>昨收/今开</ElText></div>
           </template>
           <template #default="{ row }">
-            <div><ElText>{{ row.calc.昨收.toFixed(2) }} / {{ row.calc.今开.toFixed(2) }}</ElText></div>
+            <div><ElText>{{ row.calc?.昨收.toFixed(2) }} / {{ row.calc?.今开?.toFixed(2) }}</ElText></div>
           </template>
         </ElTableColumn>
         <ElTableColumn min-width="150">
@@ -246,8 +286,8 @@ async function onTest() {
           </template>
           <template #default="{ row }">
             <div>
-              <ElText>{{ row.calc.最高.toFixed(2) }} / {{ row.calc.最低.toFixed(2) }} / </ElText>
-              <ElText>{{ row.calc.涨跌额.toFixed(2) }}</ElText>
+              <ElText>{{ row.calc?.最高.toFixed(2) }} / {{ row.calc?.最低.toFixed(2) }} / </ElText>
+              <ElText>{{ row.calc?.涨跌额.toFixed(2) }}</ElText>
             </div>
           </template>
         </ElTableColumn>
@@ -257,8 +297,8 @@ async function onTest() {
             <div><ElText>涨跌幅/振幅</ElText></div>
           </template>
           <template #default="{ row }">
-            <!-- <div><ElText>{{ row.calc.涨跌额.toFixed(2) }}</ElText></div> -->
-            <div><ElText :class="row.calc.涨跌幅 >=0 ? 'red-text' : 'green-text'">{{ row.calc.涨跌幅.toFixed(2) }}% / {{ row.calc.振幅.toFixed(2) }}%</ElText></div>
+            <!-- <div><ElText>{{ row.calc?.涨跌额.toFixed(2) }}</ElText></div> -->
+            <div><ElText :class="row.calc?.涨跌幅 >=0 ? 'red-text' : 'green-text'">{{ row.calc?.涨跌幅.toFixed(2) }}% / {{ row.calc?.振幅.toFixed(2) }}%</ElText></div>
           </template>
         </ElTableColumn>
         <!-- <ElTableColumn min-width="100">
@@ -266,7 +306,7 @@ async function onTest() {
             <div><ElText>成交量/成交额</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc.成交量.toFixed(2) }} / {{ row.calc.成交额.toFixed(2) }}</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.成交量.toFixed(2) }} / {{ row.calc?.成交额.toFixed(2) }}</ElText></div>
           </template>
         </ElTableColumn> -->
         <ElTableColumn min-width="100">
@@ -274,7 +314,7 @@ async function onTest() {
             <div><ElText>量比/换手率</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc.量比.toFixed(2) }} / {{ row.calc.换手率.toFixed(2) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.量比.toFixed(2) }} / {{ row.calc?.换手率.toFixed(2) }}%</ElText></div>
           </template>
         </ElTableColumn>
         <ElTableColumn min-width="100">
@@ -282,7 +322,7 @@ async function onTest() {
             <div><ElText>5分钟涨跌/涨速</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc.涨跌5分钟.toFixed(2) }} / {{ row.calc.涨速.toFixed(2) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.涨跌5分钟.toFixed(2) }} / {{ row.calc?.涨速.toFixed(2) }}%</ElText></div>
           </template>
         </ElTableColumn>
         <ElTableColumn min-width="120">
@@ -291,7 +331,7 @@ async function onTest() {
             <div><ElText>60日/年初至今涨跌幅</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc.涨跌幅60日.toFixed(2) }}% / {{ row.calc.年初至今涨跌幅.toFixed(2) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.涨跌幅60日.toFixed(2) }}% / {{ row.calc?.年初至今涨跌幅.toFixed(2) }}%</ElText></div>
           </template>
         </ElTableColumn>
 <!-- 
@@ -332,7 +372,29 @@ async function onTest() {
         <ElButton @click="createDialogVisible=false">取消</ElButton>
         <ElButton type="primary" @click="onAdd">确定</ElButton>
       </template>      
-    </ElDialog>    
+    </ElDialog>
+    <ElDialog v-model="viewDialogVisible" :destroy-on-close="true" width="25%">
+      <template #header>
+        <ElText tag="b">快速查看</ElText>
+      </template>
+      <template #default>
+        <ElForm :model="viewForm" label-position="right" label-width="auto">
+          <ElFormItem label="类型">
+            <ElSelect v-model="viewForm.type">
+              <ElOption label="股票" value="股票" />
+              <ElOption label="指数" value="指数" />
+            </ElSelect>
+          </ElFormItem>
+          <ElFormItem label="代码">
+            <ElInput v-model="viewForm.code" :maxlength="6" />
+          </ElFormItem>
+        </ElForm>
+      </template>
+      <template #footer>
+        <ElButton @click="viewDialogVisible=false">取消</ElButton>
+        <ElButton type="primary" @click="onView">确定</ElButton>
+      </template>      
+    </ElDialog>       
     <ElDialog v-model="updateTargetDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
         <ElText>设置目标价格</ElText>

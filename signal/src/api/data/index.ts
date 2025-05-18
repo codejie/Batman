@@ -36,3 +36,10 @@ export const apiGetSpotData = (
     data
   })
 }
+
+export const apiGetName = (data: Types.GetNameRequest): Promise<IResponse<Types.GetNameResult>> => {
+  return request.post({
+    url: '/data/get_name',
+    data
+  })
+}
