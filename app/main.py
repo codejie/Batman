@@ -7,15 +7,18 @@ from app.logger import logger
 from app.exception import AppException
 from app.database import dbEngine
 from app.services import serviceScheduler
+from app.setting import SERVICE_SCHEDULER_ENABLED
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   logger.info("Application is starting up...")
   dbEngine.start()
-  serviceScheduler.start()
+  if SERVICE_SCHEDULER_ENABLED:
+    serviceScheduler.start()
   yield
   logger.info("Application is shutting down...")
-  await serviceScheduler.shutdown()
+  if SERVICE_SCHEDULER_ENABLED:
+    await serviceScheduler.shutdown()
   dbEngine.shutdown()
 
 app = FastAPI(title='Batman API', version='v0.3', lifespan=lifespan)
