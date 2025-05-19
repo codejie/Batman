@@ -103,6 +103,24 @@ class SpotData(BaseModel):
   涨跌幅60日: Optional[float] = None
   年初至今涨跌幅: Optional[float] = None
 
+  def to_dict(self):
+    return {
+      '序号': self.序号,
+      '代码': self.代码,
+      '名称': self.名称,
+      '最新价': self.最新价,
+      '涨跌幅': self.涨跌幅,
+      '涨跌额': self.涨跌额,
+      '成交量': self.成交量,
+      '成交额': self.成交额,
+      '振幅': self.振幅,
+      '最高': self.最高,
+      '最低': self.最低,
+      '今开': self.今开,
+      '昨收': self.昨收,
+      '量比': self.量比 
+    }
+
   # class Config:
   #   from_attributes = True
 

@@ -31,10 +31,12 @@ const connected = ref<boolean>(false)
 
 function onConnected(ws: WebSocket) {
   connected.value = true
+  ElMessage.success('连接成功')
 }
 
 function onDisconnected(ws: WebSocket) {
   connected.value = false
+  ElMessage.error('连接关闭')
 }
 
 function onError(ws: WebSocket, event: Event) {
