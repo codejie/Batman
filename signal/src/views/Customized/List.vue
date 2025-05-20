@@ -54,10 +54,11 @@ const opts: UseWebSocketOptions = {
   autoConnect: false,
   immediate: false,
   autoClose: true,
-  autoReconnect: {
-    retries: 4,
-    delay: 1000
-  },
+  autoReconnect: false,
+  // {
+  //   retries: 4,
+  //   delay: 1000
+  // },
   onConnected: onConnected,
   onDisconnected: onDisconnected,
   onError: onError,

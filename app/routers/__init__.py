@@ -12,3 +12,4 @@ def register_routers(app: FastAPI) -> list[APIRouter]:
   app.include_router(services.router)
   app.include_router(system.router)
   app.include_router(account.router)
+

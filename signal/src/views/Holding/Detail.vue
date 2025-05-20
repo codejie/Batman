@@ -127,7 +127,7 @@ function onKLineDialogClose() {
           </div>
           <div class="mx-24px my-8px">
             <ElTable :data="profitTableData" stripe :border="true" :default-sort="{ prop: 'date', order: 'descending' }">
-              <ElTableColumn  type="index" width="40" />
+              <ElTableColumn  type="index" width="50" />
               <ElTableColumn prop="date" label="日期" min-width="60" />
               <ElTableColumn prop="quantity" label="操作" min-width="50" />
               <ElTableColumn prop="price" label="买入" min-width="60">
@@ -169,12 +169,16 @@ function onKLineDialogClose() {
               </ElTableColumn>
               <ElTableColumn label="昨差" min-width="80">
                 <template #default="{ row }">
-                  {{ row.pre_profit !== undefined ? row.pre_profit?.toFixed(2) : '-'}}
+                  <div :class="row.pre_profit > 0 ? 'red-text' : (row.pre_profit < 0 ? 'green-text' : '')">
+                    {{ row.pre_profit !== undefined ? row.pre_profit?.toFixed(2) : '-'}}
+                  </div>
                 </template>
               </ElTableColumn>
               <ElTableColumn label="昨差率 %" min-width="100">
                 <template #default="{ row }">
-                  {{ row.pre_profit_rate !== undefined ? `${(row.pre_profit_rate * 100).toFixed(2)}%` : '-'}}
+                  <div :class="row.pre_profit_rate > 0 ? 'red-text' : (row.pre_profit_rate < 0 ? 'green-text' : '')">
+                    {{ row.pre_profit_rate !== undefined ? `${(row.pre_profit_rate * 100).toFixed(2)}%` : '-'}}
+                  </div>
                 </template>
               </ElTableColumn>              
             </ElTable>            
@@ -232,4 +236,12 @@ function onKLineDialogClose() {
     <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" :title="reqParam?.name" @update:on-close="onKLineDialogClose" width="60%" />    
   </ContentDetailWrap>
 </template>
+<style lang="css" scoped>
+.green-text {
+    color: green;
+}
 
+.red-text {
+    color: red;
+}
+</style>
