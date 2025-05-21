@@ -24,7 +24,7 @@ class SpotDataFetchService(Service):
     super().__init__(**kwargs)
 
     # self.spot_data: dict[str, CustomizedSpoData] = {} # hour:minute:second, spot_data
-    self.spot_data: list[CustomizedSpoData]
+    self.spot_data: list[CustomizedSpoData] = []
 
     self.stocks: list[str] = []
     self.indices: list[str] = []
@@ -52,6 +52,7 @@ class SpotDataFetchService(Service):
 
   def create_data_event(self, id: int) -> asyncio.Event:
     event = asyncio.Event()
+    event.clear()
     self.data_events.append(event)
     return event
   
@@ -95,6 +96,7 @@ class SpotDataFetchService(Service):
     )
 
   async def run(self, stop_event: asyncio.Event):
+    await asyncio.sleep(SpotDataFetchService.__PERIOD)
     while not stop_event.is_set():
       try:
         self.__get_spot_data()

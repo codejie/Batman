@@ -11,3 +11,4 @@ if SERVICE_SPOT_DATA_ENABLED:
 wsClientManager: dict[str, WSClientManager] = {}
 if SERVICE_SPOT_DATA_ENABLED:
   wsClientManager[SpotDataClientManager.NAME] = SpotDataClientManager(service=serviceScheduler.get_service(SpotDataFetchService.NAME))
+  wsClientManager[SpotDataClientManager.NAME].start()
