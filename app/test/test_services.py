@@ -3,6 +3,7 @@ import time
 import unittest
 # from app.services import Instance, InstanceBase, Service, appServices
 from app.services import serviceScheduler
+from app.services.task_manager import Task, TaskManager
 
 def func(exit_event: threading.Event):
   while not exit_event.is_set():
@@ -75,6 +76,13 @@ class TestService(unittest.TestCase):
     #   time.sleep(10)
     #   self.assertTrue(True)
 
+    async def test_task_manager(self):
+        task_manager = TaskManager()
+        task_manager.start()
+        # task_manager.add_task(Task)
+        time.sleep(5)
+        await task_manager.shutdown()
+        self.assertTrue(True)
 
 if __name__ == '__main__':
     unittest.main()
