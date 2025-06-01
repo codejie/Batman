@@ -46,7 +46,7 @@ def insert(uid:int, code: str, type: int = 1, comment: str = None) -> int:
   if exists:
     return dbEngine.insert_instance(CustomizedRecordTable(uid=uid, type=type, code=code, comment=comment))
   else:
-    raise AppException(f"Item not found: {type}, {code}")
+    raise AppException(message=f"Item not found: {type}, {code}")
 
 def select(uid: int = None, type: int = None, code: str = None) -> list[CustomizedRecordTable]:
   stmt = sql_select(CustomizedRecordTable)

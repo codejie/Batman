@@ -1,11 +1,9 @@
 """
 Exception
 """
-class AppException(Exception):
-    def __init__(self, code: int = -1, message: str = None) -> None:
-        self.code = code
-        self.message = message
+from typing import Optional
 
-    def __init__(self, e: Exception) -> None:
+class AppException(Exception):
+    def __init__(self, e: Optional[Exception] = None, code: int = -1, message: Optional[str] = None) -> None:
         self.code = -1
         self.message = str(e)
