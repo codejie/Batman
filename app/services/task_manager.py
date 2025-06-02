@@ -3,14 +3,14 @@ import threading
 from typing import Optional
 
 class Task:
-  def __init__(self, exit_event: asyncio.Event, name: str):
+  def __init__(self, name: str, **kwargs):
     self.name = name
-    self.exit_event = exit_event
+    self.kwargs = kwargs
 
-  async def run(self):
+  async def run(self, exit_event: asyncio.Event):
     print(f"Task {self.name} started.")
 
-    while not self.exit_event.is_set():
+    while not exit_event.is_set():
       await asyncio.sleep(1)
       print(f"Task {self.name} is running...")
 
@@ -36,7 +36,7 @@ class TaskManager:
       while not self._exit_event.is_set():
         try:
           task = self._task_queue.get_nowait()
-          asyncio.create_task(task.run())
+          asyncio.create_task(task.run(self._exit_event))
         except asyncio.QueueEmpty:
           await asyncio.sleep(0.1)
         except Exception as e:
