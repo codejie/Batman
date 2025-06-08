@@ -3,8 +3,9 @@ import threading
 from typing import Optional
 
 class Task:
-  def __init__(self, name: str, **kwargs):
-    self.name = name
+  NAME: str = "task"
+  def __init__(self, name:str, **kwargs):
+    self.name = name if name else self.NAME
     self.kwargs = kwargs
 
   async def run(self, exit_event: asyncio.Event):
@@ -16,7 +17,24 @@ class Task:
 
     print(f"Task {self.name} exiting.")
 
+  async def is_triggered(self, event: asyncio.Event, timeout: float) -> bool:
+    """
+    Check if the event is set within the given timeout.
+    Returns True if the event is set, False if it times out.
+    """
+    try:
+      await asyncio.wait_for(event.wait(), timeout)
+      return True
+    except asyncio.TimeoutError:
+      return False
+
+"""
+TaskManager is a class that manages asynchronous tasks in a separate thread.
+It allows adding tasks, starting and stopping the task loop, and managing task instances.
+"""
 class TaskManager:
+  TASK_EXIT_DELAY: int = 30  # seconds
+
   def __init__(self):
     self._thread: threading.Thread | None = None
     self._thread_ready: threading.Event = threading.Event()
@@ -75,7 +93,7 @@ class TaskManager:
     self._thread.start()
     self._thread_ready.wait()
 
-  def stop(self):
+  def shutdown(self):
     if self._thread is None or not self._thread.is_alive():
       print("TaskManager is not running.")
       return
@@ -83,7 +101,7 @@ class TaskManager:
     self._exit_event.set()
     if self._loop and self._loop.is_running():
       self._loop.call_soon_threadsafe(self._loop.stop)
-    self._thread.join(timeout=5)  # Wait for the thread to finish
+    self._thread.join(timeout=self.TASK_EXIT_DELAY)  # Wait for the thread to finish
     if self._thread.is_alive():
       print("TaskManager thread did not stop in time.")
 
@@ -97,9 +115,10 @@ class TaskManager:
   def set_exit_event(self):
     self._exit_event.set()
 
-  def add_task(self, task: type, name: str):
-    instance = task(self._exit_event, name)
+  def add_task(self, task: type, name: Optional[str] = None) -> Task:
+    instance = task(name=name)
     self.add_instance(instance=instance)
+    return instance
   
   def add_instance(self, instance: Task):
     if self._thread is None or not self._thread.is_alive():
@@ -109,3 +128,5 @@ class TaskManager:
 
   def get_instance(self, name: str) -> Optional[Task]:
     return self._task_map.get(name) 
+  
+taskManager: TaskManager = TaskManager()

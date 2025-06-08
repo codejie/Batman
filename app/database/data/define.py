@@ -118,7 +118,16 @@ class SpotData(BaseModel):
       '最低': self.最低,
       '今开': self.今开,
       '昨收': self.昨收,
-      '量比': self.量比 
+      '量比': self.量比,
+      '换手率': self.换手率,
+      '市盈率': self.市盈率,
+      '市净率': self.市净率,
+      '总市值': self.总市值,
+      '流通市值': self.流通市值,
+      '涨速': self.涨速,
+      '涨跌5分钟': self.涨跌5分钟,
+      '涨跌幅60日': self.涨跌幅60日,
+      '年初至今涨跌幅': self.年初至今涨跌幅      
     }
 
   # class Config:

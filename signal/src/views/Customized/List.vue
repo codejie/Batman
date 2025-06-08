@@ -17,7 +17,8 @@ interface Item {
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn, ElMessageBox, ElSelect, ElOption, ElMessage } from 'element-plus'
+import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn,
+  ElMessageBox, ElSelect, ElOption, ElMessage, ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '@/api/customized';
 import { apiGetName, apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
@@ -44,10 +45,10 @@ function onError(ws: WebSocket, event: Event) {
 }
 
 function onMessage(ws: WebSocket, event: MessageEvent) {
-  console.info('onMessage')
-  console.info(event.data)
+  // console.info('onMessage')
+  // console.info(event.data)
 
-  // onData(JSON.parse(event.data)) // Test Record arrived
+  onWebSocketData(JSON.parse(event.data))
 }
 
 const opts: UseWebSocketOptions = {
@@ -66,7 +67,7 @@ const opts: UseWebSocketOptions = {
 }
 
 const WS_URL_SPOT_DATA = 'ws://localhost:8000/services/ws/spot_data?token=' + useUserStoreWithOut().getTokenKey
-const { open } = useWebSocket(WS_URL_SPOT_DATA, opts)
+const { open, close } = useWebSocket(WS_URL_SPOT_DATA, opts)
 
 const createDialogVisible = ref<boolean>(false)
 const createForm = ref<CreateForm>({
@@ -87,7 +88,36 @@ const viewForm = ref<CreateForm>({
 const data = ref<Item[]>([])
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
-const fetchTime = ref<Date>()
+const fetchTime = ref<string>()
+
+function onWebSocketData(wd: any) {
+  // console.info(wd)
+
+  const records: RecordsItem[] = data.value.map(item => item.record)
+  data.value = []
+
+  for (const record of records) {
+    if (record.type === TYPE_STOCK) {
+      const stock = wd.stocks.find((s: any) => s.代码 === record.code)
+      if (stock) {
+        data.value.push({
+          record: record,
+          calc: calcCustomizedData(stock)
+        })
+      }
+    } else if (record.type === TYPE_INDEX) {
+      const index = wd.indexes.find((s: any) => s.代码 === record.code)
+      if (index) {
+        data.value.push({
+          record: record,
+          calc: calcCustomizedData(index)
+        })
+      }
+    }
+  }
+
+  fetchTime.value = wd.index
+}
 
 async function fetch() {
   const ret = await apiRecords({})
@@ -133,7 +163,9 @@ async function fetch() {
       })      
     }
   }
-  fetchTime.value = new Date()
+
+  const now = new Date()
+  fetchTime.value = `${now?.getHours()}:${now.getMinutes()}:${now.getSeconds()}`
 }
 
 async function onAdd() {
@@ -158,6 +190,7 @@ async function onView() {
       name: ret.result,
       type: type,
     }
+    console.info(reqParam.value)
     klineDialogVisible.value = true    
   }
 }
@@ -225,19 +258,31 @@ onMounted(async () => {
 // 5分钟涨跌 / 涨速
 // 60日涨跌幅 / 年初至今涨跌幅
 
-async function onTest() {
-  await open()
+async function onWebSocketClick() {
+  if (connected.value) {
+    await close()
+  } else {
+    await open()
+  }
 }
 </script>
 
 <template>
   <ContentWrap>
     <div class="my-4">
-      <ElButton class="my-4" type="primary" @click="onTest">Test</ElButton>
+      <!-- <ElButton class="my-4" type="primary" @click="onTest">Test</ElButton> -->
       <ElButton type="primary" @click="createDialogVisible=true">增加自选</ElButton>
       <ElButton @click="viewDialogVisible=true">快速查看</ElButton>
-      <ElButton style="float: right;" @click="fetch()">刷新</ElButton>
-      <ElText style="float: right; margin-right: 8px;">{{ fetchTime?.getHours() }}:{{ fetchTime?.getMinutes() }}:{{ fetchTime?.getSeconds() }}</ElText>
+      <ElDropdown style="float: right;" :split-button="true" type="primary" @click="fetch()">
+        刷新{{ connected ? ' - On' :'' }}
+        <template #dropdown>
+          <ElDropdownMenu>
+            <ElDropdownItem @click="onWebSocketClick">{{ connected ? 'WebSocket Off' : 'WebSocket On' }}</ElDropdownItem>
+          </ElDropdownMenu>
+        </template>
+      </ElDropdown>
+      <!-- <ElButton style="float: right;" @click="fetch()">刷新</ElButton> -->
+      <ElText tag="b" style="float: right; margin-right: 16px; margin-top: 4px;">{{ fetchTime }}</ElText>
     </div>
     <div>
       <ElTable :data="data" :border="true" stripe :default-sort="{ prop: 'record.updated', order: 'descending' }">

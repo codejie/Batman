@@ -11,7 +11,7 @@ import app.database.data.index as Index
 def get_name(type: int, code: str) -> Optional[str]:
   stmt = select(Define.InfoTable.name).where(Define.InfoTable.type == type).where(Define.InfoTable.code == code)
   result = dbEngine.select_scalar(stmt)
-  return result[0] if result else None
+  return result if result else None
 
 def is_item_exist(type: int, code: str) -> bool:
   stmt = select(Define.InfoTable).where(Define.InfoTable.type == type).where(Define.InfoTable.code == code)

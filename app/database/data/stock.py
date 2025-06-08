@@ -9,6 +9,8 @@ from app.database import dbEngine
 from app.database.data import define as Define
 from app.database.data import utils as Utils
 
+from app.logger import logger
+
 def download_list() -> None:
   # delete
   stmt = delete(Define.InfoTable).where(Define.InfoTable.type == Define.TYPE_STOCK)
@@ -37,16 +39,19 @@ def download_history_data(code: str, start: str, end: str, period: str = 'daily'
 #   return Define.fetch_history_data(Define.TYPE_STOCK, code, start, end, period, adjust)
 
 def download_spot_data(codes: list[str] = None) -> Optional[DataFrame]:
-  data = ak.stock_zh_a_spot_em()
-  if not data.empty:
-    # data = data.drop('序号')
-    # data.set_index('代码', inplace=True)
-    data = data.rename(columns={
-      '市盈率-动态': '市盈率',
-      '5分钟涨跌': '涨跌5分钟',
-      '60日涨跌幅': '涨跌幅60日'
-    })
-    if codes is not None:
-      data = data[data['代码'].isin(codes)]
-    return data
+  try:
+    data = ak.stock_zh_a_spot_em()
+    if not data.empty:
+      # data = data.drop('序号')
+      # data.set_index('代码', inplace=True)
+      data = data.rename(columns={
+        '市盈率-动态': '市盈率',
+        '5分钟涨跌': '涨跌5分钟',
+        '60日涨跌幅': '涨跌幅60日'
+      })
+      if codes is not None:
+        data = data[data['代码'].isin(codes)]
+      return data
+  except Exception as e:
+    logger.warning(f"Error downloading spot data: {e}")
   return None
