@@ -147,7 +147,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         name: 'Detail',
         path: 'detail',
         component: () => import('@/views/Holding/Detail.vue'),
-        props: router => ({id: router.query.id }),
+        props: router => ({id: router.query.id, ids: router.query.ids}),
         meta: {
           title: t('router.holding_detail'),
           noCache: true,

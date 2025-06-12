@@ -179,10 +179,13 @@ async function onRemove(id: number) {
 }
 
 async function onDetail(id: number) {
+  const ids = data.value.map((x) => x.record.id)
+  console.log('onDetail', id, ids)
   push({
     path: '/holding/detail',
     query: {
-      id: id
+      id: id,
+      ids: data.value.map((x) => x.record.id).join(',')
     }
   })
 }

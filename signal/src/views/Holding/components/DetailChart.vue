@@ -45,7 +45,7 @@ const revenueData = ref<number[] | string[]>()
 const profitData = ref<number[] | string[]>()
 const holdingData = ref<number[]>()
 
-const chartOption = ref<EChartsOption>({
+const chartOptionOrigin: EChartsOption = {
   grid: [
       {
         id: 0,
@@ -357,7 +357,8 @@ const chartOption = ref<EChartsOption>({
       }
     ]  
   }
-)
+
+const chartOption = ref<EChartsOption>({ ...chartOptionOrigin })
 
 function makeMASeries() {
   for (const index in maItems) {
@@ -415,6 +416,7 @@ watch(
   () => props.historyData,
   (value) => {
     if (value) {
+      chartOption.value = { ...chartOptionOrigin }
       setKLineData(value)
     }
 })
@@ -423,6 +425,7 @@ watch(
   () => props.profitData,
   (value) => {
     if (value) {
+      chartOption.value = { ...chartOptionOrigin }
       if(props.historyData) {
         setTraceData(value)
       }

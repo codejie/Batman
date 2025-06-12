@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ContentDetailWrap } from '@/components/ContentDetailWrap'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, PropType, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton, ElRow, ElTable, ElTableColumn, ElText } from 'element-plus'
 import { calcProfitData, calcProfitTraceData, getHoldListData, HoldingListItem, ProfitTraceItem } from '@/calc/holding'
@@ -14,25 +14,34 @@ const { go } = useRouter()
 
 const props = defineProps({
   id: {
-    type: [String, Number],
-    required: false
+    type: String,
+    required: true
+  },
+  ids: {
+    type: String,
+    required: true
   }
 })
+
+const holdingId = ref<number>(Number(props.id))
+const holdingIds =  ref<number[]>(props.ids.split(',').map(id => Number(id)))
+console.log('holdingId', holdingId.value, 'holdingIds', holdingIds.value)
 
 const holdingData = ref<HoldingListItem[]>()
 const historyData = ref<HistoryDataItem[]>([])
 const profitTraceData = ref<ProfitTraceItem[]>([])
 const profitTableToggle = ref<boolean>(false) // false: only show operation data, true: show operation trace data
-const profitTableData = ref<ProfitTraceItem[]>([]) 
+const profitTableData = ref<ProfitTraceItem[]>([])
 
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
 
-const holding = computed(() => Number(props.id))
+// const holding = computed(() => Number(props.id))
 
-async function fetchData() {
+async function fetchData(id) {
   // holding
-  holdingData.value = await getHoldListData(holding.value)
+  holdingData.value = await getHoldListData(id)
+  console.log('holdingData', holdingData.value)
   
   const operationData = holdingData.value[0]!.items
   if (operationData.length > 0) {
@@ -93,7 +102,7 @@ function profitTableTitle(): string {
 }
 
 onMounted(() => {
-  fetchData().then(() => {})
+  fetchData(holdingId.value).then(() => {})
 })
 
 function onRecordClick(row: HoldingRecordItem) {
@@ -111,6 +120,33 @@ function onKLineDialogClose() {
   klineDialogVisible.value = false
 }
 
+function checkPrev(): boolean {
+  console.log('checkPrev', holdingId.value, holdingIds.value)
+  if (holdingIds.value.length == 1) {
+    return true
+  }
+  return holdingIds.value.indexOf(holdingId.value) == 0
+}
+
+function checkNext(): boolean {
+  if (holdingIds.value.length == 1) {
+    return true
+  }
+  return holdingIds.value.indexOf(holdingId.value) == holdingIds.value.length - 1
+}
+
+async function onPrev() {
+  console.log('onPrev', holdingId.value, holdingIds.value)
+  holdingId.value = holdingIds.value![holdingIds.value!.indexOf(holdingId.value) - 1]
+  console.log('onPrev after', holdingId.value, holdingIds.value)
+  await fetchData(holdingId.value)
+}
+
+async function onNext() {
+  holdingId.value = holdingIds.value![holdingIds.value!.indexOf(holdingId.value) + 1]
+  await fetchData(holdingId.value)
+}
+
 </script>
 
 <template>
@@ -118,6 +154,10 @@ function onKLineDialogClose() {
     <template #header>
       <ElButton type="primary" @click="go(-1)">返回</ElButton>
       <!-- <ElButton type="primary" @click="onTest">Test</ElButton> -->
+       <div style="float: right; margin-right: 16px;">
+        <ElButton :disabled="checkPrev()" @click="onPrev()">上一个</ElButton>
+        <ElButton :disabled="checkNext()" @click="onNext()">下一个</ElButton>
+       </div>
     </template>
     <ElRow :gutter="24">
       <ElTable :data="holdingData" stripe :border="true">
