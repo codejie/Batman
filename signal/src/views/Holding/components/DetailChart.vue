@@ -361,8 +361,9 @@ const chartOptionOrigin: EChartsOption = {
 const chartOption = ref<EChartsOption>({ ...chartOptionOrigin })
 
 function makeMASeries() {
+  chartOption.value.series?.splice(6)
   for (const index in maItems) {
-    chartOption.value.series.push({
+    chartOption.value.series?.push({
       type: 'line',
       name: `ma-${maItems[index]}`,
       xAxisIndex: 0,
@@ -416,7 +417,7 @@ watch(
   () => props.historyData,
   (value) => {
     if (value) {
-      chartOption.value = { ...chartOptionOrigin }
+      // chartOption.value = { ...chartOptionOrigin }
       setKLineData(value)
     }
 })
@@ -425,7 +426,7 @@ watch(
   () => props.profitData,
   (value) => {
     if (value) {
-      chartOption.value = { ...chartOptionOrigin }
+      // chartOption.value = { ...chartOptionOrigin }
       if(props.historyData) {
         setTraceData(value)
       }

@@ -25,7 +25,6 @@ const props = defineProps({
 
 const holdingId = ref<number>(Number(props.id))
 const holdingIds =  ref<number[]>(props.ids.split(',').map(id => Number(id)))
-console.log('holdingId', holdingId.value, 'holdingIds', holdingIds.value)
 
 const holdingData = ref<HoldingListItem[]>()
 const historyData = ref<HistoryDataItem[]>([])
@@ -41,7 +40,6 @@ const reqParam = ref<any>({})
 async function fetchData(id) {
   // holding
   holdingData.value = await getHoldListData(id)
-  console.log('holdingData', holdingData.value)
   
   const operationData = holdingData.value[0]!.items
   if (operationData.length > 0) {
@@ -121,7 +119,6 @@ function onKLineDialogClose() {
 }
 
 function checkPrev(): boolean {
-  console.log('checkPrev', holdingId.value, holdingIds.value)
   if (holdingIds.value.length == 1) {
     return true
   }
@@ -136,9 +133,7 @@ function checkNext(): boolean {
 }
 
 async function onPrev() {
-  console.log('onPrev', holdingId.value, holdingIds.value)
   holdingId.value = holdingIds.value![holdingIds.value!.indexOf(holdingId.value) - 1]
-  console.log('onPrev after', holdingId.value, holdingIds.value)
   await fetchData(holdingId.value)
 }
 
