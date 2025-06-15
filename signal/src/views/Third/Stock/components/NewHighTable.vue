@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { apiNewHigh } from '@/api/third/stock';
 import { onMounted, ref } from 'vue';
-import { ElTableV2, ElAutoResizer, ElDialog, ElButton, ElText, RowEventHandlerParams } from 'element-plus';
+import { ElTableV2, ElAutoResizer, ElDialog, ElButton } from 'element-plus';
 import { KLinePanel2, ReqParam } from '@/components/KLine'
 import { TYPE_STOCK } from '@/api/data';
 

@@ -9,7 +9,7 @@ const uploadRef = ref<UploadInstance>()
 const showSubmit = ref(false)
 
 async function onExport() {
-  const ret = await apiDbExport({});
+  await apiDbExport({});
 }
 
 async function onImport() {
