@@ -49,7 +49,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
                 libraryName: 'element-plus',
                 esModule: true,
                 resolveStyle: (name) => {
-                  if (name === 'click-outside') {
+                  if (name === 'click-outside' || name === 'el-auto-resizer' || name === 'auto-resizer') {
                     return ''
                   }
                   return `element-plus/es/components/${name.replace(/^el-/, '')}/style/css`
@@ -121,7 +121,11 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
             'wang-editor': ['@wangeditor/editor', '@wangeditor/editor-for-vue'],
             echarts: ['echarts', 'echarts-wordcloud']
           }
-        }
+        },
+        external: [
+          'auto-resizer',
+          'el-auto-resizer',
+        ]
       },
       cssCodeSplit: !(env.VITE_USE_CSS_SPLIT === 'false'),
       cssTarget: ['chrome31']

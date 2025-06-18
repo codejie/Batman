@@ -4,6 +4,7 @@ batman.db
 db/
 tmp/
 dist-pro/
+dist-dev/
 
 node_modules
 .DS_Store
