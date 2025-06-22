@@ -1,10 +1,17 @@
-FROM python:3.12-slim-bullseye
+# 第一阶段：克隆代码仓库
+FROM alpine/git:v2.49.0 AS clone
 
-# 安装系统依赖
+RUN git clone --branch v0.3 --depth 1 https://github.com/codejie/Batman.git /batman
+WORKDIR /app/source
+
+# 第二阶段：构建&运行
+FROM python:3.12-slim-bullseye
+COPY --from=clone /batman /batman
+
+# 安装系统依赖 (包括TA-Lib依赖)
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     build-essential \
     wget \
-    git \
     sqlite3 \
     curl \
     && curl -sL https://deb.nodesource.com/setup_22.x | bash - \
@@ -23,8 +30,6 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
 WORKDIR /usr/local/lib
 RUN ln -s libta_lib.a libta-lib.a
 RUN ln -s libta_lib.so libta-lib.so
-
-RUN git clone --depth 1 https://github.com/codejie/Batman.git /batman
 
 # 设置Python
 WORKDIR /batman/app
