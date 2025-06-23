@@ -18,8 +18,7 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
     && cd ta-lib/ \
     && ./configure --prefix=/usr/local \
     && make \
-    && make install \
-    && make clean
+    && make install
 
 WORKDIR /usr/local/lib
 RUN ln -s libta_lib.a libta-lib.a
@@ -38,18 +37,6 @@ RUN npm install -g serve
 
 RUN pnpm i
 RUN pnpm run build:pro
-
-# 清理
-RUN rm -rf /ta-lib-0.4.0-src.tar.gz /ta-lib
-RUN rm -rf /batman/.git
-RUN rm -rf /batman/signal/node_modules
-RUN apt-get remove -y \
-    build-essential \
-    wget \
-    git \
-    curl \
-    && apt-get autoremove -y \
-    && apt-get clean
 
 # 执行
 VOLUME /batman/app/db
