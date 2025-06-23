@@ -266,7 +266,7 @@ async function onNext() {
       </ElTable>
     </ElRow>
     <ElRow :gutter="24">
-      <DetailChart :history-data="historyData" :profit-data="profitTraceData" :width="'100%'" :height="'500px'" />
+      <DetailChart :history-data="historyData" :profit-data="profitTraceData" :width="'100%'" :height="'630px'" />
     </ElRow>
     <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" :title="reqParam?.name" @update:on-close="onKLineDialogClose" width="60%" />    
   </ContentDetailWrap>

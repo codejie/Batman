@@ -52,12 +52,12 @@ const chartOptionOrigin: EChartsOption = {
         left: '4%',
         top: '4%',
         right: '4%',
-        bottom: '60%'
+        bottom: '70%'
       },
       {
         id: 1,
         left: '4%',
-        top: '45%',
+        top: '33%',
         right: '4%',
         bottom: '20%'
       },

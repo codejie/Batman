@@ -216,6 +216,14 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
             }
           }          
         ]
+      },
+      {
+        path: 'links',
+        name: 'links',
+        component: () => import('@/views/Third/Info/Links.vue'),
+        meta: {
+          title: '信息数据'
+        }
       }
     ]
   },  
@@ -238,6 +246,25 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
       }
     ]
   },
+  {
+    name: 'Test',
+    path: '/test',
+    component: Layout,
+    meta: {},
+    children: [
+      {
+        name: 'TestList',
+        path: 'list',
+        component: () => import('@/views/Test/List.vue'),
+        meta: {
+          title: t('router.test_list'),
+          icon: 'carbon:chart-custom',
+          // noCache: true,
+          // affix: false
+        }
+      }
+    ]
+  }
   // {
   //   path: '/dashboard',
   //   component: Layout,
