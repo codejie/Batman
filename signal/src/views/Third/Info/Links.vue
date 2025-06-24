@@ -61,14 +61,12 @@ const linkInfos: LinkInfo[] = [
     </ElRow>
     <ElRow :gutter="24" class="tac" style="margin-top: 10px;">
       <ElCol :span="4">
-        <ElMenu class="el-menu-vertical-demo" :collapse="true">
-          <ElMenuItem v-for="info in linkInfos" :key="info.title" :index="info.title">
+        <ElMenu class="el-menu-vertical-demo" :collapse="false">
+          <ElMenuItem v-for="(info, index) in linkInfos" :key="info.title" :index="index.toString()">
             <ElIcon><Setting /></ElIcon>
             <template #title>
               {{ info.title }}
-              <ElLink :href="info.url" target="_blank" :title="info.tooltip">
-                <ElIcon><Document /></ElIcon>
-              </ElLink>
+              <ElButton @click="() => window.open(info.url, '_blank')" type="text" size="small" style="float: right;"> {{ info.title }}</ElButton>
             </template>
           </ElMenuItem>
         </ElMenu>
