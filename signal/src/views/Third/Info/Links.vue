@@ -8,7 +8,7 @@ type LinkInfo = {
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap';
 import { ref } from 'vue';
-import { ElButton, ElInput, ElLink, ElRow, ElCol, ElIcon, ElMenu, ElMenuItem, ElMenuItemGroup } from 'element-plus';
+import { ElButton, ElInput, ElLink, ElRow, ElCol, ElIcon, ElMenu, ElMenuItem, ElMenuItemGroup, ElAutoResizer } from 'element-plus';
 import { Document, Menu as IconMenu, Location, Setting, Search } from '@element-plus/icons-vue'
 import { TYPE_STOCK } from '@/api/data';
 
@@ -20,7 +20,7 @@ const props = defineProps({
   },
   code : {
     type: String,
-    required: true
+    required: false
   },
   name: {
     type: String,
@@ -28,6 +28,9 @@ const props = defineProps({
     default: undefined
   }
 })
+
+const collapse = ref<boolean>(false)
+const url = ref<string>()
 
 const linkInfos: LinkInfo[] = [
   {
@@ -60,16 +63,25 @@ const linkInfos: LinkInfo[] = [
       <ElCol :span="20"></ElCol>
     </ElRow>
     <ElRow :gutter="24" class="tac" style="margin-top: 10px;">
-      <ElCol :span="4">
-        <ElMenu class="el-menu-vertical-demo" :collapse="false">
+      <ElCol :span="collapse ? 2 : 4">
+        <ElButton type="primary" @click="collapse = !collapse">Collape</ElButton>
+        <ElMenu class="el-menu-vertical-demo" :collapse="collapse">
           <ElMenuItem v-for="(info, index) in linkInfos" :key="info.title" :index="index.toString()">
             <ElIcon><Setting /></ElIcon>
             <template #title>
               {{ info.title }}
-              <ElButton @click="() => window.open(info.url, '_blank')" type="text" size="small" style="float: right;"> {{ info.title }}</ElButton>
+              <ElButton @click="(index) => url = info.url"> {{ info.title }}</ElButton>
             </template>
           </ElMenuItem>
         </ElMenu>
+      </ElCol>
+      <ElCol :span="collapse ? 22 : 20">
+        <iframe :src="url" width="100%" height="800px" frameborder="0"></iframe>
+        <!-- <ElAutoResizer v-if="url">
+          <template #default="{ height, width }">
+            <iframe :src="url" :width="width" :height="height" frameborder="0"></iframe>
+          </template>
+        </ElAutoResizer> -->
       </ElCol>
     </ElRow>
     <!-- <ElButton @click="onClick">Test</ElButton>
