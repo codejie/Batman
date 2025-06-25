@@ -222,7 +222,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         name: 'links',
         component: () => import('@/views/Third/Info/Links.vue'),
         meta: {
-          title: '信息数据'
+          title: '资讯链接'
         }
       }
     ]

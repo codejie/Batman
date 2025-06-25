@@ -1,0 +1,75 @@
+[
+    {
+        "title": "热度信息",
+        "icon": "PictureRounded",
+        "links": [
+            {
+                "title": "东财热度",
+                "url": "http://guba.eastmoney.com/rank/"
+            },
+            {
+                "title": "同花顺投顾",
+                "url": "http://guba.10jqka.com.cn/"
+            },
+            {
+                "title": "新浪财经",
+                "url": "https://guba.sina.com.cn/"
+            },
+            {
+                "title": "百度热搜",
+                "url": "https://gushitong.baidu.com/expressnews?tag=A%E8%82%A1"
+            }
+        ]
+    },
+    {
+        "title": "行情数据",
+        "icon": "DataLine",
+        "links": [
+            {
+                "title": "东财数据中心",
+                "url": "https://data.eastmoney.com"
+            },
+            {
+                "title": "同花顺行情中心",
+                "url": "https://q.10jqka.com.cn/"
+            }
+        ]
+    },
+    {
+        "title": "财经资讯",
+        "icon": "Monitor",
+        "links": [
+            {
+                "title": "东财财经早餐",
+                "url": "https://stock.eastmoney.com/a/czpnc.html"
+            },
+            {
+                "title": "同花顺财经",
+                "url": "https://stock.eastmoney.com/a/czpnc.html"
+            },
+            {
+                "title": "新浪财经",
+                "url": "https://finance.sina.com.cn/"
+            },
+            {
+                "title": "富途快讯",
+                "url": "https://news.futunn.com/main/live?lang=zh-cn"
+            },
+            {
+                "title": "财联社电报",
+                "url": "https://www.cls.cn/telegraph"
+            }
+        ]
+    },
+    {
+        "title": "个股数据",
+        "icon": "Postcard",
+        "links": [
+            {
+                "title": "个股新闻",
+                "url": " https://so.eastmoney.com/news/s?keyword={code}",
+                "needCode": true
+            }
+        ]
+    }      
+]
