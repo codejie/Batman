@@ -2,8 +2,8 @@
 VITE_NODE_ENV=production
 
 # 接口前缀
-# VITE_API_BASE_PATH=http://localhost:8000
-VITE_API_BASE_PATH=process.env.VITE_API_URL
+VITE_API_BASE_PATH=
+# VITE_API_BASE_PATH=import.meta.env.VITE_API_URL
 
 # 打包路径
 VITE_BASE_PATH=/
