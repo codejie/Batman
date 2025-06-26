@@ -1,7 +1,7 @@
 services:
   app:
     container_name: batman
-    image: b4
+    image: batman:batman
     ports:
       - "8000:8000"
       - "3030:3030"
