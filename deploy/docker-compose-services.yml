@@ -6,12 +6,20 @@ services:
       - "8000:8000"
     volumes:
       - ./app/db:/batman/app/db
+    networks:
+      - batman
+
   signal:
     container_name: signal
     image: batman:signal
     ports:
       - "3030:3030"
     environment:
-      - API_URL=http://app:8000
+      - API_URL="http://batman:8000"
     depends_on:
       - app
+    networks:
+      - batman
+      
+networks:
+  batman:

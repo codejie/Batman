@@ -10,7 +10,7 @@ RUN npm install -g serve
 
 WORKDIR /batman/signal
 RUN pnpm i
-RUN sed -i 's/__VITE_API_URL__/VITE_API_URL/g' .env.pro
+# RUN sed -i 's/__VITE_API_URL__/VITE_API_URL/g' .env.pro
 RUN pnpm run build:pro
 
 RUN rm -rf /batman/.git
