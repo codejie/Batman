@@ -5,9 +5,9 @@ import { AxiosInstance, InternalAxiosRequestConfig, RequestConfig, AxiosResponse
 import { ElMessage } from 'element-plus'
 import { REQUEST_TIMEOUT } from '@/constants'
 
-// export const PATH_URL = import.meta.env.VITE_API_BASE_PATH
-export const PATH_URL = import.meta.env.API_URL
-console.log('===============PATH_URL', PATH_URL)
+export const PATH_URL = import.meta.env.VITE_API_BASE_PATH
+// export const PATH_URL = import.meta.env.API_URL
+// console.log('===============PATH_URL', PATH_URL)
 
 const abortControllerMap: Map<string, AbortController> = new Map()
 

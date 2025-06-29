@@ -15,7 +15,7 @@ services:
     ports:
       - "3030:3030"
     environment:
-      - API_URL="http://batman:8000"
+      - API_URL=http://batman:8000
     depends_on:
       - app
     networks:

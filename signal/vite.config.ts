@@ -130,21 +130,21 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       cssCodeSplit: !(env.VITE_USE_CSS_SPLIT === 'false'),
       cssTarget: ['chrome31']
     },
-    // server: {
-    //   port: 3005,
-    //   proxy: {
-    //     // 选项写法
-    //     '/api': {
-    //       target: 'http://127.0.0.1:8000',
-    //       changeOrigin: true,
-    //       rewrite: (path) => path.replace(/^\/api/, '')
-    //     }
-    //   },
-    //   hmr: {
-    //     overlay: false
-    //   },
-    //   host: '0.0.0.0'
-    // },
+    server: {
+      // port: 3005,
+      proxy: {
+        // 选项写法
+        '/api': {
+          target: 'http://app:8000',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, '')
+        }
+      },
+      hmr: {
+        overlay: false
+      },
+      host: '0.0.0.0'
+    },
     optimizeDeps: {
       include: [
         'vue',
