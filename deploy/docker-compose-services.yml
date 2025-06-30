@@ -5,7 +5,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./app/db:/batman/app/db
+      - ../app/db:/batman/app/db
     networks:
       - batman
 

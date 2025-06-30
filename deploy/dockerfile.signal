@@ -1,21 +1,24 @@
-FROM alpine/git:v2.49.0 AS clone
+# FROM alpine/git:v2.49.0 AS clone
 
-RUN git clone --branch v0.3 --depth 1 https://github.com/codejie/Batman.git /batman
+# RUN git clone --branch v0.3 --depth 1 https://github.com/codejie/Batman.git /batman
 
 FROM node:22.16.0-alpine3.22 AS frontend
-COPY --from=clone /batman /batman
+# COPY --from=clone /batman /batman
+RUN mkdir /batman
+COPY . /batman
+# RUN npm install -g pnpm
+# RUN npm install -g serve
 
-RUN npm install -g pnpm
-RUN npm install -g serve
+# WORKDIR /batman/signal
+# RUN pnpm i
+# # RUN sed -i 's/__VITE_API_URL__/VITE_API_URL/g' .env.pro
+# RUN pnpm run build:pro
 
-WORKDIR /batman/signal
-RUN pnpm i
-# RUN sed -i 's/__VITE_API_URL__/VITE_API_URL/g' .env.pro
-RUN pnpm run build:pro
+# RUN rm -rf /batman/.git
+# RUN rm -rf /batman/signal/node_modules
 
-RUN rm -rf /batman/.git
-RUN rm -rf /batman/signal/node_modules
+# EXPOSE 3030
 
-EXPOSE 3030
+# CMD ["serve", "-s", "./dist-pro", "-l", "3030"]
 
-CMD ["serve", "-s", "./dist-pro", "-l", "3030"]
+CMD ["tail", "-f", "/dev/null"]
