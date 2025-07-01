@@ -6,4 +6,4 @@ services:
       - "8000:8000"
       - "3030:3030"
     volumes:
-      - ../app/db:/batman/app/db
+      - ./app/db:/batman/app/db

@@ -6,11 +6,11 @@ export const options = reactive({
   collapse: false as boolean,
   target: undefined as string | undefined
 })
-type LinkInfo = {
-  title: string,
-  url: string,
-  tooltip?: string,
-}
+// type LinkInfo = {
+//   title: string,
+//   url: string,
+//   tooltip?: string,
+// }
 </script>
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap';
