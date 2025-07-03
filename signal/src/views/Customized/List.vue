@@ -18,7 +18,7 @@ interface Item {
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn,
-  ElMessageBox, ElSelect, ElOption, ElMessage, ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus'
+  ElMessageBox, ElSelect, ElOption, ElMessage, ElDropdown, ElDropdownMenu, ElDropdownItem, ElCheckbox } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '@/api/customized';
 import { apiGetName, apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
@@ -89,6 +89,8 @@ const data = ref<Item[]>([])
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
 const fetchTime = ref<string>()
+const useHistory = ref<boolean>(false)
+
 
 function onWebSocketData(wd: any) {
   // console.info(wd)
@@ -129,7 +131,7 @@ async function fetch() {
   try {
     if (stocks.length > 0) {
       const codes: string[] = stocks.map(item => item.code)
-      const stockRet = await apiGetSpotData({ type: TYPE_STOCK, codes: codes })
+      const stockRet = await apiGetSpotData({ type: TYPE_STOCK, codes: codes, useHistory: useHistory.value })
       for (const item of stocks) {
         const spot = stockRet.result.find(i => i.代码 === item.code)
         data.value.push({
@@ -140,7 +142,7 @@ async function fetch() {
     }
     if (indexes.length > 0) {
       const codes: string[] = indexes.map(item => item.code)
-      const indexRet = await apiGetSpotData({ type: TYPE_INDEX, codes: codes })
+      const indexRet = await apiGetSpotData({ type: TYPE_INDEX, codes: codes, useHistory: useHistory.value })
       for (const item of indexes) {
         const spot = indexRet.result.find(i => i.代码 === item.code)
         data.value.push({
@@ -269,10 +271,12 @@ async function onWebSocketClick() {
 
 <template>
   <ContentWrap>
-    <div class="my-4">
+    <div class="my-4" >
       <!-- <ElButton class="my-4" type="primary" @click="onTest">Test</ElButton> -->
       <ElButton type="primary" @click="createDialogVisible=true">增加自选</ElButton>
-      <ElButton @click="viewDialogVisible=true">快速查看</ElButton>
+      <ElButton  @click="viewDialogVisible=true">快速查看</ElButton>
+      <ElCheckbox v-model="useHistory" style="margin-left: 16px;" label="使用历史数据" />
+      <!-- <ElButton style="float: right;" @click="fetch()">刷新</ElButton> -->
       <ElDropdown style="float: right;" :split-button="true" type="primary" @click="fetch()">
         刷新{{ connected ? ' - On' :'' }}
         <template #dropdown>
@@ -281,8 +285,7 @@ async function onWebSocketClick() {
           </ElDropdownMenu>
         </template>
       </ElDropdown>
-      <!-- <ElButton style="float: right;" @click="fetch()">刷新</ElButton> -->
-      <ElText tag="b" style="float: right; margin-right: 16px; margin-top: 4px;">{{ fetchTime }}</ElText>
+      <ElText tag="b" style="float: right; margin-right: 16px; margin-top: 4px;">{{ fetchTime }}</ElText>      
     </div>
     <div>
       <ElTable :data="data" :border="true" stripe :default-sort="{ prop: 'record.updated', order: 'descending' }">
@@ -362,7 +365,7 @@ async function onWebSocketClick() {
             <div><ElText>量比/换手率</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.量比.toFixed(2) }} / {{ row.calc?.换手率.toFixed(2) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.量比?.toFixed(2) }} / {{ row.calc?.换手率?.toFixed(2) }}%</ElText></div>
           </template>
         </ElTableColumn>
         <ElTableColumn min-width="100">
@@ -370,7 +373,7 @@ async function onWebSocketClick() {
             <div><ElText>5分钟涨跌/涨速</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.涨跌5分钟.toFixed(2) }} / {{ row.calc?.涨速.toFixed(2) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.涨跌5分钟?.toFixed(2) }} / {{ row.calc?.涨速?.toFixed(2) }}%</ElText></div>
           </template>
         </ElTableColumn>
         <ElTableColumn min-width="120">
@@ -379,7 +382,7 @@ async function onWebSocketClick() {
             <div><ElText>60日/年初至今涨跌幅</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.涨跌幅60日.toFixed(2) }}% / {{ row.calc?.年初至今涨跌幅.toFixed(2) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.涨跌幅60日?.toFixed(2) }}% / {{ row.calc?.年初至今涨跌幅?.toFixed(2) }}%</ElText></div>
           </template>
         </ElTableColumn>
 <!-- 
