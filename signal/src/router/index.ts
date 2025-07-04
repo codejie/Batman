@@ -246,25 +246,25 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
       }
     ]
   },
-  {
-    name: 'Test',
-    path: '/test',
-    component: Layout,
-    meta: {},
-    children: [
-      {
-        name: 'TestList',
-        path: 'list',
-        component: () => import('@/views/Test/List.vue'),
-        meta: {
-          title: t('router.test_list'),
-          icon: 'carbon:chart-custom',
-          // noCache: true,
-          // affix: false
-        }
-      }
-    ]
-  }
+  // {
+  //   name: 'Test',
+  //   path: '/test',
+  //   component: Layout,
+  //   meta: {},
+  //   children: [
+  //     {
+  //       name: 'TestList',
+  //       path: 'list',
+  //       component: () => import('@/views/Test/List.vue'),
+  //       meta: {
+  //         title: t('router.test_list'),
+  //         icon: 'carbon:chart-custom',
+  //         // noCache: true,
+  //         // affix: false
+  //       }
+  //     }
+  //   ]
+  // }
   // {
   //   path: '/dashboard',
   //   component: Layout,

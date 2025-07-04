@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TYPE_STOCK } from '@/api/data';
-import { apiLimitUpPool } from '@/api/third/stock';
+import { apiLimitUpPool } from '@/api/third';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
 import { formatToDate } from '@/utils/dateUtil';

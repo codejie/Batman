@@ -1,38 +1,47 @@
 <script lang="ts">
-type LinkInfo = {
-  title: string,
-  url?: string,
-  tip?: string,
-  needCode?: boolean
+// type LinkInfo = {
+//   title: string,
+//   url?: string,
+//   tip?: string,
+//   needCode?: boolean
+// }
 
-}
-import { ref, type Component } from 'vue';
-type GroupInfo = {
-  title: string,
-  icon: Component
-  links: LinkInfo[]
-}
+// type GroupInfo = {
+//   title: string,
+//   icon: string
+//   links: LinkInfo[]
+// }
 </script>
 <script setup lang="ts">
 import { ElMenu, ElSubMenu, ElMenuItem, ElIcon, ElButton } from 'element-plus';
 import * as Icons from '@element-plus/icons-vue';
 import { options } from '../Links.vue';
+import { onMounted, ref } from 'vue';
+import { GroupInfoModel, LinkInfoModel } from '@/api/third/types';
+import { apiInfoLinks } from '@/api/third';
 
-import menuGroup from './menu_group.json'; 
+// import menuGroup from './menu_group.json'; 
+
+const menuGroup = ref<GroupInfoModel[]>([])
+
+onMounted(() => {
+  apiInfoLinks({}).then((ret) => {
+    menuGroup.value = ret.result
+  })
+})
 
 function onSelected(key: string) {
     const [groupIndex, linkIndex] = key.split('-').map(Number)
-    const link: LinkInfo = menuGroup[groupIndex]?.links[linkIndex]
+    const link: LinkInfoModel = menuGroup.value[groupIndex]?.links[linkIndex]
     if (link && link?.url) {
         if (link.needCode && options.code) {
             link.url = link.url.replace('{code}', options.code)
         }
         options.target = link.url
     }
-    console.log('target', options.target)
 }
 
-function checkDisabled(link: LinkInfo): boolean {
+function checkDisabled(link: LinkInfoModel): boolean {
     if (link.url === undefined) {
         return true
     }

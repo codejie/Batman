@@ -126,13 +126,18 @@ async def remove_history_data_api(request: RemoveHistoryDataRequest):
 class GetSpotDataRequest(RequestModel):
   type: int
   codes: Optional[list[str]] = None
+  useHistory: Optional[bool] = False
 
 class GetSpotDataResponse(ResponseModel):
   result: list[SpotData] = []
 
 @router.post("/get_spot_data", response_model=GetSpotDataResponse)
 async def get_spot_data_api(request: GetSpotDataRequest):
-  result = Data.get_spot_data(type=request.type, codes=request.codes)
+  result: list[SpotData] = []
+  if request.useHistory:
+    result = Data.get_spot_data_use_history(type=request.type, codes=request.codes)
+  else:
+    result = Data.get_spot_data(type=request.type, codes=request.codes)
   return GetSpotDataResponse(result=result)
 
 """

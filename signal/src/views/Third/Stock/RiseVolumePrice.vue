@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TYPE_STOCK } from '@/api/data';
-import { apiRiseVolumePrice } from '@/api/third/stock';
+import { apiRiseVolumePrice } from '@/api/third';
 import { ContentWrap } from '@/components/ContentWrap'
 import { ReqParam, KLinePanel2 } from '@/components/KLine';
 import { ElText, ElSelect, ElOption, ElTableV2, ElDialog, ElAutoResizer, ElButton } from 'element-plus';

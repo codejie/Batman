@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiNewHigh } from '@/api/third/stock';
+import { apiNewHigh } from '@/api/third';
 import { onMounted, ref } from 'vue';
 import { ElTableV2, ElAutoResizer, ElDialog, ElButton } from 'element-plus';
 import { KLinePanel2, ReqParam } from '@/components/KLine'

@@ -28,3 +28,21 @@ export type LimitUpPoolRequest = {
   date?: string
 }
 export type LimitUpPoolResult = DataFrameSetModel
+
+export type LinkInfoModel = {
+  title: string,
+  url: string,
+  tip?: string,
+  needCode?: boolean
+}
+
+export type GroupInfoModel = {
+  title: string,
+  icon: string,
+  links: LinkInfoModel[]
+}
+
+export type InfoLinksRequest = {
+  flag?: number
+}
+export type InfoLinksResult =  GroupInfoModel[]

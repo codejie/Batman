@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body, Depends
 from pandas import Series
 from app.libs.talib.momentum_indicators import MACD
 from app.routers.common import RequestModel, ResponseModel, verify_token
-from app.routers.data_third_stock import DataFrameSetModel
+from app.routers.data_third import DataFrameSetModel
 
 router = APIRouter(prefix='/libs/talib', tags=['libs', 'talib'], dependencies=[Depends(verify_token)])
 

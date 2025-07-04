@@ -179,3 +179,35 @@ def get_spot_data(type: int, codes: list[str] = None) -> list[Define.SpotData]:
     results = [Define.SpotData.model_validate(row) for row in data.to_dict(orient='records')]
     return results
   return []
+
+def get_spot_data_use_history(type: int, codes: list[str] = None) -> list[Define.SpotData]:
+  if codes is None and len(codes) == 0:
+    return []
+  
+  date = Utils.get_latest_workday()
+  start = Utils.date_to_string_1(date - timedelta(weeks=1))
+  end = Utils.date_to_string_1(date)
+
+  results: list[Define.SpotData] = []
+  for code in codes:
+    ret = get_history_data(type=type, code=code, start=start, end=end, period='daily', adjust='qfq', limit=1)
+    if len(ret) > 0:
+      history = ret.pop()
+      results.append(Define.SpotData(
+        序号=0,
+        代码=code,
+        名称='',
+        最新价=history.收盘,
+        涨跌额=history.涨跌额,
+        涨跌幅=history.涨跌幅,
+        成交量=history.成交量,
+        成交额=history.成交额,
+        振幅=history.振幅,
+        最高=history.最高,
+        最低=history.最低,
+        今开=history.开盘,
+        昨收=history.开盘,
+        换手率=history.换手率
+      ))
+
+  return results

@@ -92,7 +92,7 @@ class SpotData(BaseModel):
   最低: float
   今开: float
   昨收: float
-  量比: float
+  量比: Optional[float] = None
   换手率: Optional[float] = None
   市盈率: Optional[float] = None
   市净率: Optional[float] = None

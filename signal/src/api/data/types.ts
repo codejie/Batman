@@ -40,7 +40,7 @@ export interface SpotDataItem {
   最低: number
   今开: number
   昨收: number
-  量比: number
+  量比?: number
   换手率?: number
   市盈率?: number
   市净率?: number
@@ -73,6 +73,7 @@ export type GetHistoryDataResult = HistoryDataItem[]
 export interface GetSpotDataRequest {
   type: number
   codes?: string[]
+  useHistory?: boolean
 }
 export type GetSpotDataResult = SpotDataItem[]
 

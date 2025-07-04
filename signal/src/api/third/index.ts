@@ -35,3 +35,10 @@ export const apiLimitUpPool = (data: Types.LimitUpPoolRequest): Promise<IRespons
     data
   })   
 }
+
+export const apiInfoLinks = (data: Types.InfoLinksRequest): Promise<IResponse<Types.InfoLinksResult>> => {
+  return request.post({
+    url: '/data/third/info/links',
+    data
+  })   
+}

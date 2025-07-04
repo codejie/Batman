@@ -1,4 +1,4 @@
-import { DataFrameSetModel } from "@/api/third/stock/types"
+import { DataFrameSetModel } from "@/api/third/types"
 
 export type MACDRequest = {
   value: number[]
