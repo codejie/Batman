@@ -25,7 +25,7 @@ interface OperationForm {
 </script>
 
 <script setup lang="ts">
-import { apiCreate, apiFlag, apiOperationCreate, apiOperationRemove } from '@/api/holding'
+import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove, apiRecord } from '@/api/holding'
 import { HOLDING_FLAG_REMOVED, HoldingRecordItem, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
@@ -37,8 +37,9 @@ import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
 import { calcFundsData, FUNDS_STOCK, FundsData } from '@/calc/funds'
-import { getHoldListData, HoldingListItem } from '@/calc/holding'
+import { calcHoldingData, HoldingListItem } from '@/calc/holding'
 import { apiGetFunds, apiUpdateFunds } from '@/api/funds'
+import { formatNumberString, formatRateString, formatRateString2 } from '@/utils/fmtUtil'
 import { KLineDialog } from '@/components/KLine'
 
 const { push } = useRouter()
@@ -75,17 +76,40 @@ const data = ref<HoldingListItem[]>([]) // ref<HoldingInfoItem[]>([])
 const funds = ref<FundsData>()
 const expandRows = ref<string[]>([])
 
-async function fetchHoldingData() {
+async function fetchData() {
+  const holdingData = await apiRecord({})
+  data.value = holdingData.result.map((item: HoldingRecordItem) => ({
+    record: item,
+    calc: undefined,
+    items: []
+  }))
+  for (const holding of data.value) {
+    holding.calc = await calcHoldingData(holding.record)
+    holding.items = (await apiOperationList({
+      holding: holding.record.id
+    })).result
+  }
   const fret = await apiGetFunds({})
   if (fret.result) {
-    data.value = await getHoldListData()
     funds.value = calcFundsData(fret.result, data.value)
-    data.value = data.value.reverse()
-    data.value.forEach((v) => {
-      v.items = v.items.reverse()
-   })    
-  } else
+  } else {
     funds.value = undefined
+  }
+}
+
+async function fetchHoldingData() {
+  await fetchData()
+
+  // const fret = await apiGetFunds({})
+  // if (fret.result) {
+  //   data.value = await getHoldListData()
+  //   funds.value = calcFundsData(fret.result, data.value)
+  // //   data.value = data.value.reverse()
+  // //   data.value.forEach((v) => {
+  // //     v.items = v.items.reverse()
+  // //  })    
+  // } else
+  //   funds.value = undefined
 }
 
 onMounted(async () => {
@@ -208,6 +232,7 @@ function onRecordClick(row: HoldingRecordItem) {
   }
   klineDialogVisible.value = true
 }
+
 </script>
 
 <template>
@@ -215,19 +240,19 @@ function onRecordClick(row: HoldingRecordItem) {
     <ElDescriptions :column="3" title="资金信息" :border="true" label-width="6%">
       <ElDescriptionsItem label="总资产" :span="3">
         <ElTooltip effect="dark" content="可用 + 市值" placement="top">
-          <ElText tag="b">{{ funds?.total.toFixed(2) }}</ElText>
+          <ElText tag="b">{{ formatNumberString(funds?.total) }}</ElText>
         </ElTooltip>
       </ElDescriptionsItem>
       <ElDescriptionsItem label="可用">
-        <ElText tag="b">{{ funds?.available.toFixed(2) }} / </ElText>
+        <ElText tag="b">{{ formatNumberString(funds?.available) }} / </ElText>
         <ElTooltip effect="dark" content="可用/本金%" placement="top">
-          <ElText tag="b">{{ ((funds?.available / funds?.amount) * 100).toFixed(2) }}%</ElText>
+          <ElText tag="b">{{ formatRateString2(funds?.available, funds?.amount) }}</ElText>
         </ElTooltip>
       </ElDescriptionsItem>
       <ElDescriptionsItem label="成本">
-        <ElText tag="b">{{ -funds?.expense.toFixed(2) }} / </ElText>
+        <ElText tag="b">{{ formatNumberString(funds?.expense ? -funds?.expense : undefined) }} / </ElText>
         <ElTooltip effect="dark" content="成本/本金%" placement="top">
-          <ElText tag="b">{{ -((funds?.expense / funds?.amount) * 100).toFixed(2) }}%</ElText>
+          <ElText tag="b">{{ formatRateString2(funds?.expense ? -funds?.expense : undefined, funds?.amount) }}</ElText>
         </ElTooltip>
       </ElDescriptionsItem>
       <ElDescriptionsItem label="本金">
@@ -236,16 +261,16 @@ function onRecordClick(row: HoldingRecordItem) {
           <ElButton size="small" style="float: right" @click="fundsDialogVisible = true">调整</ElButton>
         </template>
       </ElDescriptionsItem>
-      <ElDescriptionsItem label="市值"><ElText tag="b">{{ funds?.revenue.toFixed(2) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="盈亏"><ElText tag="b">{{ funds?.profit.toFixed(2) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ funds?.profit_rate ? ((funds.profit_rate) * 100).toFixed(2) + '%' : '-' }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="市值"><ElText tag="b">{{ formatNumberString(funds?.revenue) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="盈亏"><ElText tag="b">{{ formatNumberString(funds?.profit) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ formatRateString(funds?.profit) }}</ElText></ElDescriptionsItem>
     </ElDescriptions>
     <ElDivider calss="mx-8px" content-position="left">持股记录</ElDivider>
     <ElRow :gutter="24">
       <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加持股</ElButton>
     </ElRow>
     <ElRow :gutter="24">
-      <ElTable :data="data" :row-key="getHoldingKey" :expand-row-keys="expandRows" @expand-change="onExpandChanged" stripe :border="true">
+      <ElTable :data="data" :row-key="getHoldingKey" :expand-row-keys="expandRows" @expand-change="onExpandChanged" stripe :border="true" :default-sort="{ prop: 'record.created', order: 'descending' }">
         <ElTableColumn type="index" width="40" />
         <ElTableColumn type="expand">
           <template #default="{ row }">
@@ -256,7 +281,7 @@ function onRecordClick(row: HoldingRecordItem) {
               </ElRow>
             </div>
             <div class="mx-24px my-8px">       
-              <ElTable size="small" :data="row.items" stripe :border="true">
+              <ElTable size="small" :data="row.items" stripe :border="true" :default-sort="{ prop: 'created', order: 'descending' }">
                 <ElTableColumn type="index" width="40" />
                 <ElTableColumn label="操作" prop="action" width="80">
                   <template #default="{ row }">
@@ -314,7 +339,7 @@ function onRecordClick(row: HoldingRecordItem) {
               </ElTooltip>
             </template>
             <template #default="{ row }">
-              {{ `${row.record.quantity} / ${((row.record.quantity / funds?.holding) * 100).toFixed(2)}%` }}
+              {{ formatNumberString(row.record.quantity) }} / {{ formatRateString2(row.record.quantity, funds?.holding) }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="record.expense" label="成本/占比" min-width="120">
@@ -324,7 +349,7 @@ function onRecordClick(row: HoldingRecordItem) {
               </ElTooltip>
             </template>
             <template #default="{ row }">
-            {{ `${-row.record.expense} / ${((row.record.expense / funds?.expense) * 100).toFixed(2)}%` }}
+            {{ formatNumberString(row.record.expense) }} / {{ formatRateString2(row.record.expense, funds?.expense) }} 
             </template>
           </ElTableColumn>
           <ElTableColumn label="均价" min-width="60">
@@ -334,7 +359,7 @@ function onRecordClick(row: HoldingRecordItem) {
               </ElTooltip>
             </template>
             <template #default="{ row }">
-              {{ `${row.calc.price_avg? row.calc.price_avg.toFixed(2) : '-'}` }}
+              {{ formatNumberString(row.calc?.price_avg) }}
             </template>
           </ElTableColumn>
           <ElTableColumn label="现价/日期" min-width="100">
@@ -344,7 +369,7 @@ function onRecordClick(row: HoldingRecordItem) {
               </ElTooltip>
             </template>
             <template #default="{ row }">
-              {{ `${row.calc.price_cur?.toFixed(2)} / ${row.calc.date_cur?.substring(5)}` }}
+              {{ formatNumberString(row.calc?.price_cur) }} [{{ `${row.calc ? row.calc?.date_cur?.substring(5) : '-'}` }}]
             </template>
           </ElTableColumn>
           <ElTableColumn prop="calc.revenue" label="市值/占比" min-width="120">
@@ -354,7 +379,7 @@ function onRecordClick(row: HoldingRecordItem) {
               </ElTooltip>
             </template>
             <template #default="{ row }">
-              {{ `${row.calc.revenue?.toFixed(2)} / ${((row.calc.revenue / funds?.revenue) * 100).toFixed(2)}%` }}
+              {{ formatNumberString(row.calc?.revenue) }} / {{ formatRateString2(row.calc?.revenue, funds?.revenue) }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="calc.profit" label="盈亏/占比" min-width="120">
@@ -364,8 +389,8 @@ function onRecordClick(row: HoldingRecordItem) {
               </ElTooltip>
             </template>
             <template #default="{ row }">
-              <div :class="row.calc.profit > 0 ? 'red-text' : (row.calc.profit < 0 ? 'green-text' : '')">
-                {{ `${row.calc.profit?.toFixed(2)} /  ${((row.calc.profit / funds?.profit) * 100).toFixed(2)}%` }}
+              <div :class="row.calc?.profit > 0 ? 'red-text' : (row.calc?.profit < 0 ? 'green-text' : '')">
+                {{ formatNumberString(row.calc?.profit) }} / {{ formatRateString2(row.calc?.profit, funds?.profit) }}
               </div>
             </template>
           </ElTableColumn>
@@ -376,11 +401,23 @@ function onRecordClick(row: HoldingRecordItem) {
               </ElTooltip>
             </template>
             <template #default="{ row }">
-              <div :class="row.calc.profit_rate > 0 ? 'red-text' : (row.calc.profit_rate < 0 ? 'green-text' : '')">
-                {{ `${row.calc.profit_rate? (row.calc.profit_rate * 100).toFixed(2) + '%' : '-'}` }}
+              <div :class="row.calc?.profit_rate > 0 ? 'red-text' : (row.calc?.profit_rate < 0 ? 'green-text' : '')">
+                {{ formatRateString2(row.calc?.profit_rate, funds?.profit_rate) }}
               </div>
             </template>
           </ElTableColumn>
+          <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="100">
+            <template #header>
+              <ElTooltip effect="dark" content="与前一日盈利差/盈利差率%" placement="top">
+                <ElText>昨差/昨差率%</ElText>
+              </ElTooltip>
+            </template>
+            <template #default="{ row }">
+              <div :class="row.calc?.pre_profit > 0 ? 'red-text' : (row.calc?.pre_profit < 0 ? 'green-text' : '')">
+                {{ formatNumberString(row.calc?.pre_profit) }} / {{ formatRateString(row.calc?.pre_profit_rate) }}
+              </div>
+            </template>
+          </ElTableColumn>          
           <ElTableColumn prop="record.created" label="创建时间" min-width="120">
             <template #header>
               <ElText>创建时间</ElText>

@@ -1,9 +1,10 @@
-import { apiOperationList, apiRecord } from "@/api/holding"
+import { apiOperationList, apiRecord, HoldingRecordItem } from "@/api/holding"
 import { formatDateToYYYYMMDD } from "../comm"
 import * as Types from "@/calc/holding/types"
 import { apiGetLatestHistoryData } from "@/api/data"
 import { HistoryDataItem } from "@/api/data/types"
 import  { dateUtil, formatToDate } from '@/utils/dateUtil'
+import { result } from "lodash-es"
 
 export * from "@/calc/holding/types"
 
@@ -39,6 +40,37 @@ function _calcPreProfitRate(profit?: number, pre_profit?: number): number | unde
   if (pre_profit === undefined) return undefined
   if (pre_profit === 0) return 0
   return (profit - pre_profit) / pre_profit
+}
+
+export function calcHoldingData(holding: HoldingRecordItem): Promise<Types.CalcItem | undefined> {
+  return new Promise((resolve) => {
+    apiGetLatestHistoryData({
+      type: holding.type,
+      code: holding.code,
+      limit: 2
+    }).then((ret) => {
+      const results = ret.result as HistoryDataItem[] | undefined
+      if (results && results.length > 0) {
+        const latest = results.length > 1 ? results[1] : results[0]
+        const pre_latest = results.length > 1 ? results[0] : undefined
+
+        const price = latest.收盘
+        const pre_price = pre_latest ? pre_latest.收盘 : undefined
+        resolve({
+          price_avg: _calcPriceAvg(holding.expense, holding.quantity),
+          price_cur: price,
+          date_cur: latest.日期,
+          revenue: _calcRevenue(holding.quantity, price),
+          profit: _calcProfit(holding.quantity, holding.expense, price),
+          profit_rate: _calcProfitRate(holding.quantity, holding.expense, price),
+          pre_profit: _calcPreProfit(price, pre_price),
+          pre_profit_rate: _calcPreProfitRate(price, pre_price)
+        })
+      } else {
+        resolve(undefined)
+      }
+    })
+  })
 }
 
 export async function getHoldListData(id?: number, type?: number, code?: string, flag?: number): Promise<Types.HoldingListItem[]> {
@@ -90,16 +122,12 @@ export function mergeOperationData(operationData: Types.OperationItem[]): Types.
 
     if (index != -1) {
       ret[index].quantity += item.quantity
-      // holding += ret[index].quantity
       ret[index].expense += item.expense
-      // amount += ret[index].expense
       ret[index].price = -ret[index].expense / ret[index].quantity
 
       ret[index].holding = holding
       ret[index].amount = amount
     } else {
-      // holding += item.quantity // ((item.action === OPERATION_ACTION_BUY) ? item.quantity : -item.quantity)
-      // amount += item.expense
       ret.push({
         date: date,
         quantity: item.quantity,
@@ -165,11 +193,27 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
   return ret
 }
 
-export function calcProfitData(operationData: Types.OperationItem[], historyData: HistoryDataItem[]): Types.ProfitTraceItem[] {
+export function calcProfitData(operationData: Types.OperationItem[], historyData: HistoryDataItem[], incldue_latest: boolean = true): Types.ProfitTraceItem[] {
   if (operationData.length === 0) {
     return []
   }
   const traceData = mergeOperationData(operationData)
+  if (incldue_latest && historyData.length > 0) {
+    // 如果包含最新数据，则需要将最新数据添加到 traceData 中
+    const latestHistoryData = historyData[historyData.length - 1]
+    const latestTraceData = traceData[traceData.length - 1]
+    if (latestHistoryData.日期 !== latestTraceData.date) {
+      traceData.push({
+        date: latestHistoryData.日期,
+        quantity: latestTraceData.quantity,
+        expense: latestTraceData.expense,
+        price: latestTraceData.price,
+        amount: latestTraceData.amount,
+        holding: latestTraceData.holding
+      })
+    }
+  }
+
   const ret: Types.ProfitTraceItem[] = []
   let pre_price: number | undefined = undefined
   let pre_profit: number | undefined = undefined
@@ -193,5 +237,6 @@ export function calcProfitData(operationData: Types.OperationItem[], historyData
     pre_price = price
     pre_profit = profit
   }
+
   return ret  
 }

@@ -31,11 +31,10 @@ const historyData = ref<HistoryDataItem[]>([])
 const profitTraceData = ref<ProfitTraceItem[]>([])
 const profitTableToggle = ref<boolean>(false) // false: only show operation data, true: show operation trace data
 const profitTableData = ref<ProfitTraceItem[]>([])
+const profitTableExpanded = ref<boolean>(false)
 
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
-
-// const holding = computed(() => Number(props.id))
 
 async function fetchData(id) {
   // holding
@@ -142,6 +141,10 @@ async function onNext() {
   await fetchData(holdingId.value)
 }
 
+function onProfitTableExpandChange(row, expandedRows) {
+  profitTableExpanded.value = expandedRows.length > 0
+}
+
 </script>
 
 <template>
@@ -155,7 +158,7 @@ async function onNext() {
        </div>
     </template>
     <ElRow :gutter="24">
-      <ElTable :data="holdingData" stripe :border="true">
+      <ElTable :data="holdingData" stripe :border="true" :default-expand-all="profitTableExpanded"  @expand-change="onProfitTableExpandChange">
         <ElTableColumn type="expand">
           <div class="mx-4px my-4px">
             <ElButton size="small" class="mx-8" type="primary" @click="onProfitTableShow()">{{ profitTableTitle() }}</ElButton>

@@ -72,6 +72,7 @@ class GetHistoryDataRequest(RequestModel):
   end: Optional[str] = None
   period: Optional[str] = 'daily'
   adjust: Optional[str] = None
+  limit: Optional[int] = None
 
 class GetHistoryDataResponse(ResponseModel):
   result: list[HistoryData] = []
@@ -89,7 +90,8 @@ async def get_history_data_api(request: GetHistoryDataRequest):
     start=request.start,
     end=request.end,
     period=request.period,
-    adjust=request.adjust
+    adjust=request.adjust,
+    limit=request.limit
   )
   return GetHistoryDataResponse(result=result)
 
@@ -98,9 +100,10 @@ class GetLatestHistoryDataRequest(RequestModel):
   code: str
   period: str = 'daily'
   adjust: str = 'qfq'
+  limit: Optional[int] = None
 
 class GetLatestHistoryDataResponse(ResponseModel):
-  result: Optional[HistoryData] = None
+  result: Optional[HistoryData] | Optional[list[HistoryData]] = None
 
 @router.post("/get_latest_history_data", response_model=GetLatestHistoryDataResponse)
 async def get_latest_history_data_api(request: GetLatestHistoryDataRequest):
@@ -108,7 +111,8 @@ async def get_latest_history_data_api(request: GetLatestHistoryDataRequest):
     type=request.type,
     code=request.code,
     period=request.period,
-    adjust=request.adjust
+    adjust=request.adjust,
+    limit=request.limit
   )
   return GetLatestHistoryDataResponse(result=result)
 

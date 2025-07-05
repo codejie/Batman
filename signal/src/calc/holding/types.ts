@@ -7,12 +7,14 @@ export interface CalcItem {
   revenue?: number
   profit?: number
   profit_rate?: number
+  pre_profit?: number,
+  pre_profit_rate?: number  
 }
 
 export interface HoldingListItem {
   record: HoldingRecordItem
-  items: HoldingOperationItem[]
-  calc: CalcItem
+  items?: HoldingOperationItem[]
+  calc?: CalcItem
 }
 
 export type OperationItem = HoldingOperationItem

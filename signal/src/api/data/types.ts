@@ -57,8 +57,9 @@ export interface GetLatestHistoryDataRequest {
   code: string
   period?: string
   adjust?: string
+  limit?: number // default 1
 }
-export type  GetLatestHistoryDataResult = HistoryDataItem
+export type  GetLatestHistoryDataResult = HistoryDataItem | HistoryDataItem[]
 
 export interface GetHistoryDataRequest {
   type: number
@@ -66,7 +67,8 @@ export interface GetHistoryDataRequest {
   start?: string
   end?: string
   period?: string
-  adjust?: string  
+  adjust?: string,
+  limit?: number
 }
 export type GetHistoryDataResult = HistoryDataItem[]
 

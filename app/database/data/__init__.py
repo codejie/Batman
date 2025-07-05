@@ -135,15 +135,17 @@ def get_history_data(type: int, code: str, start: str, end: str, period: str, ad
     download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust)
   return fetch_history_data(type1=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
 
-def get_latest_history_data(type: int, code: str, period: str, adjust: str) -> Optional[Define.HistoryData]:
+def get_latest_history_data(type: int, code: str, period: str, adjust: str, limit: int = None) -> Optional[Define.HistoryData] | Optional[list[Define.HistoryData]]:
   # date = datetime.today()
   # while not Utils.is_workday(date):
   #   date = date - timedelta(days=1)
   date = Utils.get_latest_workday()
   start = Utils.date_to_string_1(date - timedelta(weeks=1))
   end = Utils.date_to_string_1(date)
-  results = get_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=1)
+  results = get_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=(limit if limit else 1))
   if len(results) > 0:
+    if limit:
+      return results[-limit:]
     return results.pop()
   return None
 

@@ -27,6 +27,7 @@ import { KLineDialog } from '@/components/KLine'
 import { HoldingRecordItem } from '@/api/holding';
 import { useWebSocket, UseWebSocketOptions } from '@vueuse/core';
 import { useUserStoreWithOut } from '@/store/modules/user';
+import { formatNumberString } from '@/utils/fmtUtil';
 
 const connected = ref<boolean>(false)
 
@@ -306,20 +307,19 @@ async function onWebSocketClick() {
           <template #default="{ row }">
             <div @click="onRecordClick(row.record)">
               <div><ElText>{{ row.record.name }}/{{ row.record.code }}</ElText></div>
-              <!-- <div><ElText>{{ row.record.code }}</ElText></div> -->
             </div>
           </template>
         </ElTableColumn>
-        <ElTableColumn min-width="100">
+        <ElTableColumn min-width="120">
           <template #header>
             <!-- <div><ElText>最新价</ElText></div> -->
             <div><ElText>最新价/目标价/差值</ElText></div>
           </template>
           <template #default="{ row }">
             <div>
-              <ElText>{{ row.calc?.最新价.toFixed(2) }}</ElText>
-              <ElText v-if="row.record.target"> / {{ row.record.target.toFixed(2) }}</ElText>
-              <ElText v-if="row.record.target" :class="(row.calc?.最新价-row.record.target) >= 0 ? 'red-text' : 'green-text'"> / {{ (row.calc?.最新价 - row.record.target).toFixed(2) }}</ElText>
+              <ElText>{{ formatNumberString(row.calc?.最新价) }}</ElText>
+              <ElText v-if="row.record.target"> / {{ formatNumberString(row.record.target) }}</ElText>
+              <ElText v-if="row.record.target" :class="(row.calc?.最新价-row.record.target) >= 0 ? 'red-text' : 'green-text'"> / {{ formatNumberString(row.calc?.最新价 - row.record.target) }}</ElText>
             </div>
           </template>
         </ElTableColumn>
@@ -328,7 +328,7 @@ async function onWebSocketClick() {
             <div><ElText>昨收/今开</ElText></div>
           </template>
           <template #default="{ row }">
-            <div><ElText>{{ row.calc?.昨收.toFixed(2) }} / {{ row.calc?.今开?.toFixed(2) }}</ElText></div>
+            <div><ElText>{{ formatNumberString(row.calc?.昨收) }} / {{ formatNumberString(row.calc?.今开) }}</ElText></div>
           </template>
         </ElTableColumn>
         <ElTableColumn min-width="150">
@@ -337,8 +337,8 @@ async function onWebSocketClick() {
           </template>
           <template #default="{ row }">
             <div>
-              <ElText>{{ row.calc?.最高.toFixed(2) }} / {{ row.calc?.最低.toFixed(2) }} / </ElText>
-              <ElText>{{ row.calc?.涨跌额.toFixed(2) }}</ElText>
+              <ElText>{{ formatNumberString(row.calc?.最高) }} / {{ formatNumberString(row.calc?.最低) }}</ElText>
+              <ElText> / {{ formatNumberString(row.calc?.涨跌额) }}</ElText>
             </div>
           </template>
         </ElTableColumn>
@@ -348,8 +348,7 @@ async function onWebSocketClick() {
             <div><ElText>涨跌幅/振幅</ElText></div>
           </template>
           <template #default="{ row }">
-            <!-- <div><ElText>{{ row.calc?.涨跌额.toFixed(2) }}</ElText></div> -->
-            <div><ElText :class="row.calc?.涨跌幅 >=0 ? 'red-text' : 'green-text'">{{ row.calc?.涨跌幅.toFixed(2) }}% / {{ row.calc?.振幅.toFixed(2) }}%</ElText></div>
+            <div><ElText :class="row.calc?.涨跌幅 >=0 ? 'red-text' : 'green-text'">{{ formatNumberString(row.calc?.涨跌幅) }} / {{ formatNumberString(row.calc?.振幅) }}</ElText></div>
           </template>
         </ElTableColumn>
         <!-- <ElTableColumn min-width="100">
@@ -365,7 +364,7 @@ async function onWebSocketClick() {
             <div><ElText>量比/换手率</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.量比?.toFixed(2) }} / {{ row.calc?.换手率?.toFixed(2) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ formatNumberString(row.calc?.量比) }} / {{ formatNumberString(row.calc?.换手率) }}</ElText></div>
           </template>
         </ElTableColumn>
         <ElTableColumn min-width="100">
@@ -373,7 +372,7 @@ async function onWebSocketClick() {
             <div><ElText>5分钟涨跌/涨速</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.涨跌5分钟?.toFixed(2) }} / {{ row.calc?.涨速?.toFixed(2) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ formatNumberString(row.calc?.涨跌5分钟) }} / {{ formatNumberString(row.calc?.涨速) }}</ElText></div>
           </template>
         </ElTableColumn>
         <ElTableColumn min-width="120">
@@ -382,7 +381,7 @@ async function onWebSocketClick() {
             <div><ElText>60日/年初至今涨跌幅</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ row.calc?.涨跌幅60日?.toFixed(2) }}% / {{ row.calc?.年初至今涨跌幅?.toFixed(2) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ formatNumberString(row.calc?.涨跌幅60日) }} / {{ formatNumberString(row.calc?.年初至今涨跌幅) }}%</ElText></div>
           </template>
         </ElTableColumn>
 <!-- 
