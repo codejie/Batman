@@ -1,24 +1,29 @@
-# FROM alpine/git:v2.49.0 AS clone
+FROM alpine/git:v2.49.0 AS clone
 
-# RUN git clone --branch v0.3 --depth 1 https://github.com/codejie/Batman.git /batman
+RUN git clone --branch v0.3 --depth 1 https://github.com/codejie/Batman.git /batman
 
 FROM node:22.16.0-alpine3.22 AS frontend
-# COPY --from=clone /batman /batman
-RUN mkdir /batman
-COPY . /batman
-# RUN npm install -g pnpm
-# RUN npm install -g serve
+COPY --from=clone /batman /batman
+# RUN mkdir /batman
+# COPY . /batman
 
-# WORKDIR /batman/signal
-# RUN pnpm i
+ARG API_URL="http://localhost:9000"
+ENV PORT=3030
+
+RUN npm install -g pnpm
+RUN npm install -g serve
+
+WORKDIR /batman/signal
+RUN pnpm i
 # # RUN sed -i 's/__VITE_API_URL__/VITE_API_URL/g' .env.pro
-# RUN pnpm run build:pro
+RUN NODE_ENV=production VITE_API_BASE_PATH=${API_URL} pnpm run build:pro
 
 # RUN rm -rf /batman/.git
 # RUN rm -rf /batman/signal/node_modules
 
-# EXPOSE 3030
+EXPOSE $PORT
 
-# CMD ["serve", "-s", "./dist-pro", "-l", "3030"]
+# CMD ["sh", "-c", "serve", "-s", "./dist-pro", "-l", "$SERVICE_PORT"]
+CMD ["sh", "-c", "serve -s ./dist-pro -l $PORT"]
 
-CMD ["tail", "-f", "/dev/null"]
+# CMD ["tail", "-f", "/dev/null"]
