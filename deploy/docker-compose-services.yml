@@ -5,11 +5,11 @@ services:
     container_name: app
     image: batman:app
     ports:
-      - "9000:9000"
+      - "8000:8000"
     volumes:
       - ../app/db:/batman/app/db
     environment:
-      - PORT=9000
+      - PORT=8000
     networks:
       - batman
 

@@ -234,29 +234,29 @@ function onProfitTableExpandChange(row, expandedRows) {
         <!-- <ElTableColumn prop="flag" label="Flag" width="50" /> -->
         <ElTableColumn prop="record.quantity" label="持有" min-width="60" />
         <ElTableColumn prop="record.expense" label="成本" min-width="60" />
-        <ElTableColumn prop="calc.price_avg" label="均价" min-width="80">
+        <ElTableColumn prop="calc?.price_avg" label="均价" min-width="80">
           <template #default="{ row }">
-            {{ formatNumberString(row.calc.price_avg) }}
+            {{ formatNumberString(row.calc?.price_avg) }}
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.price_cur" label="现价/日期" min-width="80">
+        <ElTableColumn prop="calc?.price_cur" label="现价/日期" min-width="80">
           <template #default="{ row }">
-            {{ formatNumberString(row.calc.price_cur) }} [{{ `${row.calc.date_cur.substring(5)}` }}]
+            {{ formatNumberString(row.calc?.price_cur) }} [{{ `${row.calc?.date_cur.substring(5)}` }}]
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.revenue" label="市值" min-width="80">
+        <ElTableColumn prop="calc?.revenue" label="市值" min-width="80">
           <template #default="{ row }">
-            {{ formatNumberString(row.calc.revenue) }}
+            {{ formatNumberString(row.calc?.revenue) }}
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.profit" label="盈亏" min-width="80">
+        <ElTableColumn prop="calc?.profit" label="盈亏" min-width="80">
           <template #default="{ row }">
-            {{ formatNumberString(row.calc.profit) }}
+            {{ formatNumberString(row.calc?.profit) }}
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.profit_rate" label="盈亏率 %" min-width="100">
+        <ElTableColumn prop="calc?.profit_rate" label="盈亏率 %" min-width="100">
           <template #default="{ row }">
-            {{ formatRateString(row.calc.profit_rate) }}
+            {{ formatRateString(row.calc?.profit_rate) }}
           </template>
         </ElTableColumn>
         <ElTableColumn prop="record.created" label="创建时间" min-width="120">

@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     wget \
     sqlite3 \
-    && apt-get upgrade -y \
+    # && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \

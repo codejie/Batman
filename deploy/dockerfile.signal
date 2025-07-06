@@ -7,7 +7,7 @@ COPY --from=clone /batman /batman
 # RUN mkdir /batman
 # COPY . /batman
 
-ARG API_URL="http://localhost:9000"
+ARG API_URL="http://localhost:8000"
 ENV PORT=3030
 
 RUN npm install -g pnpm

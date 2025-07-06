@@ -13,8 +13,8 @@ export function calcFundsData(funds: Types.FundsItem, holdigns: HoldingListItem[
   for (const item of holdigns) {
     holding += item.record.quantity
     expense += item.record.expense
-    revenue += item.calc.revenue || 0
-    profit += item.calc.profit || 0
+    revenue += item.calc?.revenue || 0
+    profit += item.calc?.profit || 0
   }
   // profit_rate = profit / expense
 
