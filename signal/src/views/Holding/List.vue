@@ -83,6 +83,7 @@ async function fetchData() {
     calc: undefined,
     items: []
   }))
+  data.value = data.value.reverse()
   for (const holding of data.value) {
     holding.calc = await calcHoldingData(holding.record)
     holding.items = (await apiOperationList({
@@ -204,7 +205,7 @@ async function onRemove(id: number) {
 
 async function onDetail(id: number) {
   const ids = data.value.map((x) => x.record.id)
-  console.log('onDetail', id, ids)
+  // console.log('onDetail', id, ids)
   push({
     path: '/holding/detail',
     query: {
@@ -372,6 +373,18 @@ function onRecordClick(row: HoldingRecordItem) {
               {{ formatNumberString(row.calc?.price_cur) }} [{{ `${row.calc ? row.calc?.date_cur?.substring(5) : '-'}` }}]
             </template>
           </ElTableColumn>
+          <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="100">
+            <template #header>
+              <ElTooltip effect="dark" content="与前一日价格差/价格差率%" placement="top">
+                <ElText>昨差/昨差率%</ElText>
+              </ElTooltip>
+            </template>
+            <template #default="{ row }">
+              <div :class="row.calc?.pre_price_rate > 0 ? 'red-text' : (row.calc?.pre_price_rate < 0 ? 'green-text' : '')">
+                {{ formatNumberString(row.calc?.price_cur - row.calc?.pre_price) }} / {{ formatRateString(row.calc?.pre_price_rate) }}
+              </div>
+            </template>
+          </ElTableColumn>          
           <ElTableColumn prop="calc.revenue" label="市值/占比" min-width="120">
             <template #header>
               <ElTooltip effect="dark" content="市值/总市值%" placement="top">
@@ -402,7 +415,7 @@ function onRecordClick(row: HoldingRecordItem) {
             </template>
             <template #default="{ row }">
               <div :class="row.calc?.profit_rate > 0 ? 'red-text' : (row.calc?.profit_rate < 0 ? 'green-text' : '')">
-                {{ formatRateString2(row.calc?.profit_rate, funds?.profit_rate) }}
+                {{ formatRateString(row.calc?.profit_rate) }}
               </div>
             </template>
           </ElTableColumn>
@@ -413,19 +426,19 @@ function onRecordClick(row: HoldingRecordItem) {
               </ElTooltip>
             </template>
             <template #default="{ row }">
-              <div :class="row.calc?.pre_profit > 0 ? 'red-text' : (row.calc?.pre_profit < 0 ? 'green-text' : '')">
-                {{ formatNumberString(row.calc?.pre_profit) }} / {{ formatRateString(row.calc?.pre_profit_rate) }}
+              <div :class="row.calc?.pre_profit_rate > 0 ? 'red-text' : (row.calc?.pre_profit_rate < 0 ? 'green-text' : '')">
+                {{ formatNumberString(row.calc?.pre_profit_diff) }} / {{ formatRateString(row.calc?.pre_profit_rate) }}
               </div>
             </template>
           </ElTableColumn>          
-          <ElTableColumn prop="record.created" label="创建时间" min-width="120">
+          <!-- <ElTableColumn prop="record.created" label="创建时间" min-width="120">
             <template #header>
               <ElText>创建时间</ElText>
             </template>
             <template #default="{ row }">
               {{ formatToDate(row.record.created) }}
             </template>
-          </ElTableColumn>
+          </ElTableColumn> -->
           <!-- <ElTableColumn label="更新时间" min-width="120">
             <template #default="{ row }">
               {{ formatToDate(row.record.updated) }}

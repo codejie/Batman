@@ -7,7 +7,9 @@ export interface CalcItem {
   revenue?: number
   profit?: number
   profit_rate?: number
-  pre_profit?: number,
+  pre_price?: number // 上次收盘价
+  pre_price_rate?: number // 上次收盘价变动率
+  pre_profit_diff?: number // 盈亏差
   pre_profit_rate?: number  
 }
 
@@ -42,7 +44,7 @@ export interface ProfitTraceItem {
   revenue?: number // 市值
   profit?: number
   profit_rate?: number
-  pre_profit?: number,
+  pre_profit_diff?: number, // 盈亏差
   pre_profit_rate?: number
   is_filled: boolean
 }

@@ -29,7 +29,7 @@ function _calcProfitRate(quantity: number, expense: number, price?: number): num
   return (price * quantity + expense) / -expense
 }
 
-function _calcPreProfit(profit?: number, pre_profit?: number): number | undefined {
+function _calcPreProfitDiff(profit?: number, pre_profit?: number): number | undefined {
   if (profit === undefined) return undefined
   if (pre_profit === undefined) return undefined
   return profit - pre_profit
@@ -39,7 +39,7 @@ function _calcPreProfitRate(profit?: number, pre_profit?: number): number | unde
   if (profit === undefined) return undefined
   if (pre_profit === undefined) return undefined
   if (pre_profit === 0) return 0
-  return (profit - pre_profit) / pre_profit
+  return (profit - pre_profit) / Math.abs(pre_profit)
 }
 
 export function calcHoldingData(holding: HoldingRecordItem): Promise<Types.CalcItem | undefined> {
@@ -56,15 +56,21 @@ export function calcHoldingData(holding: HoldingRecordItem): Promise<Types.CalcI
 
         const price = latest.收盘
         const pre_price = pre_latest ? pre_latest.收盘 : undefined
+        const profit = _calcProfit(holding.quantity, holding.expense, price)
+        const profit_rate = _calcProfitRate(holding.quantity, holding.expense, price)
+        const pre_profit = pre_price ? _calcProfit(holding.quantity, holding.expense, pre_price) : undefined
+        console.log('calcHoldingData', latest, pre_latest, price, pre_price, profit, profit_rate, pre_profit)
         resolve({
           price_avg: _calcPriceAvg(holding.expense, holding.quantity),
           price_cur: price,
           date_cur: latest.日期,
           revenue: _calcRevenue(holding.quantity, price),
-          profit: _calcProfit(holding.quantity, holding.expense, price),
-          profit_rate: _calcProfitRate(holding.quantity, holding.expense, price),
-          pre_profit: _calcPreProfit(price, pre_price),
-          pre_profit_rate: _calcPreProfitRate(price, pre_price)
+          profit: profit,
+          profit_rate: profit_rate,
+          pre_price: pre_price,
+          pre_price_rate: pre_price ? (price - pre_price) / pre_price : undefined,
+          pre_profit_diff: _calcPreProfitDiff(profit, pre_profit),
+          pre_profit_rate: _calcPreProfitRate(profit, pre_profit)
         })
       } else {
         resolve(undefined)
@@ -180,7 +186,7 @@ export function calcProfitTraceData(operationData: Types.OperationItem[], histor
           revenue: _calcRevenue(prev.holding, price),
           profit: profit,
           profit_rate: _calcProfitRate(prev.holding, prev.amount, price),
-          pre_profit: _calcPreProfit(profit, pre_profit),
+          pre_profit_diff: _calcPreProfitDiff(profit, pre_profit),
           pre_profit_rate: _calcPreProfitRate(profit, pre_profit),
           is_filled
         })
@@ -229,7 +235,7 @@ export function calcProfitData(operationData: Types.OperationItem[], historyData
       revenue: _calcRevenue(data.holding, price),
       profit: profit,
       profit_rate: _calcProfitRate(data.holding, data.amount, price),
-      pre_profit: _calcPreProfit(profit, pre_profit),
+      pre_profit_diff: _calcPreProfitDiff(profit, pre_profit),
       pre_profit_rate: _calcPreProfitRate(profit, pre_profit),
       is_filled: false
     })

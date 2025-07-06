@@ -9,6 +9,7 @@ import * as Utils from '@/utils/dateUtil'
 import DetailChart from './components/DetailChart.vue'
 import { KLineDialog } from '@/components/KLine'
 import { HoldingRecordItem } from '@/api/holding'
+import { formatNumberString, formatRateString } from '@/utils/fmtUtil'
 
 const { go } = useRouter()
 
@@ -40,7 +41,7 @@ async function fetchData(id) {
   // holding
   holdingData.value = await getHoldListData(id)
   
-  const operationData = holdingData.value[0]!.items
+  const operationData = holdingData.value[0]?.items ?? []
   if (operationData.length > 0) {
     // history
     let start = Utils.dateUtil(operationData[0].created)
@@ -79,13 +80,15 @@ async function fetchData(id) {
 
 function onProfitTableShow() {
   profitTableToggle.value = !profitTableToggle.value
-  if (profitTableToggle.value) {
-      profitTableData.value = profitTraceData.value
-  } else {
-    if (holdingData.value && holdingData.value.length > 0)
-      profitTableData.value = calcProfitData(holdingData.value[0].items, historyData.value)
-    else
-      profitTableData.value = []
+  if (holdingData.value && holdingData.value.length >0) {
+    if (profitTableToggle.value) {
+        profitTableData.value = profitTraceData.value
+    } else {
+      if (holdingData.value && holdingData.value.length > 0)
+        profitTableData.value = calcProfitData(holdingData.value[0].items!, historyData.value)
+      else
+        profitTableData.value = []
+    }
   }
   // profitTableData.value = profitTableData.value.reverse()
 }
@@ -170,52 +173,52 @@ function onProfitTableExpandChange(row, expandedRows) {
               <ElTableColumn prop="quantity" label="操作" min-width="50" />
               <ElTableColumn prop="price" label="买入" min-width="60">
                 <template #default="{ row }">
-                  {{ row.price.toFixed(2) }}
+                  {{ formatNumberString(row.price) }}
                 </template>
               </ElTableColumn>
               <ElTableColumn label="成本" min-width="60">
                 <template #default="{ row }">
-                  {{ row.expense.toFixed(2) }}
+                  {{ formatNumberString(row.expense) }}
                 </template>
               </ElTableColumn>
               <ElTableColumn prop="holding" label="持有" min-width="60" />              
               <ElTableColumn label="总额" min-width="80">
                 <template #default="{ row }">
-                  {{ row.amount.toFixed(2) }}
+                  {{ formatNumberString(row.amount) }}
                 </template>
               </ElTableColumn>              
               <ElTableColumn label="均价" min-width="60">
                 <template #default="{ row }">
-                  {{ row.price_avg.toFixed(2) }}
+                  {{ formatNumberString(row.price_avg) }}
                 </template>
               </ElTableColumn>
               <ElTableColumn prop="price_close" label="时价" min-width="60" />
               <ElTableColumn label="市值" min-width="80">
                 <template #default="{ row }">
-                  {{ row.revenue.toFixed(2) }}
+                  {{ formatNumberString(row.revenue) }}
                 </template>
               </ElTableColumn>
               <ElTableColumn label="盈亏" min-width="80">
                 <template #default="{ row }">
-                  {{ row.profit?.toFixed(2) }}
+                  {{ formatNumberString(row.profit) }}
                 </template>
               </ElTableColumn>
               <ElTableColumn label="盈亏率 %" min-width="100">
                 <template #default="{ row }">
-                  {{ (row.profit_rate * 100)?.toFixed(2) + '%' }}
+                  {{ formatRateString(row.profit_rate) }}
                 </template>
               </ElTableColumn>
               <ElTableColumn label="昨差" min-width="80">
                 <template #default="{ row }">
-                  <div :class="row.pre_profit > 0 ? 'red-text' : (row.pre_profit < 0 ? 'green-text' : '')">
-                    {{ row.pre_profit !== undefined ? row.pre_profit?.toFixed(2) : '-'}}
+                  <div :class="row.pre_profit_diff > 0 ? 'red-text' : (row.pre_profit_diff < 0 ? 'green-text' : '')">
+                    {{ formatNumberString(row.pre_profit_diff)}}
                   </div>
                 </template>
               </ElTableColumn>
               <ElTableColumn label="昨差率 %" min-width="100">
                 <template #default="{ row }">
                   <div :class="row.pre_profit_rate > 0 ? 'red-text' : (row.pre_profit_rate < 0 ? 'green-text' : '')">
-                    {{ row.pre_profit_rate !== undefined ? `${(row.pre_profit_rate * 100).toFixed(2)}%` : '-'}}
+                    {{ formatRateString(row.pre_profit_rate) }}
                   </div>
                 </template>
               </ElTableColumn>              
@@ -233,27 +236,27 @@ function onProfitTableExpandChange(row, expandedRows) {
         <ElTableColumn prop="record.expense" label="成本" min-width="60" />
         <ElTableColumn prop="calc.price_avg" label="均价" min-width="80">
           <template #default="{ row }">
-            {{ `${row.calc.price_avg? row.calc.price_avg.toFixed(2) : '-'}` }}
+            {{ formatNumberString(row.calc.price_avg) }}
           </template>
         </ElTableColumn>
         <ElTableColumn prop="calc.price_cur" label="现价/日期" min-width="80">
           <template #default="{ row }">
-            {{ `${row.calc.price_cur} / ${row.calc.date_cur.substring(5)}` }}
+            {{ formatNumberString(row.calc.price_cur) }} [{{ `${row.calc.date_cur.substring(5)}` }}]
           </template>
         </ElTableColumn>
         <ElTableColumn prop="calc.revenue" label="市值" min-width="80">
           <template #default="{ row }">
-            {{ `${row.calc.revenue? row.calc.revenue.toFixed(2) : '-'}` }}
+            {{ formatNumberString(row.calc.revenue) }}
           </template>
         </ElTableColumn>
         <ElTableColumn prop="calc.profit" label="盈亏" min-width="80">
           <template #default="{ row }">
-            {{ `${row.calc.profit? row.calc.profit.toFixed(2) : '-'}` }}
+            {{ formatNumberString(row.calc.profit) }}
           </template>
         </ElTableColumn>
         <ElTableColumn prop="calc.profit_rate" label="盈亏率 %" min-width="100">
           <template #default="{ row }">
-            {{ `${row.calc.profit_rate? (row.calc.profit_rate * 100).toFixed(2) + '%' : '-'}` }}
+            {{ formatRateString(row.calc.profit_rate) }}
           </template>
         </ElTableColumn>
         <ElTableColumn prop="record.created" label="创建时间" min-width="120">
