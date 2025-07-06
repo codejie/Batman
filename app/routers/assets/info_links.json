@@ -45,11 +45,7 @@
             },
             {
                 "title": "同花顺财经",
-                "url": "https://stock.eastmoney.com/a/czpnc.html"
-            },
-            {
-                "title": "新浪财经",
-                "url": "https://finance.sina.com.cn/"
+                "url": "https://news.10jqka.com.cn/"
             },
             {
                 "title": "富途快讯",
@@ -66,9 +62,14 @@
         "icon": "Postcard",
         "links": [
             {
-                "title": "个股新闻",
+                "title": "东财个股新闻",
                 "url": " https://so.eastmoney.com/news/s?keyword={code}",
                 "needCode": true
+            },
+            {
+                "title": "同花顺个股频道",
+                "url": "https://stockpage.10jqka.com.cn/{code}/",
+                "needCode": true                
             }
         ]
     }      

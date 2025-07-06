@@ -28,6 +28,7 @@ import { HoldingRecordItem } from '@/api/holding';
 import { useWebSocket, UseWebSocketOptions } from '@vueuse/core';
 import { useUserStoreWithOut } from '@/store/modules/user';
 import { formatNumberString } from '@/utils/fmtUtil';
+import { PATH_URL } from '@/axios/service';
 
 const connected = ref<boolean>(false)
 
@@ -66,8 +67,8 @@ const opts: UseWebSocketOptions = {
   onError: onError,
   onMessage: onMessage
 }
-
-const WS_URL_SPOT_DATA = 'ws://localhost:8000/services/ws/spot_data?token=' + useUserStoreWithOut().getTokenKey
+// const WS_URL_SPOT_DATA = 'ws://localhost:8000/services/ws/spot_data?token=' + useUserStoreWithOut().getTokenKey
+const WS_URL_SPOT_DATA = `ws://${PATH_URL}/services/ws/spot_data?token=${useUserStoreWithOut().getTokenKey}`
 const { open, close } = useWebSocket(WS_URL_SPOT_DATA, opts)
 
 const createDialogVisible = ref<boolean>(false)

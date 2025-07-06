@@ -59,7 +59,7 @@ export function calcHoldingData(holding: HoldingRecordItem): Promise<Types.CalcI
         const profit = _calcProfit(holding.quantity, holding.expense, price)
         const profit_rate = _calcProfitRate(holding.quantity, holding.expense, price)
         const pre_profit = pre_price ? _calcProfit(holding.quantity, holding.expense, pre_price) : undefined
-        console.log('calcHoldingData', latest, pre_latest, price, pre_price, profit, profit_rate, pre_profit)
+
         resolve({
           price_avg: _calcPriceAvg(holding.expense, holding.quantity),
           price_cur: price,
@@ -93,11 +93,11 @@ export async function getHoldListData(id?: number, type?: number, code?: string,
       type: res.type,
       code: res.code
     })
-    const price = ret_current.result ? ret_current.result.收盘 : undefined
+    const price = ret_current.result ? (ret_current.result as HistoryDataItem).收盘 : undefined
     const calc: Types.CalcItem = {
       price_avg: _calcPriceAvg(res.expense, res.quantity), // -res.expense / res.quantity,
       price_cur: price,
-      date_cur: ret_current.result?.日期,
+      date_cur: ret_current.result ? (ret_current.result as HistoryDataItem).日期 : undefined,
       revenue: _calcRevenue(res.quantity, price), // price ? price * res.quantity : undefined,
       profit: _calcProfit(res.quantity, res.expense, price), // price ? (price * res.quantity + res.expense) : undefined,
       profit_rate: _calcProfitRate(res.quantity, res.expense, price) // price ? ((price * res.quantity + res.expense) / -res.expense) : undefined
