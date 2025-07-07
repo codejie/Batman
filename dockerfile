@@ -25,7 +25,8 @@ WORKDIR /usr/local/lib
 RUN ln -s libta_lib.a libta-lib.a
 RUN ln -s libta_lib.so libta-lib.so
 
-RUN git clone -b v0.3 --depth 1 https://github.com/codejie/Batman.git /batman
+# clone Batman
+RUN git clone -branch v0.3 --single-branch --depth=1 https://github.com/codejie/Batman.git /batman
 
 # 设置Python
 WORKDIR /batman/app

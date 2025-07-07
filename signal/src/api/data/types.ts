@@ -59,7 +59,7 @@ export interface GetLatestHistoryDataRequest {
   adjust?: string
   limit?: number // default 1
 }
-export type  GetLatestHistoryDataResult = HistoryDataItem | HistoryDataItem[]
+export type  GetLatestHistoryDataResult = HistoryDataItem | HistoryDataItem[] | undefined
 
 export interface GetHistoryDataRequest {
   type: number

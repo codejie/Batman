@@ -8,15 +8,15 @@ import { NO_RESET_WHITE_LIST } from '@/constants'
 const { t } = useI18n()
 
 export const constantRouterMap: AppRouteRecordRaw[] = [
-  // {
-  //   path: '/',
-  //   component: Layout,
-  //   redirect: '/dashboard/analysis',
-  //   name: 'Root',
-  //   meta: {
-  //     hidden: true
-  //   }
-  // },
+  {
+    path: '/',
+    component: Layout,
+    redirect: '/holding/list',
+    name: 'Root',
+    meta: {
+      hidden: true
+    }
+  },
   // {
   //   path: '/redirect',
   //   component: Layout,
@@ -80,27 +80,27 @@ export const constantRouterMap: AppRouteRecordRaw[] = [
 ]
 
 export const asyncRouterMap: AppRouteRecordRaw[] = [
-  {
-    name: 'Home',
-    path: '/',
-    component: Layout,
-    redirect: '/home',
-    meta: {
-      hidden: true
-    },
-    children: [
-      {
-        name: 'Home-Index',
-        path: '/home',
-        component: () => import('@/views/Home/Home.vue'),
-        meta: {
-          title: t('router.home'),
-          noCache: true,
-          affix: true
-        }
-      }
-    ]
-  },
+  // {
+  //   name: 'Home',
+  //   path: '/',
+  //   component: Layout,
+  //   redirect: '/home',
+  //   meta: {
+  //     hidden: true
+  //   },
+  //   children: [
+  //     {
+  //       name: 'Home-Index',
+  //       path: '/home',
+  //       component: () => import('@/views/Home/Home.vue'),
+  //       meta: {
+  //         title: t('router.home'),
+  //         noCache: true,
+  //         affix: true
+  //       }
+  //     }
+  //   ]
+  // },
   {
     name: 'Customized',
     path: '/customized',
