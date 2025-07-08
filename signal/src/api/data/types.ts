@@ -7,6 +7,9 @@ export const PERIOD_MONTHLY: string = 'monthly'
 
 export const ADJUST_QFQ: string = 'qfq'
 
+export const RECORD_FLAG_NORMAL: number = 0
+export const RECORD_FLAG_DISABLED: number = 1
+
 export interface DownloadListRequest {
   type: number
 }
@@ -58,6 +61,7 @@ export interface GetLatestHistoryDataRequest {
   period?: string
   adjust?: string
   limit?: number // default 1
+  record_flag?: number
 }
 export type  GetLatestHistoryDataResult = HistoryDataItem | HistoryDataItem[] | undefined
 
@@ -68,7 +72,8 @@ export interface GetHistoryDataRequest {
   end?: string
   period?: string
   adjust?: string,
-  limit?: number
+  limit?: number,
+  record_flag?: number
 }
 export type GetHistoryDataResult = HistoryDataItem[]
 

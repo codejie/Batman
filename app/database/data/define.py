@@ -15,6 +15,9 @@ PERIOD_MONTHLY: str = 'monthly'
 
 ADJUST_QFQ: str = 'qfq'
 
+RECORD_FLAG_NORMAL: int = 0
+RECORD_FLAG_DISABLED: int = 1
+
 """
 Data Options
 """

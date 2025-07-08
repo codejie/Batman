@@ -33,7 +33,7 @@ import {
   ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn, ElTooltip,
   ElRadioGroup, ElRadioButton, ElDatePicker, ElMessageBox, ElDescriptions, ElDescriptionsItem, ElDivider
  } from 'element-plus'
-import { formatToDate, formatToDateTime } from '@/utils/dateUtil'
+import { formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
 import { calcFundsData, FUNDS_STOCK, FundsData } from '@/calc/funds'
@@ -234,6 +234,10 @@ function onRecordClick(row: HoldingRecordItem) {
   klineDialogVisible.value = true
 }
 
+function onReload() {
+  fetchHoldingData()
+}
+
 </script>
 
 <template>
@@ -268,7 +272,12 @@ function onRecordClick(row: HoldingRecordItem) {
     </ElDescriptions>
     <ElDivider calss="mx-8px" content-position="left">持股记录</ElDivider>
     <ElRow :gutter="24">
-      <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加持股</ElButton>
+      <ElCol :span="12">
+        <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加持股</ElButton>
+      </ElCol>
+      <ElCol :span="12">
+        <ElButton class="my-4" style="float: right;"  @click="onReload">刷新记录</ElButton>
+      </ElCol>
     </ElRow>
     <ElRow :gutter="24">
       <ElTable :data="data" :row-key="getHoldingKey" :expand-row-keys="expandRows" @expand-change="onExpandChanged" stripe :border="true" :default-sort="{ prop: 'record.created', order: 'descending' }">

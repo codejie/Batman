@@ -47,7 +47,8 @@ export function calcHoldingData(holding: HoldingRecordItem): Promise<Types.CalcI
     apiGetLatestHistoryData({
       type: holding.type,
       code: holding.code,
-      limit: 2
+      limit: 2,
+      record_flag: Types.RECORD_FLAG_DISABLED
     }).then((ret) => {
       const results = ret.result as HistoryDataItem[] | undefined
       if (results && results.length > 0) {

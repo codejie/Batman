@@ -73,6 +73,7 @@ class GetHistoryDataRequest(RequestModel):
   period: Optional[str] = 'daily'
   adjust: Optional[str] = None
   limit: Optional[int] = None
+  record_flag: Optional[int] = 0 # 0 normal, check & update; 1: disabled, no check and update 
 
 class GetHistoryDataResponse(ResponseModel):
   result: list[HistoryData] = []
@@ -91,7 +92,8 @@ async def get_history_data_api(request: GetHistoryDataRequest):
     end=request.end,
     period=request.period,
     adjust=request.adjust,
-    limit=request.limit
+    limit=request.limit,
+    record_flag=request.record_flag
   )
   return GetHistoryDataResponse(result=result)
 
@@ -101,6 +103,7 @@ class GetLatestHistoryDataRequest(RequestModel):
   period: str = 'daily'
   adjust: str = 'qfq'
   limit: Optional[int] = None
+  record_flag: Optional[int] = 0
 
 class GetLatestHistoryDataResponse(ResponseModel):
   result: Optional[HistoryData] | Optional[list[HistoryData]] = None
@@ -112,7 +115,8 @@ async def get_latest_history_data_api(request: GetLatestHistoryDataRequest):
     code=request.code,
     period=request.period,
     adjust=request.adjust,
-    limit=request.limit
+    limit=request.limit,
+    record_flag=request.record_flag
   )
   return GetLatestHistoryDataResponse(result=result)
 

@@ -20,7 +20,7 @@ import { onMounted, ref } from 'vue';
 import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn,
   ElMessageBox, ElSelect, ElOption, ElMessage, ElDropdown, ElDropdownMenu, ElDropdownItem, ElCheckbox } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '@/api/customized';
-import { apiGetName, apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
+import { apiGetName, apiGetSpotData, RECORD_FLAG_ONLY_UPDATE, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized';
 import { KLineDialog } from '@/components/KLine'
@@ -91,7 +91,7 @@ const data = ref<Item[]>([])
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
 const fetchTime = ref<string>()
-const useHistory = ref<boolean>(false)
+const useHistory = ref<boolean>(true)
 
 
 function onWebSocketData(wd: any) {
@@ -133,7 +133,11 @@ async function fetch() {
   try {
     if (stocks.length > 0) {
       const codes: string[] = stocks.map(item => item.code)
-      const stockRet = await apiGetSpotData({ type: TYPE_STOCK, codes: codes, useHistory: useHistory.value })
+      const stockRet = await apiGetSpotData({
+        type: TYPE_STOCK,
+        codes: codes, 
+        useHistory: useHistory.value
+      })
       for (const item of stocks) {
         const spot = stockRet.result.find(i => i.代码 === item.code)
         data.value.push({
@@ -142,9 +146,22 @@ async function fetch() {
         })
       }
     }
+  } catch (e) {
+    for (const item of stocks) {
+      data.value.push({
+        record: item,
+        calc: undefined
+      })      
+    }    
+  }
+  try {
     if (indexes.length > 0) {
       const codes: string[] = indexes.map(item => item.code)
-      const indexRet = await apiGetSpotData({ type: TYPE_INDEX, codes: codes, useHistory: useHistory.value })
+      const indexRet = await apiGetSpotData({
+        type: TYPE_INDEX,
+        codes: codes, 
+        useHistory: useHistory.value
+      })
       for (const item of indexes) {
         const spot = indexRet.result.find(i => i.代码 === item.code)
         data.value.push({
@@ -154,13 +171,7 @@ async function fetch() {
       }      
     }
   } catch (e) {
-    for (const item of stocks) {
-      data.value.push({
-        record: item,
-        calc: undefined
-      })      
-    }
-    for (const item of stocks) {
+    for (const item of indexes) {
       data.value.push({
         record: item,
         calc: undefined

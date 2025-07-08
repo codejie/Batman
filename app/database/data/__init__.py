@@ -87,7 +87,7 @@ def make_history_data_table_name(type: int, code: str, period: str, adjust: str 
   else:
     raise ValueError(f"Unknown type: {type}")
 
-def download_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None) -> int:
+def download_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> int:
   if start is None:
     start = Utils.date_to_string_1(datetime.today() - timedelta(weeks=52))
   if end is None:
@@ -102,14 +102,15 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
     table_name = make_history_data_table_name(type=type, code=code, period=period, adjust=adjust)
     data.to_sql(table_name, dbEngine.engine, if_exists='replace', index=True, index_label='日期')
 
-    update_download_records(type, code, period, adjust, start, end)
+    if record_flag != Define.RECORD_FLAG_DISABLED:
+      update_download_records(type=type, code=code, period=period, adjust=adjust, start=start, end=end)
 
     return len(data)
   else:
     return 0
 
-def fetch_history_data(type1: int, code: str, start: str, end: str, period: str, adjust: str = None, limit: int = None) -> list[Define.HistoryData]:
-  table_name = make_history_data_table_name(type=type1, code=code, period=period, adjust=adjust)
+def fetch_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, limit: int = None) -> list[Define.HistoryData]:
+  table_name = make_history_data_table_name(type=type, code=code, period=period, adjust=adjust)
 
   if start and end:
     stmt = text(f"SELECT * FROM {table_name} WHERE 日期 >= '{start}' AND 日期 <= '{end}' ORDER BY 日期 ASC")
@@ -129,20 +130,20 @@ def fetch_history_data(type1: int, code: str, start: str, end: str, period: str,
     return results[-limit:] 
   return results
 
-def get_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, limit: int = None) -> list[Define.HistoryData]:
-  checked = check_download_records(type=type, code=code, period=period, adjust=adjust, start=start, end=end)
+def get_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, limit: int = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> list[Define.HistoryData]:
+  checked = check_download_records(type=type, code=code, period=period, adjust=adjust, start=start, end=end) if record_flag != Define.RECORD_FLAG_DISABLED else None
   if checked is None:
-    download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust)
-  return fetch_history_data(type1=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
+    download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, record_flag=record_flag)
+  return fetch_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
 
-def get_latest_history_data(type: int, code: str, period: str, adjust: str, limit: int = None) -> Optional[Define.HistoryData] | Optional[list[Define.HistoryData]]:
+def get_latest_history_data(type: int, code: str, period: str, adjust: str, limit: int = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> Optional[Define.HistoryData] | Optional[list[Define.HistoryData]]:
   # date = datetime.today()
   # while not Utils.is_workday(date):
   #   date = date - timedelta(days=1)
   date = Utils.get_latest_workday()
   start = Utils.date_to_string_1(date - timedelta(weeks=1))
   end = Utils.date_to_string_1(date)
-  results = get_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=(limit if limit else 1))
+  results = get_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=(limit if limit else 1), record_flag=record_flag)
   if len(results) > 0:
     if limit:
       return results[-limit:]
@@ -192,7 +193,7 @@ def get_spot_data_use_history(type: int, codes: list[str] = None) -> list[Define
 
   results: list[Define.SpotData] = []
   for code in codes:
-    ret = get_history_data(type=type, code=code, start=start, end=end, period='daily', adjust='qfq', limit=1)
+    ret = get_history_data(type=type, code=code, start=start, end=end, period='daily', adjust='qfq', limit=1, record_flag=Define.RECORD_FLAG_DISABLED)
     if len(ret) > 0:
       history = ret.pop()
       results.append(Define.SpotData(
