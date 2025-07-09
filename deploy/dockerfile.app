@@ -22,7 +22,7 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
 RUN ln -s /usr/local/lib/libta_lib.a /usr/local/lib/libta-lib.a
 
 WORKDIR /batman/app
-RUN pip install --no-cache-dir -r requirements_docker.txt uvicorn
+RUN pip install --no-cache-dir -r requirements.txt uvicorn
 
 RUN rm -rf /ta-lib-0.4.0-src.tar.gz /ta-lib
 RUN apt-get remove -y \
