@@ -268,7 +268,7 @@ function onReload() {
       </ElDescriptionsItem>
       <ElDescriptionsItem label="市值"><ElText tag="b">{{ formatNumberString(funds?.revenue) }}</ElText></ElDescriptionsItem>
       <ElDescriptionsItem label="盈亏"><ElText tag="b">{{ formatNumberString(funds?.profit) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ formatRateString(funds?.profit) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ formatRateString(funds?.profit_rate) }}</ElText></ElDescriptionsItem>
     </ElDescriptions>
     <ElDivider calss="mx-8px" content-position="left">持股记录</ElDivider>
     <ElRow :gutter="24">
