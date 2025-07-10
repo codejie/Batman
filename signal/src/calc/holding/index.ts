@@ -2,9 +2,8 @@ import { apiOperationList, apiRecord, HoldingRecordItem } from "@/api/holding"
 import { formatDateToYYYYMMDD } from "../comm"
 import * as Types from "@/calc/holding/types"
 import { apiGetLatestHistoryData } from "@/api/data"
-import { HistoryDataItem } from "@/api/data/types"
+import { HistoryDataItem, RECORD_FLAG_DISABLED } from "@/api/data/types"
 import  { dateUtil, formatToDate } from '@/utils/dateUtil'
-import { result } from "lodash-es"
 
 export * from "@/calc/holding/types"
 
@@ -48,7 +47,7 @@ export function calcHoldingData(holding: HoldingRecordItem): Promise<Types.CalcI
       type: holding.type,
       code: holding.code,
       limit: 2,
-      record_flag: Types.RECORD_FLAG_DISABLED
+      record_flag: RECORD_FLAG_DISABLED
     }).then((ret) => {
       const results = ret.result as HistoryDataItem[] | undefined
       if (results && results.length > 0) {
