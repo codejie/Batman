@@ -72,5 +72,16 @@
                 "needCode": true                
             }
         ]
-    }      
+    },
+    {
+        "title": "单独窗口",
+        "icon": "FullScreen",
+        "links": [
+            {
+                "title": "雪球行情中心",
+                "url": "https://xueqiu.com/hq",
+                "inWindow": true
+            }
+        ]
+    } 
 ]

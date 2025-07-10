@@ -140,6 +140,7 @@ class LinkInfo(BaseModel):
   url: str
   tip: Optional[str] = None
   needCode: Optional[bool] = False
+  inWindow: Optional[bool] = False
 
 class GroupInfo(BaseModel):
   title: str

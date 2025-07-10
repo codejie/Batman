@@ -13,7 +13,7 @@
 // }
 </script>
 <script setup lang="ts">
-import { ElMenu, ElSubMenu, ElMenuItem, ElIcon, ElButton } from 'element-plus';
+import { ElMenu, ElSubMenu, ElMenuItem, ElIcon, ElButton, ElLink } from 'element-plus';
 import * as Icons from '@element-plus/icons-vue';
 import { options } from '../Links.vue';
 import { onMounted, ref } from 'vue';
@@ -34,6 +34,9 @@ function onSelected(key: string) {
     const [groupIndex, linkIndex] = key.split('-').map(Number)
     const link: LinkInfoModel = menuGroup.value[groupIndex]?.links[linkIndex]
     if (link && link?.url) {
+        if (link.inWindow) {
+            return
+        }
         if (link.needCode && options.code) {
             link.url = link.url.replace('{code}', options.code)
         }
@@ -67,7 +70,8 @@ function checkDisabled(link: LinkInfoModel): boolean {
             <ElMenuItem v-for="(link, index) in group.links" :key="index" :index="gindex.toString() + '-' + index.toString()">
                 <!-- <a :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.title }} </a> -->
                 <template #title>
-                    <ElButton :link="true" :disabled="checkDisabled(link)" > {{ link.title }}</ElButton>
+                    <ElLink v-if="link.inWindow" underline="hover" :href=link.url target="_blank"> {{ link.title }} </ElLink>
+                    <ElButton v-else :link="true" :disabled="checkDisabled(link)" > {{ link.title }}</ElButton>
                 </template>                
             </ElMenuItem>
         </ElSubMenu>

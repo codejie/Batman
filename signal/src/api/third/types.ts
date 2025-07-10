@@ -33,7 +33,8 @@ export type LinkInfoModel = {
   title: string,
   url: string,
   tip?: string,
-  needCode?: boolean
+  needCode?: boolean,
+  inWindow?: boolean
 }
 
 export type GroupInfoModel = {
