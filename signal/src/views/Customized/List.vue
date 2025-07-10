@@ -284,11 +284,11 @@ async function onWebSocketClick() {
 
 <template>
   <ContentWrap>
-    <div class="my-4" >
+    <div class="my-4">
       <!-- <ElButton class="my-4" type="primary" @click="onTest">Test</ElButton> -->
       <ElButton type="primary" @click="createDialogVisible=true">增加自选</ElButton>
       <ElButton  @click="viewDialogVisible=true">快速查看</ElButton>
-      <ElCheckbox v-model="useHistory" style="margin-left: 16px;" label="使用历史数据" />
+      <ElCheckbox v-model="useHistory" style="margin-left: 16px;" label="使用历史数据接口" />
       <!-- <ElButton style="float: right;" @click="fetch()">刷新</ElButton> -->
       <ElDropdown style="float: right;" :split-button="true" type="primary" @click="fetch()">
         刷新{{ connected ? ' - On' :'' }}

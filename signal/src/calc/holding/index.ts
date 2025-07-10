@@ -2,7 +2,7 @@ import { apiOperationList, apiRecord, HoldingRecordItem } from "@/api/holding"
 import { formatDateToYYYYMMDD } from "../comm"
 import * as Types from "@/calc/holding/types"
 import { apiGetLatestHistoryData } from "@/api/data"
-import { HistoryDataItem, RECORD_FLAG_DISABLED } from "@/api/data/types"
+import { HistoryDataItem, RECORD_FLAG_DISABLED, RECORD_FLAG_NORMAL } from "@/api/data/types"
 import  { dateUtil, formatToDate } from '@/utils/dateUtil'
 
 export * from "@/calc/holding/types"
@@ -41,13 +41,13 @@ function _calcPreProfitRate(profit?: number, pre_profit?: number): number | unde
   return (profit - pre_profit) / Math.abs(pre_profit)
 }
 
-export function calcHoldingData(holding: HoldingRecordItem): Promise<Types.CalcItem | undefined> {
+export function calcHoldingData(holding: HoldingRecordItem, use_locale: boolean = true): Promise<Types.CalcItem | undefined> {
   return new Promise((resolve) => {
     apiGetLatestHistoryData({
       type: holding.type,
       code: holding.code,
       limit: 2,
-      record_flag: RECORD_FLAG_DISABLED
+      record_flag: use_locale ? RECORD_FLAG_NORMAL : RECORD_FLAG_DISABLED
     }).then((ret) => {
       const results = ret.result as HistoryDataItem[] | undefined
       if (results && results.length > 0) {

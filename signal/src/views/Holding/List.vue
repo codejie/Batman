@@ -31,7 +31,7 @@ import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref } from 'vue'
 import {
   ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn, ElTooltip,
-  ElRadioGroup, ElRadioButton, ElDatePicker, ElMessageBox, ElDescriptions, ElDescriptionsItem, ElDivider
+  ElRadioGroup, ElRadioButton, ElDatePicker, ElMessageBox, ElDescriptions, ElDescriptionsItem, ElDivider, ElCheckbox
  } from 'element-plus'
 import { formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
@@ -48,6 +48,7 @@ const fundsDialogVisible = ref<boolean>(false)
 const createDialogVisible = ref<boolean>(false)
 const operationDialogVisible = ref<boolean>(false)
 const klineDialogVisible = ref<boolean>(false)
+const useLocale = ref<boolean>(true)
 const reqParam = ref<any>({})
 
 const fundsForm = ref<FundsForm>({
@@ -85,7 +86,7 @@ async function fetchData() {
   }))
   data.value = data.value.reverse()
   for (const holding of data.value) {
-    holding.calc = await calcHoldingData(holding.record)
+    holding.calc = await calcHoldingData(holding.record, useLocale.value)
     holding.items = (await apiOperationList({
       holding: holding.record.id
     })).result
@@ -277,6 +278,7 @@ function onReload() {
       </ElCol>
       <ElCol :span="12">
         <ElButton class="my-4" style="float: right;"  @click="onReload">刷新记录</ElButton>
+        <ElCheckbox v-model="useLocale" class="my-4" style="margin-right: 12px; float: right;" label="使用本地数据" />
       </ElCol>
     </ElRow>
     <ElRow :gutter="24">
