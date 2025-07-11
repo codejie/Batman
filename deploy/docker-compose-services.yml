@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ../app/db:/batman/app/db
+      - .:/batman/app/db
     environment:
       - PORT=8000
     networks:

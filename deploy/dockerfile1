@@ -1,7 +1,7 @@
 # 
 FROM alpine/git:v2.49.0 AS clone
 
-RUN git clone --branch v0.3 --depth 1 https://github.com/codejie/Batman.git /app/source
+RUN git clone --branch master --depth 1 https://github.com/codejie/Batman.git /app/source
 WORKDIR /app/source
 
 # 第一阶段：构建Python后端

@@ -26,7 +26,7 @@ RUN ln -s libta_lib.a libta-lib.a
 RUN ln -s libta_lib.so libta-lib.so
 
 # clone Batman
-RUN git clone -branch v0.3 --single-branch --depth=1 https://github.com/codejie/Batman.git /batman
+RUN git clone --branch master --single-branch --depth=1 https://github.com/codejie/Batman.git /batman
 
 # 设置Python
 WORKDIR /batman/app

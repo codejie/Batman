@@ -1,9 +1,0 @@
-services:
-  app:
-    container_name: batman
-    image: batman:batman
-    ports:
-      - "8000:8000"
-      - "3030:3030"
-    volumes:
-      - ../app/db:/batman/app/db

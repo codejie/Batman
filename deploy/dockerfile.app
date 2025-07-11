@@ -1,6 +1,6 @@
 FROM alpine/git:v2.49.0 AS clone
 
-RUN git clone --branch v0.3 --single-branch --depth=1 https://github.com/codejie/Batman.git /batman
+RUN git clone --branch master --single-branch --depth=1 https://github.com/codejie/Batman.git /batman
 
 FROM python:3.13-slim AS backend
 COPY --from=clone /batman /batman
