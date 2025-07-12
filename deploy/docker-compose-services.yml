@@ -3,7 +3,7 @@ name: batman
 services:
   app:
     container_name: app
-    image: batman:app
+    image: codejie/batman:app
     ports:
       - "8000:8000"
     volumes:
@@ -15,7 +15,7 @@ services:
 
   signal:
     container_name: signal
-    image: batman:signal
+    image: codejie/batman:signal
     ports:
       - "3030:3030"
     depends_on:
