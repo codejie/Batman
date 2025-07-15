@@ -200,12 +200,16 @@ function onProfitTableExpandChange(row, expandedRows) {
               </ElTableColumn>
               <ElTableColumn label="盈亏" min-width="80">
                 <template #default="{ row }">
-                  {{ formatNumberString(row.profit) }}
+                  <div :class="row.profit < 0 ? 'green-text' : 'red-text'">
+                    {{ formatNumberString(row.profit) }}
+                  </div>
                 </template>
               </ElTableColumn>
               <ElTableColumn label="盈亏率 %" min-width="100">
                 <template #default="{ row }">
-                  {{ formatRateString(row.profit_rate) }}
+                  <div :class="row.profit_rate < 0 ? 'green-text' : 'red-text'">
+                    {{ formatRateString(row.profit_rate) }}
+                  </div>
                 </template>
               </ElTableColumn>
               <ElTableColumn label="昨差" min-width="80">
@@ -251,12 +255,16 @@ function onProfitTableExpandChange(row, expandedRows) {
         </ElTableColumn>
         <ElTableColumn prop="calc?.profit" label="盈亏" min-width="80">
           <template #default="{ row }">
-            {{ formatNumberString(row.calc?.profit) }}
+            <div :class="row.calc?.profit < 0 ? 'green-text' : 'red-text'">
+              {{ formatNumberString(row.calc?.profit) }}
+            </div>
           </template>
         </ElTableColumn>
         <ElTableColumn prop="calc?.profit_rate" label="盈亏率 %" min-width="100">
           <template #default="{ row }">
-            {{ formatRateString(row.calc?.profit_rate) }}
+            <div :class="row.calc?.profit_rate < 0 ? 'green-text' : 'red-text'">
+              {{ formatRateString(row.calc?.profit_rate) }}
+            </div>
           </template>
         </ElTableColumn>
         <ElTableColumn prop="record.created" label="创建时间" min-width="120">
