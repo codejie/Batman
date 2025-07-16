@@ -123,64 +123,116 @@ function onWebSocketData(wd: any) {
   fetchTime.value = wd.index
 }
 
-async function fetch() {
+async function fetchData() {
   const ret = await apiRecords({})
   data.value = []
-
-  const stocks = ret.result.filter(item => item.type === TYPE_STOCK).map(item => item)
-  const indexes = ret.result.filter(item => item.type === TYPE_INDEX).map(item => item)
-
-  try {
-    if (stocks.length > 0) {
-      const codes: string[] = stocks.map(item => item.code)
-      const stockRet = await apiGetSpotData({
-        type: TYPE_STOCK,
-        codes: codes, 
-        useHistory: useHistory.value
-      })
-      for (const item of stocks) {
-        const spot = stockRet.result.find(i => i.代码 === item.code)
-        data.value.push({
-          record: item,
-          calc: calcCustomizedData(spot)
-        })
-      }
-    }
-  } catch (e) {
-    for (const item of stocks) {
-      data.value.push({
-        record: item,
-        calc: undefined
-      })      
-    }    
+  for (const item of ret.result) {
+    data.value.push({
+      record: item,
+      calc: undefined
+    })
   }
-  try {
-    if (indexes.length > 0) {
-      const codes: string[] = indexes.map(item => item.code)
-      const indexRet = await apiGetSpotData({
-        type: TYPE_INDEX,
-        codes: codes, 
-        useHistory: useHistory.value
-      })
-      for (const item of indexes) {
-        const spot = indexRet.result.find(i => i.代码 === item.code)
-        data.value.push({
-          record: item,
-          calc: calcCustomizedData(spot)
-        })
-      }      
+}
+
+async function fetchStockData() {
+  for (const item of data.value) {
+    item.calc = undefined
+  }
+
+  const stocks = data.value.filter(item => item.record.type === TYPE_STOCK).map(item => item.record.code)
+  if (stocks.length > 0) {
+    const stockRet = await apiGetSpotData({
+      type: TYPE_STOCK,
+      codes: stocks, 
+      useHistory: useHistory.value
+    })
+    for (const item of stockRet.result) {
+      const dataItem = data.value.find(i => i.record.type === TYPE_STOCK && i.record.code === item.代码)
+      if (dataItem) {
+        dataItem.calc = calcCustomizedData(item)
+      }  
     }
-  } catch (e) {
-    for (const item of indexes) {
-      data.value.push({
-        record: item,
-        calc: undefined
-      })      
+  }
+  const indexes = data.value.filter(item => item.record.type === TYPE_INDEX).map(item => item.record.code)
+  if (indexes.length > 0) {
+    const indexRet = await apiGetSpotData({
+      type: TYPE_INDEX,
+      codes: indexes, 
+      useHistory: useHistory.value
+    })
+    for (const item of indexRet.result) {
+      const dataItem = data.value.find(i => i.record.type === TYPE_INDEX && i.record.code === item.代码)
+      if (dataItem) {
+        dataItem.calc = calcCustomizedData(item)
+      }  
     }
   }
 
   const now = new Date()
-  fetchTime.value = `${now?.getHours()}:${now.getMinutes()}:${now.getSeconds()}`
+  fetchTime.value = `${now?.getHours()}:${now.getMinutes()}:${now.getSeconds()}`  
+}
+
+async function fetch() {
+  await fetchData()
+  await fetchStockData()
+
+  // const ret = await apiRecords({})
+  // data.value = []
+
+  // const stocks = ret.result.filter(item => item.type === TYPE_STOCK).map(item => item)
+  // const indexes = ret.result.filter(item => item.type === TYPE_INDEX).map(item => item)
+
+  // try {
+  //   if (stocks.length > 0) {
+  //     const codes: string[] = stocks.map(item => item.code)
+  //     const stockRet = await apiGetSpotData({
+  //       type: TYPE_STOCK,
+  //       codes: codes, 
+  //       useHistory: useHistory.value
+  //     })
+  //     for (const item of stocks) {
+  //       const spot = stockRet.result.find(i => i.代码 === item.code)
+  //       data.value.push({
+  //         record: item,
+  //         calc: calcCustomizedData(spot)
+  //       })
+  //     }
+  //   }
+  // } catch (e) {
+  //   for (const item of stocks) {
+  //     data.value.push({
+  //       record: item,
+  //       calc: undefined
+  //     })      
+  //   }    
+  // }
+  // try {
+  //   if (indexes.length > 0) {
+  //     const codes: string[] = indexes.map(item => item.code)
+  //     const indexRet = await apiGetSpotData({
+  //       type: TYPE_INDEX,
+  //       codes: codes, 
+  //       useHistory: useHistory.value
+  //     })
+  //     for (const item of indexes) {
+  //       const spot = indexRet.result.find(i => i.代码 === item.code)
+  //       data.value.push({
+  //         record: item,
+  //         calc: calcCustomizedData(spot)
+  //       })
+  //     }      
+  //   }
+  // } catch (e) {
+  //   for (const item of indexes) {
+  //     data.value.push({
+  //       record: item,
+  //       calc: undefined
+  //     })      
+  //   }
+  // }
+
+  // const now = new Date()
+  // fetchTime.value = `${now?.getHours()}:${now.getMinutes()}:${now.getSeconds()}`
 }
 
 async function onAdd() {
@@ -256,7 +308,7 @@ async function submitUpdateTarget() {
       id: updateTargetForm.value.id,
       target: updateTargetForm.value.target
     })
-    await fetch()
+    await fetchStockData()
   }
 }
 
@@ -290,7 +342,7 @@ async function onWebSocketClick() {
       <ElButton  @click="viewDialogVisible=true">快速查看</ElButton>
       <ElCheckbox v-model="useHistory" style="margin-left: 16px;" label="使用历史数据接口" />
       <!-- <ElButton style="float: right;" @click="fetch()">刷新</ElButton> -->
-      <ElDropdown style="float: right;" :split-button="true" type="primary" @click="fetch()">
+      <ElDropdown style="float: right;" :split-button="true" type="primary" @click="fetchStockData()">
         刷新{{ connected ? ' - On' :'' }}
         <template #dropdown>
           <ElDropdownMenu>
