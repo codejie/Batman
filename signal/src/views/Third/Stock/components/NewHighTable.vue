@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { apiNewHigh } from '@/api/third';
 import { onMounted, ref } from 'vue';
-import { ElTableV2, ElAutoResizer, ElDialog, ElButton } from 'element-plus';
-import { KLinePanel2, ReqParam } from '@/components/KLine'
+import { ElTableV2, ElAutoResizer } from 'element-plus';
+import { ReqParam } from '@/components/KLine';
+import KDialog from './KDialog.vue';
 import { TYPE_STOCK } from '@/api/data';
 
 const props = defineProps({
@@ -97,12 +98,20 @@ onMounted(async () => {
       <ElTableV2 class="table" :columns="columns" :data="data" :fixed="true" :width="width" :height="700" :row-event-handlers="{ onClick: onRowClick }" />
     </template>
   </ElAutoResizer>  
-  <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
+  <!-- <ElDialog v-model="klineDialogVisible" width="60%" :destroy-on-close="true">
+    <template #header>
+      <ElLink @click="onTitleClick">
+        <span style="font-size: 18px; color: #303133; font-weight: bold;">
+          {{ `${reqParam?.name} (${reqParam?.code})` }}
+        </span>
+      </ElLink>
+    </template>  
     <KLinePanel2 :req-param="reqParam!" />
     <template #footer>
       <ElButton type="primary" @click="klineDialogVisible=false">关闭</ElButton>
     </template>    
-  </ElDialog>
+  </ElDialog> -->
+    <KDialog :visible ="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" />  
 </template>
 <style lang="css">
 .title {

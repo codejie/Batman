@@ -74,7 +74,7 @@ function onTitleClick() {
 <template>
   <ElDialog v-model="showDialog" :width="width" :destroy-on-close="true" @closed="onClose">
     <template #header>
-      <ElLink @click="onTitleClick" :underline="false">
+      <ElLink @click="onTitleClick">
         <span style="font-size: 18px; color: #303133; font-weight: bold;">
           {{ title || `${reqParam.name} (${reqParam.code})` }}
         </span>
