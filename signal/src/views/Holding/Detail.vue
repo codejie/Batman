@@ -282,7 +282,7 @@ function onProfitTableExpandChange(row, expandedRows) {
     <ElRow :gutter="24">
       <DetailChart :history-data="historyData" :profit-data="profitTraceData" :width="'100%'" :height="'630px'" />
     </ElRow>
-    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" :title="reqParam?.name" @update:on-close="onKLineDialogClose" width="60%" />    
+    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="onKLineDialogClose" width="60%" />    
   </ContentDetailWrap>
 </template>
 <style lang="css" scoped>

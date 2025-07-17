@@ -136,7 +136,7 @@ def get_history_data(type: int, code: str, start: str, end: str, period: str, ad
     download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, record_flag=record_flag)
   return fetch_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
 
-def get_latest_history_data(type: int, code: str, period: str, adjust: str, limit: int = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> Optional[Define.HistoryData] | Optional[list[Define.HistoryData]]:
+def get_latest_history_data(type: int, code: str, period: str, adjust: str, limit: int = None, record_flag: int = Define.RECORD_FLAG_DISABLED) -> Optional[Define.HistoryData] | Optional[list[Define.HistoryData]]:
   # date = datetime.today()
   # while not Utils.is_workday(date):
   #   date = date - timedelta(days=1)

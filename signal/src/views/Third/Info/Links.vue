@@ -17,7 +17,7 @@ import { ContentWrap } from '@/components/ContentWrap';
 import { reactive, ref, watch } from 'vue';
 import { ElButton, ElInput, ElRow, ElCol } from 'element-plus';
 import { DArrowLeft, DArrowRight } from '@element-plus/icons-vue'
-import { TYPE_STOCK } from '@/api/data';
+import { TYPE_INDEX, TYPE_STOCK } from '@/api/data';
 import Navigator from './components/Navigator.vue';
 
 const props = defineProps({
@@ -64,6 +64,34 @@ watch(
   { immediate: true }
 )
 
+function getMarketCode(type: number, code: string): string {
+  let marketCode = code;
+  if (type === TYPE_STOCK) {
+      if (code.startsWith('6')) {
+          marketCode = `SH${code}`;
+      } else if (code.startsWith('0') || code.startsWith('3')) {
+          marketCode = `SZ${code}`;
+      } else if (code.startsWith('8') || code.startsWith('4')) {
+          marketCode = `BJ${code}`;
+      }
+  } else if (type === TYPE_INDEX) {
+      if (!code.startsWith('sh') && !code.startsWith('sz')) {
+          if (code.startsWith('000') || code.startsWith('999')) {
+              marketCode = `SH${code}`;
+          } else if (code.startsWith('399')) {
+              marketCode = `SZ${code}`;
+          }
+      }
+  }
+  return marketCode.toUpperCase();
+}
+
+function onSearch() {
+  const marketCode = getMarketCode(props.type, options.code!);
+  const url = `https://xueqiu.com/S/${marketCode}`;
+  window.open(url, '_blank');
+}
+
 </script>
 <template>
   <ContentWrap>
@@ -72,7 +100,7 @@ watch(
         <ElInput :placeholder="'请输入股票代码'" v-model="options.code" />
       </ElCol>
       <ElCol :span="1">
-        <ElButton :disabled="true">查询</ElButton>
+        <ElButton :disabled="!options.code"  @click="onSearch">雪球个股</ElButton>
       </ElCol>
       <ElCol :span="20"></ElCol>
     </ElRow>

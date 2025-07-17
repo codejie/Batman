@@ -276,7 +276,8 @@ async function onRemove(id: number) {
     await apiRemove({
       id: id
     })
-    await fetch()
+    data.value = data.value.filter(item => item.record.id !== id)
+    await fetchStockData()
   }  
 }
 
@@ -298,18 +299,18 @@ function onTarget(id: number) {
 async function submitUpdateTarget() {
   updateTargetDialogVisible.value = false
 
-  const retConfirm = await ElMessageBox.confirm('确定修改目标价格?', '提示', {
-      confirmButtonText: '确认',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-  if (retConfirm === "confirm") {
+  // const retConfirm = await ElMessageBox.confirm('确定修改目标价格?', '提示', {
+  //     confirmButtonText: '确认',
+  //     cancelButtonText: '取消',
+  //     type: 'warning'
+  //   })
+  // if (retConfirm === "confirm") {
     await apiUpdateTarget({
       id: updateTargetForm.value.id,
       target: updateTargetForm.value.target
     })
-    await fetchStockData()
-  }
+    await fetch()
+  // }
 }
 
 onMounted(async () => {
