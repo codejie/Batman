@@ -354,7 +354,7 @@ function onReload() {
               {{ formatNumberString(row.record.quantity) }} / {{ formatRateString2(row.record.quantity, funds?.holding) }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="record.expense" label="成本/占比" min-width="120">
+          <ElTableColumn prop="record.expense" label="成本/占比" min-width="110">
             <template #header>
               <ElTooltip effect="dark" content="成本/费用%" placement="top">
                 <ElText>成本/占比</ElText>
@@ -364,14 +364,17 @@ function onReload() {
             {{ formatNumberString(row.record.expense) }} / {{ formatRateString2(row.record.expense, funds?.expense) }} 
             </template>
           </ElTableColumn>
-          <ElTableColumn label="均价" min-width="60">
+          <ElTableColumn label="均价/价差" min-width="80">
             <template #header>
-              <ElTooltip effect="dark" content="成本/持仓" placement="top">
-                <ElText>均价</ElText>
+              <ElTooltip effect="dark" content="（成本/持仓）/(现价-均价)" placement="top">
+                <ElText>均价/价差</ElText>
               </ElTooltip>
             </template>
             <template #default="{ row }">
-              {{ formatNumberString(row.calc?.price_avg) }}
+              {{ formatNumberString(row.calc?.price_avg) }} /
+              <ElText :class="(row.calc?.price_cur - row.calc?.price_avg) > 0 ? 'red-text' : ((row.calc?.price_cur - row.calc?.price_avg) < 0 ? 'green-text' : 'red-text')">
+                {{ formatNumberString(row.calc?.price_cur - row.calc?.price_avg) }}
+              </ElText>
             </template>
           </ElTableColumn>
           <ElTableColumn label="现价/日期" min-width="100">
