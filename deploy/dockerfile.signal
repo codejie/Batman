@@ -1,29 +1,35 @@
+# Stage 1: Clone the repository (No changes here)
 FROM alpine/git:v2.49.0 AS clone
-
 RUN git clone --branch v0.3 --single-branch --depth=1 https://github.com/codejie/Batman.git /batman
 
-FROM node:22.16.0-alpine3.22 AS frontend
-COPY --from=clone /batman /batman
-# RUN mkdir /batman
-# COPY . /batman
-
+# Stage 2: Build the frontend application
+FROM node:22.16.0-alpine3.22 AS builder
 ARG API_URL="http://localhost:8000"
-ENV PORT=3030
 
+# Copy only the frontend source code, not the entire repo
+COPY --from=clone /batman/signal /app
+WORKDIR /app
+
+# Install pnpm, install dependencies, and build the project
+# This keeps all build-related steps and tools in this stage
 RUN npm install -g pnpm
-RUN npm install -g serve
-
-WORKDIR /batman/signal
-RUN pnpm i
-
+RUN pnpm install
 RUN NODE_ENV=production VITE_API_BASE_PATH=${API_URL} pnpm run build:pro
 
-RUN rm -rf /batman/.git
-RUN rm -rf /batman/signal/node_modules
+# Stage 3: Create the final, lightweight production image
+# We use a clean node image that doesn't have the source code or build dependencies
+FROM node:22.16.0-alpine3.22
+ENV PORT=3030
+
+# Install 'serve' - the only tool needed for runtime
+RUN npm install -g serve
+
+WORKDIR /app
+
+# Copy only the compiled assets from the 'builder' stage
+COPY --from=builder /app/dist-pro .
 
 EXPOSE $PORT
 
-# CMD ["sh", "-c", "serve", "-s", "./dist-pro", "-l", "$SERVICE_PORT"]
-CMD ["sh", "-c", "serve -s ./dist-pro -l $PORT"]
-
-# CMD ["tail", "-f", "/dev/null"]
+# Serve the contents of the current directory (which is the dist-pro content)
+CMD ["sh", "-c", "serve -s . -l $PORT"]

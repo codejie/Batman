@@ -26,9 +26,9 @@ interface OperationForm {
 
 <script setup lang="ts">
 import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove, apiRecord } from '@/api/holding'
-import { HOLDING_FLAG_REMOVED, HoldingRecordItem, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL } from '@/api/holding/types'
+import { HOLDING_FLAG_REMOVED, HoldingRecordItem, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL, OPERATION_ACTION_INTEREST } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import {
   ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn, ElTooltip,
   ElRadioGroup, ElRadioButton, ElDatePicker, ElMessageBox, ElDescriptions, ElDescriptionsItem, ElDivider, ElCheckbox
@@ -153,6 +153,20 @@ function onPriceBlur() {
 function onQuantityBlur() {
   operationForm.value.expense = (operationForm.value.quantity * operationForm.value.price).toFixed(2)
 }
+
+watch(() => operationForm.value.action, (newVal) => {
+  if (newVal === OPERATION_ACTION_INTEREST) {
+    operationForm.value.quantity = 0
+    operationForm.value.price = 0
+  }
+})
+
+watch(() => operationForm.value.action, (newVal) => {
+  if (newVal === OPERATION_ACTION_INTEREST) {
+    operationForm.value.quantity = 0
+    operationForm.value.price = 0
+  }
+})
 
 async function onAddOperation() {
   const ret = await apiOperationCreate({
@@ -297,7 +311,7 @@ function onReload() {
                 <ElTableColumn type="index" width="40" />
                 <ElTableColumn label="操作" prop="action" width="80">
                   <template #default="{ row }">
-                    {{ row.action == OPERATION_ACTION_BUY ? '买入' : '卖出' }}
+                    {{ row.action == OPERATION_ACTION_BUY ? '买入' : (row.action == OPERATION_ACTION_SELL ? '卖出' : '计息') }}
                   </template>
                 </ElTableColumn>
                 <ElTableColumn label="数量" prop="quantity" min-width="80" />
@@ -517,13 +531,14 @@ function onReload() {
           </ElFormItem>
           <ElFormItem label="操作">
             <ElRow :gutter="24">
-              <ElCol :span="10">
+              <ElCol :span="14">
                 <ElRadioGroup v-model="operationForm.action">
                   <ElRadioButton :value="OPERATION_ACTION_BUY">买入</ElRadioButton>
                   <ElRadioButton :value="OPERATION_ACTION_SELL">卖出</ElRadioButton>
+                  <ElRadioButton :value="OPERATION_ACTION_INTEREST">计息</ElRadioButton>
                 </ElRadioGroup>
               </ElCol>
-              <ElCol :span="14">
+              <ElCol :span="10">
                 <ElDatePicker
                   v-model="operationForm.date"
                   type="date"
@@ -534,10 +549,10 @@ function onReload() {
             </ElRow>
           </ElFormItem>
           <ElFormItem label="数量" @change="onQuantityBlur">
-            <ElInput v-model="operationForm.quantity" />
+            <ElInput v-model="operationForm.quantity" :disabled="operationForm.action === OPERATION_ACTION_INTEREST" />
           </ElFormItem>
           <ElFormItem label="价格" @change="onPriceBlur">
-            <ElInput v-model="operationForm.price">
+            <ElInput v-model="operationForm.price" :disabled="operationForm.action === OPERATION_ACTION_INTEREST">
               <template #append>元</template>
             </ElInput>
           </ElFormItem>

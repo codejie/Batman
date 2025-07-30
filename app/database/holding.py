@@ -9,6 +9,7 @@ HOLDING_FLAG_ACTIVE: int = 1
 HOLDING_FLAG_REMOVED: int = 2
 OPERATION_ACTION_BUY: int = 1
 OPERATION_ACTION_SELL: int = 2
+OPERATION_ACTION_INTEREST: int = 3
 
 class HoldingTable(TableBase):
   __tablename__ = 'user_holding_table'
@@ -52,8 +53,16 @@ def insert_holding(uid: int, type: int, code: str, flag: int = HOLDING_FLAG_ACTI
   return dbEngine.insert_instance(HoldingTable(uid=uid, type=type, code=code, flag=flag))
 
 def insert_operation(id: int, action: int, quantity: int, price: float, expense: float, comment: str = None, created: datetime.datetime = None) -> int:
-  quantity = -quantity if action == OPERATION_ACTION_SELL else quantity
-  expense = expense if action == OPERATION_ACTION_SELL else -expense
+  if action == OPERATION_ACTION_SELL:
+    quantity = -quantity
+    expense = expense
+  elif action == OPERATION_ACTION_BUY:
+    quantity = quantity
+    expense = -expense
+  else: # OPERATION_ACTION_INTEREST
+    quantity = 0
+    expense = expense
+
   return dbEngine.insert_instance(HoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment, created=created))
 
 def select_holding(uid: int, type: int = None, code: str = None, flag: int = None) -> list[HoldingTable]:
