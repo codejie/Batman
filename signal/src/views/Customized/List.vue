@@ -1,6 +1,7 @@
 <script lang="ts">
 interface CreateForm {
   type: string
+  title: string
   code: string
 }
 
@@ -20,7 +21,7 @@ import { onMounted, ref } from 'vue';
 import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElTable, ElTableColumn,
   ElMessageBox, ElSelect, ElOption, ElMessage, ElDropdown, ElDropdownMenu, ElDropdownItem, ElCheckbox } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '@/api/customized';
-import { apiGetName, apiGetSpotData, RECORD_FLAG_ONLY_UPDATE, TYPE_INDEX, TYPE_STOCK } from '@/api/data';
+import { apiGetName, apiGetSpotData, TYPE_INDEX, TYPE_STOCK, apiGetItemInfo } from '@/api/data';
 import { ContentWrap } from '@/components/ContentWrap';
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized';
 import { KLineDialog } from '@/components/KLine'
@@ -74,6 +75,7 @@ const { open, close } = useWebSocket(WS_URL_SPOT_DATA, opts)
 const createDialogVisible = ref<boolean>(false)
 const createForm = ref<CreateForm>({
   type: '股票',
+  title: '',
   code: ''
 })
 const updateTargetDialogVisible = ref<boolean>(false)
@@ -84,8 +86,30 @@ const updateTargetForm = ref<UpdateTargetForm>({
 const viewDialogVisible = ref<boolean>(false)
 const viewForm = ref<CreateForm>({
   type: '股票',
+  title: '',
   code: ''
 })
+
+function onSearchChanged(target: 'create' | 'view') {
+  const form = target === 'create' ? createForm.value : viewForm.value
+  form.code = ''
+}
+async function searchItem(key: string, target: 'create' | 'view') {
+  if (key) {
+    const form = target === 'create' ? createForm.value : viewForm.value 
+    const type = form.type == '股票' ? TYPE_STOCK : TYPE_INDEX
+    const ret = await apiGetItemInfo({
+      type: type,
+      key: key
+    })
+    if (ret.result) {
+      form.title = `${ret.result.name}/${ret.result.code}`
+      form.code = ret.result.code
+    } else {
+      ElMessage.warning('Not Found')
+    }
+  }
+}
 
 const data = ref<Item[]>([])
 const klineDialogVisible = ref<boolean>(false)
@@ -175,64 +199,6 @@ async function fetchStockData() {
 async function fetch() {
   await fetchData()
   await fetchStockData()
-
-  // const ret = await apiRecords({})
-  // data.value = []
-
-  // const stocks = ret.result.filter(item => item.type === TYPE_STOCK).map(item => item)
-  // const indexes = ret.result.filter(item => item.type === TYPE_INDEX).map(item => item)
-
-  // try {
-  //   if (stocks.length > 0) {
-  //     const codes: string[] = stocks.map(item => item.code)
-  //     const stockRet = await apiGetSpotData({
-  //       type: TYPE_STOCK,
-  //       codes: codes, 
-  //       useHistory: useHistory.value
-  //     })
-  //     for (const item of stocks) {
-  //       const spot = stockRet.result.find(i => i.代码 === item.code)
-  //       data.value.push({
-  //         record: item,
-  //         calc: calcCustomizedData(spot)
-  //       })
-  //     }
-  //   }
-  // } catch (e) {
-  //   for (const item of stocks) {
-  //     data.value.push({
-  //       record: item,
-  //       calc: undefined
-  //     })      
-  //   }    
-  // }
-  // try {
-  //   if (indexes.length > 0) {
-  //     const codes: string[] = indexes.map(item => item.code)
-  //     const indexRet = await apiGetSpotData({
-  //       type: TYPE_INDEX,
-  //       codes: codes, 
-  //       useHistory: useHistory.value
-  //     })
-  //     for (const item of indexes) {
-  //       const spot = indexRet.result.find(i => i.代码 === item.code)
-  //       data.value.push({
-  //         record: item,
-  //         calc: calcCustomizedData(spot)
-  //       })
-  //     }      
-  //   }
-  // } catch (e) {
-  //   for (const item of indexes) {
-  //     data.value.push({
-  //       record: item,
-  //       calc: undefined
-  //     })      
-  //   }
-  // }
-
-  // const now = new Date()
-  // fetchTime.value = `${now?.getHours()}:${now.getMinutes()}:${now.getSeconds()}`
 }
 
 async function onAdd() {
@@ -413,7 +379,7 @@ async function onWebSocketClick() {
             <div><ElText>涨跌幅/振幅</ElText></div>
           </template>
           <template #default="{ row }">
-            <div><ElText :class="row.calc?.涨跌幅 >=0 ? 'red-text' : 'green-text'">{{ formatNumberString(row.calc?.涨跌幅) }} / {{ formatNumberString(row.calc?.振幅) }}</ElText></div>
+            <div><ElText :class="row.calc?.涨跌幅 >=0 ? 'red-text' : 'green-text'">{{ formatNumberString(row.calc?.涨跌幅) }}% / {{ formatNumberString(row.calc?.振幅) }}%</ElText></div>
           </template>
         </ElTableColumn>
         <!-- <ElTableColumn min-width="100">
@@ -429,7 +395,7 @@ async function onWebSocketClick() {
             <div><ElText>量比/换手率</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ formatNumberString(row.calc?.量比) }} / {{ formatNumberString(row.calc?.换手率) }}</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ formatNumberString(row.calc?.量比) }} / {{ formatNumberString(row.calc?.换手率) }}%</ElText></div>
           </template>
         </ElTableColumn>
         <ElTableColumn min-width="100">
@@ -446,7 +412,7 @@ async function onWebSocketClick() {
             <div><ElText>60日/年初至今涨跌幅</ElText></div>
           </template>
           <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ formatNumberString(row.calc?.涨跌幅60日) }} / {{ formatNumberString(row.calc?.年初至今涨跌幅) }}%</ElText></div>
+            <div v-if="row.record.type == TYPE_STOCK"><ElText>{{ formatNumberString(row.calc?.涨跌幅60日) }}% / {{ formatNumberString(row.calc?.年初至今涨跌幅) }}%</ElText></div>
           </template>
         </ElTableColumn>
 <!-- 
@@ -468,7 +434,7 @@ async function onWebSocketClick() {
     </div>
     <ElDialog v-model="createDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
-        <ElText tag="b">新增持股记录</ElText>
+        <ElText tag="b">新增自选..</ElText>
       </template>
       <template #default>
         <ElForm :model="createForm" label-position="right" label-width="auto">
@@ -478,14 +444,18 @@ async function onWebSocketClick() {
               <ElOption label="指数" value="指数" />
             </ElSelect>
           </ElFormItem>
-          <ElFormItem label="代码">
-            <ElInput v-model="createForm.code" :maxlength="6" />
+          <ElFormItem label="名称/代码">
+            <ElInput v-model="createForm.title" placeholder="请输入代码或名称" :maxlength="6" @change="onSearchChanged('view')">
+              <template #append>
+                <ElButton :disabled="createForm.title === ''" @click="searchItem(createForm.title, 'create')">搜索</ElButton>
+              </template>
+            </ElInput>
           </ElFormItem>
         </ElForm>
       </template>
       <template #footer>
         <ElButton @click="createDialogVisible=false">取消</ElButton>
-        <ElButton type="primary" @click="onAdd">确定</ElButton>
+        <ElButton type="primary" :disabled="createForm.code === ''" @click="onAdd">确定</ElButton>
       </template>      
     </ElDialog>
     <ElDialog v-model="viewDialogVisible" :destroy-on-close="true" width="25%">
@@ -500,14 +470,18 @@ async function onWebSocketClick() {
               <ElOption label="指数" value="指数" />
             </ElSelect>
           </ElFormItem>
-          <ElFormItem label="代码">
-            <ElInput v-model="viewForm.code" :maxlength="6" />
+          <ElFormItem label="名称/代码">
+            <ElInput v-model="viewForm.title" placeholder="请输入代码或名称" :maxlength="6" @change="onSearchChanged('view')">
+              <template #append>
+                <ElButton :disabled="viewForm.title === ''" @click="searchItem(viewForm.title, 'view')">搜索</ElButton>
+              </template>
+            </ElInput>
           </ElFormItem>
         </ElForm>
       </template>
       <template #footer>
         <ElButton @click="viewDialogVisible=false">取消</ElButton>
-        <ElButton type="primary" @click="onView">确定</ElButton>
+        <ElButton type="primary" :disabled="viewForm.code === ''" @click="onView">确定</ElButton>
       </template>      
     </ElDialog>       
     <ElDialog v-model="updateTargetDialogVisible" :destroy-on-close="true" width="25%">

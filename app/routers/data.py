@@ -2,7 +2,7 @@ import asyncio
 from typing import Optional
 from fastapi import APIRouter, Depends
 from app.database import data as Data
-from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData, SpotData
+from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData, ItemInfo, SpotData
 from app.routers.common import RequestModel, ResponseModel, verify_token, verify_system_token
 
 router: APIRouter = APIRouter(prefix="/data", tags=["Data"], dependencies=[Depends(verify_token)])
@@ -21,6 +21,19 @@ class GetNameResponse(ResponseModel):
 async def get_name_api(request: GetNameRequest):
   result = Data.get_name(type=request.type, code=request.code)
   return GetNameResponse(result=result)
+
+class GetItemInfoRequest(RequestModel):
+  type: int
+  key: str
+
+class GetItemInfoResponse(ResponseModel):
+  result: Optional[ItemInfo]
+
+@router.post("/get_item_info", response_model=GetItemInfoResponse)
+async def get_item_info(request: GetItemInfoRequest):
+  result = Data.get_item_info(type=request.type, key=request.key)
+  return GetItemInfoResponse(result=result)
+
 
 """
 download list

@@ -107,3 +107,9 @@ npm run dev
 ```bash
     docker compose -f .\deploy\docker-compose-service.yml up -d
 ```
+
+## Gemini Agent Instructions
+
+- 将输入的需求内容都记录在gemini.md中
+- [DONE] 在app应用中的data模块，刚新增了get_code()函数和对应的router接口，调整此函数，不再支持模糊查询，相应地调整前端中‘自选列表’中的接口和内容，不需要使用AutoComplete组件。如果没有找到对应的股票或指数的代码，提示找不到即可。
+- 请把输入的请求内容在完成或取消后记录在gemini.md中，并标记执行结果
