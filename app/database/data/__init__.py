@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from sqlalchemy import delete, inspect, select, text, update
+from sqlalchemy import delete, inspect, or_, select, text, update
 from app.database import dbEngine
 import app.database.data.utils as Utils
 import app.database.data.define as Define
@@ -12,6 +12,12 @@ def get_name(type: int, code: str) -> Optional[str]:
   stmt = select(Define.InfoTable.name).where(Define.InfoTable.type == type).where(Define.InfoTable.code == code)
   result = dbEngine.select_scalar(stmt)
   return result if result else None
+
+def get_item_info(type: int, key: str) -> Optional[Define.ItemInfo]:
+  stmt = select(Define.InfoTable).where(Define.InfoTable.type == type).where(or_(Define.InfoTable.name == key, Define.InfoTable.code == key))
+  result = dbEngine.select_scalar(stmt)
+  if result:
+    return Define.ItemInfo(type=result.type, code=result.code, name=result.name)
 
 def is_item_exist(type: int, code: str) -> bool:
   stmt = select(Define.InfoTable).where(Define.InfoTable.type == type).where(Define.InfoTable.code == code)
@@ -136,7 +142,7 @@ def get_history_data(type: int, code: str, start: str, end: str, period: str, ad
     download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, record_flag=record_flag)
   return fetch_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
 
-def get_latest_history_data(type: int, code: str, period: str, adjust: str, limit: int = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> Optional[Define.HistoryData] | Optional[list[Define.HistoryData]]:
+def get_latest_history_data(type: int, code: str, period: str, adjust: str, limit: int = None, record_flag: int = Define.RECORD_FLAG_DISABLED) -> Optional[Define.HistoryData] | Optional[list[Define.HistoryData]]:
   # date = datetime.today()
   # while not Utils.is_workday(date):
   #   date = date - timedelta(days=1)

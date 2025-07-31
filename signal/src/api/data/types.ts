@@ -89,3 +89,14 @@ export interface GetNameRequest {
   code: string
 }
 export type GetNameResult = string
+
+export interface GetItemInfoRequest {
+  type: number
+  key: string
+}
+export interface ItemInfo {
+  type: number
+  code: string
+  name: string
+}
+export type GetItemInfoResult = ItemInfo

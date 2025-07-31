@@ -6,6 +6,7 @@ from typing import Optional
 import json
 
 from fastapi import APIRouter, Body, Depends
+import numpy as np
 from pydantic import BaseModel
 from app.exception import AppException
 from app.database.data.third import stock as third
@@ -35,7 +36,7 @@ class NewHighResponse(ResponseModel):
 async def new_high(body: NewHighRequest=Body()):
   try:
     df = third.new_high(body.category)
-    result = df.to_dict(orient='tight', index=False)
+    result = df.replace({np.nan: None}).to_dict(orient='tight', index=False)
     return NewHighResponse(result=(DataFrameSetModel(
       columns=result['columns'],
       data=result['data']
@@ -56,7 +57,7 @@ class UptrendResponse(ResponseModel):
 async def uptrend(body: UptrendRequest=Body()):
   try:
     df = third.uptrend(body.days)
-    result = df.to_dict(orient='tight', index=False)
+    result = df.replace({np.nan: None}).to_dict(orient='tight', index=False)
     return UptrendResponse(result=(DataFrameSetModel(
       columns=result['columns'],
       data=result['data']
@@ -78,7 +79,7 @@ async def high_volume(body: HighVolumeRequest=Body()):
   try:
     # df = third.high_volume(body.days)
     df = third.high_volume(body.days)
-    result = df.to_dict(orient='tight', index=False)
+    result = df.replace({np.nan: None}).to_dict(orient='tight', index=False)
     return HighVolumeResponse(result=(DataFrameSetModel(
       columns=result['columns'],
       data=result['data']
@@ -98,9 +99,9 @@ class RiseVolumePriceResponse(ResponseModel):
 @router.post('/stock/rise_volume_price', response_model=RiseVolumePriceResponse, response_model_exclude_none=True)
 async def rise_volume_price(body: RiseVolumePriceRequest=Body()):
   try:
-    # df = third.rise_volume_price(body.days)
+    # df = third.rise_volume_price(body.days)result = df.replace({np.nan: None}).to_dict(orient='tight', index=False)
     df = third.rise_volume_price(body.days)
-    result = df.to_dict(orient='tight', index=False)
+    result = df.replace({np.nan: None}).to_dict(orient='tight', index=False)
     return RiseVolumePriceResponse(result=(DataFrameSetModel(
       columns=result['columns'],
       data=result['data']
@@ -121,7 +122,7 @@ class LimitUpPoolResponse(ResponseModel):
 async def limit_up_pool(body: LimitUpPoolRequest=Body()):
   try:
     df = third.limit_up_pool(body.date)
-    result = df.to_dict(orient='tight', index=False)
+    result = df.replace({np.nan: None}).to_dict(orient='tight', index=False)
     return LimitUpPoolResponse(result=(DataFrameSetModel(
       columns=result['columns'],
       data=result['data']

@@ -79,6 +79,14 @@ class HistoryData(BaseModel):
   #   from_attributes = True
 
 """
+Item Info Model
+"""
+class ItemInfo(BaseModel):
+  type: int
+  code: str
+  name: str
+
+"""
 Spot Data Model
 """
 class SpotData(BaseModel):

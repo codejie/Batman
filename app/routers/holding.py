@@ -63,7 +63,14 @@ async def operation(request: OperationCreateRequest):
     request.expense = request.price * request.quantity
   result = db.insert_operation(id=request.holding, action=request.action, quantity=request.quantity, price=request.price, expense=request.expense, comment=request.comment, created=request.created)
   # funds operation # 本金是不变量, 更新available
-  amount = -request.expense if request.action == db.OPERATION_ACTION_BUY else request.expense
+  # amount = -request.expense if request.action == db.OPERATION_ACTION_BUY else request.expense
+  if request.action == db.OPERATION_ACTION_BUY:
+    amount = -request.expense
+  elif request.action == db.OPERATION_ACTION_SELL:
+    amount = request.expense
+  else:  # OPERATION_ACTION_INTEREST
+    amount = request.expense
+
   funds.update_available(uid=DEFAULT_UID, amount=amount, type=funds.FUNDS_STOCK)
   return OperationCreateResponse(result=result)
 

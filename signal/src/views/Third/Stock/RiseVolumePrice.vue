@@ -2,9 +2,10 @@
 import { TYPE_STOCK } from '@/api/data';
 import { apiRiseVolumePrice } from '@/api/third';
 import { ContentWrap } from '@/components/ContentWrap'
-import { ReqParam, KLinePanel2 } from '@/components/KLine';
-import { ElText, ElSelect, ElOption, ElTableV2, ElDialog, ElAutoResizer, ElButton } from 'element-plus';
+import { ReqParam } from '@/components/KLine';
+import { ElText, ElSelect, ElOption, ElTableV2, ElAutoResizer } from 'element-plus';
 import { onMounted, ref } from 'vue';
+import KDialog from './components/KDialog.vue';
 
 // type Column = {
 //   name: string
@@ -95,12 +96,13 @@ async function onDaysChanged() {
         <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :row-event-handlers="{ onClick: onRowClick }" :height="700"/>
       </template>
     </ElAutoResizer>
-    <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
+    <!-- <ElDialog v-model="klineDialogVisible" :title="dialogTitle" width="60%" :destroy-on-close="true">
       <KLinePanel2 :req-param="reqParam!" />
       <template #footer>
         <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
       </template>    
-    </ElDialog>    
+    </ElDialog>     -->
+    <KDialog :visible ="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" />    
   </ContentWrap>
 </template>
 <style lang="css">

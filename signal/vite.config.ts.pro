@@ -10,9 +10,9 @@ import PurgeIcons from 'vite-plugin-purge-icons'
 import ServerUrlCopy from 'vite-plugin-url-copy'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
-// import { createStyleImportPlugin, ElementPlusResolve } from 'vite-plugin-style-import'
-import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import { createStyleImportPlugin, ElementPlusResolve } from 'vite-plugin-style-import'
+// import Components from 'unplugin-vue-components/vite'
+// import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import UnoCSS from 'unocss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
@@ -43,23 +43,23 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       VueJsx(),
       ServerUrlCopy(),
       progress(),
-      // env.VITE_USE_ALL_ELEMENT_PLUS_STYLE === 'false'
-      //   ? createStyleImportPlugin({
-      //       resolves: [ElementPlusResolve()],
-      //       libs: [
-      //         {
-      //           libraryName: 'element-plus',
-      //           esModule: true,
-      //           resolveStyle: (name) => {
-      //             if (name === 'click-outside') {
-      //               return ''
-      //             }
-      //             return `element-plus/es/components/${name.replace(/^el-/, '')}/style/css`
-      //           }
-      //         }
-      //       ]
-      //     })
-      //   : undefined,
+      env.VITE_USE_ALL_ELEMENT_PLUS_STYLE === 'false'
+        ? createStyleImportPlugin({
+            resolves: [ElementPlusResolve()],
+            libs: [
+              {
+                libraryName: 'element-plus',
+                esModule: true,
+                resolveStyle: (name) => {
+                  if (name === 'click-outside') {
+                    return ''
+                  }
+                  return `element-plus/es/components/${name.replace(/^el-/, '')}/style/css`
+                }
+              }
+            ]
+          })
+        : undefined,
       // EslintPlugin({
       //   cache: false,
       //   failOnWarning: false,
@@ -80,29 +80,29 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       ViteEjsPlugin({
         title: env.VITE_APP_TITLE
       }),
-      Components({
-        // allow auto load markdown components under `./src/components/`
-        extensions: ['vue', 'md'],
-        // allow auto import and register components used in markdown
-        include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
-        resolvers: [
-          ElementPlusResolver({
-            importStyle: 'sass',
-          }),
-        ],
-        dts: 'src/components.d.ts',
-      }),      
+      // Components({
+      //   // allow auto load markdown components under `./src/components/`
+      //   extensions: ['vue', 'md'],
+      //   // allow auto import and register components used in markdown
+      //   include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
+      //   resolvers: [
+      //     ElementPlusResolver({
+      //       importStyle: 'sass',
+      //     }),
+      //   ],
+      //   dts: 'src/components.d.ts',
+      // }),      
       UnoCSS()
     ],
 
     css: {
       preprocessorOptions: {
-        scss: {
-          additionalData: `@use "~/styles/element/index.scss" as *;`,
-          api: 'modern-compiler',
-        },
+        // scss: {
+        //   additionalData: `@use "~/styles/element/index.scss" as *;`,
+        //   api: 'modern-compiler',
+        // },
         less: {
-          additionalData: '@import "./src/styles/index.less";',
+          additionalData: '@import "./src/styles/variables.module.less";',
           javascriptEnabled: true
         }
       }
@@ -144,21 +144,21 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       cssCodeSplit: !(env.VITE_USE_CSS_SPLIT === 'false'),
       cssTarget: ['chrome31']
     },
-    server: {
-      port: 3005,
-      proxy: {
-        // 选项写法
-        '/api': {
-          target: 'http://127.0.0.1:8000',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '')
-        }
-      },
-      hmr: {
-        overlay: false
-      },
-      host: '0.0.0.0'
-    },
+//    server: {
+//      port: 3005,
+//      proxy: {
+//        // 选项写法
+//        '/api': {
+//          target: 'http://127.0.0.1:8000',
+//          changeOrigin: true,
+//          rewrite: (path) => path.replace(/^\/api/, '')
+//        }
+//      },
+//      hmr: {
+//        overlay: false
+//      },
+//      host: '0.0.0.0'
+//    },
     optimizeDeps: {
       include: [
         'vue',
