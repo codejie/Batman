@@ -113,3 +113,9 @@ npm run dev
 - 将输入的需求内容都记录在gemini.md中
 - [DONE] 在app应用中的data模块，刚新增了get_code()函数和对应的router接口，调整此函数，不再支持模糊查询，相应地调整前端中‘自选列表’中的接口和内容，不需要使用AutoComplete组件。如果没有找到对应的股票或指数的代码，提示找不到即可。
 - 请把输入的请求内容在完成或取消后记录在gemini.md中，并标记执行结果
+- [DONE] 在app应用中，增加一个agent路由文件，并添加一个支持SSE的API，名字叫做report
+- [DONE] 在signal应用中，将‘信息分析’菜单调整为一级目录，并包含同名二级/、菜单
+- [DONE] 在后续生成代码时，请采用<script>在前，<template>在后的方式。
+- [DONE] 解决了SSE连接在SPA页面切换和关闭时无法正确断开的问题。前端通过onUnmounted钩子关闭连接，后端通过try...finally确保断开连接时正确记录日志。
+- [DONE] 重构了SSE实现，通过引入ConnectionManager和用户认证，支持向不同用户推送独立的、个性化的消息。
+- [DONE] 解决了SSE连接由于EventSource无法发送Header而导致的422认证失败问题，修改为通过Query参数传递token。

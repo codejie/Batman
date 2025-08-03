@@ -159,6 +159,26 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     ]
   },
   {
+    name: 'analysis',
+    path: '/analysis',
+    component: Layout,
+    meta: {
+        title: '信息分析',
+        icon: 'carbon:chart-multitype',
+        alwaysShow: true
+    },
+    children: [
+      {
+        name: 'page',
+        path: 'page',
+        component: () => import('@/views/Analysis/Analysis.vue'),
+        meta: {
+          title: '信息分析'
+        }
+      }
+    ]
+  },
+  {
     name: 'data',
     path: '/data',
     component: Layout,
