@@ -55,3 +55,28 @@ def download_spot_data(codes: list[str] = None) -> Optional[DataFrame]:
   except Exception as e:
     logger.warning(f"Error downloading spot data: {e}")
   return None
+
+#################################
+def download_info(code: str) -> Optional[DataFrame]:
+  try:
+    data = ak.stock_individual_info_em(symbol=code)
+    if not data.empty:
+      return data
+  except Exception as e:
+    logger.warning(f"Error downloading info for {code}: {e}")
+  return None
+
+"""
+  主要指标
+"""
+def download_financial_data(code: str, period: str = '按报告期') -> Optional[DataFrame]:
+  """
+    period: choice of {"按报告期", "按年度", "按单季度"}
+  """
+  try:
+    data = ak.stock_finalcial_abstract_ths(symbol=code, indicator=period)
+    if not data.empty:
+      return data
+  except Exception as e:
+    logger.warning(f"Error downloading financial data for {code}: {e}")
+  return None

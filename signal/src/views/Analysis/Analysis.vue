@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-import { ElInput } from 'element-plus'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ElInput, ElButton } from 'element-plus'
+import { ref, onUnmounted } from 'vue'
 import { useUserStoreWithOut } from '@/store/modules/user';
 
 // refer to https://github.com/DR-lin-eng/stock-scanner
@@ -9,7 +9,7 @@ import { useUserStoreWithOut } from '@/store/modules/user';
 const messages = ref<string[]>([])
 const eventSource = ref<EventSource | null>(null)
 
-onMounted(() => {
+const connect = () => {
   const token = useUserStoreWithOut().getTokenKey
   if (!token) {
     console.error('No token found, cannot connect to SSE.')
@@ -29,7 +29,7 @@ onMounted(() => {
     console.error('EventSource failed:', error)
     eventSource.value?.close()
   }
-})
+}
 
 onUnmounted(() => {
   if (eventSource.value) {
@@ -40,6 +40,7 @@ onUnmounted(() => {
 </script>
 <template>
   <ContentWrap>
+    <ElButton @click="connect">连接</ElButton>
     <ElInput
       :model-value="messages.join('\n')"
       type="textarea"
