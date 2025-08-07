@@ -7,10 +7,23 @@ import akshare as ak
 """
 Index
 """
-def download_list() -> None:
-  stmt = delete(Define.InfoTable).where(Define.InfoTable.type == Define.TYPE_INDEX)
-  dbEngine.delete_stmt(stmt)
-  # download
+# def download_list() -> None:
+#   stmt = delete(Define.InfoTable).where(Define.InfoTable.type == Define.TYPE_INDEX)
+#   dbEngine.delete_stmt(stmt)
+#   # download
+#   index_info = ak.index_stock_info()
+#   if not index_info.empty:
+#     index_info = index_info.drop(columns=['publish_date'], axis=1)
+#     index_info = index_info.rename(columns={
+#       'index_code': 'code',
+#       'display_name': 'name'
+#     })
+#     index_info['market'] = index_info['code'].apply(lambda x: 'sh' if x.startswith('000') else 'sz')  
+#     index_info['type'] = Define.TYPE_INDEX
+#   data = index_info.to_dict(orient='records')
+#   dbEngine.bulk_insert_data(Define.InfoTable, data)
+
+def download_list() -> Optional[DataFrame]:
   index_info = ak.index_stock_info()
   if not index_info.empty:
     index_info = index_info.drop(columns=['publish_date'], axis=1)
@@ -20,8 +33,8 @@ def download_list() -> None:
     })
     index_info['market'] = index_info['code'].apply(lambda x: 'sh' if x.startswith('000') else 'sz')  
     index_info['type'] = Define.TYPE_INDEX
-  data = index_info.to_dict(orient='records')
-  dbEngine.bulk_insert_data(Define.InfoTable, data)
+    return index_info
+  return None
 
 def get_name(code: str) -> Optional[str]:
   return Define.get_name(Define.TYPE_INDEX, code)
