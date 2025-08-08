@@ -30,12 +30,16 @@ download info list
 def download_list(type: int) -> None:
   stmt = delete(Define.InfoTable).where(Define.InfoTable.type == type)
   dbEngine.delete_stmt(stmt)
+  data = None
   if type == Define.TYPE_STOCK:
-    Stock.download_list()
+    data = Stock.download_list()
   elif type == Define.TYPE_INDEX:
-    Index.download_list()
+    data = Index.download_list()
   else:
     raise ValueError(f"Unknown type: {type}")
+
+  if data is not None:
+    dbEngine.bulk_insert_data(Define.InfoTable, data.to_dict(orient='records'))
 
 # def get_name(type: int, code: str) -> Optional[str]:
 #   if type == Define.TYPE_INDEX:

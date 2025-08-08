@@ -119,4 +119,6 @@ npm run dev
 - [DONE] 解决了SSE连接在SPA页面切换和关闭时无法正确断开的问题。前端通过onUnmounted钩子关闭连接，后端通过try...finally确保断开连接时正确记录日志。
 - [DONE] 重构了SSE实现，通过引入ConnectionManager和用户认证，支持向不同用户推送独立的、个性化的消息。
 - [DONE] 解决了SSE连接由于EventSource无法发送Header而导致的422认证失败问题，修改为通过Query参数传递token。
-- [DONE] 在@Batman/signal/src/views/Analysis/Analysis.vue中，添加一个按钮，按钮的名字叫做‘连接’
+- [DONE] 为`app/database/data/stock.py`中所有`download_`函数创建了集成测试 (`app/test/test_stock_data.py`)。
+- [DONE] 在`app/calc/technical.py`中实现了一个`get_ma_trend`函数，用于判断移动平均线的趋势。
+- [DONE] 为`get_ma_trend`函数创建了测试用例 (`app/test/test_technical.py`)。
