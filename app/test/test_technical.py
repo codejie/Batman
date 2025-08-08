@@ -106,21 +106,24 @@ class TestTechnicalAnalysis(unittest.TestCase):
         # 1. 获取测试数据
         code = "600057"
         start_date = "20240806"
-        end_date = "20250806"
+        end_date = "20250807"
         data = download_history_data(code, start_date, end_date)
 
-        result = adx.calc(data=data, signal=True)
+        result = adx.calc(history_data=data)
+        print(result)
+        report = adx.report(history_data=data, adx_data=result)
+        print(report)
 
-        # 2. 打印结果进行验证
-        print(f"\n--- ADX Analysis for {code} ---")
-        print(f"ADX: {result['ADX']}")
-        print(f"+DI: {result['+DI']}")
-        print(f"-DI: {result['-DI']}")
-        print(f"Signal: {result['Signal']}")
-        print("------------------------------------\n")
+        # # 2. 打印结果进行验证
+        # print(f"\n--- ADX Analysis for {code} ---")
+        # print(f"ADX: {result['ADX']}")
+        # print(f"+DI: {result['+DI']}")
+        # print(f"-DI: {result['-DI']}")
+        # print(f"Signal: {result['Signal']}")
+        # print("------------------------------------\n")
 
-        print(len(data))
-        print(len(result))
+        # print(len(data))
+        # print(len(result))
         self.assertTrue(True)
 
 if __name__ == '__main__':
