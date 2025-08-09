@@ -4,8 +4,8 @@ import talib
 
 defaultOptions = {
   'period': 14,
-  'divider': 25,
-  'signal': True,
+  'threshold': 25,
+  # 'signal': True,
   'columns': ['最高', '最低', '收盘']
 }
 
@@ -31,34 +31,34 @@ def calc(history_data: pd.DataFrame, options: dict = defaultOptions) -> pd.DataF
       '-DI': minus_di
   })
 
-  if options['signal']:
-    for i in range(1, len(result)):
-      if result['ADX'].iloc[i] > options['divider']:
-        if  result['+DI'].iloc[i-1] <= result['-DI'].iloc[i-1] and result['+DI'].iloc[i] > result['-DI'].iloc[i]:
-          result.loc[result.index[i], 'Signal'] = 1
-        elif result['+DI'].iloc[i-1] >= result['-DI'].iloc[i-1] and result['+DI'].iloc[i] < result['-DI'].iloc[i]:
-          result.loc[result.index[i], 'Signal'] = -1
-        else:
-          result.loc[result.index[i], 'Signal'] = 0
+  # if options['signal']:
+  for i in range(1, len(result)):
+    if result['ADX'].iloc[i] > options['threshold']:
+      if  result['+DI'].iloc[i-1] <= result['-DI'].iloc[i-1] and result['+DI'].iloc[i] > result['-DI'].iloc[i]:
+        result.loc[result.index[i], 'Signal'] = 1
+      elif result['+DI'].iloc[i-1] >= result['-DI'].iloc[i-1] and result['+DI'].iloc[i] < result['-DI'].iloc[i]:
+        result.loc[result.index[i], 'Signal'] = -1
       else:
         result.loc[result.index[i], 'Signal'] = 0
+    else:
+      result.loc[result.index[i], 'Signal'] = 0
 
   return result
 
-def report(history_data: pd.DataFrame, adx_data: pd.DataFrame, idx: Optional[int] = None, options: dict = defaultOptions) -> list[str]:
+def report(history_data: pd.DataFrame, adx_data: pd.DataFrame, idx: int = 0, options: dict = defaultOptions) -> list[str]:
   result = []
-  if idx is None:
+  if idx == 0:
     for i in range(len(adx_data)):
       if adx_data['Signal'].iloc[i] == 1 or adx_data['Signal'].iloc[i] == -1:
-        result.append(f"{adx_data.index[i]}: {'Uptrend' if adx_data['Signal'].iloc[i] == 1 else 'Downtrend'} [ADX: {adx_data['ADX'].iloc[i]} / Price: {history_data['收盘'].iloc[i]}]")
+        result.append(f"{adx_data.index[i]}: {'Uptrend' if adx_data['Signal'].iloc[i] == 1 else 'Downtrend'} [ADX: {adx_data['ADX'].iloc[i]} / Price: {history_data[options['columns'][2]].iloc[i]}]")
   elif idx < 0:
     for i in range(len(adx_data) + idx, len(adx_data)):
       if adx_data['Signal'].iloc[i] == 1 or adx_data['Signal'].iloc[i] == -1:
-        result.append(f"{adx_data.index[i]}: {'Uptrend' if adx_data['Signal'].iloc[i] == 1 else 'Downtrend'} [ADX: {adx_data['ADX'].iloc[i]} /Price: {history_data['收盘'].iloc[i]}]")
+        result.append(f"{adx_data.index[i]}: {'Uptrend' if adx_data['Signal'].iloc[i] == 1 else 'Downtrend'} [ADX: {adx_data['ADX'].iloc[i]} /Price: {history_data[options['columns'][2]].iloc[i]}]")
   elif idx > 0:
     for i in range(idx, len(adx_data)):
       if adx_data['Signal'].iloc[i] == 1 or adx_data['Signal'].iloc[i] == -1:
-        result.append(f"{adx_data.index[i]}: {'Uptrend' if adx_data['Signal'].iloc[i] == 1 else 'Downtrend'} [ADX: {adx_data['ADX'].iloc[i]} /Price: {history_data['收盘'].iloc[i]}]")
+        result.append(f"{adx_data.index[i]}: {'Uptrend' if adx_data['Signal'].iloc[i] == 1 else 'Downtrend'} [ADX: {adx_data['ADX'].iloc[i]} /Price: {history_data[options['columns'][2]].iloc[i]}]")
 
   return result
 

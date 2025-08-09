@@ -163,7 +163,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     path: '/analysis',
     component: Layout,
     meta: {
-        title: '信息分析',
+        title: '数据分析',
         icon: 'carbon:chart-multitype',
         alwaysShow: true
     },
@@ -173,7 +173,24 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         path: 'page',
         component: () => import('@/views/Analysis/Analysis.vue'),
         meta: {
-          title: '信息分析'
+          title: '分析测试'
+        }
+      },
+      {
+        name: 'Trend',
+        path: 'trend',
+        component: () => import('@/views/Analysis/Trend.vue'),
+        meta: {
+          title: '趋势计算'
+        }
+      },
+      {
+        name: 'TrendArgument',
+        path: 'trend-argument',
+        component: () => import('@/views/Analysis/TrendArgument.vue'),
+        meta: {
+          title: '计算参数设置',
+          hidden: true
         }
       }
     ]
