@@ -151,4 +151,21 @@ npm run dev
 - [DONE] 解决了SSE连接由于EventSource无法发送Header而导致的422认证失败问题，修改为通过Query参数传递token。
 - [DONE] 为`app/database/data/stock.py`中所有`download_`函数创建了集成测试 (`app/test/test_stock_data.py`)。
 - [DONE] 在`app/calc/technical.py`中实现了一个`get_ma_trend`函数，用于判断移动平均线的趋势。
+- [DONE] 在@app/database/calc.py 中声明一个sqlalchemy的表，表基于TableBase类，定义在app.database中，表名为calc_algorithm_items，表字段：id as primary key， uid，name， remarks， category, type, list_type, data_period, report_period,created
+- [DONE] calc.py文件中继续添加一个pydantic的Model，对应CalcAlgorithmItems字段
+- [DONE] python代码生成时，python代码的intent为2个spaces.请记录到gemini.md中，作为agent指令。
+- [DONE] calc.py中新增一个calc_algorithm_item_stock_list表，字段为：id as primary，cid as forgein key of id of cacl_algorithm_items, type as integer, code as string
+- [DONE] 继续创建对应的Model
+- [DONE] 继续创建一个表calc_algorithm_item_arguments，字段为：id as primary, cid as foreign key of calc_algorithm_items, category as integer, type as integer, arguments as string, flag as integer, 并创建对应的Model
+- [DONE] calc.py增加函数用于一次插入多个calc_algorithm_item_stock_list记录，因此参数使用list方式
+- [DONE] 相应增加calc_algorithm_item_arguments表的insert函数
+- [DONE] 编写这几个插入函数的测试用例
+- [DONE] 查询calc_algorithm_item_items的函数，参数是uid，返回CalcAlgorithmItemModel的list
+- [DONE] 编写它的测试用例
+- [DONE] 查询calc_algorithm_item_stock_list表记录，cid作为参数，输出CalcAlgorithmItemStockListModel的list,不要改动其他代码
+- [DONE] 测试用例
+- [DONE] 不要改动calc.py中已有的代码
+- [DONE] 增加查询calc_algorithm_item_arguments表记录的函数，cid作为参数，并编写测试用例
+- [DONE] 回退，你又改动了原来的代码
+- [DONE] 记得更新gemini.md
 - [DONE] 为`get_ma_trend`函数创建了测试用例 (`app/test/test_technical.py`)。

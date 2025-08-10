@@ -1,9 +1,24 @@
+import ast
+import json
 import unittest
 import zipfile
 from sqlalchemy import select
 from app.database import dbEngine, holding
 from app.database import holding as HoldingTable
 from app.database.data import index as Index, stock as Stock
+from app.database.calc import (
+    CalcAlgorithmItemsTable,
+    CalcAlgorithmItemStockListTable,
+    CalcAlgorithmItemArgumentsTable,
+    CalcAlgorithmItemStockListModel,
+    CalcAlgorithmItemArgumentsModel,
+    insert_algorithm_item,
+    insert_algorithm_item_stock_list,
+    insert_algorithm_item_arguments,
+    select_algorithm_items,
+    select_algorithm_item_stock_list,
+    select_algorithm_item_arguments,
+)
 
 class TestUserHoldingTable(unittest.TestCase):
   def setUp(self):
@@ -161,6 +176,129 @@ class TestUserHoldingTable(unittest.TestCase):
         zip.write(file)
 
     self.assertTrue(True)
+
+class TestCalcAlgorithmItems(unittest.TestCase):
+    def setUp(self):
+        dbEngine.start()
+        self.db = dbEngine
+
+    def tearDown(self):
+        # self.db.trunc_table(CalcAlgorithmItemArguments)
+        # self.db.trunc_table(CalcAlgorithmItemStockList)
+        # self.db.trunc_table(CalcAlgorithmItems)
+        self.db.shutdown()
+
+    def test_insert_algorithm_item(self):
+        # Test data
+        uid = 1
+        name = "test_algorithm"
+        category = 1
+        type = 1
+
+        # Insert the record
+        item_id = insert_algorithm_item(uid, name, category, type)
+        self.assertIsNotNone(item_id)
+
+        # Verify the record was inserted
+        stmt = select(CalcAlgorithmItemsTable).where(CalcAlgorithmItemsTable.id == item_id)
+        result = self.db.select_scalar(stmt)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.name, name)
+
+    def test_insert_algorithm_item_stock_list(self):
+        # Insert a parent record
+        item_id = 1 #insert_algorithm_item(1, "test_stock_list", 1, 1)
+
+        # Test data
+        items = [
+            CalcAlgorithmItemStockListModel(cid=item_id, type=2, code="AAPL"),
+            CalcAlgorithmItemStockListModel(cid=item_id, type=2, code="GOOGL"),
+        ]
+
+        # Insert the records
+        insert_algorithm_item_stock_list(items)
+
+        # Verify the records were inserted
+        stmt = select(CalcAlgorithmItemStockListTable).where(CalcAlgorithmItemStockListTable.cid == item_id)
+        results = self.db.select_scalars(stmt)
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].code, "AAPL")
+        self.assertEqual(results[1].code, "GOOGL")
+
+    def test_insert_algorithm_item_arguments(self):
+        # Insert a parent record
+        item_id = insert_algorithm_item(1, "test_arguments", 1, 1)
+
+        # Test data
+        items = [
+            CalcAlgorithmItemArgumentsModel(cid=item_id, category=1, type=1, arguments={"key": "value1"}, flag=0),
+            CalcAlgorithmItemArgumentsModel(cid=item_id, category=1, type=2, arguments={"key": "value2"}, flag=0),
+        ]
+
+        # Insert the records
+        insert_algorithm_item_arguments(items)
+
+        # Verify the records were inserted
+        stmt = select(CalcAlgorithmItemArgumentsTable).where(CalcAlgorithmItemArgumentsTable.cid == item_id)
+        results = self.db.select_scalars(stmt)
+        self.assertEqual(len(results), 2)
+        arg1 = ast.literal_eval(results[0].arguments)
+        arg2 = ast.literal_eval(results[1].arguments)
+        self.assertEqual(arg1, {"key": "value6"})
+        self.assertEqual(arg2, {"key": "value2"})
+
+    def test_select_algorithm_items_by_uid(self):
+        # Test data
+        uid = 123
+        insert_algorithm_item(uid, "algo1", 1, 1)
+        insert_algorithm_item(uid, "algo2", 1, 2)
+        insert_algorithm_item(999, "algo3", 2, 1) # Different uid
+
+        # Call the function
+        results = select_algorithm_items(uid)
+
+        # Verify the results
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].name, "algo1")
+        self.assertEqual(results[1].name, "algo2")
+
+    def test_select_algorithm_item_stock_list_by_cid(self):
+        # Insert a parent record
+        item_id = insert_algorithm_item(1, "test_stock_list", 1, 1)
+
+        # Test data
+        items = [
+            CalcAlgorithmItemStockListModel(cid=item_id, type=2, code="MSFT"),
+            CalcAlgorithmItemStockListModel(cid=item_id, type=2, code="AMZN"),
+        ]
+        insert_algorithm_item_stock_list(items)
+
+        # Call the function
+        results = select_algorithm_item_stock_list(item_id)
+
+        # Verify the results
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].code, "MSFT")
+        self.assertEqual(results[1].code, "AMZN")
+
+    def test_select_algorithm_item_arguments_by_cid(self):
+        # Insert a parent record
+        item_id = insert_algorithm_item(1, "test_arguments", 1, 1)
+
+        # Test data
+        items = [
+            CalcAlgorithmItemArgumentsModel(cid=item_id, category=1, type=1, arguments={"key": "value1"}, flag=0),
+            CalcAlgorithmItemArgumentsModel(cid=item_id, category=1, type=2, arguments={"key": "value2"}, flag=0),
+        ]
+        insert_algorithm_item_arguments(items)
+
+        # Call the function
+        results = select_algorithm_item_arguments(item_id)
+
+        # Verify the results
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[0].arguments, {"key": "value1"})
+        self.assertEqual(results[1].arguments, {"key": "value2"})
 
 if __name__ == '__main__':
   unittest.main()

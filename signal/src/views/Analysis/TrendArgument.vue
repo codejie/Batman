@@ -32,24 +32,28 @@ const formData = reactive<{
   title: '',
   remarks: '',
   stockList: ['all'],
-  dataPeriod: ['1y'],
-  reportRange: ['today']
+  dataPeriod: ['6m'],
+  reportRange: ['3d']
 })
 
 const tableData = ref([])
 const showStockTable = ref(false) // Default to false since stockList defaults to ['all']
+const showStockTableAddButton = ref(false)
 
 const handleStockListChange = (newList: string[]) => {
-  // If 'all' is selected
-  if (newList.includes('all')) {
-    // If 'all' was the last one to be added
     if (newList.at(-1) === 'all') {
       formData.stockList = ['all']
-    } else { // If 'all' was already there and user selected something else
-      formData.stockList = newList.filter(item => item !== 'all')
+      showStockTable.value = false
+      showStockTableAddButton.value = false
+    } else if (newList.at(-1) === 'custom') {
+      formData.stockList = ['custom']
+      showStockTable.value = true
+      showStockTableAddButton.value = true
+    } else if (newList.includes('holding') || newList.includes('watchlist')) {
+      formData.stockList = newList.filter(item => (item !== 'all' && item !== 'custom'))
+      showStockTable.value = true
+      showStockTableAddButton.value = false
     }
-  }
-  showStockTable.value = !formData.stockList.includes('all')
 }
 </script>
 
@@ -92,7 +96,7 @@ const handleStockListChange = (newList: string[]) => {
             <el-checkbox label="自定义列表" value="custom" />
             <el-checkbox label="全部列表" value="all" />
           </el-checkbox-group>
-          <div v-if="showStockTable" style="margin-top: 10px;">
+          <div v-if="showStockTable && showStockTableAddButton" style="margin-top: 10px;">
             <el-button size="small">添加</el-button>
           </div>
           <el-table v-if="showStockTable" :data="tableData" style="width: 100%; margin-top: 10px;" :border="true">

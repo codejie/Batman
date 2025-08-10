@@ -1,8 +1,6 @@
 import unittest
 import pandas as pd
-from app.calc.ma import get_ma_trend, ma_diff_rank
 from app.database.data.stock import download_history_data
-import talib
 import app.calc.adx as adx
 import app.calc.ma as ma
 
