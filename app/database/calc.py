@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, select
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, select, delete
 from app.database import TableBase, dbEngine
 from pydantic import BaseModel
 from datetime import datetime
@@ -102,3 +102,20 @@ def select_algorithm_item_arguments(cid: int) -> List[CalcAlgorithmItemArguments
     if isinstance(item.arguments, str):
       item.arguments = eval(item.arguments)
   return result
+
+def delete_algorithm_item(uid: int, id: int) -> None:
+  dbEngine.execute_stmt(delete(CalcAlgorithmItemStockListTable).where(CalcAlgorithmItemStockListTable.cid == id))
+  dbEngine.execute_stmt(delete(CalcAlgorithmItemArgumentsTable).where(CalcAlgorithmItemArgumentsTable.cid == id))
+  dbEngine.execute_stmt(delete(CalcAlgorithmItemsTable).where(CalcAlgorithmItemsTable.id == id).where(CalcAlgorithmItemsTable.uid == uid))
+
+def delete_algorithm_item_stock_list(cid: int, id: int | None= None) -> None:
+  stmt = delete(CalcAlgorithmItemStockListTable).where(CalcAlgorithmItemStockListTable.cid == cid)
+  if id is not None:
+    stmt = stmt.where(CalcAlgorithmItemStockListTable.id == id)
+  dbEngine.execute_stmt(stmt)
+
+def delete_algorithm_item_arguments(cid: int, id: int | None = None) -> None:
+  stmt = delete(CalcAlgorithmItemArgumentsTable).where(CalcAlgorithmItemArgumentsTable.cid == cid)
+  if id is not None:
+    stmt = stmt.where(CalcAlgorithmItemArgumentsTable.id == id)
+  dbEngine.execute_stmt(stmt)

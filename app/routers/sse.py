@@ -40,8 +40,8 @@ manager = ConnectionManager()
 
 # The router
 router = APIRouter(
-    prefix="/agent",
-    tags=["agent"]
+    prefix="/sse",
+    tags=["sse"]
 )
 
 async def event_generator(request: Request, user_id: int):

@@ -18,6 +18,7 @@ from app.database.calc import (
     select_algorithm_items,
     select_algorithm_item_stock_list,
     select_algorithm_item_arguments,
+    delete_algorithm_item,
 )
 
 class TestUserHoldingTable(unittest.TestCase):
@@ -299,6 +300,37 @@ class TestCalcAlgorithmItems(unittest.TestCase):
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0].arguments, {"key": "value1"})
         self.assertEqual(results[1].arguments, {"key": "value2"})
+
+    def test_delete_algorithm_item(self):
+        # Insert a parent record
+        item_id = insert_algorithm_item(1, "test_delete", 1, 1)
+
+        # Test data
+        stock_list_items = [
+            CalcAlgorithmItemStockListModel(cid=item_id, type=2, code="TEST"),
+        ]
+        insert_algorithm_item_stock_list(stock_list_items)
+
+        argument_items = [
+            CalcAlgorithmItemArgumentsModel(cid=item_id, category=1, type=1, arguments={"key": "value1"}, flag=0),
+        ]
+        insert_algorithm_item_arguments(argument_items)
+
+        # Delete the item
+        delete_algorithm_item(item_id)
+
+        # Verify the records were deleted
+        stmt = select(CalcAlgorithmItemsTable).where(CalcAlgorithmItemsTable.id == item_id)
+        result = self.db.select_scalar(stmt)
+        self.assertIsNone(result)
+
+        stmt = select(CalcAlgorithmItemStockListTable).where(CalcAlgorithmItemStockListTable.cid == item_id)
+        results = self.db.select_scalars(stmt)
+        self.assertEqual(len(results), 0)
+
+        stmt = select(CalcAlgorithmItemArgumentsTable).where(CalcAlgorithmItemArgumentsTable.cid == item_id)
+        results = self.db.select_scalars(stmt)
+        self.assertEqual(len(results), 0)
 
 if __name__ == '__main__':
   unittest.main()
