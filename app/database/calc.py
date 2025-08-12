@@ -15,7 +15,7 @@ class CalcAlgorithmItemsTable(TableBase):
   type = Column(Integer, nullable=False)
   list_type = Column(Integer, nullable=False, default=2)  # 0: holding, 1: customized, 2: holding + customized, 3custom, 4: all
   data_period = Column(Integer, nullable=False, default=1)  # 0: 3months, 1: 6months, 2: 1year, 3: 2years
-  report_period = Column(String, nullable=False, default='1') # 0: today, 1: 3days, 2: 1week, 3: 1monthly, 4: all
+  report_period = Column(Integer, nullable=False, default='1') # 0: today, 1: 3days, 2: 1week, 3: 1monthly, 4: all
   created = Column(DateTime, default=func.now())
 
 class CalcAlgorithmItemModel(BaseModel):
@@ -27,7 +27,7 @@ class CalcAlgorithmItemModel(BaseModel):
   type: int
   list_type: int
   data_period: int
-  report_period: str
+  report_period: int
   created: datetime
 
 class CalcAlgorithmItemStockListTable(TableBase):
@@ -69,7 +69,7 @@ class CalcAlgorithmItemArgumentsModel(BaseModel):
       data["arguments"] = str(data["arguments"])
     return data
 
-def insert_algorithm_item(uid: int, name: str, category: int, type: int, list_type: int = 2, data_period: int = 1, report_period: str = '1', remarks: str | None = None) -> int:
+def insert_algorithm_item(uid: int, name: str, category: int, type: int, list_type: int = 2, data_period: int = 1, report_period: int = 1, remarks: str | None = None) -> int:
   item = CalcAlgorithmItemsTable(uid=uid, name=name, category=category, type=type, list_type=list_type, data_period=data_period, report_period=report_period, remarks=remarks)
   return dbEngine.insert_instance(item)
 
@@ -87,20 +87,46 @@ def insert_algorithm_item_arguments(items: List[CalcAlgorithmItemArgumentsModel]
 
 def select_algorithm_items(uid: int) -> List[CalcAlgorithmItemModel]:
   stmt = select(CalcAlgorithmItemsTable).where(CalcAlgorithmItemsTable.uid == uid)
-  results = dbEngine.select_scalars(stmt)
+  results = dbEngine.select_stmt(stmt)
+  results = [CalcAlgorithmItemModel(
+    id=item[0].id,
+    uid=item[0].uid,
+    name=item[0].name,
+    remarks=item[0].remarks,
+    category=item[0].category,
+    type=item[0].type,
+    list_type=item[0].list_type,
+    data_period=item[0].data_period,
+    report_period=item[0].report_period,
+    created=item[0].created
+  ) for item in results]
   return results
 
 def select_algorithm_item_stock_list(cid: int) -> List[CalcAlgorithmItemStockListModel]:
   stmt = select(CalcAlgorithmItemStockListTable).where(CalcAlgorithmItemStockListTable.cid == cid)
-  results = dbEngine.select_scalars(stmt)
+  results = dbEngine.select_stmt(stmt)
+  results = [CalcAlgorithmItemStockListModel(
+    id=item[0].id,
+    cid=item[0].cid,
+    type=item[0].type,
+    code=item[0].code
+  ) for item in results]
   return results
 
 def select_algorithm_item_arguments(cid: int) -> List[CalcAlgorithmItemArgumentsModel]:
   stmt = select(CalcAlgorithmItemArgumentsTable).where(CalcAlgorithmItemArgumentsTable.cid == cid)
-  result = dbEngine.select_scalars(stmt)
+  result = dbEngine.select_stmt(stmt)
   for item in result:
     if isinstance(item.arguments, str):
       item.arguments = eval(item.arguments)
+  results = [CalcAlgorithmItemArgumentsModel(
+    id=item[0].id,
+    cid=item[0].cid,
+    category=item[0].category,
+    type=item[0].type,
+    arguments=item[0].arguments,
+    flag=item[0].flag
+  ) for item in result]
   return result
 
 def delete_algorithm_item(uid: int, id: int) -> None:

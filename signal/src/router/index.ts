@@ -192,6 +192,14 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           title: '计算参数设置',
           hidden: true
         }
+      },
+      {
+        name: 'AlgorithmDefinitions',
+        path: 'definitions',
+        component: () => import('@/views/Analysis/AlgorithmDefinitions.vue'),
+        meta: {
+          title: '算法定义'
+        }
       }
     ]
   },

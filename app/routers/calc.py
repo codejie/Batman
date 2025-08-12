@@ -12,7 +12,7 @@ class AlgorithmItemCreateRequest(RequestModel):
   type: int
   list_type: int
   data_period: int
-  report_period: str
+  report_period: int
   remarks: Optional[str] = None
 
 class AlgorithmItemCreateResponse(ResponseModel):
@@ -42,7 +42,7 @@ class AlgorithmItemDeleteResponse(ResponseModel):
 
 @router.post("/remove", response_model=AlgorithmItemDeleteResponse)
 async def delete_algorithm_item(request: AlgorithmItemDeleteRequest):
-  db.delete_algorithm_item(id=request.id)
+  db.delete_algorithm_item(uid=DEFAULT_UID, id=request.id)
   return AlgorithmItemDeleteResponse(result=0)
 
 class StockListCreateRequest(RequestModel):

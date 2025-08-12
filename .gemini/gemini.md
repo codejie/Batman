@@ -111,8 +111,11 @@ npm run dev
 
 ## Gemini Agent Instructions
 
-- 将输入的需求内容都记录在gemini.md中
-- 请把输入的请求内容在完成或取消后记录在gemini.md中，并标记执行结果
+- 请把输入的请求内容在完成或取消后记录在gemini.md中，并标记执行结果/operation records
+- 生成VUE代码时，请采用<script>在前，<template>在后的方式。
+
+## Operatation Records
+
 - [DONE] take a break
 - [DONE] 页面中，stockList的checkbox组缺省为all选项，dataPeriod组缺省是1y，reportrange组缺省是today。
 - [DONE] so cool!
@@ -169,3 +172,17 @@ npm run dev
 - [DONE] 回退，你又改动了原来的代码
 - [DONE] 记得更新gemini.md
 - [DONE] 为`get_ma_trend`函数创建了测试用例 (`app/test/test_technical.py`)。
+- [DONE] 检查@app/routers/holding.py ,在@app/routers/calc.py 中创建@app/database/calc.py 相应的API接口函数
+- [REVERTED] Batman工程中的signal应用存在一个问题，在使用.env.pro编译product模式时，router菜单的图标不能显示，而使用.env.dev编译development模式时是正常的，请确定原因
+- [DONE] 执行gemini.md中的agent指令
+- [DONE] 记录请求执行情况到gemini.md这条指令
+- [DONE] 是这样的。请记录这条指令为自动执行，每次操作执行后，执行记录折腾指令
+- [DONE] @signal/src/api/calc/types.ts 中AlgorithmTypeDefinitions定义了算法类型项，基于数组内元素，在 @signal/src/views/Analysis/components//** 中创建一个组件用于编辑和展示AlgorithmTypeDefinitions的元素；同时AlgorithmCategoryDefinitions对象中定义了算法类别项，其元素是AlgorithmTypeDefinitions元素的category，也就是一个算法类型属于一个算法类别，同样创建一个AlgorithmCategoryDefinitions的编辑和展示的组件，这个组件可以包含多个AlgorithmTypeDefinitions的组件。
+- [DONE] 将AlgorithmCategory和AlgorithmType组件加入到TrendArgument.vue页面中，mock有一个Category和两个type组件。
+- [DONE] @signal/src/views/Analysis/TrendArgument.vue 中的’算法参数‘栏中增加一个el-tree-select组件，其中项是AlgorithmCategoryDefinitions和AlgorithmTypeDefinitions的元素项，el-tree-select组件的一级项是AlgorithmCategoryDefinitions元素，label是title+description，id、value、key是AlgorithmCategoryDefinitions元素对象的key，二级项是AlgorithmTypeDefinitions元素，label是元素title+description，id、key、value是AlgorithmTypeDefinitions的可以。
+- [DONE] 在el-tree-select右边增加一个按钮’添加‘
+- [DONE] 增加’添加‘按钮的mock事件，点击是显示一个对话框，展示选中项的id或key信息
+- [DONE] ’新增‘按钮的mock事件，显示一级和二级的id
+- [DONE] el-tree-select组件的一级元素不可选
+- [DONE] 为什么el-tree-select中的二级的第一个选中时，不能显示category和type的id，只显示了category的id？
+- [DONE] el-tree-select组件默认全部展开

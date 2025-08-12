@@ -1,20 +1,36 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ElSelect, ElOption, ElButton, ElDivider } from 'element-plus'
+import { ref, onMounted } from 'vue'
+import { ElSelect, ElOption, ElButton, ElDivider, ElMessage } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import TrendArgumentTable from './components/TrendArgumentTable.vue'
+import { apiListAlgorithmItems, apiDeleteAlgorithmItem, AlgorithmItem } from '@/api/calc'
 
 const selectedValue = ref('')
-const options = ref([
-  { value: 'option1', label: 'Option 1' },
-  { value: 'option2', label: 'Option 2' },
-  { value: 'option3', label: 'Option 3' }
-])
 
 const showArgumentTable = ref(false)
+const algorithmItems = ref<AlgorithmItem[]>([])
+
+const getAlgorithmItems = async () => {
+  const res = await apiListAlgorithmItems({})
+  if (res) {
+    algorithmItems.value = res.result
+  }
+}
+
+onMounted(() => {
+  getAlgorithmItems()
+})
 
 const toggleTable = () => {
   showArgumentTable.value = !showArgumentTable.value
+}
+
+const handleDeleteItem = async (id: number) => {
+  const res = await apiDeleteAlgorithmItem({ id })
+  if (res) {
+    ElMessage.success('删除成功')
+    getAlgorithmItems()
+  }
 }
 </script>
 
@@ -24,16 +40,20 @@ const toggleTable = () => {
     <div class="action-container">
       <el-select v-model="selectedValue" placeholder="Select" class="select-width">
         <el-option
-          v-for="item in options"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
+          v-for="item in algorithmItems"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id"
         />
       </el-select>
       <el-button type="primary" style="margin-left: 10px;">提交</el-button>
-      <el-button  @click="toggleTable">{{ showArgumentTable ? '收起参数列表' : '查看参数列表' }}</el-button>
+      <el-button @click="toggleTable">{{ showArgumentTable ? '收起参数列表' : '查看参数列表' }}</el-button>
     </div>
-    <TrendArgumentTable v-if="showArgumentTable" />
+    <TrendArgumentTable
+      v-if="showArgumentTable"
+      :table-data="algorithmItems"
+      @delete="handleDeleteItem"
+    />
 
     <el-divider />
 

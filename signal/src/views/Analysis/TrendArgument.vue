@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, computed } from 'vue'
 import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { useRouter } from 'vue-router'
 import {
@@ -13,8 +13,12 @@ import {
   ElCheckbox,
   ElTable,
   ElTableColumn,
-  ElDivider
+  ElDivider,
+  ElTreeSelect,
+  ElDialog
 } from 'element-plus'
+import AlgorithmCategory from './components/AlgorithmCategory.vue'
+import { AlgorithmCategoryDefinitions, AlgorithmTypeDefinitions } from '@/api/calc'
 
 const router = useRouter()
 
@@ -55,6 +59,76 @@ const handleStockListChange = (newList: string[]) => {
       showStockTableAddButton.value = false
     }
 }
+
+const mockCategory = ref({
+  name: 'MA',
+  title: '均线',
+  description: 'Moving Average (MA) - 移动平均线',
+  options: []
+})
+
+const mockTypes = ref([
+  {
+    category: 0,
+    name: 'MA_MA',
+    title: '基础移动均线',
+    description: 'Moving Average (MA) - 移动平均线'
+  },
+  {
+    category: 0,
+    name: 'EMA',
+    title: '指数移动平均线',
+    description: 'Exponential Moving Average (EMA) - 指数移动平均线'
+  }
+])
+
+const treeData = computed(() => {
+  return Object.keys(AlgorithmCategoryDefinitions).map(catKey => {
+    const category = AlgorithmCategoryDefinitions[catKey];
+    const children = Object.keys(AlgorithmTypeDefinitions)
+      .filter(typeKey => AlgorithmTypeDefinitions[typeKey].category === parseInt(catKey))
+      .map(typeKey => {
+        const type = AlgorithmTypeDefinitions[typeKey];
+        return {
+          value: `type-${typeKey}`,
+          label: `${type.title} - ${type.description}`
+        };
+      });
+
+    return {
+      value: `cat-${catKey}`,
+      label: `${category.title} - ${category.description}`,
+      children: children,
+      disabled: true
+    };
+  });
+});
+
+const selectedAlgorithm = ref<string | null>(null);
+const dialogVisible = ref(false)
+const selectedInfo = ref<{ categoryId: string | null, typeId: string | null }>({ categoryId: null, typeId: null })
+
+const handleAddClick = () => {
+  selectedInfo.value = { categoryId: null, typeId: null };
+  const selectedValue = selectedAlgorithm.value;
+
+  if (selectedValue) {
+    if (selectedValue.startsWith('cat-')) {
+        selectedInfo.value.categoryId = selectedValue.replace('cat-', '');
+    } else if (selectedValue.startsWith('type-')) {
+        const typeId = selectedValue.replace('type-', '');
+        for (const category of treeData.value) {
+            if (category.children && category.children.some(c => c.value === selectedValue)) {
+                selectedInfo.value.categoryId = category.value.replace('cat-', '');
+                selectedInfo.value.typeId = typeId;
+                break;
+            }
+        }
+    }
+  }
+  dialogVisible.value = true;
+};
+
 </script>
 
 <template>
@@ -136,15 +210,37 @@ const handleStockListChange = (newList: string[]) => {
         <el-row>
           <el-col>
             <div class="section-title">算法参数</div>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col>
-            <!-- Placeholder for bottom-right section -->
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+              <el-tree-select
+                v-model="selectedAlgorithm"
+                :data="treeData"
+                placeholder="请选择算法"
+                style="flex-grow: 1; margin-right: 10px;"
+                clearable
+                check-strictly
+                default-expand-all
+              />
+              <el-button type="primary" @click="handleAddClick">添加</el-button>
+            </div>
+            <AlgorithmCategory
+              :category="mockCategory"
+              :types="mockTypes"
+              :category-id="0"
+            />
           </el-col>
         </el-row>
       </el-col>
     </el-row>
+
+    <el-dialog v-model="dialogVisible" title="选中项">
+      <p v-if="selectedInfo.categoryId">一级ID: {{ selectedInfo.categoryId }}</p>
+      <p v-if="selectedInfo.typeId">二级ID: {{ selectedInfo.typeId }}</p>
+      <p v-if="!selectedInfo.categoryId && !selectedInfo.typeId">未选择任何项</p>
+      <template #footer>
+        <el-button @click="dialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
   </ContentDetailWrap>
 </template>
 
