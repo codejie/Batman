@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { ElMessage, ElButton } from 'element-plus'
 import AlgorithmCategory from './components/AlgorithmCategory.vue'
-import { AlgorithmCategoryDefinitions, AlgorithmTypeDefinitions } from '@/api/calc'
+import { AlgorithmCategoryDefinitions, AlgorithmTypeDefinitions } from '@/api/calc/defines'
 
 // Make the definitions reactive
 const categories = ref(JSON.parse(JSON.stringify(AlgorithmCategoryDefinitions)))

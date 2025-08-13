@@ -3,13 +3,13 @@ import { ElTable, ElTableColumn, ElButton, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import type { PropType } from 'vue'
 import {
-  type AlgorithmItem,
   AlgorithmCategoryDefinitions,
   AlgorithmTypeDefinitions,
   AlgorithmStockListDefinitions,
   AlgorithmDataPeriodDefinitions,
   AlgorithmReportPeriodDefinitions
-} from '@/api/calc'
+} from '@/api/calc/defines'
+import { AlgorithmItem } from '@/api/calc/types'
 import dayjs from 'dayjs'
 
 defineProps({

@@ -13,7 +13,7 @@ class CalcAlgorithmItemsTable(TableBase):
   remarks = Column(String)
   category = Column(Integer, nullable=False)
   type = Column(Integer, nullable=False)
-  list_type = Column(Integer, nullable=False, default=2)  # 0: holding, 1: customized, 2: holding + customized, 3custom, 4: all
+  list_type = Column(Integer, nullable=False, default=4)  # 0: holding, 1: customized, 2:custom, 3: all, 4: holding & watchlist
   data_period = Column(Integer, nullable=False, default=1)  # 0: 3months, 1: 6months, 2: 1year, 3: 2years
   report_period = Column(Integer, nullable=False, default='1') # 0: today, 1: 3days, 2: 1week, 3: 1monthly, 4: all
   created = Column(DateTime, default=func.now())
