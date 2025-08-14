@@ -54,7 +54,8 @@ class StockListCreateResponse(ResponseModel):
 
 @router.post('/stock_list_create', response_model=StockListCreateResponse)
 async def create_stock_list(request: StockListCreateRequest):
-  db.insert_algorithm_item_stock_list(request.items)
+  db.delete_algorithm_item_stock_list(cid=request.cid)
+  db.insert_algorithm_item_stock_list(cid=request.cid, items=request.items)
   return StockListCreateResponse(result=0)
 
 class StockListRequest(RequestModel):

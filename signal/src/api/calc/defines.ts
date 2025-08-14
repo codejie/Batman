@@ -1,6 +1,6 @@
 
 export const AlgorithmStockListDefinitions = [
-  '持仓列表', '自选列表', '自定义列表', '全部列表',  '持仓&自选'
+  '持仓列表', '自选列表', '自定义列表', '全部列表', '持仓&自选'
 ]
 
 export const AlgorithmDataPeriodDefinitions = [

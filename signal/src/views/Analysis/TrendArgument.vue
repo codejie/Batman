@@ -19,6 +19,7 @@ import {
   ElMessage
 } from 'element-plus'
 import AlgorithmCategory from './components/AlgorithmCategory.vue'
+import { TYPE_STOCK } from '@/api/data'
 import {
   AlgorithmCategoryDefinitions,
   AlgorithmDataPeriodDefinitions,
@@ -27,8 +28,16 @@ import {
   AlgorithmTypeDefinitions
 } from '@/api/calc/defines'
 import type { PropType } from 'vue'
-import type { AlgorithmItem } from '@/api/calc/types'
-import { apiCreateAlgorithmItem } from '@/api/calc'
+import type { AlgorithmItem, StockListItem } from '@/api/calc/types'
+import { apiCreateAlgorithmItem, apiListStockList, apiCreateStockList } from '@/api/calc'
+import { apiRecord } from '@/api/holding'
+import { apiRecords } from '@/api/customized'
+
+import { type FormInstance } from 'element-plus'
+
+interface StockListTableItem extends Pick<StockListItem, 'type' | 'code' | 'name'> {
+  src: number
+}
 
 const props = defineProps({
   item: {
@@ -53,14 +62,82 @@ const formData = reactive<Omit<AlgorithmItem, 'id' | 'uid' | 'created'>>({
   report_period: 1 // 3d
 })
 
+const loadStockList = async (isInitialLoad = false) => {
+  const listType = formData.list_type
+
+  // '自定义列表'
+  if (listType === 2) {
+    if (isInitialLoad && props.item?.id) {
+      try {
+        const res = await apiListStockList({ cid: props.item.id })
+        const stocks = res.result.map((item) => ({
+          ...item,
+          src: 2
+        }))
+        tableData.value = Array.from(new Map(stocks.map((item) => [item.code, item])).values())
+      } catch (error) {
+        ElMessage.error('获取算法自定义列表失败')
+        tableData.value = []
+      }
+    }
+    // On user switch to '自定义列表' (isInitialLoad = false), do nothing to preserve table data.
+    // If creating a new item with type 2 (isInitialLoad = true, no props.item.id), do nothing, table is empty.
+    return
+  }
+
+  tableData.value = []
+  let stocks: StockListTableItem[] = []
+
+  const fetchHolding = async () => {
+    try {
+      const res = await apiRecord({})
+      return res.result.map((item) => ({ ...item, src: 0 }))
+    } catch (error) {
+      ElMessage.error('获取持仓列表失败')
+      console.error(error)
+      return []
+    }
+  }
+
+  const fetchCustomized = async () => {
+    try {
+      const res = await apiRecords({})
+      return res.result.map((item) => ({ ...item, src: 1 }))
+    } catch (error) {
+      ElMessage.error('获取自选列表失败')
+      console.error(error)
+      return []
+    }
+  }
+
+  if (listType === 0) {
+    // '持仓列表'
+    const holdingStocks = await fetchHolding()
+    stocks = Array.from(new Map(holdingStocks.map((item) => [item.code, item])).values())
+  } else if (listType === 1) {
+    // '自选列表'
+    const customizedStocks = await fetchCustomized()
+    stocks = Array.from(new Map(customizedStocks.map((item) => [item.code, item])).values())
+  } else if (listType === 4) {
+    // '持仓列表' + '自选列表'
+    const holdingStocks = await fetchHolding()
+    const customizedStocks = await fetchCustomized()
+    const combined = [...holdingStocks, ...customizedStocks]
+    stocks = Array.from(new Map(combined.map((item) => [item.code, item])).values())
+  }
+
+  tableData.value = stocks
+}
+
 watch(
   () => props.item,
   (newItem) => {
     if (newItem) {
       Object.assign(formData, newItem)
     }
+    loadStockList(true)
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 )
 
 // UI State
@@ -88,34 +165,37 @@ watch(
 
 // Event Handlers
 const handleStockListChange = (val: string[]) => {
-  if (!val || val.length === 0) {
-    stockListUi.value = listTypeFromNumber(formData.list_type)
-    return
-  }
-
+  const customList = '自定义列表'
   const allListsValue = '全部列表'
-  let finalVal = val
 
-  // If "All Lists" is selected, it should be the only one.
-  // If something else is selected while "All Lists" is active, "All Lists" should be deselected.
-  if (val.includes(allListsValue)) {
-    if (val.at(-1) === allListsValue) {
-      finalVal = [allListsValue] // Select only "All Lists"
-    } else {
-      finalVal = val.filter((v) => v !== allListsValue) // Deselect "All Lists"
-    }
+  let newSelection = val ? [...val] : []
+  const lastSelection = newSelection.at(-1)
+
+  if (lastSelection === customList) {
+    newSelection = [customList]
+  } else if (lastSelection === allListsValue) {
+    newSelection = [allListsValue]
+  } else if (lastSelection) {
+    // any other selection
+    newSelection = newSelection.filter((i) => i !== customList && i !== allListsValue)
   }
+
+  stockListUi.value = newSelection
 
   // Convert UI selection to formData
-  if (finalVal.includes('持仓列表') && finalVal.includes('自选列表')) {
+  if (newSelection.includes('持仓列表') && newSelection.includes('自选列表')) {
     formData.list_type = 4 // Special case for holding + watchlist
-  } else {
-    const lastSelection = finalVal[finalVal.length - 1]
-    const index = AlgorithmStockListDefinitions.indexOf(lastSelection)
-    if (index !== -1) {
-      formData.list_type = index
-    }
+  } else if (newSelection.includes(customList)) {
+    formData.list_type = 2
+  } else if (newSelection.includes('持仓列表')) {
+    formData.list_type = 0
+  } else if (newSelection.includes('自选列表')) {
+    formData.list_type = 1
+  } else if (newSelection.includes(allListsValue)) {
+    formData.list_type = 3
   }
+
+  loadStockList()
 }
 
 const handleDataPeriodChange = (val: string[]) => {
@@ -140,13 +220,57 @@ const handleReportRangeChange = (val: string[]) => {
   }
 }
 
-const tableData = ref([])
+const tableData = ref<StockListTableItem[]>([])
 const showStockTable = computed(() =>
-  stockListUi.value.includes('自定义列表')
+  !stockListUi.value.includes('全部列表')
 )
 const showStockTableAddButton = computed(() =>
   stockListUi.value.includes('自定义列表')
 )
+
+const canDeleteStock = computed(() => {
+  return stockListUi.value.includes('自定义列表')
+})
+
+const addStockDialogVisible = ref(false)
+const addStockFormRef = ref<FormInstance>()
+const addStockFormData = reactive({
+  code: ''
+})
+
+const handleAddStockClick = () => {
+  addStockFormData.code = ''
+  addStockFormRef.value?.clearValidate()
+  addStockDialogVisible.value = true
+}
+
+// const submitAddStockForm = async () => {
+//   const form = addStockFormRef.value
+//   if (!form) return
+//   await form.validate()
+
+//   try {
+//     const res = await apiGetCode({ code: addStockFormData.code })
+//     if (res.result) {
+//       const newItem: StockListItem = {
+//         code: res.result.code,
+//         name: res.result.name,
+//         type: res.result.type
+//       }
+//       if (tableData.value.some((item) => item.code === newItem.code)) {
+//         ElMessage.warning('代码已存在')
+//         return
+//       }
+//       tableData.value.push(newItem)
+//       addStockDialogVisible.value = false
+//     } else {
+//       ElMessage.error('无效的代码')
+//     }
+//   } catch (error) {
+//     console.error(error)
+//     ElMessage.error('获取代码信息失败')
+//   }
+// }
 
 const mockCategory = ref({
   name: 'MA',
@@ -223,9 +347,16 @@ const handleAddClick = () => {
   dialogVisible.value = true
 }
 
+const handleDeleteStock = (index: number) => {
+  tableData.value.splice(index, 1)
+}
+
 const submitForm = async () => {
   try {
-    await apiCreateAlgorithmItem(formData)
+    const res = await apiCreateAlgorithmItem(formData)
+    if (showStockTableAddButton.value) {
+      await apiCreateStockList({ cid: res.result, items: tableData.value })
+    }
     ElMessage.success('提交成功')
     router.back()
   } catch (error) {
@@ -275,14 +406,25 @@ const submitForm = async () => {
             <el-checkbox label="全部列表" value="全部列表" />
           </el-checkbox-group>
           <div v-if="showStockTable && showStockTableAddButton" style="margin-top: 10px">
-            <el-button size="small">添加</el-button>
+            <el-button size="small" @click="handleAddStockClick">添加</el-button>
           </div>
           <el-table v-if="showStockTable" :data="tableData" style="width: 100%; margin-top: 10px" :border="true">
             <el-table-column type="index" label="序号" width="60" />
+            <el-table-column prop="type" label="类型" width="60">
+              <template #default="scope">
+                <span>{{ scope.row.type === TYPE_STOCK ? '股票' : '指数' }}</span>
+              </template>
+            </el-table-column>            
             <el-table-column prop="name" label="名称" />
             <el-table-column prop="code" label="代码" />
-            <el-table-column prop="holding" label="持有" />
-            <el-table-column prop="holding" label="操作" />
+            <!-- <el-table-column prop="holding" label="持有" /> -->
+            <el-table-column v-if="canDeleteStock" label="操作">
+              <template #default="scope">
+                <el-button type="danger" size="small" @click="handleDeleteStock(scope.$index)"
+                  >删除</el-button
+                >
+              </template>
+            </el-table-column>
           </el-table>
         </div>
 
@@ -343,6 +485,18 @@ const submitForm = async () => {
       <p v-else>未选择任何项</p>
       <template #footer>
         <el-button @click="dialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="addStockDialogVisible" title="添加" width="30%">
+      <el-form ref="addStockFormRef" :model="addStockFormData" label-width="80px">
+        <el-form-item label="代码" prop="code">
+          <el-input v-model="addStockFormData.code" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="addStockDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="">确定</el-button>
       </template>
     </el-dialog>
   </ContentDetailWrap>

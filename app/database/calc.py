@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, select, delete
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, select, delete, and_
 from app.database import TableBase, dbEngine
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
+from app.database.data.define import InfoTable
 
 class CalcAlgorithmItemsTable(TableBase):
   __tablename__ = 'calc_algorithm_items'
@@ -40,9 +41,15 @@ class CalcAlgorithmItemStockListTable(TableBase):
 
 class CalcAlgorithmItemStockListModel(BaseModel):
   id: int | None = None
-  cid: int
+  cid: int | None = None
   type: int
   code: str
+  name: str | None = None
+
+  def model_dump(self, *args, **kwargs):
+    data = super().model_dump(*args, **kwargs)
+    data.pop('name', None)
+    return data
 
 class CalcAlgorithmItemArgumentsTable(TableBase):
   __tablename__ = 'calc_algorithm_item_arguments'
@@ -73,13 +80,15 @@ def insert_algorithm_item(uid: int, name: str, category: int, type: int, list_ty
   item = CalcAlgorithmItemsTable(uid=uid, name=name, category=category, type=type, list_type=list_type, data_period=data_period, report_period=report_period, remarks=remarks)
   return dbEngine.insert_instance(item)
 
-def insert_algorithm_item_stock_list(items: List[CalcAlgorithmItemStockListModel]) -> None:
-  if not items:
+def insert_algorithm_item_stock_list(cid: int, items: List[CalcAlgorithmItemStockListModel]) -> None:
+  if not items or len(items) == 0:
     return
+  for item in items:
+    item.cid = cid
   items = [item.model_dump() for item in items]
   dbEngine.bulk_insert_data(CalcAlgorithmItemStockListTable, items)
 
-def insert_algorithm_item_arguments(items: List[CalcAlgorithmItemArgumentsModel]) -> None:
+def insert_algorithm_item_arguments(cid: int, items: List[CalcAlgorithmItemArgumentsModel]) -> None:
   if not items:
     return
   items = [item.model_dump() for item in items]
@@ -103,13 +112,19 @@ def select_algorithm_items(uid: int) -> List[CalcAlgorithmItemModel]:
   return results
 
 def select_algorithm_item_stock_list(cid: int) -> List[CalcAlgorithmItemStockListModel]:
-  stmt = select(CalcAlgorithmItemStockListTable).where(CalcAlgorithmItemStockListTable.cid == cid)
+  stmt = select(CalcAlgorithmItemStockListTable, InfoTable.name).join(
+      InfoTable, and_(
+          CalcAlgorithmItemStockListTable.code == InfoTable.code,
+          CalcAlgorithmItemStockListTable.type == InfoTable.type
+      )
+  ).where(CalcAlgorithmItemStockListTable.cid == cid)
   results = dbEngine.select_stmt(stmt)
   results = [CalcAlgorithmItemStockListModel(
     id=item[0].id,
     cid=item[0].cid,
     type=item[0].type,
-    code=item[0].code
+    code=item[0].code,
+    name=item[1]
   ) for item in results]
   return results
 

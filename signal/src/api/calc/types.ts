@@ -12,10 +12,11 @@ export interface AlgorithmItem {
 }
 
 export interface StockListItem {
-  id: number
-  cid: number
+  id?: number
+  cid?: number
   type: number
   code: string
+  name?: string
 }
 
 export interface ArgumentItem {

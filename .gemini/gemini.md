@@ -186,3 +186,23 @@ npm run dev
 - [DONE] el-tree-select组件的一级元素不可选
 - [DONE] 为什么el-tree-select中的二级的第一个选中时，不能显示category和type的id，只显示了category的id？
 - [DONE] el-tree-select组件默认全部展开
+
+---
+Date: 2025-08-14
+Request: "关联时，除了code，还要检查type"
+Operations:
+- File: `app/database/calc.py`
+  - Imported `and_` from `sqlalchemy`.
+  - Updated `select_algorithm_item_stock_list` to join `InfoTable` on both `code` and `type`.
+---
+
+---
+Date: 2025-08-14
+Request: "参考@signal/src/views/Customized/List.vue 中createForm的ElForm组件，在@signal/src/views/Analysis/TrendArgument.vue 中，增加‘添加’按钮事件，输入代码信息，加入到tableData中"
+Operations:
+- File: `signal/src/views/Analysis/TrendArgument.vue`
+  - Imported `FormInstance` from `element-plus` and `apiGetCode` from `@/api/data`.
+  - Added reactive state and functions (`addStockDialogVisible`, `addStockFormRef`, `addStockFormData`, `handleAddStockClick`, `submitAddStockForm`) to handle the add stock dialog and form submission.
+  - Updated the '添加' button to trigger the dialog.
+  - Added an `ElDialog` component with a form to input a new stock code.
+---
