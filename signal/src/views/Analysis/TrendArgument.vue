@@ -32,8 +32,7 @@ import type { AlgorithmItem, StockListItem } from '@/api/calc/types'
 import { apiCreateAlgorithmItem, apiListStockList, apiCreateStockList } from '@/api/calc'
 import { apiRecord } from '@/api/holding'
 import { apiRecords } from '@/api/customized'
-
-import { type FormInstance } from 'element-plus'
+import ItemSearchDialog from '@/views/Common/components/ItemSearchDialog.vue'
 
 interface StockListTableItem extends Pick<StockListItem, 'type' | 'code' | 'name'> {
   src: number
@@ -232,16 +231,22 @@ const canDeleteStock = computed(() => {
   return stockListUi.value.includes('自定义列表')
 })
 
-const addStockDialogVisible = ref(false)
-const addStockFormRef = ref<FormInstance>()
-const addStockFormData = reactive({
-  code: ''
-})
+const quickViewDialogVisible = ref(false)
 
 const handleAddStockClick = () => {
-  addStockFormData.code = ''
-  addStockFormRef.value?.clearValidate()
-  addStockDialogVisible.value = true
+  quickViewDialogVisible.value = true
+}
+
+const onQuickViewConfirm = (item: { code: string; name: string; type: number }) => {
+  if (tableData.value.some((i) => i.code === item.code)) {
+    ElMessage.warning('代码已存在')
+    return
+  }
+  tableData.value.push({
+    ...item,
+    src: 2 // 自定义
+  })
+  quickViewDialogVisible.value = false
 }
 
 // const submitAddStockForm = async () => {
@@ -488,17 +493,7 @@ const submitForm = async () => {
       </template>
     </el-dialog>
 
-    <el-dialog v-model="addStockDialogVisible" title="添加" width="30%">
-      <el-form ref="addStockFormRef" :model="addStockFormData" label-width="80px">
-        <el-form-item label="代码" prop="code">
-          <el-input v-model="addStockFormData.code" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="addStockDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="">确定</el-button>
-      </template>
-    </el-dialog>
+    <ItemSearchDialog v-model:visible="quickViewDialogVisible" @confirm="onQuickViewConfirm" />
   </ContentDetailWrap>
 </template>
 
