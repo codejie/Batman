@@ -11,6 +11,15 @@ export const AlgorithmReportPeriodDefinitions = [
   '当天', '最近三天', '最近一周', '最近一月', '全部'
 ]
 
+export type AlgorithmCategoryOptionType = {
+  name: string,
+  title: string,
+  type: string,
+  default: any,
+  options?: any,
+  description: string
+}
+
 export const AlgorithmCategoryDefinitions = {
   0: {
     name: 'MA',
@@ -23,7 +32,7 @@ export const AlgorithmCategoryDefinitions = {
         type: 'string',
         default: 'SMA',
         options: ['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3'],
-        description: '',
+        description: ''
       },
       {
         name: 'short_period',
@@ -38,7 +47,7 @@ export const AlgorithmCategoryDefinitions = {
         type: 'string',
         default: 'SMA',
         options: ['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3'],
-        description: '',
+        description: ''
       },
       {
         name: 'long_period',
@@ -47,6 +56,13 @@ export const AlgorithmCategoryDefinitions = {
         type: 'number',
         description: '长期均线的计算周期，通常为20或30天'
       }      
+    ]
+  },
+  1: {
+    name: 'MACD',
+    title: 'MACD1',
+    description: 'Moving Average Convergence Divergence (MACD) - 平滑异同移动平均线',
+    options: [
     ]
   }
 }

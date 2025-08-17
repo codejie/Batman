@@ -55,26 +55,26 @@ class CalcAlgorithmItemArgumentsTable(TableBase):
   __tablename__ = 'calc_algorithm_item_arguments'
 
   id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True)
-  cid = Column(Integer, ForeignKey('calc_algorithm_items.id'), nullable=False)
-  category = Column(Integer, nullable=False)
-  type = Column(Integer, nullable=False)
+  cid = Column(Integer, ForeignKey('calc_algorithm_items.id'), nullable=False) # calc id
+  category = Column(Integer, nullable=False) # category
+  type = Column(Integer, nullable=False) # id
   arguments = Column(String, nullable=False)  # JSON string
-  flag = Column(Integer, default=0)
+  flag = Column(Integer, nullable=True, default=0)
 
 class CalcAlgorithmItemArgumentsModel(BaseModel):
   id: int | None = None
   cid: int
   category: int
   type: int
-  arguments: dict
-  flag: int
+  arguments: str
+  flag: int | None = 0
 
-  def model_dump(self, *args, **kwargs) -> dict:
-    data = super().model_dump(*args, **kwargs)
-    # Convert arguments to JSON string
-    if isinstance(data["arguments"], dict):
-      data["arguments"] = str(data["arguments"])
-    return data
+  # def model_dump(self, *args, **kwargs) -> dict:
+  #   data = super().model_dump(*args, **kwargs)
+  #   # Convert arguments to JSON string
+  #   if isinstance(data["arguments"], dict):
+  #     data["arguments"] = str(data["arguments"])
+  #   return data
 
 def insert_algorithm_item(uid: int, name: str, category: int, type: int, list_type: int = 2, data_period: int = 1, report_period: int = 1, remarks: str | None = None) -> int:
   item = CalcAlgorithmItemsTable(uid=uid, name=name, category=category, type=type, list_type=list_type, data_period=data_period, report_period=report_period, remarks=remarks)
@@ -88,7 +88,7 @@ def insert_algorithm_item_stock_list(cid: int, items: List[CalcAlgorithmItemStoc
   items = [item.model_dump() for item in items]
   dbEngine.bulk_insert_data(CalcAlgorithmItemStockListTable, items)
 
-def insert_algorithm_item_arguments(cid: int, items: List[CalcAlgorithmItemArgumentsModel]) -> None:
+def insert_algorithm_item_arguments(uid: int, cid: int, items: List[CalcAlgorithmItemArgumentsModel]) -> None:
   if not items:
     return
   items = [item.model_dump() for item in items]
@@ -131,9 +131,9 @@ def select_algorithm_item_stock_list(cid: int) -> List[CalcAlgorithmItemStockLis
 def select_algorithm_item_arguments(cid: int) -> List[CalcAlgorithmItemArgumentsModel]:
   stmt = select(CalcAlgorithmItemArgumentsTable).where(CalcAlgorithmItemArgumentsTable.cid == cid)
   result = dbEngine.select_stmt(stmt)
-  for item in result:
-    if isinstance(item.arguments, str):
-      item.arguments = eval(item.arguments)
+  # for item in result:
+  #   if isinstance(item.arguments, str):
+  #     item.arguments = eval(item.arguments)
   results = [CalcAlgorithmItemArgumentsModel(
     id=item[0].id,
     cid=item[0].cid,
@@ -142,7 +142,7 @@ def select_algorithm_item_arguments(cid: int) -> List[CalcAlgorithmItemArguments
     arguments=item[0].arguments,
     flag=item[0].flag
   ) for item in result]
-  return result
+  return results
 
 def delete_algorithm_item(uid: int, id: int) -> None:
   dbEngine.execute_stmt(delete(CalcAlgorithmItemStockListTable).where(CalcAlgorithmItemStockListTable.cid == id))

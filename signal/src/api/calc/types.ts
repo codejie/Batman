@@ -20,12 +20,12 @@ export interface StockListItem {
 }
 
 export interface ArgumentItem {
-  id: number
+  id?: number
   cid: number
   category: number
   type: number
   arguments: string
-  flag: number
+  flag?: number
 }
 
 // Requests and Results

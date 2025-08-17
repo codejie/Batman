@@ -50,12 +50,12 @@ const handleDelete = (id: number) => {
     <el-table :data="tableData" style="width: 85%" :border="true">
       <el-table-column prop="id" label="标识" width="60" />
       <el-table-column prop="name" label="名称" width="160" />
-      <el-table-column prop="category" label="算法分类" width="100">
+      <el-table-column prop="category" label="算法分类" width="180">
         <template #default="{ row }">
           {{ AlgorithmCategoryDefinitions[row.category]?.title }}
         </template>
       </el-table-column>
-      <el-table-column prop="type" label="算法类型" width="120">
+      <el-table-column prop="type" label="算法类型" width="200">
         <template #default="{ row }">
           {{ AlgorithmTypeDefinitions[row.type]?.title }}
         </template>
@@ -83,8 +83,8 @@ const handleDelete = (id: number) => {
       </el-table-column>
       <el-table-column label="操作" width="160">
         <template #default="{ row }">
-          <el-button type="text">详情</el-button>
-          <el-button type="text" style="color: red;" @click="handleDelete(row.id)">删除</el-button>
+          <el-button :link="true" type="">详情</el-button>
+          <el-button :link="true" style="color: red;" @click="handleDelete(row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>

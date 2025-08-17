@@ -15,21 +15,21 @@ import {
   ElTableColumn,
   ElDivider,
   ElTreeSelect,
-  ElDialog,
   ElMessage
 } from 'element-plus'
 import AlgorithmCategory from './components/AlgorithmCategory.vue'
 import { TYPE_STOCK } from '@/api/data'
 import {
   AlgorithmCategoryDefinitions,
+  AlgorithmCategoryOptionType,
   AlgorithmDataPeriodDefinitions,
   AlgorithmReportPeriodDefinitions,
   AlgorithmStockListDefinitions,
   AlgorithmTypeDefinitions
 } from '@/api/calc/defines'
 import type { PropType } from 'vue'
-import type { AlgorithmItem, StockListItem } from '@/api/calc/types'
-import { apiCreateAlgorithmItem, apiListStockList, apiCreateStockList } from '@/api/calc'
+import type { AlgorithmItem, ArgumentItem, StockListItem } from '@/api/calc/types'
+import { apiCreateAlgorithmItem, apiListStockList, apiCreateStockList, apiCreateArguments } from '@/api/calc'
 import { apiRecord } from '@/api/holding'
 import { apiRecords } from '@/api/customized'
 import ItemSearchDialog from '@/views/Common/components/ItemSearchDialog.vue'
@@ -61,12 +61,16 @@ const formData = reactive<Omit<AlgorithmItem, 'id' | 'uid' | 'created'>>({
   report_period: 1 // 3d
 })
 
-const loadStockList = async (isInitialLoad = false) => {
-  const listType = formData.list_type
+const tableData = ref<StockListTableItem[]>([])
 
+const loadStockList = async () => {  
+  const listType = formData.list_type
+  console.log(tableData.value)
   // '自定义列表'
   if (listType === 2) {
-    if (isInitialLoad && props.item?.id) {
+    console.log(props.item)
+    if (props.item?.id) {
+      console.log('Loading custom stock list for item:', props.item.id)
       try {
         const res = await apiListStockList({ cid: props.item.id })
         const stocks = res.result.map((item) => ({
@@ -79,8 +83,6 @@ const loadStockList = async (isInitialLoad = false) => {
         tableData.value = []
       }
     }
-    // On user switch to '自定义列表' (isInitialLoad = false), do nothing to preserve table data.
-    // If creating a new item with type 2 (isInitialLoad = true, no props.item.id), do nothing, table is empty.
     return
   }
 
@@ -134,7 +136,8 @@ watch(
     if (newItem) {
       Object.assign(formData, newItem)
     }
-    loadStockList(true)
+    console.log('Loading stock list for item:', newItem)
+    loadStockList()
   },
   { immediate: true }
 )
@@ -147,7 +150,7 @@ const reportRangeUi = ref<string[]>([])
 // Mapping and Sync Logic
 const listTypeFromNumber = (t: number | undefined) => {
   if (t === undefined) return []
-  if (t === 4) return ['持仓列表', '自选列表'] // Special case
+  if (t === 4) return ['自定义列表'] // Special case
   const def = AlgorithmStockListDefinitions[t]
   return def ? [def] : []
 }
@@ -193,7 +196,7 @@ const handleStockListChange = (val: string[]) => {
   } else if (newSelection.includes(allListsValue)) {
     formData.list_type = 3
   }
-
+  console.log('Updated stock list type:', formData.list_type)
   loadStockList()
 }
 
@@ -218,8 +221,6 @@ const handleReportRangeChange = (val: string[]) => {
     formData.report_period = index
   }
 }
-
-const tableData = ref<StockListTableItem[]>([])
 const showStockTable = computed(() =>
   !stockListUi.value.includes('全部列表')
 )
@@ -238,7 +239,7 @@ const handleAddStockClick = () => {
 }
 
 const onQuickViewConfirm = (item: { code: string; name: string; type: number }) => {
-  if (tableData.value.some((i) => i.code === item.code)) {
+  if (tableData.value.some((i) => (i.code === item.code && i.type === item.type))) {
     ElMessage.warning('代码已存在')
     return
   }
@@ -248,56 +249,6 @@ const onQuickViewConfirm = (item: { code: string; name: string; type: number }) 
   })
   quickViewDialogVisible.value = false
 }
-
-// const submitAddStockForm = async () => {
-//   const form = addStockFormRef.value
-//   if (!form) return
-//   await form.validate()
-
-//   try {
-//     const res = await apiGetCode({ code: addStockFormData.code })
-//     if (res.result) {
-//       const newItem: StockListItem = {
-//         code: res.result.code,
-//         name: res.result.name,
-//         type: res.result.type
-//       }
-//       if (tableData.value.some((item) => item.code === newItem.code)) {
-//         ElMessage.warning('代码已存在')
-//         return
-//       }
-//       tableData.value.push(newItem)
-//       addStockDialogVisible.value = false
-//     } else {
-//       ElMessage.error('无效的代码')
-//     }
-//   } catch (error) {
-//     console.error(error)
-//     ElMessage.error('获取代码信息失败')
-//   }
-// }
-
-const mockCategory = ref({
-  name: 'MA',
-  title: '均线',
-  description: 'Moving Average (MA) - 移动平均线',
-  options: []
-})
-
-const mockTypes = ref([
-  {
-    category: 0,
-    name: 'MA_MA',
-    title: '基础移动均线',
-    description: 'Moving Average (MA) - 移动平均线'
-  },
-  {
-    category: 0,
-    name: 'EMA',
-    title: '指数移动平均线',
-    description: 'Exponential Moving Average (EMA) - 指数移动平均线'
-  }
-])
 
 const treeData = computed(() => {
   return Object.keys(AlgorithmCategoryDefinitions).map((catKey) => {
@@ -322,34 +273,98 @@ const treeData = computed(() => {
 })
 
 const selectedAlgorithm = ref<string[]>([])
-const dialogVisible = ref(false)
-const selectedInfo = ref<Array<{ categoryId: string | null; typeId: string | null }>>([])
+const displayedCategories = ref<
+  Array<{
+    categoryKey: number
+    types: Array<{
+      key: number,
+      options: Array<{
+        option: AlgorithmCategoryOptionType,
+        value?: any  
+      }>
+    }>
+  }>
+>([])
 
-const handleAddClick = () => {
-  selectedInfo.value = []
+const handleAlgorithmAddClick = () => {
   const selectedValues = selectedAlgorithm.value
+  if (!selectedValues || selectedValues.length === 0) {
+    ElMessage.warning('请选择算法')
+    return
+  }
 
-  if (selectedValues && selectedValues.length > 0) {
-    selectedValues.forEach((selectedValue) => {
-      const info: { categoryId: string | null; typeId: string | null } = { categoryId: null, typeId: null }
-      if (selectedValue.startsWith('cat-')) {
-        info.categoryId = selectedValue.replace('cat-', '')
-      } else if (selectedValue.startsWith('type-')) {
-        const typeId = selectedValue.replace('type-', '')
-        for (const category of treeData.value) {
-          if (category.children && category.children.some((c) => c.value === selectedValue)) {
-            info.categoryId = category.value.replace('cat-', '')
-            info.typeId = typeId
-            break
-          }
+  const groupedByCategory: Record<string, number[]> = {}
+
+  selectedValues.forEach((selectedValue) => {
+    if (selectedValue.startsWith('type-')) {
+      const typeKey = parseInt(selectedValue.replace('type-', ''), 10)
+      const typeDefinition = AlgorithmTypeDefinitions[typeKey]
+      if (typeDefinition) {
+        const categoryKey = typeDefinition.category
+        if (!groupedByCategory[categoryKey]) {
+          groupedByCategory[categoryKey] = []
+        }
+        if (!groupedByCategory[categoryKey].includes(typeKey)) {
+          groupedByCategory[categoryKey].push(typeKey)
         }
       }
-      if (info.categoryId || info.typeId) {
-        selectedInfo.value.push(info)
+    }
+  })
+
+  Object.keys(groupedByCategory).forEach((catKeyStr) => {
+    const catKey = parseInt(catKeyStr, 10)
+    const typeKeys = groupedByCategory[catKeyStr]
+
+    let existingCategory = displayedCategories.value.find((c) => c.categoryKey === catKey)
+    if (!existingCategory) {
+      existingCategory = { categoryKey: catKey, types: [] }
+      displayedCategories.value.push(existingCategory)
+    }
+
+    typeKeys.forEach((typeKey) => {
+      if (existingCategory.types.some((t) => t.key === typeKey)) {
+        return
       }
+
+      const categoryOptions = AlgorithmCategoryDefinitions[catKey].options
+      const typeOptions: Array<{
+        option: AlgorithmCategoryOptionType,
+        value?: any  
+      }> = []
+      if (categoryOptions) {
+        categoryOptions.forEach((option) => {
+          typeOptions.push({
+            option: option,
+            value: option.default
+          })
+        })
+      }
+
+      existingCategory.types.push({
+        key: typeKey,
+        options: typeOptions
+      })
     })
+  })
+
+  selectedAlgorithm.value = []
+}
+
+const handleDeleteType = (event: { categoryKey: number; typeKey: number }) => {
+  const { categoryKey, typeKey } = event
+  const category = displayedCategories.value.find((c) => c.categoryKey === categoryKey)
+  if (category) {
+    const typeIndex = category.types.findIndex((t) => t.key === typeKey)
+    if (typeIndex > -1) {
+      category.types.splice(typeIndex, 1)
+    }
+    if (category.types.length === 0) {
+      const catIndex = displayedCategories.value.findIndex((c) => c.categoryKey === categoryKey)
+      if (catIndex > -1) {
+        displayedCategories.value.splice(catIndex, 1)
+      }
+    }
   }
-  dialogVisible.value = true
 }
 
 const handleDeleteStock = (index: number) => {
@@ -359,9 +374,35 @@ const handleDeleteStock = (index: number) => {
 const submitForm = async () => {
   try {
     const res = await apiCreateAlgorithmItem(formData)
+    const cid = res.result
+
+    // Stock list
     if (showStockTableAddButton.value) {
-      await apiCreateStockList({ cid: res.result, items: tableData.value })
+      const items = tableData.value.map((item) => ({
+        type: item.type,
+        code: item.code
+      }))
+      await apiCreateStockList({ cid: cid, items: items })
     }
+
+    // Arguments
+    const args: ArgumentItem[] = []
+    displayedCategories.value.forEach((category) => {
+      category.types.forEach((type) => {
+        const params: Record<string, any> = {}
+        type.options.forEach((opt) => {
+          params[opt.option.name] = opt.value
+        })
+        args.push({
+          cid: cid,
+          category: category.categoryKey,
+          type: type.key,
+          arguments: JSON.stringify(params)
+        })
+      })
+    })
+    await apiCreateArguments({ cid: cid, items: args })
+
     ElMessage.success('提交成功')
     router.back()
   } catch (error) {
@@ -471,27 +512,20 @@ const submitForm = async () => {
                 default-expand-all
                 multiple
               />
-              <el-button type="primary" @click="handleAddClick">添加</el-button>
+              <el-button type="primary" @click="handleAlgorithmAddClick">添加</el-button>
             </div>
-            <AlgorithmCategory :category-key="'0'" :types="mockTypes" :category-id="0" :index="1" />
+            <div v-for="(category, index) in displayedCategories" :key="category.categoryKey">
+              <AlgorithmCategory
+                :category-key="category.categoryKey"
+                :types="category.types"
+                :index="index + 1"
+                @delete-type="handleDeleteType"
+              />
+            </div>
           </el-col>
         </el-row>
       </el-col>
     </el-row>
-
-    <el-dialog v-model="dialogVisible" title="选中项">
-      <div v-if="selectedInfo.length > 0">
-        <div v-for="(info, index) in selectedInfo" :key="index">
-          <p>--- 第 {{ index + 1 }} 项 ---</p>
-          <p v-if="info.categoryId">一级ID: {{ info.categoryId }}</p>
-          <p v-if="info.typeId">二级ID: {{ info.typeId }}</p>
-        </div>
-      </div>
-      <p v-else>未选择任何项</p>
-      <template #footer>
-        <el-button @click="dialogVisible = false">关闭</el-button>
-      </template>
-    </el-dialog>
 
     <ItemSearchDialog v-model:visible="quickViewDialogVisible" @confirm="onQuickViewConfirm" />
   </ContentDetailWrap>

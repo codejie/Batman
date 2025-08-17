@@ -1,35 +1,22 @@
 <script setup lang="ts">
 import { ElRow, ElCol, ElDivider } from 'element-plus'
 import { computed, type PropType } from 'vue'
+import { AlgorithmCategoryDefinitions, AlgorithmCategoryOptionType } from '@/api/calc/defines'
 import AlgorithmType from './AlgorithmType.vue'
-import { AlgorithmCategoryDefinitions, AlgorithmTypeOptionType } from '@/api/calc/defines'
-
-// Define specific types for props
-// interface AlgorithmTypeItem {
-//   category: number
-//   name: string
-//   title: string
-//   description: string
-// }
-
-// interface AlgorithmCategoryItem {
-//   name: string
-//   title: string
-//   description: string
-//   options: any[] // Keeping options flexible for now
-// }
 
 const props = defineProps({
   categoryKey: {
-    type: Number, //Object as PropType<AlgorithmCategoryItem>,
+    type: Number,
     required: true
   },
   types: {
-    type: Array as PropType<AlgorithmTypeOptionType[]>,
-    required: true
-  },
-  categoryId: {
-    type: Number,
+    type: Array as PropType<Array<{
+        key: number,
+        options: Array<{
+          option: AlgorithmCategoryOptionType,
+          value?: any  
+        }>
+    }>>,
     required: true
   },
   index: {
@@ -38,11 +25,29 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['delete-type', 'update-type-params'])
+
 const category = computed(() => {
   return AlgorithmCategoryDefinitions[props.categoryKey]
 })
 
-// const type = 
+// const typesWithDefs = computed(() => {
+//   return props.types.map((t) => {
+//     console.log(t)
+//     return {
+//       ...t,
+//       definition: AlgorithmTypeDefinitions[t.key]
+//     }
+//   })
+// })
+
+const handleDeleteType = (typeKeyToDelete: number) => {
+  emit('delete-type', { categoryKey: props.categoryKey, typeKey: typeKeyToDelete })
+}
+
+// const handleUpdateParams = (typeKey: number, params: any) => {
+//   emit('update-type-params', { categoryKey: props.categoryKey, typeKey, params })
+// }
 </script>
 
 <template>
@@ -55,11 +60,15 @@ const category = computed(() => {
 
     <el-divider />
 
-    <!-- <el-row :gutter="20" class="type-list">
-      <el-col :span="8" v-for="type in types" :key="type.name">
-        <AlgorithmType :model-value="type" />
+    <el-row :gutter="20" class="type-list">
+      <el-col :span="24" v-for="(type, typeIndex) in types" :key="type.key">
+        <AlgorithmType
+          :model-value="type"
+          :index="typeIndex + 1"
+          @delete="handleDeleteType(type.key)"
+        />
       </el-col>
-    </el-row> -->
+    </el-row>
   </div>
 </template>
 

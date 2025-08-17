@@ -90,7 +90,8 @@ class ArgumentsCreateResponse(ResponseModel):
 
 @router.post('/arguments_create', response_model=ArgumentsCreateResponse)
 async def create_arguments(request: ArgumentsCreateRequest):
-  db.insert_algorithm_item_arguments(request.items)
+  db.delete_algorithm_item_arguments(cid=request.cid)
+  db.insert_algorithm_item_arguments(uid=DEFAULT_UID, cid=request.cid, items=request.items)
   return ArgumentsCreateResponse(result=0)
 
 class ArgumentsRequest(RequestModel):
