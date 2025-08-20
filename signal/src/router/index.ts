@@ -190,7 +190,11 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/Analysis/TrendArgument.vue'),
         meta: {
           title: '计算参数设置',
-          hidden: true
+          noTagsView: true,
+          noCache: true,
+          hidden: true,
+          canTo: true,
+          activeMenu: '/trend/trend'          
         }
       },
       {

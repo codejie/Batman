@@ -56,7 +56,7 @@ const formData = reactive<Omit<AlgorithmItem, 'id' | 'uid' | 'created'>>({
   remarks: '',
   category: 0,
   type: 0,
-  list_type: 4, // all
+  list_type: 3, // all
   data_period: 1, // 6m
   report_period: 1 // 3d
 })
@@ -65,12 +65,12 @@ const tableData = ref<StockListTableItem[]>([])
 
 const loadStockList = async () => {  
   const listType = formData.list_type
-  console.log(tableData.value)
+  
   // '自定义列表'
   if (listType === 2) {
-    console.log(props.item)
+    
     if (props.item?.id) {
-      console.log('Loading custom stock list for item:', props.item.id)
+      
       try {
         const res = await apiListStockList({ cid: props.item.id })
         const stocks = res.result.map((item) => ({
@@ -95,7 +95,6 @@ const loadStockList = async () => {
       return res.result.map((item) => ({ ...item, src: 0 }))
     } catch (error) {
       ElMessage.error('获取持仓列表失败')
-      console.error(error)
       return []
     }
   }
@@ -106,7 +105,6 @@ const loadStockList = async () => {
       return res.result.map((item) => ({ ...item, src: 1 }))
     } catch (error) {
       ElMessage.error('获取自选列表失败')
-      console.error(error)
       return []
     }
   }
@@ -136,7 +134,7 @@ watch(
     if (newItem) {
       Object.assign(formData, newItem)
     }
-    console.log('Loading stock list for item:', newItem)
+
     loadStockList()
   },
   { immediate: true }
@@ -150,7 +148,7 @@ const reportRangeUi = ref<string[]>([])
 // Mapping and Sync Logic
 const listTypeFromNumber = (t: number | undefined) => {
   if (t === undefined) return []
-  if (t === 4) return ['自定义列表'] // Special case
+  if (t === 3) return [AlgorithmStockListDefinitions[3]] // Special case
   const def = AlgorithmStockListDefinitions[t]
   return def ? [def] : []
 }
@@ -167,36 +165,39 @@ watch(
 
 // Event Handlers
 const handleStockListChange = (val: string[]) => {
-  const customList = '自定义列表'
-  const allListsValue = '全部列表'
-
-  let newSelection = val ? [...val] : []
+  const newSelection = val ? [...val] : []
   const lastSelection = newSelection.at(-1)
 
-  if (lastSelection === customList) {
-    newSelection = [customList]
-  } else if (lastSelection === allListsValue) {
-    newSelection = [allListsValue]
-  } else if (lastSelection) {
-    // any other selection
-    newSelection = newSelection.filter((i) => i !== customList && i !== allListsValue)
-  }
+  const holding = AlgorithmStockListDefinitions[0] // '持仓列表'
+  const watchlist = AlgorithmStockListDefinitions[1] // '自选列表'
+  const custom = AlgorithmStockListDefinitions[2] // '自定义列表'
+  const all = AlgorithmStockListDefinitions[3] // '全部列表'
 
-  stockListUi.value = newSelection
+  if (lastSelection === custom) {
+    stockListUi.value = [custom]
+  } else if (lastSelection === all) {
+    stockListUi.value = [all]
+  } else {
+    stockListUi.value = newSelection.filter(item => item === holding || item === watchlist)
+  }
 
   // Convert UI selection to formData
-  if (newSelection.includes('持仓列表') && newSelection.includes('自选列表')) {
-    formData.list_type = 4 // Special case for holding + watchlist
-  } else if (newSelection.includes(customList)) {
-    formData.list_type = 2
-  } else if (newSelection.includes('持仓列表')) {
+  const selection = stockListUi.value
+  const hasHolding = selection.includes(holding)
+  const hasWatchlist = selection.includes(watchlist)
+
+  if (hasHolding && hasWatchlist) {
+    formData.list_type = 4 // holding + watchlist
+  } else if (hasHolding) {
     formData.list_type = 0
-  } else if (newSelection.includes('自选列表')) {
+  } else if (hasWatchlist) {
     formData.list_type = 1
-  } else if (newSelection.includes(allListsValue)) {
+  } else if (selection.includes(custom)) {
+    formData.list_type = 2
+  } else if (selection.includes(all)) {
     formData.list_type = 3
   }
-  console.log('Updated stock list type:', formData.list_type)
+
   loadStockList()
 }
 
@@ -222,14 +223,14 @@ const handleReportRangeChange = (val: string[]) => {
   }
 }
 const showStockTable = computed(() =>
-  !stockListUi.value.includes('全部列表')
+  !stockListUi.value.includes(AlgorithmStockListDefinitions[3])
 )
 const showStockTableAddButton = computed(() =>
-  stockListUi.value.includes('自定义列表')
+  stockListUi.value.includes(AlgorithmStockListDefinitions[2])
 )
 
 const canDeleteStock = computed(() => {
-  return stockListUi.value.includes('自定义列表')
+  return stockListUi.value.includes(AlgorithmStockListDefinitions[2])
 })
 
 const quickViewDialogVisible = ref(false)
