@@ -196,14 +196,6 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           canTo: true,
           activeMenu: '/trend/trend'          
         }
-      },
-      {
-        name: 'AlgorithmDefinitions',
-        path: 'definitions',
-        component: () => import('@/views/Analysis/AlgorithmDefinitions.vue'),
-        meta: {
-          title: '算法定义'
-        }
       }
     ]
   },

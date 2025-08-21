@@ -29,7 +29,17 @@ import {
 } from '@/api/calc/defines'
 import type { PropType } from 'vue'
 import type { AlgorithmItem, ArgumentItem, StockListItem } from '@/api/calc/types'
-import { apiCreateAlgorithmItem, apiListStockList, apiCreateStockList, apiCreateArguments } from '@/api/calc'
+import {
+  apiCreateAlgorithmItem,
+  apiListStockList,
+  apiCreateStockList,
+  apiCreateArguments,
+  apiGetAlgorithmItem,
+  apiListArguments,
+  apiUpdateStockList,
+  apiUpdateArguments,
+  apiUpdateAlgorithmItem
+} from '@/api/calc'
 import { apiRecord } from '@/api/holding'
 import { apiRecords } from '@/api/customized'
 import ItemSearchDialog from '@/views/Common/components/ItemSearchDialog.vue'
@@ -39,13 +49,15 @@ interface StockListTableItem extends Pick<StockListItem, 'type' | 'code' | 'name
 }
 
 const props = defineProps({
-  item: {
-    type: Object as PropType<AlgorithmItem>,
+  id: {
+    type: Number,
     required: false
   }
 })
 
 const router = useRouter()
+// const idFromState = history.state.id
+const effectiveId = computed(() => props.id || history.state.id)
 
 const goBack = () => {
   router.back()
@@ -61,33 +73,15 @@ const formData = reactive<Omit<AlgorithmItem, 'id' | 'uid' | 'created'>>({
   report_period: 1 // 3d
 })
 
+const isSubmitDisabled = computed(() => !formData.name || formData.name.trim() === '')
+
 const tableData = ref<StockListTableItem[]>([])
 
-const loadStockList = async () => {  
+const loadStockList = async () => {
   const listType = formData.list_type
-  
-  // '自定义列表'
-  if (listType === 2) {
-    
-    if (props.item?.id) {
-      
-      try {
-        const res = await apiListStockList({ cid: props.item.id })
-        const stocks = res.result.map((item) => ({
-          ...item,
-          src: 2
-        }))
-        tableData.value = Array.from(new Map(stocks.map((item) => [item.code, item])).values())
-      } catch (error) {
-        ElMessage.error('获取算法自定义列表失败')
-        tableData.value = []
-      }
-    }
-    return
-  }
 
-  tableData.value = []
-  let stocks: StockListTableItem[] = []
+  // tableData.value = []
+  let stocks: StockListTableItem[] = tableData.value
 
   const fetchHolding = async () => {
     try {
@@ -117,6 +111,22 @@ const loadStockList = async () => {
     // '自选列表'
     const customizedStocks = await fetchCustomized()
     stocks = Array.from(new Map(customizedStocks.map((item) => [item.code, item])).values())
+  } else if (listType === 2) {
+     if (effectiveId.value) {
+      try {
+        const res = await apiListStockList({ cid: effectiveId.value })
+        const stocks = res.result.map((item) => ({
+          ...item,
+          src: 2
+        }))
+        tableData.value = Array.from(new Map(stocks.map((item) => [item.code, item])).values())
+      } catch (error) {
+        ElMessage.error('获取算法自定义列表失败')
+        tableData.value = []
+      }
+    }
+  } else if (listType === 3) {
+    stocks = [] // '全部列表' - will be populated later
   } else if (listType === 4) {
     // '持仓列表' + '自选列表'
     const holdingStocks = await fetchHolding()
@@ -128,14 +138,81 @@ const loadStockList = async () => {
   tableData.value = stocks
 }
 
-watch(
-  () => props.item,
-  (newItem) => {
-    if (newItem) {
-      Object.assign(formData, newItem)
+const populateDisplayedCategories = (args: ArgumentItem[]) => {
+  const groupedByCategory: Record<string, ArgumentItem[]> = {}
+  args.forEach((arg) => {
+    if (!groupedByCategory[arg.category]) {
+      groupedByCategory[arg.category] = []
     }
+    groupedByCategory[arg.category].push(arg)
+  })
 
-    loadStockList()
+  const result: typeof displayedCategories.value = []
+
+  for (const catKeyStr in groupedByCategory) {
+    const catKey = parseInt(catKeyStr, 10)
+    const categoryArgs = groupedByCategory[catKeyStr]
+
+    const categoryDefinition = AlgorithmCategoryDefinitions[catKey]
+    if (!categoryDefinition) continue
+
+    const types = categoryArgs.map((arg) => {
+      const params = JSON.parse(arg.arguments)
+      const options = categoryDefinition.options.map((optDef) => ({
+        option: optDef,
+        value: params[optDef.name]
+      }))
+      return {
+        key: arg.type,
+        options: options
+      }
+    })
+
+    result.push({
+      categoryKey: catKey,
+      types: types
+    })
+  }
+  displayedCategories.value = result
+}
+
+watch(
+  effectiveId,
+  async (id) => {
+    if (id) {
+      try {
+        const itemRes = await apiGetAlgorithmItem({ id })
+        if (itemRes.result) {
+          Object.assign(formData, itemRes.result)
+        } else {
+          ElMessage.error('Algorithm item not found.')
+          router.back()
+          return
+        }
+
+        await loadStockList()
+
+        const argsRes = await apiListArguments({ cid: id })
+        populateDisplayedCategories(argsRes.result)
+      } catch (error) {
+        ElMessage.error('Failed to load algorithm data.')
+        console.error(error)
+      }
+    } else {
+      // Reset form for new item
+      Object.assign(formData, {
+        name: '',
+        remarks: '',
+        category: 0,
+        type: 0,
+        list_type: 3,
+        data_period: 1,
+        report_period: 1
+      })
+      // tableData.value = []
+      // displayedCategories.value = []
+      loadStockList()
+    }
   },
   { immediate: true }
 )
@@ -147,10 +224,9 @@ const reportRangeUi = ref<string[]>([])
 
 // Mapping and Sync Logic
 const listTypeFromNumber = (t: number | undefined) => {
-  if (t === undefined) return []
-  if (t === 3) return [AlgorithmStockListDefinitions[3]] // Special case
-  const def = AlgorithmStockListDefinitions[t]
-  return def ? [def] : []
+  if (t === undefined) return [AlgorithmStockListDefinitions[3]] // '全部列表'
+  if (t === 4) return [AlgorithmStockListDefinitions[0], AlgorithmStockListDefinitions[1]]
+  return [AlgorithmStockListDefinitions[t]]
 }
 
 watch(
@@ -165,7 +241,12 @@ watch(
 
 // Event Handlers
 const handleStockListChange = (val: string[]) => {
-  const newSelection = val ? [...val] : []
+  if (!val || val.length === 0) {
+    stockListUi.value = [AlgorithmStockListDefinitions[formData.list_type]]
+    return
+  }
+
+  const newSelection = [...val] // val ? [...val] : []
   const lastSelection = newSelection.at(-1)
 
   const holding = AlgorithmStockListDefinitions[0] // '持仓列表'
@@ -186,6 +267,8 @@ const handleStockListChange = (val: string[]) => {
   const hasHolding = selection.includes(holding)
   const hasWatchlist = selection.includes(watchlist)
 
+  console.log('Selection:', selection)
+  console.log('Has Holding:', hasHolding, 'Has Watchlist:', hasWatchlist)
   if (hasHolding && hasWatchlist) {
     formData.list_type = 4 // holding + watchlist
   } else if (hasHolding) {
@@ -374,37 +457,83 @@ const handleDeleteStock = (index: number) => {
 
 const submitForm = async () => {
   try {
-    const res = await apiCreateAlgorithmItem(formData)
-    const cid = res.result
+    if (effectiveId.value) {
+      // Update existing item
+      await apiUpdateAlgorithmItem({
+        id: effectiveId.value,
+        name: formData.name,
+        remarks: formData.remarks,
+        category: formData.category,
+        type: formData.type,
+        list_type: formData.list_type,
+        data_period: formData.data_period,
+        report_period: formData.report_period
+      })
 
-    // Stock list
-    if (showStockTableAddButton.value) {
-      const items = tableData.value.map((item) => ({
-        type: item.type,
-        code: item.code
-      }))
-      await apiCreateStockList({ cid: cid, items: items })
-    }
+      // Stock list
+      if (showStockTableAddButton.value) {
+        const items = tableData.value.map((item) => ({
+          type: item.type,
+          code: item.code,
+          name: item.name
+        }))
+        await apiUpdateStockList({ cid: effectiveId.value, items: items })
+      }
 
-    // Arguments
-    const args: ArgumentItem[] = []
-    displayedCategories.value.forEach((category) => {
-      category.types.forEach((type) => {
-        const params: Record<string, any> = {}
-        type.options.forEach((opt) => {
-          params[opt.option.name] = opt.value
-        })
-        args.push({
-          cid: cid,
-          category: category.categoryKey,
-          type: type.key,
-          arguments: JSON.stringify(params)
+      // Arguments
+      const args: ArgumentItem[] = []
+      displayedCategories.value.forEach((category) => {
+        category.types.forEach((type) => {
+          const params: Record<string, any> = {}
+          type.options.forEach((opt) => {
+            params[opt.option.name] = opt.value
+          })
+          args.push({
+            cid: effectiveId.value as number,
+            category: category.categoryKey,
+            type: type.key,
+            arguments: JSON.stringify(params)
+          })
         })
       })
-    })
-    await apiCreateArguments({ cid: cid, items: args })
+      await apiUpdateArguments({ cid: effectiveId.value, items: args })
 
-    ElMessage.success('提交成功')
+      ElMessage.success('更新成功')
+    } else {
+      // Create new item
+      const res = await apiCreateAlgorithmItem(formData)
+      const cid = res.result
+
+      // Stock list
+      if (showStockTableAddButton.value) {
+        const items = tableData.value.map((item) => ({
+          type: item.type,
+          code: item.code,
+          name: item.name
+        }))
+        await apiCreateStockList({ cid: cid, items: items })
+      }
+
+      // Arguments
+      const args: ArgumentItem[] = []
+      displayedCategories.value.forEach((category) => {
+        category.types.forEach((type) => {
+          const params: Record<string, any> = {}
+          type.options.forEach((opt) => {
+            params[opt.option.name] = opt.value
+          })
+          args.push({
+            cid: cid,
+            category: category.categoryKey,
+            type: type.key,
+            arguments: JSON.stringify(params)
+          })
+        })
+      })
+      await apiCreateArguments({ cid: cid, items: args })
+
+      ElMessage.success('提交成功')
+    }
     router.back()
   } catch (error) {
     ElMessage.error('提交失败')
@@ -418,7 +547,7 @@ const submitForm = async () => {
     <template #header>
       <div class="header-container">
         <ElButton type="primary" @click="goBack">返回</ElButton>
-        <ElButton type="danger" @click="submitForm">提交</ElButton>
+        <ElButton type="danger" @click="submitForm" :disabled="isSubmitDisabled">提交</ElButton>
       </div>
     </template>
 

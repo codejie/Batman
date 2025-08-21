@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onActivated } from 'vue'
 import { ElSelect, ElOption, ElButton, ElDivider, ElMessage } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import TrendArgumentTable from './components/TrendArgumentTable.vue'
@@ -14,12 +14,19 @@ const getAlgorithmItems = async () => {
   const res = await apiListAlgorithmItems({})
   if (res) {
     algorithmItems.value = res.result
-    showArgumentTable.value = algorithmItems.value.length === 0
   }
 }
 
 onMounted(() => {
-  getAlgorithmItems()
+  getAlgorithmItems().then(() => {
+    showArgumentTable.value = algorithmItems.value.length === 0
+  })
+})
+
+onActivated(() => {
+  getAlgorithmItems().then(() => {
+    showArgumentTable.value = true
+  })
 })
 
 watch(selectedValue, (newValue) => {
@@ -39,6 +46,27 @@ const handleDeleteItem = async (id: number) => {
     getAlgorithmItems()
   }
 }
+
+
+const handleRowSelect = (item: AlgorithmItem) => {
+  selectedValue.value = item.name
+}
+
+const handleSubmit = () => {
+  showArgumentTable.value = false
+  if (!selectedValue.value) {
+    ElMessage.warning('请选择一个项目')
+    return
+  }
+  const selectedItem = algorithmItems.value.find(item => item.name === selectedValue.value)
+  if (!selectedItem) {
+    ElMessage.error('找不到所选项目')
+    return
+  }
+
+  // TODO: Backend API call to run calculation and fetch results is needed here.
+  ElMessage.info(`已提交 '${selectedItem.name}' 进行计算。`)
+}
 </script>
 
 <template>
@@ -53,13 +81,14 @@ const handleDeleteItem = async (id: number) => {
           :value="item.name"
         />
       </el-select>
-      <el-button type="primary" style="margin-left: 10px;" :disabled="!selectedValue">提交</el-button>
+      <el-button type="primary" style="margin-left: 10px;" :disabled="!selectedValue" @click="handleSubmit">提交</el-button>
       <el-button @click="toggleTable">{{ showArgumentTable ? '收起列表' : '查看列表' }}</el-button>
     </div>
     <TrendArgumentTable
       v-if="showArgumentTable"
       :table-data="algorithmItems"
       @delete="handleDeleteItem"
+      @select="handleRowSelect"
     />
 
     <el-divider />

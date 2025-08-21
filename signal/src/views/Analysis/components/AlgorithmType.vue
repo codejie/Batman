@@ -59,7 +59,7 @@ const handleDelete = () => {
     <el-row justify="space-between">
       <el-col :span="20">
         <p>
-          <strong>{{ index }}). {{ typeDefinition.title }}</strong> ({{ typeDefinition.name
+          <strong>{{ index }}) {{ typeDefinition.title }}</strong> ({{ typeDefinition.name
           }})
         </p>
       </el-col>

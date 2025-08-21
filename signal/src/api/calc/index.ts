@@ -16,8 +16,20 @@ export const apiDeleteAlgorithmItem = (data: Types.DeleteAlgorithmItemRequest): 
   return request.post({ url: '/calc/remove', data })
 }
 
+export const apiGetAlgorithmItem = (data: Types.GetAlgorithmItemRequest): Promise<IResponse<Types.GetAlgorithmItemResult>> => {
+  return request.post({ url: '/calc/item', data })
+}
+
+export const apiUpdateAlgorithmItem = (data: Types.UpdateAlgorithmItemRequest): Promise<IResponse<Types.UpdateAlgorithmItemResult>> => {
+  return request.post({ url: '/calc/update', data })
+}
+
 export const apiCreateStockList = (data: Types.CreateStockListRequest): Promise<IResponse<Types.CreateStockListResult>> => {
   return request.post({ url: '/calc/stock_list_create', data })
+}
+
+export const apiUpdateStockList = (data: Types.UpdateStockListRequest): Promise<IResponse<Types.UpdateStockListResult>> => {
+  return request.post({ url: '/calc/stock_list_update', data })
 }
 
 export const apiListStockList = (data: Types.ListStockListRequest): Promise<IResponse<Types.ListStockListResult>> => {
@@ -30,6 +42,10 @@ export const apiDeleteStockList = (data: Types.DeleteStockListRequest): Promise<
 
 export const apiCreateArguments = (data: Types.CreateArgumentsRequest): Promise<IResponse<Types.CreateArgumentsResult>> => {
   return request.post({ url: '/calc/arguments_create', data })
+}
+
+export const apiUpdateArguments = (data: Types.UpdateArgumentsRequest): Promise<IResponse<Types.UpdateArgumentsResult>> => {
+  return request.post({ url: '/calc/arguments_update', data })
 }
 
 export const apiListArguments = (data: Types.ListArgumentsRequest): Promise<IResponse<Types.ListArgumentsResult>> => {

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, select, delete, and_
+from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, select, delete, and_, update
 from app.database import TableBase, dbEngine
 from pydantic import BaseModel
 from datetime import datetime
@@ -80,6 +80,23 @@ def insert_algorithm_item(uid: int, name: str, category: int, type: int, list_ty
   item = CalcAlgorithmItemsTable(uid=uid, name=name, category=category, type=type, list_type=list_type, data_period=data_period, report_period=report_period, remarks=remarks)
   return dbEngine.insert_instance(item)
 
+def update_algorithm_item(uid: int, id: int, name: str, category: int, type: int, list_type: int, data_period: int, report_period: int, remarks: str | None = None) -> None:
+    stmt = update(CalcAlgorithmItemsTable).where(
+        and_(
+            CalcAlgorithmItemsTable.id == id,
+            CalcAlgorithmItemsTable.uid == uid
+        )
+    ).values(
+        name=name,
+        remarks=remarks,
+        category=category,
+        type=type,
+        list_type=list_type,
+        data_period=data_period,
+        report_period=report_period
+    )
+    dbEngine.execute_stmt(stmt)
+
 def insert_algorithm_item_stock_list(cid: int, items: List[CalcAlgorithmItemStockListModel]) -> None:
   if not items or len(items) == 0:
     return
@@ -110,6 +127,30 @@ def select_algorithm_items(uid: int) -> List[CalcAlgorithmItemModel]:
     created=item[0].created
   ) for item in results]
   return results
+
+def select_algorithm_item(uid: int, id: int) -> Optional[CalcAlgorithmItemModel]:
+  stmt = select(CalcAlgorithmItemsTable).where(
+    and_(
+      CalcAlgorithmItemsTable.uid == uid,
+      CalcAlgorithmItemsTable.id == id
+    )
+  )
+  results = dbEngine.select_stmt(stmt)
+  if results:
+    item = results[0][0]
+    return CalcAlgorithmItemModel(
+      id=item.id,
+      uid=item.uid,
+      name=item.name,
+      remarks=item.remarks,
+      category=item.category,
+      type=item.type,
+      list_type=item.list_type,
+      data_period=item.data_period,
+      report_period=item.report_period,
+      created=item.created
+    )
+  return None
 
 def select_algorithm_item_stock_list(cid: int) -> List[CalcAlgorithmItemStockListModel]:
   stmt = select(CalcAlgorithmItemStockListTable, InfoTable.name).join(
@@ -148,6 +189,7 @@ def delete_algorithm_item(uid: int, id: int) -> None:
   dbEngine.execute_stmt(delete(CalcAlgorithmItemStockListTable).where(CalcAlgorithmItemStockListTable.cid == id))
   dbEngine.execute_stmt(delete(CalcAlgorithmItemArgumentsTable).where(CalcAlgorithmItemArgumentsTable.cid == id))
   dbEngine.execute_stmt(delete(CalcAlgorithmItemsTable).where(CalcAlgorithmItemsTable.id == id).where(CalcAlgorithmItemsTable.uid == uid))
+
 
 def delete_algorithm_item_stock_list(cid: int, id: int | None= None) -> None:
   stmt = delete(CalcAlgorithmItemStockListTable).where(CalcAlgorithmItemStockListTable.cid == cid)

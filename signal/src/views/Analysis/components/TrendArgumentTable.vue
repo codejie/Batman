@@ -19,12 +19,19 @@ defineProps({
   }
 })
 
-const emit = defineEmits(['delete'])
+const emit = defineEmits(['delete', 'select'])
 
 const router = useRouter()
 
 const goToTrendArgument = () => {
   router.push({ name: 'TrendArgument' })
+}
+
+const goToDetails = (item: AlgorithmItem) => {
+  router.push({
+    name: 'TrendArgument',
+    state: { id: item.id }
+  })
 }
 
 const handleDelete = (id: number) => {
@@ -40,6 +47,10 @@ const handleDelete = (id: number) => {
       // catch cancel
     })
 }
+
+const handleRowClick = (row: AlgorithmItem) => {
+  emit('select', row)
+}
 </script>
 
 <template>
@@ -47,8 +58,8 @@ const handleDelete = (id: number) => {
     <div style="margin-bottom: 10px;">
       <el-button type="primary" @click="goToTrendArgument">新增</el-button>
     </div>
-    <el-table :data="tableData" style="width: 85%" :border="true">
-      <el-table-column prop="id" label="标识" width="60" />
+    <el-table :data="tableData" style="width: 100%" :border="true" @row-click="handleRowClick">
+      <el-table-column type="index" width="60" />
       <el-table-column prop="name" label="名称" width="160" />
       <el-table-column prop="category" label="算法分类" width="180">
         <template #default="{ row }">
@@ -83,7 +94,7 @@ const handleDelete = (id: number) => {
       </el-table-column>
       <el-table-column label="操作" width="160">
         <template #default="{ row }">
-          <el-button :link="true" type="">详情</el-button>
+          <el-button :link="true" type="" @click="goToDetails(row)">详情</el-button>
           <el-button :link="true" style="color: red;" @click="handleDelete(row.id)">删除</el-button>
         </template>
       </el-table-column>

@@ -48,11 +48,34 @@ export interface DeleteAlgorithmItemRequest {
 }
 export type DeleteAlgorithmItemResult = number
 
+export interface GetAlgorithmItemRequest {
+  id: number
+}
+export type GetAlgorithmItemResult = AlgorithmItem | null
+
+export interface UpdateAlgorithmItemRequest {
+  id: number
+  name: string
+  category: number
+  type: number
+  list_type: number
+  data_period: number
+  report_period: number
+  remarks?: string
+}
+export type UpdateAlgorithmItemResult = number
+
 export interface CreateStockListRequest {
   cid: number
   items: StockListItem[]
 }
 export type CreateStockListResult = number
+
+export interface UpdateStockListRequest {
+  cid: number
+  items: StockListItem[]
+}
+export type UpdateStockListResult = number
 
 export interface ListStockListRequest {
   cid: number
@@ -70,6 +93,12 @@ export interface CreateArgumentsRequest {
   items: ArgumentItem[]
 }
 export type CreateArgumentsResult = number
+
+export interface UpdateArgumentsRequest {
+  cid: number
+  items: ArgumentItem[]
+}
+export type UpdateArgumentsResult = number
 
 export interface ListArgumentsRequest {
   cid: number
