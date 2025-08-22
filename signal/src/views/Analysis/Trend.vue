@@ -4,6 +4,7 @@ import { ElSelect, ElOption, ElButton, ElDivider, ElMessage } from 'element-plus
 import { ContentWrap } from '@/components/ContentWrap'
 import TrendArgumentTable from './components/TrendArgumentTable.vue'
 import { apiListAlgorithmItems, apiDeleteAlgorithmItem, AlgorithmItem } from '@/api/calc'
+import { useRefreshStore } from '@/store/modules/refresh'
 
 const selectedValue = ref('')
 
@@ -24,9 +25,13 @@ onMounted(() => {
 })
 
 onActivated(() => {
-  getAlgorithmItems().then(() => {
-    showArgumentTable.value = true
-  })
+  const refreshStore = useRefreshStore()
+  if (refreshStore.needsRefresh) {
+    getAlgorithmItems().then(() => {
+      showArgumentTable.value = true
+    })
+    refreshStore.setNeedsRefresh(false)
+  }
 })
 
 watch(selectedValue, (newValue) => {

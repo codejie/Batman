@@ -43,6 +43,7 @@ import {
 import { apiRecord } from '@/api/holding'
 import { apiRecords } from '@/api/customized'
 import ItemSearchDialog from '@/views/Common/components/ItemSearchDialog.vue'
+import { useRefreshStore } from '@/store/modules/refresh'
 
 interface StockListTableItem extends Pick<StockListItem, 'type' | 'code' | 'name'> {
   src: number
@@ -56,6 +57,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const refreshStore = useRefreshStore()
 // const idFromState = history.state.id
 const effectiveId = computed(() => props.id || history.state.id)
 
@@ -196,7 +198,6 @@ watch(
         populateDisplayedCategories(argsRes.result)
       } catch (error) {
         ElMessage.error('Failed to load algorithm data.')
-        console.error(error)
       }
     } else {
       // Reset form for new item
@@ -267,8 +268,6 @@ const handleStockListChange = (val: string[]) => {
   const hasHolding = selection.includes(holding)
   const hasWatchlist = selection.includes(watchlist)
 
-  console.log('Selection:', selection)
-  console.log('Has Holding:', hasHolding, 'Has Watchlist:', hasWatchlist)
   if (hasHolding && hasWatchlist) {
     formData.list_type = 4 // holding + watchlist
   } else if (hasHolding) {
@@ -534,10 +533,10 @@ const submitForm = async () => {
 
       ElMessage.success('提交成功')
     }
+    refreshStore.setNeedsRefresh(true)
     router.back()
   } catch (error) {
     ElMessage.error('提交失败')
-    console.error(error)
   }
 }
 </script>
