@@ -6,7 +6,7 @@ from fastapi.websockets import WebSocketState
 from app.logger import logger
 from app.database.data.define import TYPE_INDEX, TYPE_STOCK, SpotData
 from app.services.__mock import generate_random_spot_data
-from app.services.client_manager import WSClientManager
+from app.services.wsclient_manager import WSClientManager
 from app.services.task_manager import Task
 from app.database import data as Data, customized as customizedData
 

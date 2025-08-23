@@ -7,31 +7,32 @@ class Task:
   def __init__(self, name:str, **kwargs):
     self.name = name if name else self.NAME
     self.kwargs = kwargs
+    self._asyncio_task: Optional[asyncio.Task] = None
+
+  def set_asyncio_task(self, task: asyncio.Task):
+    """Stores the asyncio.Task wrapper for this task instance."""
+    self._asyncio_task = task
+
+  def stop(self):
+    """Stops (cancels) the individual task."""
+    if self._asyncio_task and not self._asyncio_task.done():
+      print(f"Sending stop request to task '{self.name}'.")
+      self._asyncio_task.cancel()
+    else:
+      print(f"Task '{self.name}' is not running or already finished.")
 
   async def run(self, exit_event: asyncio.Event):
     print(f"Task {self.name} started.")
-
-    while not exit_event.is_set():
-      await asyncio.sleep(1)
-      print(f"Task {self.name} is running...")
-
-    print(f"Task {self.name} exiting.")
-
-  async def is_triggered(self, event: asyncio.Event, timeout: float) -> bool:
-    """
-    Check if the event is set within the given timeout.
-    Returns True if the event is set, False if it times out.
-    """
     try:
-      await asyncio.wait_for(event.wait(), timeout)
-      return True
-    except asyncio.TimeoutError:
-      return False
+      while not exit_event.is_set():
+        await asyncio.sleep(1)
+        print(f"Task {self.name} is running...")
+    except asyncio.CancelledError:
+      print(f"Task '{self.name}' was stopped (cancelled)." )
+    finally:
+      print(f"Task {self.name} exiting.")
 
-"""
-TaskManager is a class that manages asynchronous tasks in a separate thread.
-It allows adding tasks, starting and stopping the task loop, and managing task instances.
-"""
+
 class TaskManager:
   TASK_EXIT_DELAY: int = 30  # seconds
 
@@ -45,6 +46,19 @@ class TaskManager:
 
     self._task_map: dict[str, Task] = {}
 
+  def _task_done_callback(self, task_name: str, fut: asyncio.Future):
+    """Callback function to clean up a task when it's done."""
+    try:
+      fut.result()
+    except asyncio.CancelledError:
+      print(f"Task '{task_name}' was cancelled.")
+    except Exception as e:
+      print(f"Task '{task_name}' failed with an exception: {e}")
+    
+    if task_name in self._task_map:
+      del self._task_map[task_name]
+      print(f"Task '{task_name}' finished and was removed from tracking.")
+
   def _start_loop(self):
     self._loop = asyncio.new_event_loop()
     asyncio.set_event_loop(self._loop)
@@ -53,8 +67,15 @@ class TaskManager:
     async def _loop_run():
       while not self._exit_event.is_set():
         try:
-          task = self._task_queue.get_nowait()
-          asyncio.create_task(task.run(self._exit_event))
+          task_instance = self._task_queue.get_nowait()
+          
+          # Create the asyncio task and link it to our Task instance
+          asyncio_task = asyncio.create_task(task_instance.run(self._exit_event))
+          task_instance.set_asyncio_task(asyncio_task)
+          
+          callback = lambda fut: self._task_done_callback(task_instance.name, fut)
+          asyncio_task.add_done_callback(callback)
+
         except asyncio.QueueEmpty:
           await asyncio.sleep(0.1)
         except Exception as e:
@@ -73,12 +94,10 @@ class TaskManager:
         print(f"Unexpected error in event loop: {e}")
         raise e
     finally:
-      # self._exit_event.set()
       pending = asyncio.all_tasks(self._loop)
       if pending:
         self._loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
       self._loop.close()
-      # self._loop.stop()
 
   def start(self):
     if self._thread is not None and self._thread.is_alive():
@@ -95,15 +114,19 @@ class TaskManager:
 
   def shutdown(self):
     if self._thread is None or not self._thread.is_alive():
-      print("TaskManager is not running.")
       return
 
+    print("TaskManager: Shutting down...")
     self._exit_event.set()
     if self._loop and self._loop.is_running():
       self._loop.call_soon_threadsafe(self._loop.stop)
-    self._thread.join(timeout=self.TASK_EXIT_DELAY)  # Wait for the thread to finish
+      
+    self._thread.join(timeout=self.TASK_EXIT_DELAY)
+
     if self._thread.is_alive():
-      print("TaskManager thread did not stop in time.")
+      print("TaskManager: ERROR - Thread did not stop in time.")
+    else:
+      print("TaskManager: Thread exited successfully.")
 
     self._loop = None
     self._thread = None
@@ -115,8 +138,8 @@ class TaskManager:
   def set_exit_event(self):
     self._exit_event.set()
 
-  def add_task(self, task: type, name: Optional[str] = None) -> Task:
-    instance = task(name=name)
+  def add_task(self, task: type, name: Optional[str] = None, **kwargs) -> Task:
+    instance = task(name=name, **kwargs)
     self.add_instance(instance=instance)
     return instance
   

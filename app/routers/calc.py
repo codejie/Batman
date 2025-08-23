@@ -1,9 +1,28 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.database import calc as db
 from app.routers.common import DEFAULT_UID, RequestModel, ResponseModel, verify_token
+from app.services.task_manager import taskManager
+from app.services.tasks.calc_sse_task import CalcSseTask
 
 router: APIRouter = APIRouter(prefix="/calc", tags=["Calc"], dependencies=[Depends(verify_token)])
+
+class SubmitRequest(RequestModel):
+  id: int
+
+class SubmitResponse(ResponseModel):
+  result: int = 0
+
+@router.post('/submit', response_model=SubmitResponse)
+async def submit_calculation(request: SubmitRequest, uid: int = Depends(verify_token)):
+  task_name = f"{CalcSseTask.NAME}_{uid}_{CalcSseTask.TYPE}"
+  
+  # Check if a task for this id is already running
+  if taskManager.get_instance(task_name) is None:
+    taskManager.add_task(CalcSseTask, name=task_name, uid=uid, cid=request.id)
+    return SubmitResponse(result=0)
+  else:
+    return SubmitResponse(result=1)
 
 class AlgorithmItemCreateRequest(RequestModel):
   name: str

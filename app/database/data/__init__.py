@@ -19,6 +19,18 @@ def get_item_info(type: int, key: str) -> Optional[Define.ItemInfo]:
   if result:
     return Define.ItemInfo(type=result.type, code=result.code, name=result.name)
 
+def get_item_infos(type: int = Define.TYPE_STOCK, code: str = None, key: str = None) -> list[Define.ItemInfo]:
+  """Fetches all items from the InfoTable with optional filtering and fuzzy matching."""
+  stmt = select(Define.InfoTable)
+  if type is not None:
+      stmt = stmt.where(Define.InfoTable.type == type)
+  if code:
+      stmt = stmt.where(Define.InfoTable.code.like(f"%{code}%"))
+  if key:
+      stmt = stmt.where(Define.InfoTable.name.like(f"%{key}%"))
+  results = dbEngine.select_stmt(stmt)
+  return [Define.ItemInfo(type=row[0].type, code=row[0].code, name=row[0].name) for row in results]
+
 def is_item_exist(type: int, code: str) -> bool:
   stmt = select(Define.InfoTable).where(Define.InfoTable.type == type).where(Define.InfoTable.code == code)
   result = dbEngine.select_scalar(stmt)

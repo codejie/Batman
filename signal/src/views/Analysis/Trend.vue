@@ -3,7 +3,7 @@ import { ref, onMounted, watch, onActivated } from 'vue'
 import { ElSelect, ElOption, ElButton, ElDivider, ElMessage } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import TrendArgumentTable from './components/TrendArgumentTable.vue'
-import { apiListAlgorithmItems, apiDeleteAlgorithmItem, AlgorithmItem } from '@/api/calc'
+import { apiListAlgorithmItems, apiDeleteAlgorithmItem, apiSubmitCalculation, AlgorithmItem } from '@/api/calc'
 import { useRefreshStore } from '@/store/modules/refresh'
 
 const selectedValue = ref('')
@@ -57,20 +57,26 @@ const handleRowSelect = (item: AlgorithmItem) => {
   selectedValue.value = item.name
 }
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   showArgumentTable.value = false
   if (!selectedValue.value) {
     ElMessage.warning('请选择一个项目')
     return
   }
   const selectedItem = algorithmItems.value.find(item => item.name === selectedValue.value)
-  if (!selectedItem) {
-    ElMessage.error('找不到所选项目')
+  if (!selectedItem || !selectedItem.id) {
+    ElMessage.error('找不到所选项目或项目ID')
     return
   }
 
-  // TODO: Backend API call to run calculation and fetch results is needed here.
-  ElMessage.info(`已提交 '${selectedItem.name}' 进行计算。`)
+  const res = await apiSubmitCalculation({ id: selectedItem.id })
+  if (res) {
+    if (res.result === 0) {
+      ElMessage.success(`已成功提交 '${selectedItem.name}' 进行计算。`)
+    } else {
+      ElMessage.warning(`任务 '${selectedItem.name}' 已在运行中，请勿重复提交。`)
+    }
+  }
 }
 </script>
 

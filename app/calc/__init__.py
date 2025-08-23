@@ -1,32 +1,28 @@
-class AlgorithmCategory:
-    MA = 1
-    ADX = 2
-    RSI = 3
-    MACD = 4
-    BOLL = 5
-    KDJ = 6
-    CCI = 7
-    PSY = 8
-    WR = 9
-    DMI = 10
-    OBV = 11
-    ATR = 12
-    SAR = 13
-    BIAS = 14
-    CR = 15
-    DPO = 16
-    DMA = 17
-    TRIX = 18
-    VROC = 19
-    EMV = 20
-    ROC = 21
-    MTM = 22
-    VHF = 23
-    ASI = 24
-    VPT = 25
-    SMI = 26
+from . import ma, adx
+from typing import Callable, Tuple, Optional
 
-class AlgorithmType:
-    MA_MA = 100
-    ADX_ADX = 200
+# Define a mapping from (category, type) to the corresponding module
+# Category 0: Technical Indicators
+CALC_MODULES = {
+    (0, 0): ma,
+    (0, 1): adx,
+}
 
+def get_calc_functions(category: int, type: int) -> Tuple[Optional[Callable], Optional[Callable]]:
+    """
+    A factory function that returns calculation and report functions based on category and type.
+
+    Args:
+        category (int): The category of the calculation (e.g., 0 for Technical Indicators).
+        type (int): The type of calculation within the category (e.g., 0 for MA, 1 for ADX).
+
+    Returns:
+        Tuple[Optional[Callable], Optional[Callable]]: A tuple containing the calc function
+                                                       and the report function, or (None, None) if not found.
+    """
+    module = CALC_MODULES.get((category, type))
+    
+    if module:
+        return (getattr(module, 'calc', None), getattr(module, 'report', None))
+    
+    return (None, None)

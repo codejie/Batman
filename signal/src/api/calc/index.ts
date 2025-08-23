@@ -1,4 +1,3 @@
-
 import request from '@/axios'
 import * as Types from './types'
 
@@ -54,4 +53,41 @@ export const apiListArguments = (data: Types.ListArgumentsRequest): Promise<IRes
 
 export const apiDeleteArguments = (data: Types.DeleteArgumentsRequest): Promise<IResponse<Types.DeleteArgumentsResult>> => {
   return request.post({ url: '/calc/arguments_remove', data })
+}
+
+export const apiSubmitCalculation = (data: Types.SubmitCalculationRequest): Promise<IResponse<Types.SubmitCalculationResult>> => {
+  return request.post({ url: '/calc/submit', data })
+}
+
+/**
+ * Connects to the SSE endpoint for calculation reports and handles incoming messages.
+ * @param onMessage A callback function to execute when a message is received.
+ * @param onError A callback function to execute when an error occurs.
+ * @returns The EventSource instance, allowing you to close the connection manually.
+ */
+export const apiConnectToCalcReport = (
+  onMessage: (data: Types.SsePayload<Types.CalcReportSseData>) => void,
+  onError?: (error: Event) => void
+): EventSource => {
+  const url = '/sse/calc_report' // Assuming token is handled by cookies
+  const eventSource = new EventSource(url, { withCredentials: true })
+
+  eventSource.onmessage = (event) => {
+    try {
+      const parsedData: Types.SsePayload<Types.CalcReportSseData> = JSON.parse(event.data)
+      onMessage(parsedData)
+    } catch (e) {
+      console.error('Failed to parse SSE data:', e)
+    }
+  }
+
+  eventSource.onerror = (error) => {
+    console.error('EventSource failed:', error)
+    if (onError) {
+      onError(error)
+    }
+    eventSource.close()
+  }
+
+  return eventSource
 }

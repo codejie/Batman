@@ -1,17 +1,9 @@
+import asyncio
 from app.services.task_spot_data import SpotDataFetchTask
 from app.setting import TASK_SPOT_DATA_FETCH_ENABLED
 from app.services.task_manager import taskManager
+from app.services.sse_manager import manager as sse_manager
 from app.services.task_spot_data import spotDataClientManagerTask
-
-# serviceScheduler = ServiceScheduler()
-# # serviceScheduler.register_service(type=Service, name="test_service")
-# if SERVICE_SPOT_DATA_ENABLED:
-#   serviceScheduler.register_service(type=SpotDataFetchService, name=SpotDataFetchService.NAME)
-
-# wsClientManager: dict[str, WSClientManager] = {}
-# if SERVICE_SPOT_DATA_ENABLED:
-#   wsClientManager[SpotDataClientManager.NAME] = SpotDataClientManager(service=serviceScheduler.get_service(SpotDataFetchService.NAME))
-#   wsClientManager[SpotDataClientManager.NAME].start()
 
 def start_tasks() -> None:
   taskManager.start()
@@ -21,5 +13,12 @@ def start_tasks() -> None:
     taskManager.add_instance(spotDataClientManagerTask)
 
 
-def shutdown_tasks() -> None:
-  taskManager.shutdown()
+async def graceful_shutdown() -> None:
+  """The main entry point for shutting down all services gracefully."""
+  # First, signal SSE clients to disconnect. This is async.
+  await sse_manager.shutdown()
+  
+  # Then, shut down the task manager. This is a blocking call.
+  # Run the blocking call in a separate thread to avoid deadlocking the main event loop.
+  loop = asyncio.get_running_loop()
+  await loop.run_in_executor(None, taskManager.shutdown)

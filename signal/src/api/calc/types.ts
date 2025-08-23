@@ -110,3 +110,25 @@ export interface DeleteArgumentsRequest {
   id?: number
 }
 export type DeleteArgumentsResult = number
+
+export interface SubmitCalculationRequest {
+  id: number
+}
+export interface SubmitCalculationResult {
+  result: number
+}
+
+// SSE Payloads
+export interface CalcReportSseData {
+  cid: number
+  stock_code: string
+  report: string[]
+  error?: string
+}
+
+export interface SsePayload<T> {
+  code: number
+  message: string | null
+  type: string
+  data: T | null
+}
