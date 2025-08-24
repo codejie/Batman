@@ -1,5 +1,7 @@
 import request from '@/axios'
 import * as Types from './types'
+import { PATH_URL } from '@/axios/service'
+import { useUserStoreWithOut } from '@/store/modules/user'
 
 export * from './types'
 
@@ -69,11 +71,17 @@ export const apiConnectToCalcReport = (
   onMessage: (data: Types.SsePayload<Types.CalcReportSseData>) => void,
   onError?: (error: Event) => void
 ): EventSource => {
-  const url = '/sse/calc_report' // Assuming token is handled by cookies
-  const eventSource = new EventSource(url, { withCredentials: true })
+    const token = useUserStoreWithOut().getTokenKey
+  if (!token) {
+    console.error('No token found, cannot connect to SSE.')
+  }
+  const url = `${PATH_URL}/sse/calc_report?token=${token}` // Assuming token is handled by cookies
+  console.log('Connecting to SSE URL:', url)
+  const eventSource = new EventSource(url, { withCredentials: false })
 
   eventSource.onmessage = (event) => {
     try {
+      console.log('Received SSE data:', event)
       const parsedData: Types.SsePayload<Types.CalcReportSseData> = JSON.parse(event.data)
       onMessage(parsedData)
     } catch (e) {
@@ -89,5 +97,11 @@ export const apiConnectToCalcReport = (
     eventSource.close()
   }
 
-  return eventSource
+    return eventSource
+}
+
+export const apiDisconnectFromCalcReport = (eventSource: EventSource | null) => {
+  if (eventSource) {
+    eventSource.close()
+  }
 }

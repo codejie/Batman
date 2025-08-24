@@ -1,3 +1,4 @@
+# from dataclasses import dataclass
 import pandas as pd
 import talib
 from typing import Optional
@@ -22,6 +23,12 @@ ma_type_map = {
     'T3': 8
 }
 
+# @dataclass
+# class ReportType:
+#   index: str
+#   price: float
+#   trend: int  # -1: downtrend, 0: neutral, 1: up
+
 def title() -> str:
   return "Moving Average (MA) - 移动平均线"
 
@@ -43,6 +50,7 @@ def calc(history_data: pd.DataFrame, options: dict = defaultOptions) -> pd.DataF
       - 'Long': 长期MA
       - 'Signal': 趋势信号 (-1: 下跌, 0: 中性, 1: 上涨)
   """
+  options = defaultOptions | options
   short = talib.MA(history_data[options['column']], timeperiod=options['short_period'], matype=ma_type_map[options['short_type']])
   long = talib.MA(history_data[options['column']], timeperiod=options['long_period'], matype=ma_type_map[options['long_type']])
 
@@ -61,22 +69,39 @@ def calc(history_data: pd.DataFrame, options: dict = defaultOptions) -> pd.DataF
 
   return result
 
-def report(history_data: pd.DataFrame, ma_data: pd.DataFrame, idx: int = 0, options: dict = defaultOptions) -> list[str]:  
-  result = []
+def report(history_data: pd.DataFrame, ma_data: pd.DataFrame, idx: int = 0, options: dict = defaultOptions) -> list[dict]:
+  options = defaultOptions | options
+  
+  result: list[dict] = []
   if idx == 0:
     for i in range(len(ma_data)):
       if ma_data['Signal'].iloc[i] == 1 or ma_data['Signal'].iloc[i] == -1:
-        trend = "Uptrend" if ma_data['Signal'].iloc[i] == 1 else "Downtrend"
-        result.append(f"{ma_data.index[i]}: {trend} [Price: {history_data[options['column']].iloc[i]}]")
+        # trend = "Uptrend" if ma_data['Signal'].iloc[i] == 1 else "Downtrend"
+        # result.append(f"{ma_data.index[i]}: {trend} [Price: {history_data[options['column']].iloc[i]}]")
+        result.append({
+          "index": str(ma_data.index[i]),
+          "price": float(history_data[options['column']].iloc[i]),
+          "trend": ma_data['Signal'].iloc[i]
+        })
   elif idx < 0:
     for i in range(len(ma_data) + idx, len(ma_data)):
       if ma_data['Signal'].iloc[i] == 1 or ma_data['Signal'].iloc[i] == -1:
-        trend = "Uptrend" if ma_data['Signal'].iloc[i] == 1 else "Downtrend"
-        result.append(f"{ma_data.index[i]}: {trend} [Price: {history_data[options['column']].iloc[i]}]")
+        # trend = "Uptrend" if ma_data['Signal'].iloc[i] == 1 else "Downtrend"
+        # result.append(f"{ma_data.index[i]}: {trend} [Price: {history_data[options['column']].iloc[i]}]")
+        result.append({
+          "index": str(ma_data.index[i]),
+          "price": float(history_data[options['column']].iloc[i]),
+          "trend": ma_data['Signal'].iloc[i]
+        })        
   elif idx > 0:
     for i in range(idx, len(ma_data)):
       if ma_data['Signal'].iloc[i] == 1 or ma_data['Signal'].iloc[i] == -1:
-        trend = "Uptrend" if ma_data['Signal'].iloc[i] == 1 else "Downtrend"
-        result.append(f"{ma_data.index[i]}: {trend} [Price: {history_data[options['column']].iloc[i]}]")
-
+        # trend = "Uptrend" if ma_data['Signal'].iloc[i] == 1 else "Downtrend"
+        # result.append(f"{ma_data.index[i]}: {trend} [Price: {history_data[options['column']].iloc[i]}]")
+        result.append({
+          "index": str(ma_data.index[i]),
+          "price": float(history_data[options['column']].iloc[i]),
+          "trend": ma_data['Signal'].iloc[i]
+        })
+        
   return result

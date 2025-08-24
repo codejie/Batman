@@ -1,4 +1,5 @@
-from fastapi import Header
+from fastapi import Header, Query, HTTPException, status
+from typing import Optional
 from pydantic import BaseModel
 
 DEFAULT_UID: int = 99
@@ -10,8 +11,18 @@ class ResponseModel(BaseModel):
   code: int = 0
   message: str = None
 
-def verify_token(x_token: str=Header()) -> int:
-    return DEFAULT_UID
+def verify_token(x_token: Optional[str] = Header(None, alias="x-token"), token: Optional[str] = Query(None, alias="token")) -> int:
+    """
+    Verify token from either header or query parameter.
+    This is a placeholder for actual token validation.
+    """
+    if x_token or token:
+        return DEFAULT_UID
+    
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Not authenticated"
+    )
 
 def verify_system_token(x_token: str=Header()) -> int:
    return DEFAULT_UID

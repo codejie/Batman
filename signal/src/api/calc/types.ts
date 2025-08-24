@@ -114,9 +114,7 @@ export type DeleteArgumentsResult = number
 export interface SubmitCalculationRequest {
   id: number
 }
-export interface SubmitCalculationResult {
-  result: number
-}
+export type SubmitCalculationResult = number
 
 // SSE Payloads
 export interface CalcReportSseData {

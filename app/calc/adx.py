@@ -21,6 +21,8 @@ def title() -> str:
 """
 
 def calc(history_data: pd.DataFrame, options: dict = defaultOptions) -> pd.DataFrame:
+  options = defaultOptions | options
+
   adx = talib.ADX(history_data[options['columns'][0]], history_data[options['columns'][1]], history_data[options['columns'][2]], timeperiod=options['period'])
   plus_di = talib.PLUS_DI(history_data[options['columns'][0]], history_data[options['columns'][1]], history_data[options['columns'][2]], timeperiod=options['period'])
   minus_di = talib.MINUS_DI(history_data[options['columns'][0]], history_data[options['columns'][1]], history_data[options['columns'][2]], timeperiod=options['period'])
@@ -46,6 +48,8 @@ def calc(history_data: pd.DataFrame, options: dict = defaultOptions) -> pd.DataF
   return result
 
 def report(history_data: pd.DataFrame, adx_data: pd.DataFrame, idx: int = 0, options: dict = defaultOptions) -> list[str]:
+  options = defaultOptions | options
+  
   result = []
   if idx == 0:
     for i in range(len(adx_data)):

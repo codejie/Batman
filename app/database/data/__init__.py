@@ -131,7 +131,7 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
   else:
     return 0
 
-def fetch_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, limit: int = None) -> list[Define.HistoryData]:
+def fetch_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq', limit: int = None) -> list[Define.HistoryData]:
   table_name = make_history_data_table_name(type=type, code=code, period=period, adjust=adjust)
 
   if start and end:
@@ -152,7 +152,7 @@ def fetch_history_data(type: int, code: str, start: str, end: str, period: str, 
     return results[-limit:] 
   return results
 
-def get_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, limit: int = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> list[Define.HistoryData]:
+def get_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq', limit: int = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> list[Define.HistoryData]:
   checked = check_download_records(type=type, code=code, period=period, adjust=adjust, start=start, end=end) if record_flag != Define.RECORD_FLAG_DISABLED else None
   if checked is None:
     download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, record_flag=record_flag)

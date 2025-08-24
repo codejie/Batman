@@ -27,7 +27,6 @@ import {
   AlgorithmStockListDefinitions,
   AlgorithmTypeDefinitions
 } from '@/api/calc/defines'
-import type { PropType } from 'vue'
 import type { AlgorithmItem, ArgumentItem, StockListItem } from '@/api/calc/types'
 import {
   apiCreateAlgorithmItem,
@@ -117,11 +116,11 @@ const loadStockList = async () => {
      if (effectiveId.value) {
       try {
         const res = await apiListStockList({ cid: effectiveId.value })
-        const stocks = res.result.map((item) => ({
+        console.log('custom list res', res);
+        stocks = res.result.map((item) => ({
           ...item,
           src: 2
         }))
-        tableData.value = Array.from(new Map(stocks.map((item) => [item.code, item])).values())
       } catch (error) {
         ElMessage.error('获取算法自定义列表失败')
         tableData.value = []
