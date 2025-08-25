@@ -23,7 +23,7 @@ export type AlgorithmCategoryOptionType = {
 export const AlgorithmCategoryDefinitions = {
   0: {
     name: 'MA',
-    title: '均线1',
+    title: '均线',
     description: 'Moving Average (MA) - 移动平均线',
     options: [
       {
@@ -60,7 +60,7 @@ export const AlgorithmCategoryDefinitions = {
   },
   1: {
     name: 'MACD',
-    title: 'MACD1',
+    title: 'MACD',
     description: 'Moving Average Convergence Divergence (MACD) - 平滑异同移动平均线',
     options: [
     ]
@@ -71,13 +71,13 @@ export const AlgorithmTypeDefinitions = {
   0: {
     category: 0,
     name: 'MA_MA',
-    title: '基础移动均线1-0',
+    title: '基础移动均线',
     description: 'Moving Average (MA) - 移动平均线'
   },
   1: {
     category: 0,
     name: 'EMA',
-    title: '指数移动平均线1-1',
+    title: '指数移动平均线',
     description: 'Exponential Moving Average (EMA) - 指数移动平均线'
   }
   // Add more algorithm types as needed

@@ -3,7 +3,7 @@ import { ref, onMounted, watch, onActivated, nextTick } from 'vue'
 import { ElSelect, ElOption, ElButton, ElDivider, ElMessage } from 'element-plus'
 import { ContentWrap } from '@/components/ContentWrap'
 import TrendArgumentTable from './components/TrendArgumentTable.vue'
-import CalcReportViews from './components/CalcReportViews.vue'
+import CalcReport from './components/CalcReport.vue'
 import AlgorithmItemDetail from './components/AlgorithmItemDetail.vue'
 import { apiListAlgorithmItems, apiDeleteAlgorithmItem, apiSubmitCalculation, AlgorithmItem } from '@/api/calc'
 import { useRefreshStore } from '@/store/modules/refresh'
@@ -13,7 +13,7 @@ const selectedAlgorithmItem = ref<AlgorithmItem | null>(null)
 
 const showArgumentTable = ref(false)
 const algorithmItems = ref<AlgorithmItem[]>([])
-const calcReportViewsRef = ref<InstanceType<typeof CalcReportViews> | null>(null)
+const calcReportRef = ref<InstanceType<typeof CalcReport> | null>(null)
 const showCalcReport = ref(false)
 
 const getAlgorithmItems = async () => {
@@ -42,20 +42,20 @@ onActivated(() => {
 watch(selectedValue, (newValue) => {
   // Reset the calculation result view whenever the selection changes
   if (showCalcReport.value) {
-    calcReportViewsRef.value?.disconnect();
-    showCalcReport.value = false;
+    calcReportRef.value?.disconnect()
+    showCalcReport.value = false
   }
 
   if (newValue) {
     // Update the selected item details based on the new selection
     if (newValue !== selectedAlgorithmItem.value?.name) {
-      selectedAlgorithmItem.value = algorithmItems.value.find(item => item.name === newValue) || null;
+      selectedAlgorithmItem.value = algorithmItems.value.find((item) => item.name === newValue) || null
     }
   } else {
     // If selection is cleared, ensure item is also cleared
-    selectedAlgorithmItem.value = null;
+    selectedAlgorithmItem.value = null
   }
-});
+})
 
 const toggleTable = () => {
   showArgumentTable.value = !showArgumentTable.value
@@ -68,7 +68,6 @@ const handleDeleteItem = async (id: number) => {
     getAlgorithmItems()
   }
 }
-
 
 const handleRowSelect = (item: AlgorithmItem) => {
   selectedValue.value = item.name
@@ -88,7 +87,7 @@ const handleSubmit = async () => {
       showCalcReport.value = true
       showArgumentTable.value = false
       nextTick(() => {
-        calcReportViewsRef.value?.connect()
+        calcReportRef.value?.connect()
       })
     } else {
       ElMessage.warning(`任务 '${selectedAlgorithmItem.value.name}' 已在运行中，请勿重复提交。`)
@@ -122,7 +121,7 @@ const handleSubmit = async () => {
     <el-divider />
 
     <AlgorithmItemDetail v-if="showCalcReport" :item="selectedAlgorithmItem" />
-    <CalcReportViews v-if="showCalcReport" ref="calcReportViewsRef" />
+    <CalcReport v-if="showCalcReport" ref="calcReportRef" :item-id="selectedAlgorithmItem!.id!" />
   </ContentWrap>
 </template>
 
