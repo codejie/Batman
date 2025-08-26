@@ -1,5 +1,5 @@
 import asyncio
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 import json
 from datetime import datetime, timedelta
 from typing import Callable, Tuple
@@ -44,11 +44,12 @@ class CalcSseTask(Task):
     if self.uid is None or self.cid is None:
       raise ValueError("uid and cid must be provided for CalcSseTask")
 
-  async def _send_report(self, category: int, type: int, report: list[dict]):
+  async def _send_report(self, category: int, type: int, stock: StockItem, report: list[dict]):
     """Sends data to the user via SSE."""
     await sse_manager.send_data(self.uid, self.TYPE, data={
       "catagory": category,
       "type": type,
+      "stock": asdict(stock),
       "report": report
     })
 
@@ -71,7 +72,7 @@ class CalcSseTask(Task):
       ret.extend([StockItem(type=r.type, code=r.code, name=r.name) for r in results])
     elif list_type == 2: # custom only
       results = db_calc.select_algorithm_item_stock_list(self.cid)
-      ret.extend([StockItem(type=r.type, code=r.code) for r in results])
+      ret.extend([StockItem(type=r.type, code=r.code, name=r.name) for r in results])
     elif list_type == 3: # all
       results = db_data.get_item_infos()
       ret.extend([StockItem(type=r.type, code=r.code, name=r.name) for r in results])
@@ -126,7 +127,7 @@ class CalcSseTask(Task):
           calc_result = calc_func(history_data, calc_options)
           calc_report = report_func(history_data, calc_result, idx=item.report_period, options=calc_options)
           if calc_report:
-            await self._send_report(category=item.category, type=item.type, report=calc_report)
+            await self._send_report(category=item.category, type=item.type, stock=stock,report=calc_report)
           else:
             await self._send_action(action="log",  message=f"[CalcTask {self.cid}] No report generated for {stock.code} with options {calc_options}.")
           await asyncio.sleep(0.1)

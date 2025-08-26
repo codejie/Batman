@@ -118,10 +118,14 @@ export type SubmitCalculationResult = number
 
 // SSE Payloads
 export interface CalcReportSseData {
-  cid: number
-  stock_code: string
-  report: string[]
-  error?: string
+  category: number
+  type: number
+  stock: {
+    type: number
+    code: string
+    name: string
+  }
+  report: any
 }
 
 export interface SsePayload<T> {
@@ -130,3 +134,27 @@ export interface SsePayload<T> {
   type: string
   data: T | null
 }
+
+
+// Connecting to SSE...
+// {
+//   "catagory": 0,
+//   "type": 0,
+//   "stock": {
+//     "type": 2,
+//     "code": "000001",
+//     "name": "平安银行"
+//   },
+//   "report": [
+//     {
+//       "index": "2025-05-07",
+//       "price": 10.67,
+//       "trend": 1
+//     },
+//     {
+//       "index": "2025-07-23",
+//       "price": 12.53,
+//       "trend": -1
+//     }
+//   ]
+// }

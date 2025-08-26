@@ -84,9 +84,9 @@ export const AlgorithmTypeDefinitions = {
 }
 
 
-export type AlgorithmTypeOptionType = {
-  key: string,
-  options: {
-    [key in string]: any
-  }
-}
+// export type AlgorithmTypeOptionType = {
+//   key: string,
+//   options: {
+//     [key in string]: any
+//   }
+// }

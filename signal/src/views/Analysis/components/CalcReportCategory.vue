@@ -11,7 +11,7 @@ defineProps<{
     <h4>Calculation Arguments</h4>
     <ul>
       <li v-for="arg in argumentList" :key="arg.id">
-        <pre>{{ arg.arguments }}</pre>
+        <pre>{{ arg }}</pre>
       </li>
     </ul>
   </div>

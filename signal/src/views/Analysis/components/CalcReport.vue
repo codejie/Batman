@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, onUnmounted, computed, defineProps, watch } from 'vue'
 import { ElButton } from 'element-plus'
-import ArgumentDisplay from './ArgumentDisplay.vue'
+import CalcReportCategory from './CalcReportCategory.vue'
+import CalcReportItem from './CalcReportItem.vue'
 import {
   apiConnectToCalcReport,
   apiDisconnectFromCalcReport,
@@ -18,11 +19,16 @@ interface ActionPayload {
 
 interface CategoryGroup {
   category: number
-  types: number[]
+  types: {
+    type: number
+    argument: string
+    flag: number | undefined
+  }[]
 }
 
 const eventSource = ref<EventSource | null>(null)
 const messages = ref<string[]>([])
+const reportItems = ref<CalcReportSseData[]>([])
 const isSseConnected = ref(false)
 const logMessage = ref<string>('Waiting for calculation to start...')
 const argumentList = ref<ArgumentItem[]>([])
@@ -39,12 +45,16 @@ const fetchArguments = async (id: number) => {
       console.log('Fetched arguments:', argumentList.value)
 
       // Group arguments by category
-      const groups: { [key: number]: number[] } = {}
+      const groups: { [key: number]: { type: number; argument: string; flag: number | undefined }[] } = {}
       for (const item of argumentList.value) {
         if (!groups[item.category]) {
           groups[item.category] = []
         }
-        groups[item.category].push(item.type)
+        groups[item.category].push({
+          type: item.type,
+          argument: item.arguments,
+          flag: item.flag
+        })
       }
 
       categoryGroups.value = Object.entries(groups).map(([category, types]) => ({
@@ -63,6 +73,7 @@ watch(
   (newId) => {
     if (newId) {
       fetchArguments(newId)
+      reportItems.value = []
     }
   },
   { immediate: true }
@@ -74,11 +85,15 @@ const connect = () => {
   }
 
   messages.value = ['Connecting to SSE...']
+  reportItems.value = []
   logMessage.value = 'Connecting...'
   isSseConnected.value = true
   eventSource.value = apiConnectToCalcReport(
     (data: SsePayload<CalcReportSseData>) => {
       messages.value.push(JSON.stringify(data, null, 2))
+      if (data.event === 'item' && data.payload) {
+        reportItems.value.unshift(data.payload)
+      }
     },
     (error) => {
       console.error('SSE connection error:', error)
@@ -147,7 +162,16 @@ defineExpose({
     <div class="text-component">
       <p>{{ logMessage }}</p>
     </div>
-    <ArgumentDisplay :argument-list="argumentList" />
+
+    <div class="report-items-container" v-if="reportItems.length > 0">
+      <CalcReportItem
+        v-for="(item, index) in reportItems"
+        :key="index"
+        :report-data="item"
+      />
+    </div>
+
+    <CalcReportCategory :argument-list="argumentList" />
     <div class="sse-display">
       <textarea :value="messagesText" readonly rows="10" style="width: 100%; white-space: pre-wrap;"></textarea>
     </div>
@@ -166,6 +190,9 @@ defineExpose({
   font-weight: 700;
 }
 .text-component {
+  margin-bottom: 1rem;
+}
+.report-items-container {
   margin-bottom: 1rem;
 }
 .sse-display {
