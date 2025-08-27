@@ -73,7 +73,7 @@ watch(
   (newId) => {
     if (newId) {
       fetchArguments(newId)
-      reportItems.value = []
+      // reportItems.value = []
     }
   },
   { immediate: true }
@@ -89,11 +89,9 @@ const connect = () => {
   logMessage.value = 'Connecting...'
   isSseConnected.value = true
   eventSource.value = apiConnectToCalcReport(
-    (data: SsePayload<CalcReportSseData>) => {
+    (data: CalcReportSseData) => {
       messages.value.push(JSON.stringify(data, null, 2))
-      if (data.event === 'item' && data.payload) {
-        reportItems.value.unshift(data.payload)
-      }
+      reportItems.value.unshift(data)
     },
     (error) => {
       console.error('SSE connection error:', error)
@@ -167,7 +165,7 @@ defineExpose({
       <CalcReportItem
         v-for="(item, index) in reportItems"
         :key="index"
-        :report-data="item"
+        :data="item"
       />
     </div>
 

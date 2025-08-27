@@ -4,7 +4,7 @@ import { ElCard, ElDescriptions, ElDescriptionsItem, ElTag } from 'element-plus'
 import type { CalcReportSseData } from '@/api/calc'
 
 defineProps({
-  reportData: {
+  data: {
     type: Object as PropType<CalcReportSseData>,
     required: true
   }
@@ -14,15 +14,15 @@ defineProps({
 <template>
   <div class="calc-report-item">
     <el-card>
-      <el-descriptions border :column="3">
-        <el-descriptions-item label="代码">{{ reportData.code }}</el-descriptions-item>
-        <el-descriptions-item label="名称">{{ reportData.name }}</el-descriptions-item>
-        <el-descriptions-item label="日期">{{ reportData.date }}</el-descriptions-item>
-        <el-descriptions-item label="标记">
-          <el-tag>{{ reportData.flag }}</el-tag>
+      <el-descriptions :border="true" :column="3">
+        <el-descriptions-item label="代码">{{ data.stock.code }}</el-descriptions-item>
+        <el-descriptions-item label="名称">{{ data.stock.name }}</el-descriptions-item>
+        <!-- <el-descriptions-item label="日期">{{ data.date }}</el-descriptions-item> -->
+        <el-descriptions-item label="类别">
+          <el-tag>{{ data.category }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="数据" :span="2">
-          <pre>{{ reportData.data }}</pre>
+        <el-descriptions-item label="类型" :span="2">
+          <pre>{{ data.type }}</pre>
         </el-descriptions-item>
       </el-descriptions>
     </el-card>
