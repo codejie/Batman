@@ -29,8 +29,9 @@ const reportPeriodText = computed(() => {
 </script>
 
 <template>
-  <div v-if="item" class="algorithm-details">
-    <el-descriptions :column="3" :border="true">
+  <div v-if="item" class="calc-item-details">
+    <p class="detail-title">计算详情</p>
+    <el-descriptions :column="3" :border="true" label-width="160">
       <el-descriptions-item label="名称">{{ item.name }}</el-descriptions-item>
       <el-descriptions-item label="备注" :span="2">{{ item.remarks }}</el-descriptions-item>
       <el-descriptions-item label="列表类型">{{ listTypeText }}</el-descriptions-item>
@@ -41,7 +42,12 @@ const reportPeriodText = computed(() => {
 </template>
 
 <style scoped>
-.algorithm-details {
+.calc-item-details {
   margin-bottom: 20px;
+}
+.detail-title {
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
 }
 </style>

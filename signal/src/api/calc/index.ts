@@ -76,14 +76,11 @@ export const apiConnectToCalcReport = (
     console.error('No token found, cannot connect to SSE.')
   }
   const url = `${PATH_URL}/sse/calc_report?token=${token}` // Assuming token is handled by cookies
-  console.log('Connecting to SSE URL:', url)
   const eventSource = new EventSource(url, { withCredentials: false })
 
   eventSource.onmessage = (event) => {
     try {
-      // console.log('Received SSE data:', event)
       const parsedData: Types.CalcReportSseData = JSON.parse(event.data)
-      console.log('Parsed SSE data:', parsedData)
       onMessage(parsedData)
     } catch (e) {
       console.error('Failed to parse SSE data:', e)

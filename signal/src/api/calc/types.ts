@@ -135,6 +135,11 @@ export interface SsePayload<T> {
   data: T | null
 }
 
+export type CalcReportTrendReportType = {
+  index: string
+  price: number
+  trend: number
+}
 
 // Connecting to SSE...
 // {

@@ -265,6 +265,14 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         meta: {
           title: '资讯链接'
         }
+      },
+      {
+        path: 'market-cloud',
+        name: 'market-cloud',
+        component: () => import('@/views/Third/MarketCloud/index.vue'),
+        meta: {
+          title: '大盘云图'
+        }
       }
     ]
   },  

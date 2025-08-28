@@ -4,7 +4,7 @@ import { ElSelect, ElOption, ElButton, ElDivider, ElMessage } from 'element-plus
 import { ContentWrap } from '@/components/ContentWrap'
 import TrendArgumentTable from './components/TrendArgumentTable.vue'
 import CalcReport from './components/CalcReport.vue'
-import AlgorithmItemDetail from './components/AlgorithmItemDetail.vue'
+import AlgorithmItemDetail from './components/CalcItemDetail.vue'
 import { apiListAlgorithmItems, apiDeleteAlgorithmItem, apiSubmitCalculation, AlgorithmItem } from '@/api/calc'
 import { useRefreshStore } from '@/store/modules/refresh'
 

@@ -27,6 +27,18 @@ def _get_date_range(period: int) -> Tuple[str, str]:
   
   return (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
 
+def _get_report_index(report_period):
+    if report_period == 0: # all
+      return -1
+    elif report_period == 1:
+      return -3
+    elif report_period == 2:
+      return -7
+    elif report_period == 3:
+      return -30
+    else:
+      return 0
+    
 @dataclass
 class StockItem:
   type: int  # 2: stock, 1: index
@@ -47,7 +59,7 @@ class CalcSseTask(Task):
   async def _send_report(self, category: int, type: int, stock: StockItem, report: list[dict]):
     """Sends data to the user via SSE."""
     await sse_manager.send_data(self.uid, self.TYPE, data={
-      "catagory": category,
+      "category": category,
       "type": type,
       "stock": asdict(stock),
       "report": report
@@ -109,6 +121,7 @@ class CalcSseTask(Task):
       
       # 4. Prepare date range
       start_date, end_date = _get_date_range(item.data_period)
+      report_index = _get_report_index(item.report_period)
 
       # 6. Loop through each calculation step
       for stock in stock_list:
@@ -125,7 +138,7 @@ class CalcSseTask(Task):
         
         for (calc_func, report_func), calc_options in zip(funcs, func_args):
           calc_result = calc_func(history_data, calc_options)
-          calc_report = report_func(history_data, calc_result, idx=item.report_period, options=calc_options)
+          calc_report = report_func(history_data, calc_result, idx=report_index, options=calc_options)
           if calc_report:
             await self._send_report(category=item.category, type=item.type, stock=stock,report=calc_report)
           else:

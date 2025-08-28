@@ -1,38 +1,39 @@
 <script setup lang="ts">
 import { ref, onUnmounted, computed, defineProps, watch } from 'vue'
 import { ElButton } from 'element-plus'
-import CalcReportCategory from './CalcReportCategory.vue'
 import CalcReportItem from './CalcReportItem.vue'
-import {
-  apiConnectToCalcReport,
-  apiDisconnectFromCalcReport,
-  apiListArguments
-} from '@/api/calc'
-import type { ArgumentItem, CalcReportSseData, SsePayload } from '@/api/calc'
+import { apiConnectToCalcReport, apiDisconnectFromCalcReport, apiListArguments } from '@/api/calc'
+import type { ArgumentItem, CalcReportSseData } from '@/api/calc'
 
 const props = defineProps<{itemId: number}>()
 
+// SSE action payload
 interface ActionPayload {
   action: 'start' | 'log' | 'finish'
   message?: string
 }
 
-interface CategoryGroup {
-  category: number
-  types: {
+// Aggregated structure for reports per stock
+export interface AggregatedReport {
+  stock: {
     type: number
-    argument: string
-    flag: number | undefined
+    code: string
+    name: string
+  }
+  reports: {
+    category: number
+    type: number
+    report: any
   }[]
 }
 
 const eventSource = ref<EventSource | null>(null)
 const messages = ref<string[]>([])
-const reportItems = ref<CalcReportSseData[]>([])
+// Use an array for reportItems
+const reportItems = ref<AggregatedReport[]>([])
 const isSseConnected = ref(false)
 const logMessage = ref<string>('Waiting for calculation to start...')
 const argumentList = ref<ArgumentItem[]>([])
-const categoryGroups = ref<CategoryGroup[]>([])
 
 const messagesText = computed(() => messages.value.join('\n'))
 
@@ -42,26 +43,6 @@ const fetchArguments = async (id: number) => {
     const res = await apiListArguments({ cid: id })
     if (res) {
       argumentList.value = res.result
-      console.log('Fetched arguments:', argumentList.value)
-
-      // Group arguments by category
-      const groups: { [key: number]: { type: number; argument: string; flag: number | undefined }[] } = {}
-      for (const item of argumentList.value) {
-        if (!groups[item.category]) {
-          groups[item.category] = []
-        }
-        groups[item.category].push({
-          type: item.type,
-          argument: item.arguments,
-          flag: item.flag
-        })
-      }
-
-      categoryGroups.value = Object.entries(groups).map(([category, types]) => ({
-        category: Number(category),
-        types: types
-      }))
-      console.log('Processed category groups:', categoryGroups.value)
     }
   } catch (error) {
     console.error('Error fetching arguments:', error)
@@ -73,7 +54,6 @@ watch(
   (newId) => {
     if (newId) {
       fetchArguments(newId)
-      // reportItems.value = []
     }
   },
   { immediate: true }
@@ -85,13 +65,41 @@ const connect = () => {
   }
 
   messages.value = ['Connecting to SSE...']
-  reportItems.value = []
+  reportItems.value = [] // Reset data on new connection
   logMessage.value = 'Connecting...'
   isSseConnected.value = true
+
   eventSource.value = apiConnectToCalcReport(
     (data: CalcReportSseData) => {
       messages.value.push(JSON.stringify(data, null, 2))
-      reportItems.value.unshift(data)
+
+      const stockCode = data.stock.code
+      const stockType = data.stock.type
+      const stockEntry = reportItems.value.find(
+        (item) => item.stock.code === stockCode && item.stock.type === stockType
+      )
+
+      if (stockEntry) {
+        // If found, push the new report
+        stockEntry.reports.push({
+          category: data.category,
+          type: data.type,
+          report: data.report
+        })
+      } else {
+        // If not found, create a new entry and push it to the array
+        const newEntry: AggregatedReport = {
+          stock: data.stock,
+          reports: [
+            {
+              category: data.category,
+              type: data.type,
+              report: data.report
+            }
+          ]
+        }
+        reportItems.value.push(newEntry)
+      }
     },
     (error) => {
       console.error('SSE connection error:', error)
@@ -108,7 +116,6 @@ const connect = () => {
         const payload: ActionPayload = JSON.parse(messageEvent.data)
         switch (payload.action) {
           case 'start':
-            console.log('SSE action: start')
             logMessage.value = 'Calculation started...'
             break
           case 'log':
@@ -117,13 +124,12 @@ const connect = () => {
             }
             break
           case 'finish':
-            console.log('SSE action: finish')
             logMessage.value = 'Calculation finished.'
+            disconnect()
             break
         }
       } catch (error) {
         console.error('Error parsing SSE action event data:', error)
-        // Also push raw data for debugging
         messages.value.push(messageEvent.data)
       }
     })
@@ -150,31 +156,32 @@ defineExpose({
 })
 </script>
 
-
 <template>
   <div class="calc-report-view">
     <div class="section-header">
       <div class="section-title">计算结果</div>
       <el-button v-if="isSseConnected" type="danger" size="small" @click="disconnect">停止</el-button>
     </div>
-    <div class="text-component">
-      <p>{{ logMessage }}</p>
+    <div class="text-component" v-if="isSseConnected">
+      <p><small>{{ logMessage }}</small></p>
     </div>
 
     <div class="report-items-container" v-if="reportItems.length > 0">
       <CalcReportItem
-        v-for="(item, index) in reportItems"
-        :key="index"
+        v-for="item in reportItems"
+        :key="item.stock.code"
         :data="item"
       />
     </div>
 
-    <CalcReportCategory :argument-list="argumentList" />
     <div class="sse-display">
       <textarea :value="messagesText" readonly rows="10" style="width: 100%; white-space: pre-wrap;"></textarea>
     </div>
   </div>
 </template>
+
+
+
 
 <style scoped>
 .section-header {
