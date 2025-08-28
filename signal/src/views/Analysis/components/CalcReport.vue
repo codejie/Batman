@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onUnmounted, computed, defineProps, watch } from 'vue'
-import { ElButton } from 'element-plus'
+import { ref, onUnmounted, defineProps, watch, computed } from 'vue'
+import { ElButton, ElTabs, ElTabPane } from 'element-plus'
 import CalcReportItem from './CalcReportItem.vue'
 import { apiConnectToCalcReport, apiDisconnectFromCalcReport, apiListArguments } from '@/api/calc'
 import type { ArgumentItem, CalcReportSseData } from '@/api/calc'
@@ -28,14 +28,21 @@ export interface AggregatedReport {
 }
 
 const eventSource = ref<EventSource | null>(null)
-const messages = ref<string[]>([])
 // Use an array for reportItems
 const reportItems = ref<AggregatedReport[]>([])
 const isSseConnected = ref(false)
 const logMessage = ref<string>('Waiting for calculation to start...')
 const argumentList = ref<ArgumentItem[]>([])
 
-const messagesText = computed(() => messages.value.join('\n'))
+const displayMode = ref<'tile' | 'tab'>('tile')
+
+const toggleDisplayMode = () => {
+  displayMode.value = displayMode.value === 'tab' ? 'tile' : 'tab'
+}
+
+const displayModeText = computed(() => {
+  return displayMode.value === 'tab' ? '平铺展示' : '标签展示'
+})
 
 const fetchArguments = async (id: number) => {
   if (!id) return
@@ -64,15 +71,12 @@ const connect = () => {
     return // Already connected
   }
 
-  messages.value = ['Connecting to SSE...']
   reportItems.value = [] // Reset data on new connection
   logMessage.value = 'Connecting...'
   isSseConnected.value = true
 
   eventSource.value = apiConnectToCalcReport(
     (data: CalcReportSseData) => {
-      messages.value.push(JSON.stringify(data, null, 2))
-
       const stockCode = data.stock.code
       const stockType = data.stock.type
       const stockEntry = reportItems.value.find(
@@ -103,7 +107,6 @@ const connect = () => {
     },
     (error) => {
       console.error('SSE connection error:', error)
-      messages.value.push('SSE connection error.')
       logMessage.value = 'SSE connection error.'
       disconnect()
     }
@@ -130,7 +133,6 @@ const connect = () => {
         }
       } catch (error) {
         console.error('Error parsing SSE action event data:', error)
-        messages.value.push(messageEvent.data)
       }
     })
   }
@@ -140,7 +142,6 @@ const disconnect = () => {
   if (eventSource.value) {
     apiDisconnectFromCalcReport(eventSource.value)
     eventSource.value = null
-    messages.value.push('SSE connection closed.')
     logMessage.value = 'Disconnected.'
     isSseConnected.value = false
   }
@@ -159,7 +160,10 @@ defineExpose({
 <template>
   <div class="calc-report-view">
     <div class="section-header">
-      <div class="section-title">计算结果</div>
+      <div>
+        <span class="section-title">计算结果</span>
+        <el-button v-if="reportItems.length > 0" type="primary" size="small" @click="toggleDisplayMode" style="margin-left: 12px;">{{ displayModeText }}</el-button>
+      </div>
       <el-button v-if="isSseConnected" type="danger" size="small" @click="disconnect">停止</el-button>
     </div>
     <div class="text-component" v-if="isSseConnected">
@@ -167,15 +171,18 @@ defineExpose({
     </div>
 
     <div class="report-items-container" v-if="reportItems.length > 0">
-      <CalcReportItem
-        v-for="item in reportItems"
-        :key="item.stock.code"
-        :data="item"
-      />
-    </div>
-
-    <div class="sse-display">
-      <textarea :value="messagesText" readonly rows="10" style="width: 100%; white-space: pre-wrap;"></textarea>
+      <div v-if="displayMode === 'tile'">
+        <CalcReportItem
+          v-for="item in reportItems"
+          :key="item.stock.code"
+          :data="item"
+        />
+      </div>
+      <el-tabs v-else>
+        <el-tab-pane v-for="item in reportItems" :key="item.stock.code" :label="item.stock.name">
+          <CalcReportItem :data="item" />
+        </el-tab-pane>
+      </el-tabs>
     </div>
   </div>
 </template>
@@ -199,15 +206,5 @@ defineExpose({
 }
 .report-items-container {
   margin-bottom: 1rem;
-}
-.sse-display {
-  margin-top: 1rem;
-}
-textarea {
-  background-color: #f5f5f5;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  font-family: monospace;
 }
 </style>

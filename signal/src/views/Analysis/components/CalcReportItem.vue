@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { PropType } from 'vue'
 import { ElTable, ElTableColumn } from 'element-plus'
 import { AlgorithmCategoryDefinitions, AlgorithmTypeDefinitions } from '@/api/calc/defines'
 import type { AggregatedReport } from './CalcReport.vue'
+import { KLineDialog } from '@/components/KLine'
 
 const props = defineProps({
   data: {
@@ -11,6 +12,9 @@ const props = defineProps({
     required: true
   }
 })
+
+const klineDialogVisible = ref<boolean>(false)
+const reqParam = ref<any>({})
 
 const getCategoryTitle = (category: number) => {
   return AlgorithmCategoryDefinitions[category]?.title || category
@@ -34,11 +38,20 @@ const getTableData = (report: any) => {
 const isObjectReport = (report: any) => {
   return typeof report === 'object' && !Array.isArray(report)
 }
+
+function onTitleClick() {
+  reqParam.value = {
+    code: props.data.stock.code,
+    name: props.data.stock.name,
+    type: props.data.stock.type,
+  }
+  klineDialogVisible.value = true
+}
 </script>
 
 <template>
   <div class="report-item-container">
-    <p class="title">{{ props.data.stock.name }} ({{ props.data.stock.code }})</p>
+    <p class="title" @click="onTitleClick">{{ props.data.stock.name }} ({{ props.data.stock.code }})</p>
 
     <div
       v-for="(reportInfo, index) in props.data.reports"
@@ -59,12 +72,13 @@ const isObjectReport = (report: any) => {
             <template #default="{ row }">
               <span v-if="row.trend === 1" style="color: red">上涨</span>
               <span v-else-if="row.trend === -1" style="color: green">下跌</span>
-              <span v-else-if="row.trend === 0" style="color: grey">中性</span>
+              <span v-else-if="row.trend === 0" style="color: grey">--</span>
             </template>
           </el-table-column>
         </template>
       </el-table>
     </div>
+    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" width="60%" />
   </div>
 </template>
 
@@ -77,6 +91,7 @@ const isObjectReport = (report: any) => {
   font-size: 1rem;
   font-weight: bold;
   margin: 0 0 8px 0;
+  cursor: pointer;
 }
 
 .subtitle {
