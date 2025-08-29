@@ -68,7 +68,7 @@ const handleRowClick = (row: AlgorithmItem) => {
       </el-table-column>
       <el-table-column prop="type" label="算法类型" width="200">
         <template #default="{ row }">
-          {{ AlgorithmTypeDefinitions[row.type]?.title }}
+          {{ AlgorithmTypeDefinitions[row.category]?.[row.type]?.title }}
         </template>
       </el-table-column>
       <el-table-column prop="list_type" label="列表类型" width="100">

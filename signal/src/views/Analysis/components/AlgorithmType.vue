@@ -13,7 +13,7 @@ import { computed, type PropType } from 'vue'
 const props = defineProps({
   modelValue: {
     type: Object as PropType<{
-        key: number,
+        key: string,
         options: Array<{
           option: AlgorithmCategoryOptionType,
           value?: any
@@ -24,11 +24,15 @@ const props = defineProps({
   index: {
     type: Number,
     required: true
+  },
+  categoryKey: {
+    type: String,
+    required: true
   }
 })
 
 const typeDefinition = computed(() => {
-  return AlgorithmTypeDefinitions[props.modelValue.key]
+  return AlgorithmTypeDefinitions[props.categoryKey]?.[props.modelValue.key]
 })
 
 const filledOptions = computed(() => {
@@ -55,12 +59,11 @@ const handleDelete = () => {
 </script>
 
 <template>
-  <div class="type-container">
+  <div class="type-container" v-if="typeDefinition">
     <el-row justify="space-between">
       <el-col :span="20">
         <p>
-          <strong>{{ index }}) {{ typeDefinition.title }}</strong> ({{ typeDefinition.name
-          }})
+          <strong>{{ index }}) {{ typeDefinition.title }}</strong> ({{ modelValue.key }})
         </p>
       </el-col>
       <el-col :span="4" style="text-align: right">

@@ -21,8 +21,8 @@ export interface AggregatedReport {
     name: string
   }
   reports: {
-    category: number
-    type: number
+    category: string
+    type: string
     report: any
   }[]
 }

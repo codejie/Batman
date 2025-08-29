@@ -21,8 +21,7 @@ export type AlgorithmCategoryOptionType = {
 }
 
 export const AlgorithmCategoryDefinitions = {
-  0: {
-    name: 'MA',
+  'MA': {
     title: '均线',
     description: 'Moving Average (MA) - 移动平均线',
     options: [
@@ -58,8 +57,27 @@ export const AlgorithmCategoryDefinitions = {
       }      
     ]
   },
-  1: {
-    name: 'MACD',
+  'ADX': {
+    title: '平均趋向指数',
+    description: 'Average Directional Index (ADX) - 平均趋向指标',
+    options: [
+      {
+        name: 'period',
+        title: '周期',
+        default: 14,
+        type: 'number',
+        description: 'ADX指标的计算周期，通常为14天'
+      },
+      {
+        name: 'threshold',
+        title: '阈值',
+        default: 25,
+        type: 'number',
+        description: '用于判断趋势强弱的阈值，通常设为25'
+      }
+    ]
+  },
+  'MACD': {
     title: 'MACD',
     description: 'Moving Average Convergence Divergence (MACD) - 平滑异同移动平均线',
     options: [
@@ -68,20 +86,19 @@ export const AlgorithmCategoryDefinitions = {
 }
 
 export const AlgorithmTypeDefinitions = {
-  0: {
-    category: 0,
-    name: 'MA_MA',
-    title: '基础移动均线',
-    description: 'Moving Average (MA) - 移动平均线'
-  },
-  1: {
-    category: 0,
-    name: 'EMA',
-    title: '指数移动平均线',
-    description: 'Exponential Moving Average (EMA) - 指数移动平均线'
+  'MA': {
+    'MA_MA': {
+      title: '基础移动均线',
+      description: 'Moving Average (MA) - 移动平均线'
+    },
+    'EMA': {
+      title: '指数移动平均线',
+      description: 'Exponential Moving Average (EMA) - 指数移动平均线'
+    }
   }
-  // Add more algorithm types as needed
 }
+
+
 
 
 // export type AlgorithmTypeOptionType = {

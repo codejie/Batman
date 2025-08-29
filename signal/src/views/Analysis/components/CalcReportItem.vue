@@ -16,12 +16,12 @@ const props = defineProps({
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
 
-const getCategoryTitle = (category: number) => {
+const getCategoryTitle = (category: string) => {
   return AlgorithmCategoryDefinitions[category]?.title || category
 }
 
-const getTypeTitle = (type: number) => {
-  return AlgorithmTypeDefinitions[type]?.title || type
+const getTypeTitle = (category: string, type: string) => {
+  return AlgorithmTypeDefinitions[category]?.[type]?.title || type
 }
 
 const getTableData = (report: any) => {
@@ -58,7 +58,7 @@ function onTitleClick() {
       :key="index"
       class="single-report-block"
     >
-      <p class="subtitle">{{ getCategoryTitle(reportInfo.category) }}: {{ getTypeTitle(reportInfo.type) }}</p>
+      <p class="subtitle">{{ getCategoryTitle(reportInfo.category) }}: {{ getTypeTitle(reportInfo.category, reportInfo.type) }}</p>
 
       <el-table :data="getTableData(reportInfo.report)" :border="true" size="small" stripe>
         <template v-if="isObjectReport(reportInfo.report)">

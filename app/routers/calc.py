@@ -26,8 +26,8 @@ async def submit_calculation(request: SubmitRequest, uid: int = Depends(verify_t
 
 class AlgorithmItemCreateRequest(RequestModel):
   name: str
-  category: int
-  type: int
+  category: str
+  type: str
   list_type: int
   data_period: int
   report_period: int
@@ -44,8 +44,8 @@ async def create_algorithm_item(request: AlgorithmItemCreateRequest):
 class AlgorithmItemUpdateRequest(RequestModel):
   id: int
   name: str
-  category: int
-  type: int
+  category: str
+  type: str
   list_type: int
   data_period: int
   report_period: int

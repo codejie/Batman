@@ -136,11 +136,17 @@ class CalcSseTask(Task):
           await self._send_action(action="log",  message=f"[CalcTask {self.cid}] No history data for {stock.code}, skipping.")
           continue
         
-        for (calc_func, report_func), calc_options in zip(funcs, func_args):
+        for arg_item in args_list:
+          calc_func, report_func = get_calc_functions(arg_item.category, arg_item.type)
+          if not calc_func or not report_func:
+            await self._send_action(action="log",  message=f"[CalcTask {self.cid}] No calc/report functions found for {arg_item.category}/{arg_item.type}.")  
+            continue
+
+          calc_options = json.loads(arg_item.arguments)
           calc_result = calc_func(history_data, calc_options)
           calc_report = report_func(history_data, calc_result, idx=report_index, options=calc_options)
           if calc_report:
-            await self._send_report(category=item.category, type=item.type, stock=stock,report=calc_report)
+            await self._send_report(category=arg_item.category, type=arg_item.type, stock=stock, report=calc_report)
           else:
             await self._send_action(action="log",  message=f"[CalcTask {self.cid}] No report generated for {stock.code} with options {calc_options}.")
           await asyncio.sleep(0.1)

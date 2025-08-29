@@ -67,8 +67,8 @@ const goBack = () => {
 const formData = reactive<Omit<AlgorithmItem, 'id' | 'uid' | 'created'>>({
   name: '',
   remarks: '',
-  category: 0,
-  type: 0,
+  category: '',
+  type: '',
   list_type: 3, // all
   data_period: 1, // 6m
   report_period: 1 // 3d
@@ -150,9 +150,8 @@ const populateDisplayedCategories = (args: ArgumentItem[]) => {
 
   const result: typeof displayedCategories.value = []
 
-  for (const catKeyStr in groupedByCategory) {
-    const catKey = parseInt(catKeyStr, 10)
-    const categoryArgs = groupedByCategory[catKeyStr]
+  for (const catKey in groupedByCategory) {
+    const categoryArgs = groupedByCategory[catKey]
 
     const categoryDefinition = AlgorithmCategoryDefinitions[catKey]
     if (!categoryDefinition) continue
@@ -203,8 +202,8 @@ watch(
       Object.assign(formData, {
         name: '',
         remarks: '',
-        category: 0,
-        type: 0,
+        category: '',
+        type: '',
         list_type: 3,
         data_period: 1,
         report_period: 1
@@ -335,18 +334,17 @@ const onQuickViewConfirm = (item: { code: string; name: string; type: number }) 
 const treeData = computed(() => {
   return Object.keys(AlgorithmCategoryDefinitions).map((catKey) => {
     const category = AlgorithmCategoryDefinitions[catKey]
-    const children = Object.keys(AlgorithmTypeDefinitions)
-      .filter((typeKey) => AlgorithmTypeDefinitions[typeKey].category === parseInt(catKey))
-      .map((typeKey) => {
-        const type = AlgorithmTypeDefinitions[typeKey]
-        return {
-          value: `type-${typeKey}`,
-          label: `${type.title} - ${type.description}`
-        }
-      })
+    const typesForCategory = AlgorithmTypeDefinitions[catKey] || {}
+    const children = Object.keys(typesForCategory).map((typeKey) => {
+      const type = typesForCategory[typeKey]
+      return {
+        value: `${catKey}-${typeKey}`,
+        label: `${type.title} - ${type.description}`
+      }
+    })
 
     return {
-      value: `cat-${catKey}`,
+      value: catKey,
       label: `${category.title} - ${category.description}`,
       children: children,
       disabled: true
@@ -357,9 +355,9 @@ const treeData = computed(() => {
 const selectedAlgorithm = ref<string[]>([])
 const displayedCategories = ref<
   Array<{
-    categoryKey: number
+    categoryKey: string
     types: Array<{
-      key: number,
+      key: string,
       options: Array<{
         option: AlgorithmCategoryOptionType,
         value?: any  
@@ -375,27 +373,23 @@ const handleAlgorithmAddClick = () => {
     return
   }
 
-  const groupedByCategory: Record<string, number[]> = {}
+  const groupedByCategory: Record<string, string[]> = {}
 
   selectedValues.forEach((selectedValue) => {
-    if (selectedValue.startsWith('type-')) {
-      const typeKey = parseInt(selectedValue.replace('type-', ''), 10)
-      const typeDefinition = AlgorithmTypeDefinitions[typeKey]
-      if (typeDefinition) {
-        const categoryKey = typeDefinition.category
-        if (!groupedByCategory[categoryKey]) {
-          groupedByCategory[categoryKey] = []
-        }
-        if (!groupedByCategory[categoryKey].includes(typeKey)) {
-          groupedByCategory[categoryKey].push(typeKey)
-        }
+    const parts = selectedValue.split('-')
+    if (parts.length === 2) {
+      const [catKey, typeKey] = parts
+      if (!groupedByCategory[catKey]) {
+        groupedByCategory[catKey] = []
+      }
+      if (!groupedByCategory[catKey].includes(typeKey)) {
+        groupedByCategory[catKey].push(typeKey)
       }
     }
   })
 
-  Object.keys(groupedByCategory).forEach((catKeyStr) => {
-    const catKey = parseInt(catKeyStr, 10)
-    const typeKeys = groupedByCategory[catKeyStr]
+  Object.keys(groupedByCategory).forEach((catKey) => {
+    const typeKeys = groupedByCategory[catKey]
 
     let existingCategory = displayedCategories.value.find((c) => c.categoryKey === catKey)
     if (!existingCategory) {
@@ -403,36 +397,34 @@ const handleAlgorithmAddClick = () => {
       displayedCategories.value.push(existingCategory)
     }
 
-    typeKeys.forEach((typeKey) => {
-      if (existingCategory.types.some((t) => t.key === typeKey)) {
-        return
-      }
-
-      const categoryOptions = AlgorithmCategoryDefinitions[catKey].options
-      const typeOptions: Array<{
-        option: AlgorithmCategoryOptionType,
-        value?: any  
-      }> = []
-      if (categoryOptions) {
-        categoryOptions.forEach((option) => {
-          typeOptions.push({
-            option: option,
-            value: option.default
+    const newTypesToAdd = typeKeys
+      .filter((typeKey) => !existingCategory!.types.some((t) => t.key === typeKey))
+      .map((typeKey) => {
+        const categoryOptions = AlgorithmCategoryDefinitions[catKey]?.options
+        const typeOptions: Array<{
+          option: AlgorithmCategoryOptionType,
+          value?: any
+        }> = []
+        if (categoryOptions) {
+          categoryOptions.forEach((option) => {
+            typeOptions.push({
+              option: option,
+              value: option.default
+            })
           })
-        })
-      }
-
-      existingCategory.types.push({
-        key: typeKey,
-        options: typeOptions
+        }
+        return { key: typeKey, options: typeOptions }
       })
-    })
+
+    if (newTypesToAdd.length > 0) {
+      existingCategory.types = [...existingCategory.types, ...newTypesToAdd]
+    }
   })
 
   selectedAlgorithm.value = []
 }
 
-const handleDeleteType = (event: { categoryKey: number; typeKey: number }) => {
+const handleDeleteType = (event: { categoryKey: string; typeKey: string }) => {
   const { categoryKey, typeKey } = event
   const category = displayedCategories.value.find((c) => c.categoryKey === categoryKey)
   if (category) {

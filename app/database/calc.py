@@ -12,11 +12,11 @@ class CalcAlgorithmItemsTable(TableBase):
   uid = Column(Integer, nullable=False, default=99)
   name = Column(String, nullable=False)
   remarks = Column(String)
-  category = Column(Integer, nullable=False)
-  type = Column(Integer, nullable=False)
+  category = Column(String, nullable=False)
+  type = Column(String, nullable=False)
   list_type = Column(Integer, nullable=False, default=4)  # 0: holding, 1: customized, 2:custom, 3: all, 4: holding & watchlist
   data_period = Column(Integer, nullable=False, default=1)  # 0: 3months, 1: 6months, 2: 1year, 3: 2years
-  report_period = Column(Integer, nullable=False, default='1') # 0: today, 1: 3days, 2: 1week, 3: 1monthly, 4: all
+  report_period = Column(Integer, nullable=False, default=1) # 0: today, 1: 3days, 2: 1week, 3: 1monthly, 4: all
   created = Column(DateTime, default=func.now())
 
 class CalcAlgorithmItemModel(BaseModel):
@@ -24,8 +24,8 @@ class CalcAlgorithmItemModel(BaseModel):
   uid: int
   name: str
   remarks: str | None = None
-  category: int
-  type: int
+  category: str
+  type: str
   list_type: int
   data_period: int
   report_period: int
@@ -56,16 +56,16 @@ class CalcAlgorithmItemArgumentsTable(TableBase):
 
   id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True)
   cid = Column(Integer, ForeignKey('calc_algorithm_items.id'), nullable=False) # calc id
-  category = Column(Integer, nullable=False) # category
-  type = Column(Integer, nullable=False) # id
+  category = Column(String, nullable=False) # category
+  type = Column(String, nullable=False) # id
   arguments = Column(String, nullable=False)  # JSON string
   flag = Column(Integer, nullable=True, default=0)
 
 class CalcAlgorithmItemArgumentsModel(BaseModel):
   id: int | None = None
   cid: int
-  category: int
-  type: int
+  category: str
+  type: str
   arguments: str
   flag: int | None = 0
 
@@ -76,11 +76,14 @@ class CalcAlgorithmItemArgumentsModel(BaseModel):
   #     data["arguments"] = str(data["arguments"])
   #   return data
 
-def insert_algorithm_item(uid: int, name: str, category: int, type: int, list_type: int = 2, data_period: int = 1, report_period: int = 1, remarks: str | None = None) -> int:
+
+
+
+def insert_algorithm_item(uid: int, name: str, category: str, type: str, list_type: int = 2, data_period: int = 1, report_period: int = 1, remarks: str | None = None) -> int:
   item = CalcAlgorithmItemsTable(uid=uid, name=name, category=category, type=type, list_type=list_type, data_period=data_period, report_period=report_period, remarks=remarks)
   return dbEngine.insert_instance(item)
 
-def update_algorithm_item(uid: int, id: int, name: str, category: int, type: int, list_type: int, data_period: int, report_period: int, remarks: str | None = None) -> None:
+def update_algorithm_item(uid: int, id: int, name: str, category: str, type: str, list_type: int, data_period: int, report_period: int, remarks: str | None = None) -> None:
     stmt = update(CalcAlgorithmItemsTable).where(
         and_(
             CalcAlgorithmItemsTable.id == id,

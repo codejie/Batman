@@ -6,12 +6,12 @@ import AlgorithmType from './AlgorithmType.vue'
 
 const props = defineProps({
   categoryKey: {
-    type: Number,
+    type: String,
     required: true
   },
   types: {
     type: Array as PropType<Array<{
-        key: number,
+        key: string,
         options: Array<{
           option: AlgorithmCategoryOptionType,
           value?: any  
@@ -41,7 +41,7 @@ const category = computed(() => {
 //   })
 // })
 
-const handleDeleteType = (typeKeyToDelete: number) => {
+const handleDeleteType = (typeKeyToDelete: string) => {
   emit('delete-type', { categoryKey: props.categoryKey, typeKey: typeKeyToDelete })
 }
 
@@ -54,7 +54,7 @@ const handleDeleteType = (typeKeyToDelete: number) => {
   <div class="category-container">
     <div class="category-header">
       <span class="category-title">{{ index }}. {{ category.title }}</span>
-      <span class="category-name">({{ category.name }})</span>:
+      <span class="category-name">({{ categoryKey }})</span>:
       <span class="category-description">{{ category.description }}</span>
     </div>
 
@@ -65,6 +65,7 @@ const handleDeleteType = (typeKeyToDelete: number) => {
         <AlgorithmType
           :model-value="type"
           :index="typeIndex + 1"
+          :category-key="categoryKey"
           @delete="handleDeleteType(type.key)"
         />
       </el-col>
