@@ -15,6 +15,8 @@ import {
   ElTableColumn,
   ElDivider,
   ElTreeSelect,
+  ElTree,
+  
   ElMessage
 } from 'element-plus'
 import AlgorithmCategory from './components/AlgorithmCategory.vue'
@@ -69,7 +71,7 @@ const formData = reactive<Omit<AlgorithmItem, 'id' | 'uid' | 'created'>>({
   remarks: '',
   category: '',
   type: '',
-  list_type: 3, // all
+  list_type: 4, // holding + watchlist
   data_period: 1, // 6m
   report_period: 1 // 3d
 })
@@ -163,6 +165,7 @@ const populateDisplayedCategories = (args: ArgumentItem[]) => {
         value: params[optDef.name]
       }))
       return {
+        id: nextTypeId++,
         key: arg.type,
         options: options
       }
@@ -204,7 +207,7 @@ watch(
         remarks: '',
         category: '',
         type: '',
-        list_type: 3,
+        list_type: 4,
         data_period: 1,
         report_period: 1
       })
@@ -352,11 +355,11 @@ const treeData = computed(() => {
   })
 })
 
-const selectedAlgorithm = ref<string[]>([])
 const displayedCategories = ref<
   Array<{
     categoryKey: string
     types: Array<{
+      id: number,
       key: string,
       options: Array<{
         option: AlgorithmCategoryOptionType,
@@ -366,62 +369,37 @@ const displayedCategories = ref<
   }>
 >([])
 
-const handleAlgorithmAddClick = () => {
-  const selectedValues = selectedAlgorithm.value
-  if (!selectedValues || selectedValues.length === 0) {
-    ElMessage.warning('请选择算法')
+let nextTypeId = 0
+
+const addAlgorithm = (value: string) => {
+  if (!value) return
+  const parts = value.split('-')
+  if (parts.length !== 2) {
     return
   }
 
-  const groupedByCategory: Record<string, string[]> = {}
+  const [catKey, typeKey] = parts
 
-  selectedValues.forEach((selectedValue) => {
-    const parts = selectedValue.split('-')
-    if (parts.length === 2) {
-      const [catKey, typeKey] = parts
-      if (!groupedByCategory[catKey]) {
-        groupedByCategory[catKey] = []
-      }
-      if (!groupedByCategory[catKey].includes(typeKey)) {
-        groupedByCategory[catKey].push(typeKey)
-      }
-    }
-  })
+  let existingCategory = displayedCategories.value.find((c) => c.categoryKey === catKey)
+  if (!existingCategory) {
+    existingCategory = { categoryKey: catKey, types: [] }
+    displayedCategories.value.push(existingCategory)
+  }
 
-  Object.keys(groupedByCategory).forEach((catKey) => {
-    const typeKeys = groupedByCategory[catKey]
-
-    let existingCategory = displayedCategories.value.find((c) => c.categoryKey === catKey)
-    if (!existingCategory) {
-      existingCategory = { categoryKey: catKey, types: [] }
-      displayedCategories.value.push(existingCategory)
-    }
-
-    const newTypesToAdd = typeKeys
-      .filter((typeKey) => !existingCategory!.types.some((t) => t.key === typeKey))
-      .map((typeKey) => {
-        const categoryOptions = AlgorithmCategoryDefinitions[catKey]?.options
-        const typeOptions: Array<{
-          option: AlgorithmCategoryOptionType,
-          value?: any
-        }> = []
-        if (categoryOptions) {
-          categoryOptions.forEach((option) => {
-            typeOptions.push({
-              option: option,
-              value: option.default
-            })
-          })
-        }
-        return { key: typeKey, options: typeOptions }
+  const categoryOptions = AlgorithmCategoryDefinitions[catKey]?.options
+  const typeOptions: Array<{
+    option: AlgorithmCategoryOptionType,
+    value?: any
+  }> = []
+  if (categoryOptions) {
+    categoryOptions.forEach((option) => {
+      typeOptions.push({
+        option: option,
+        value: option.default
       })
-
-    if (newTypesToAdd.length > 0) {
-      existingCategory.types = [...existingCategory.types, ...newTypesToAdd]
-    }
-  })
-
-  selectedAlgorithm.value = []
+    })
+  }
+  existingCategory.types.push({ id: nextTypeId++, key: typeKey, options: typeOptions })
 }
 
 const handleDeleteType = (event: { categoryKey: string; typeKey: string }) => {
@@ -621,18 +599,17 @@ const submitForm = async () => {
         <el-row>
           <el-col>
             <div class="section-title">算法参数</div>
-            <div style="display: flex; align-items: center; margin-bottom: 20px">
-              <el-tree-select
-                v-model="selectedAlgorithm"
-                :data="treeData"
-                placeholder="请选择算法"
-                style="flex-grow: 1; margin-right: 10px"
-                clearable
-                check-strictly
-                default-expand-all
-                multiple
-              />
-              <el-button type="primary" @click="handleAlgorithmAddClick">添加</el-button>
+            <div style="border: 1px solid var(--el-border-color); border-radius: 4px; padding: 5px; margin-bottom: 20px;">
+              <el-tree :data="treeData" default-expand-all :expand-on-click-node="false">
+                <template #default="{ node, data }">
+                  <span class="custom-tree-node">
+                    <span>{{ node.label }}</span>
+                    <el-button v-if="!data.disabled" @click.stop="addAlgorithm(data.value)" size="small">
+                      添加
+                    </el-button>
+                  </span>
+                </template>
+              </el-tree>
             </div>
             <div v-for="(category, index) in displayedCategories" :key="category.categoryKey">
               <AlgorithmCategory
@@ -662,4 +639,13 @@ const submitForm = async () => {
   font-weight: 700;
   margin-bottom: 10px;
 }
+.custom-tree-node {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding-right: 8px;
+}
+
 </style>

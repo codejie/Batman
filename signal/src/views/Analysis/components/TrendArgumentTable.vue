@@ -55,7 +55,7 @@ const handleRowClick = (row: AlgorithmItem) => {
 
 <template>
   <div>
-    <div style="margin-bottom: 10px;">
+    <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
       <el-button type="primary" @click="goToTrendArgument">新增</el-button>
     </div>
     <el-table :data="tableData" style="width: 100%" :border="true" @row-click="handleRowClick">

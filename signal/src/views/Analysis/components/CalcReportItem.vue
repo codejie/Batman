@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { PropType } from 'vue'
 import { ElTable, ElTableColumn } from 'element-plus'
 import { AlgorithmCategoryDefinitions, AlgorithmTypeDefinitions } from '@/api/calc/defines'
@@ -25,13 +25,37 @@ const getTypeTitle = (category: string, type: string) => {
 }
 
 const mergedArrayData = computed(() => {
-  if (!props.data || !props.data.reports) return []
-  return props.data.reports.flatMap((reportInfo) => {
-    if (!Array.isArray(reportInfo.report)) return []
-    const { report, category, type } = reportInfo
-    const title = `${getCategoryTitle(category)}: ${getTypeTitle(category, type)}`
-    return report.map((item) => ({ ...item, algorithm_title: title }))
-  })
+  if (!props.data) {
+    return { stock: null, reports: [] };
+  }
+
+  if (!props.data.reports || props.data.reports.length === 0) {
+    return { stock: props.data.stock, reports: [] };
+  }
+
+  const reportGroups = new Map<string, any[]>();
+
+  props.data.reports.forEach(reportInfo => {
+    const key = JSON.stringify({
+      category: reportInfo.category,
+      type: reportInfo.type,
+      arguments: reportInfo.arguments
+    });
+
+    if (!reportGroups.has(key)) {
+      reportGroups.set(key, []);
+    }
+    reportGroups.get(key)!.push(reportInfo);
+  });
+
+  return {
+    stock: props.data.stock,
+    reports: Array.from(reportGroups.values())
+  };
+})
+
+watch(mergedArrayData, (newValue) => {
+  console.log('mergedArrayData updated:', JSON.stringify(newValue, null, 2));
 })
 
 const getObjectReportData = (report: any) => {
@@ -43,24 +67,6 @@ const getObjectReportData = (report: any) => {
 
 const isObjectReport = (report: any) => {
   return typeof report === 'object' && !Array.isArray(report)
-}
-
-const spanMethod = ({ row, column, rowIndex, columnIndex }) => {
-  if (columnIndex === 1) {
-    if (rowIndex > 0 && row.algorithm_title === mergedArrayData.value[rowIndex - 1].algorithm_title) {
-      return { rowspan: 0, colspan: 0 }
-    } else {
-      let rowspan = 1
-      for (let i = rowIndex + 1; i < mergedArrayData.value.length; i++) {
-        if (row.algorithm_title === mergedArrayData.value[i].algorithm_title) {
-          rowspan++
-        } else {
-          break
-        }
-      }
-      return { rowspan, colspan: 1 }
-    }
-  }
 }
 
 function onTitleClick() {
@@ -78,9 +84,19 @@ function onTitleClick() {
     <p class="title" @click="onTitleClick">{{ props.data.stock.name }} ({{ props.data.stock.code }})</p>
 
     <div v-if="mergedArrayData.length > 0" class="single-report-block">
-      <el-table :data="mergedArrayData" :border="true" size="small" stripe :span-method="spanMethod">
+      <el-table :data="mergedArrayData" :border="true" size="small" stripe>
         <el-table-column type="index" label="Index" width="60" />
-        <el-table-column prop="algorithm_title" label="类型" />
+        <el-table-column prop="category" label="分类" />
+        <el-table-column prop="type" label="类型" />
+        <el-table-column prop="arguments" label="参数">
+          <template #default="{ row }">
+            <span v-if="row.arguments">{{
+              Object.entries(row.arguments)
+                .map(([key, value]) => `${key}=${value}`)
+                .join(', ')
+            }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="index" label="日期" />
         <el-table-column prop="trend" label="趋势信号">
           <template #default="{ row }">

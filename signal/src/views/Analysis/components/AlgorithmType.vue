@@ -5,8 +5,12 @@ import {
   ElRow,
   ElCol,
   ElInput,
+  ElInputNumber,
+  ElSelect,
+  ElOption,
   ElDescriptions,
-  ElDescriptionsItem
+  ElDescriptionsItem,
+  ElTooltip
 } from 'element-plus'
 import { computed, type PropType } from 'vue'
 
@@ -41,9 +45,9 @@ const filledOptions = computed(() => {
     return []
   }
   const filled = [...options]
-  const remainder = options.length % 4
+  const remainder = options.length % 6
   if (remainder > 0) {
-    const toAdd = 4 - remainder
+    const toAdd = 6 - remainder
     for (let i = 0; i < toAdd; i++) {
       filled.push({ option: { name: '', title: '' } as AlgorithmCategoryOptionType })
     }
@@ -74,13 +78,51 @@ const handleDelete = () => {
       v-if="modelValue.options && modelValue.options.length > 0"
       class="params-section"
     >
-      <el-descriptions :column="4" :border="true" size="small">
+      <el-descriptions :column="6" :border="true" size="small">
         <el-descriptions-item
           v-for="item in filledOptions"
           :key="item.option.name"
-          :label="item.option.title || ''"
+          :label-width="110"
+          :label-align="'right'"
         >
-          <el-input v-if="item.option.title" v-model="item.value" size="small" />
+          <template #label>
+            <el-tooltip
+              :disabled="!item.option.description"
+              :content="item.option.description"
+              placement="top"
+            >
+              <span>{{ item.option.title || '' }}</span>
+            </el-tooltip>
+          </template>
+          <template v-if="item.option.title">
+            <!-- Number type -->
+            <el-input-number
+              v-if="item.option.type === 'number'"
+              v-model="item.value"
+              size="small"
+              controls-position="right"
+            />
+            <!-- Option type -->
+            <el-select
+              v-else-if="item.option.type === 'option'"
+              v-model="item.value"
+              placeholder="Select"
+              size="small"
+            >
+              <el-option
+                v-for="opt in item.option.options"
+                :key="opt"
+                :label="opt"
+                :value="opt"
+              />
+            </el-select>
+            <!-- String and other types -->
+            <el-input
+              v-else
+              v-model="item.value"
+              size="small"
+            />
+          </template>
         </el-descriptions-item>
       </el-descriptions>
     </div>
@@ -96,5 +138,13 @@ const handleDelete = () => {
 }
 .params-section {
   margin-top: 10px;
+}
+.params-section :deep(.el-select),
+.params-section :deep(.el-input-number),
+.params-section :deep(.el-input) {
+  width: 80px;
+}
+.params-section :deep(.el-input-number .el-input__inner) {
+  text-align: left;
 }
 </style>

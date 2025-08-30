@@ -28,10 +28,10 @@ export const AlgorithmCategoryDefinitions = {
       {
         name: 'short_type',
         title: '短期均线类型',
-        type: 'string',
+        type: 'option',
         default: 'SMA',
         options: ['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3'],
-        description: ''
+        description: "['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3']"
       },
       {
         name: 'short_period',
@@ -43,10 +43,10 @@ export const AlgorithmCategoryDefinitions = {
       {
         name: 'long_type',
         title: '长期均线类型',
-        type: 'string',
+        type: 'option',
         default: 'SMA',
         options: ['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3'],
-        description: ''
+        description: "['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3']"
       },
       {
         name: 'long_period',
@@ -54,7 +54,22 @@ export const AlgorithmCategoryDefinitions = {
         default: 20,
         type: 'number',
         description: '长期均线的计算周期，通常为20或30天'
-      }      
+      },
+      {
+        name: 'long_type',
+        title: '长期均线类型',
+        type: 'option',
+        default: 'SMA',
+        options: ['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3'],
+        description: "['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3']"
+      },
+      {
+        name: 'long_period',
+        title: '长期均线周期',
+        default: 20,
+        type: 'number',
+        description: '长期均线的计算周期，通常为20或30天'
+      }            
     ]
   },
   'ADX': {

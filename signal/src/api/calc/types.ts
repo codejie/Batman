@@ -127,6 +127,7 @@ export interface CalcReportSseData {
     name: string
   }
   report: any
+  arguments: any
 }
 
 export interface SsePayload<T> {

@@ -63,9 +63,13 @@ const toggleTable = () => {
 }
 
 const handleDeleteItem = async (id: number) => {
+  const isDeletingSelected = selectedAlgorithmItem.value?.id === id
   const res = await apiDeleteAlgorithmItem({ id })
   if (res) {
     ElMessage.success('删除成功')
+    if (isDeletingSelected) {
+      selectedValue.value = ''
+    }
     getAlgorithmItems()
   }
 }

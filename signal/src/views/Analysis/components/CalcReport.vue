@@ -23,7 +23,8 @@ export interface AggregatedReport {
   reports: {
     category: string
     type: string
-    report: any
+    report: any,
+    arguments: any
   }[]
 }
 
@@ -88,7 +89,8 @@ const connect = () => {
         stockEntry.reports.push({
           category: data.category,
           type: data.type,
-          report: data.report
+          report: data.report,
+          arguments: data.arguments
         })
       } else {
         // If not found, create a new entry and push it to the array
@@ -98,7 +100,8 @@ const connect = () => {
             {
               category: data.category,
               type: data.type,
-              report: data.report
+              report: data.report,
+              arguments: data.arguments
             }
           ]
         }
