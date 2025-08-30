@@ -15,11 +15,11 @@ def list_to_df(data: list) -> Optional[pd.DataFrame]:
 # Category 0: Technical Indicators
 CALC_MODULES = {
   'MA': {
-    'MA_MA': ma,
-    'EMA': ma,
+    'MA_MA': {'calc': ma.calc, 'report': ma.report},
+    'EMA': {'calc': ma.calc, 'report': ma.report},
   },
   'ADX': {
-    'ADX': adx,
+    'ADX': {'calc': adx.calc, 'report': adx.report},
   },
 }
 
@@ -35,10 +35,10 @@ def get_calc_functions(category: str, type: str) -> Tuple[Optional[Callable], Op
     Tuple[Optional[Callable], Optional[Callable]]: A tuple containing the calc function
                                                    and the report function, or (None, None) if not found.
   """
-  category_modules = CALC_MODULES.get(category)
-  if category_modules:
-    module = category_modules.get(type)
-    if module:
-      return (getattr(module, 'calc', None), getattr(module, 'report', None))
+  category_definitions = CALC_MODULES.get(category)
+  if category_definitions:
+    type_definition = category_definitions.get(type)
+    if type_definition:
+      return (type_definition.get('calc'), type_definition.get('report'))
   
   return (None, None)

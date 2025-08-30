@@ -41,9 +41,9 @@ const filledOptions = computed(() => {
     return []
   }
   const filled = [...options]
-  const remainder = options.length % 3
+  const remainder = options.length % 4
   if (remainder > 0) {
-    const toAdd = 3 - remainder
+    const toAdd = 4 - remainder
     for (let i = 0; i < toAdd; i++) {
       filled.push({ option: { name: '', title: '' } as AlgorithmCategoryOptionType })
     }
@@ -74,7 +74,7 @@ const handleDelete = () => {
       v-if="modelValue.options && modelValue.options.length > 0"
       class="params-section"
     >
-      <el-descriptions :column="3" :border="true" size="small">
+      <el-descriptions :column="4" :border="true" size="small">
         <el-descriptions-item
           v-for="item in filledOptions"
           :key="item.option.name"

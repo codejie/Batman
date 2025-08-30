@@ -95,6 +95,12 @@ export const AlgorithmTypeDefinitions = {
       title: '指数移动平均线',
       description: 'Exponential Moving Average (EMA) - 指数移动平均线'
     }
+  },
+  'ADX': {
+    'ADX': {
+      title: '平均趋向指数',
+      description: 'Average Directional Index (ADX) - 平均趋向指标'
+    }
   }
 }
 

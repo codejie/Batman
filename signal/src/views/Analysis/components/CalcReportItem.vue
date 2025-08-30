@@ -24,12 +24,18 @@ const getTypeTitle = (category: string, type: string) => {
   return AlgorithmTypeDefinitions[category]?.[type]?.title || type
 }
 
-const getTableData = (report: any) => {
-  if (!report) return []
-  if (Array.isArray(report)) {
-    return report
-  }
-  if (typeof report === 'object') {
+const mergedArrayData = computed(() => {
+  if (!props.data || !props.data.reports) return []
+  return props.data.reports.flatMap((reportInfo) => {
+    if (!Array.isArray(reportInfo.report)) return []
+    const { report, category, type } = reportInfo
+    const title = `${getCategoryTitle(category)}: ${getTypeTitle(category, type)}`
+    return report.map((item) => ({ ...item, algorithm_title: title }))
+  })
+})
+
+const getObjectReportData = (report: any) => {
+  if (typeof report === 'object' && !Array.isArray(report)) {
     return Object.entries(report).map(([key, value]) => ({ key, value }))
   }
   return []
@@ -37,6 +43,24 @@ const getTableData = (report: any) => {
 
 const isObjectReport = (report: any) => {
   return typeof report === 'object' && !Array.isArray(report)
+}
+
+const spanMethod = ({ row, column, rowIndex, columnIndex }) => {
+  if (columnIndex === 1) {
+    if (rowIndex > 0 && row.algorithm_title === mergedArrayData.value[rowIndex - 1].algorithm_title) {
+      return { rowspan: 0, colspan: 0 }
+    } else {
+      let rowspan = 1
+      for (let i = rowIndex + 1; i < mergedArrayData.value.length; i++) {
+        if (row.algorithm_title === mergedArrayData.value[i].algorithm_title) {
+          rowspan++
+        } else {
+          break
+        }
+      }
+      return { rowspan, colspan: 1 }
+    }
+  }
 }
 
 function onTitleClick() {
@@ -53,30 +77,30 @@ function onTitleClick() {
   <div class="report-item-container">
     <p class="title" @click="onTitleClick">{{ props.data.stock.name }} ({{ props.data.stock.code }})</p>
 
-    <div
-      v-for="(reportInfo, index) in props.data.reports"
-      :key="index"
-      class="single-report-block"
-    >
-      <p class="subtitle">{{ getCategoryTitle(reportInfo.category) }}: {{ getTypeTitle(reportInfo.category, reportInfo.type) }}</p>
+    <div v-if="mergedArrayData.length > 0" class="single-report-block">
+      <el-table :data="mergedArrayData" :border="true" size="small" stripe :span-method="spanMethod">
+        <el-table-column type="index" label="Index" width="60" />
+        <el-table-column prop="algorithm_title" label="类型" />
+        <el-table-column prop="index" label="日期" />
+        <el-table-column prop="trend" label="趋势信号">
+          <template #default="{ row }">
+            <span v-if="row.trend === 1" style="color: red">上涨</span>
+            <span v-else-if="row.trend === -1" style="color: green">下跌</span>
+            <span v-else-if="row.trend === 0" style="color: grey">--</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="price" label="价格" />
+      </el-table>
+    </div>
 
-      <el-table :data="getTableData(reportInfo.report)" :border="true" size="small" stripe>
-        <template v-if="isObjectReport(reportInfo.report)">
+    <div v-for="(reportInfo, index) in props.data.reports" :key="index">
+      <div v-if="isObjectReport(reportInfo.report)" class="single-report-block">
+        <p class="subtitle">{{ getCategoryTitle(reportInfo.category) }}: {{ getTypeTitle(reportInfo.category, reportInfo.type) }}</p>
+        <el-table :data="getObjectReportData(reportInfo.report)" :border="true" size="small" stripe>
           <el-table-column prop="key" label="Property" />
           <el-table-column prop="value" label="Value" />
-        </template>
-        <template v-else>
-          <el-table-column prop="index" label="日期" />
-          <el-table-column prop="price" label="价格" />
-          <el-table-column prop="trend" label="趋势信号">
-            <template #default="{ row }">
-              <span v-if="row.trend === 1" style="color: red">上涨</span>
-              <span v-else-if="row.trend === -1" style="color: green">下跌</span>
-              <span v-else-if="row.trend === 0" style="color: grey">--</span>
-            </template>
-          </el-table-column>
-        </template>
-      </el-table>
+        </el-table>
+      </div>
     </div>
     <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" width="60%" />
   </div>

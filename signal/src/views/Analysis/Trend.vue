@@ -35,6 +35,7 @@ onActivated(() => {
     getAlgorithmItems().then(() => {
       showArgumentTable.value = true
     })
+    selectedValue.value = ''
     refreshStore.setNeedsRefresh(false)
   }
 })

@@ -47,23 +47,26 @@ def calc(history_data: pd.DataFrame, options: dict = defaultOptions) -> pd.DataF
 
   return result
 
-def report(history_data: pd.DataFrame, adx_data: pd.DataFrame, idx: int = 0, options: dict = defaultOptions) -> list[str]:
+def report(history_data: pd.DataFrame, adx_data: pd.DataFrame, idx: int = 0, options: dict = defaultOptions) -> list[dict]:
   options = defaultOptions | options
   
-  result = []
-  if idx == 0:
-    for i in range(len(adx_data)):
-      if adx_data['Signal'].iloc[i] == 1 or adx_data['Signal'].iloc[i] == -1:
-        result.append(f"{adx_data.index[i]}: {'Uptrend' if adx_data['Signal'].iloc[i] == 1 else 'Downtrend'} [ADX: {adx_data['ADX'].iloc[i]} / Price: {history_data[options['columns'][2]].iloc[i]}]")
+  result: list[dict] = []
+  
+  start_index = 0
+  if idx > 0:
+    start_index = idx
   elif idx < 0:
-    for i in range(len(adx_data) + idx, len(adx_data)):
-      if adx_data['Signal'].iloc[i] == 1 or adx_data['Signal'].iloc[i] == -1:
-        result.append(f"{adx_data.index[i]}: {'Uptrend' if adx_data['Signal'].iloc[i] == 1 else 'Downtrend'} [ADX: {adx_data['ADX'].iloc[i]} /Price: {history_data[options['columns'][2]].iloc[i]}]")
-  elif idx > 0:
-    for i in range(idx, len(adx_data)):
-      if adx_data['Signal'].iloc[i] == 1 or adx_data['Signal'].iloc[i] == -1:
-        result.append(f"{adx_data.index[i]}: {'Uptrend' if adx_data['Signal'].iloc[i] == 1 else 'Downtrend'} [ADX: {adx_data['ADX'].iloc[i]} /Price: {history_data[options['columns'][2]].iloc[i]}]")
+    start_index = len(adx_data) + idx
 
+  for i in range(start_index, len(adx_data)):
+    signal = adx_data['Signal'].iloc[i]
+    if signal == 1 or signal == -1:
+      result.append({
+        "index": str(adx_data.index[i]),
+        "price": float(history_data[options['columns'][2]].iloc[i]),
+        "trend": signal
+      })
+      
   return result
 
 # ADX, OBV, RSI
