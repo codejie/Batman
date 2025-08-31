@@ -14,10 +14,9 @@ import {
   ElTable,
   ElTableColumn,
   ElDivider,
-  ElTreeSelect,
   ElTree,
-  
-  ElMessage
+  ElMessage,
+  type ElTree as ElTreeType
 } from 'element-plus'
 import AlgorithmCategory from './components/AlgorithmCategory.vue'
 import { TYPE_STOCK } from '@/api/data'
@@ -59,7 +58,6 @@ const props = defineProps({
 
 const router = useRouter()
 const refreshStore = useRefreshStore()
-// const idFromState = history.state.id
 const effectiveId = computed(() => props.id || history.state.id)
 
 const goBack = () => {
@@ -82,8 +80,6 @@ const tableData = ref<StockListTableItem[]>([])
 
 const loadStockList = async () => {
   const listType = formData.list_type
-
-  // tableData.value = []
   let stocks: StockListTableItem[] = tableData.value
 
   const fetchHolding = async () => {
@@ -107,31 +103,24 @@ const loadStockList = async () => {
   }
 
   if (listType === 0) {
-    // '持仓列表'
     const holdingStocks = await fetchHolding()
     stocks = Array.from(new Map(holdingStocks.map((item) => [item.code, item])).values())
   } else if (listType === 1) {
-    // '自选列表'
     const customizedStocks = await fetchCustomized()
     stocks = Array.from(new Map(customizedStocks.map((item) => [item.code, item])).values())
   } else if (listType === 2) {
      if (effectiveId.value) {
       try {
         const res = await apiListStockList({ cid: effectiveId.value })
-        console.log('custom list res', res);
-        stocks = res.result.map((item) => ({
-          ...item,
-          src: 2
-        }))
+        stocks = res.result.map((item) => ({ ...item, src: 2 }))
       } catch (error) {
         ElMessage.error('获取算法自定义列表失败')
         tableData.value = []
       }
     }
   } else if (listType === 3) {
-    stocks = [] // '全部列表' - will be populated later
+    stocks = []
   } else if (listType === 4) {
-    // '持仓列表' + '自选列表'
     const holdingStocks = await fetchHolding()
     const customizedStocks = await fetchCustomized()
     const combined = [...holdingStocks, ...customizedStocks]
@@ -154,7 +143,6 @@ const populateDisplayedCategories = (args: ArgumentItem[]) => {
 
   for (const catKey in groupedByCategory) {
     const categoryArgs = groupedByCategory[catKey]
-
     const categoryDefinition = AlgorithmCategoryDefinitions[catKey]
     if (!categoryDefinition) continue
 
@@ -192,16 +180,13 @@ watch(
           router.back()
           return
         }
-
         await loadStockList()
-
         const argsRes = await apiListArguments({ cid: id })
         populateDisplayedCategories(argsRes.result)
       } catch (error) {
         ElMessage.error('Failed to load algorithm data.')
       }
     } else {
-      // Reset form for new item
       Object.assign(formData, {
         name: '',
         remarks: '',
@@ -211,22 +196,18 @@ watch(
         data_period: 1,
         report_period: 1
       })
-      // tableData.value = []
-      // displayedCategories.value = []
       loadStockList()
     }
   },
   { immediate: true }
 )
 
-// UI State
 const stockListUi = ref<string[]>([])
 const dataPeriodUi = ref<string[]>([])
 const reportRangeUi = ref<string[]>([])
 
-// Mapping and Sync Logic
 const listTypeFromNumber = (t: number | undefined) => {
-  if (t === undefined) return [AlgorithmStockListDefinitions[3]] // '全部列表'
+  if (t === undefined) return [AlgorithmStockListDefinitions[3]]
   if (t === 4) return [AlgorithmStockListDefinitions[0], AlgorithmStockListDefinitions[1]]
   return [AlgorithmStockListDefinitions[t]]
 }
@@ -241,36 +222,34 @@ watch(
   { immediate: true, deep: true }
 )
 
-// Event Handlers
 const handleStockListChange = (val: string[]) => {
   if (!val || val.length === 0) {
     stockListUi.value = [AlgorithmStockListDefinitions[formData.list_type]]
     return
   }
-
-  const newSelection = [...val] // val ? [...val] : []
+  const newSelection = [...val]
   const lastSelection = newSelection.at(-1)
-
-  const holding = AlgorithmStockListDefinitions[0] // '持仓列表'
-  const watchlist = AlgorithmStockListDefinitions[1] // '自选列表'
-  const custom = AlgorithmStockListDefinitions[2] // '自定义列表'
-  const all = AlgorithmStockListDefinitions[3] // '全部列表'
+  const holding = AlgorithmStockListDefinitions[0]
+  const watchlist = AlgorithmStockListDefinitions[1]
+  const custom = AlgorithmStockListDefinitions[2]
+  const all = AlgorithmStockListDefinitions[3]
 
   if (lastSelection === custom) {
     stockListUi.value = [custom]
+    formData.list_type = 2
+    return // Do not call loadStockList, preserving tableData
   } else if (lastSelection === all) {
     stockListUi.value = [all]
   } else {
     stockListUi.value = newSelection.filter(item => item === holding || item === watchlist)
   }
 
-  // Convert UI selection to formData
   const selection = stockListUi.value
   const hasHolding = selection.includes(holding)
   const hasWatchlist = selection.includes(watchlist)
 
   if (hasHolding && hasWatchlist) {
-    formData.list_type = 4 // holding + watchlist
+    formData.list_type = 4
   } else if (hasHolding) {
     formData.list_type = 0
   } else if (hasWatchlist) {
@@ -280,7 +259,6 @@ const handleStockListChange = (val: string[]) => {
   } else if (selection.includes(all)) {
     formData.list_type = 3
   }
-
   loadStockList()
 }
 
@@ -317,7 +295,6 @@ const canDeleteStock = computed(() => {
 })
 
 const quickViewDialogVisible = ref(false)
-
 const handleAddStockClick = () => {
   quickViewDialogVisible.value = true
 }
@@ -327,10 +304,7 @@ const onQuickViewConfirm = (item: { code: string; name: string; type: number }) 
     ElMessage.warning('代码已存在')
     return
   }
-  tableData.value.push({
-    ...item,
-    src: 2 // 自定义
-  })
+  tableData.value.push({ ...item, src: 2 })
   quickViewDialogVisible.value = false
 }
 
@@ -345,7 +319,6 @@ const treeData = computed(() => {
         label: `${type.title} - ${type.description}`
       }
     })
-
     return {
       value: catKey,
       label: `${category.title} - ${category.description}`,
@@ -355,19 +328,17 @@ const treeData = computed(() => {
   })
 })
 
-const displayedCategories = ref<
-  Array<{
+const displayedCategories = ref<Array<{
     categoryKey: string
     types: Array<{
       id: number,
       key: string,
       options: Array<{
         option: AlgorithmCategoryOptionType,
-        value?: any  
+        value?: any
       }>
     }>
-  }>
->([])
+  }>>([])
 
 let nextTypeId = 0
 
@@ -377,26 +348,17 @@ const addAlgorithm = (value: string) => {
   if (parts.length !== 2) {
     return
   }
-
   const [catKey, typeKey] = parts
-
   let existingCategory = displayedCategories.value.find((c) => c.categoryKey === catKey)
   if (!existingCategory) {
     existingCategory = { categoryKey: catKey, types: [] }
     displayedCategories.value.push(existingCategory)
   }
-
   const categoryOptions = AlgorithmCategoryDefinitions[catKey]?.options
-  const typeOptions: Array<{
-    option: AlgorithmCategoryOptionType,
-    value?: any
-  }> = []
+  const typeOptions: Array<{ option: AlgorithmCategoryOptionType, value?: any }> = []
   if (categoryOptions) {
     categoryOptions.forEach((option) => {
-      typeOptions.push({
-        option: option,
-        value: option.default
-      })
+      typeOptions.push({ option: option, value: option.default })
     })
   }
   existingCategory.types.push({ id: nextTypeId++, key: typeKey, options: typeOptions })
@@ -426,7 +388,6 @@ const handleDeleteStock = (index: number) => {
 const submitForm = async () => {
   try {
     if (effectiveId.value) {
-      // Update existing item
       await apiUpdateAlgorithmItem({
         id: effectiveId.value,
         name: formData.name,
@@ -437,8 +398,6 @@ const submitForm = async () => {
         data_period: formData.data_period,
         report_period: formData.report_period
       })
-
-      // Stock list
       if (showStockTableAddButton.value) {
         const items = tableData.value.map((item) => ({
           type: item.type,
@@ -447,8 +406,6 @@ const submitForm = async () => {
         }))
         await apiUpdateStockList({ cid: effectiveId.value, items: items })
       }
-
-      // Arguments
       const args: ArgumentItem[] = []
       displayedCategories.value.forEach((category) => {
         category.types.forEach((type) => {
@@ -465,14 +422,10 @@ const submitForm = async () => {
         })
       })
       await apiUpdateArguments({ cid: effectiveId.value, items: args })
-
       ElMessage.success('更新成功')
     } else {
-      // Create new item
       const res = await apiCreateAlgorithmItem(formData)
       const cid = res.result
-
-      // Stock list
       if (showStockTableAddButton.value) {
         const items = tableData.value.map((item) => ({
           type: item.type,
@@ -481,8 +434,6 @@ const submitForm = async () => {
         }))
         await apiCreateStockList({ cid: cid, items: items })
       }
-
-      // Arguments
       const args: ArgumentItem[] = []
       displayedCategories.value.forEach((category) => {
         category.types.forEach((type) => {
@@ -499,13 +450,26 @@ const submitForm = async () => {
         })
       })
       await apiCreateArguments({ cid: cid, items: args })
-
       ElMessage.success('提交成功')
     }
     refreshStore.setNeedsRefresh(true)
     router.back()
   } catch (error) {
     ElMessage.error('提交失败')
+  }
+}
+
+const isTreeExpanded = ref(true)
+const algorithmTreeRef = ref<InstanceType<typeof ElTreeType> | null>(null)
+
+const toggleTreeExpansion = () => {
+  isTreeExpanded.value = !isTreeExpanded.value
+  const tree = algorithmTreeRef.value
+  if (!tree) return
+  for (const key in tree.store.nodesMap) {
+    if (Object.prototype.hasOwnProperty.call(tree.store.nodesMap, key)) {
+      tree.store.nodesMap[key].expanded = isTreeExpanded.value
+    }
   }
 }
 </script>
@@ -558,10 +522,9 @@ const submitForm = async () => {
               <template #default="scope">
                 <span>{{ scope.row.type === TYPE_STOCK ? '股票' : '指数' }}</span>
               </template>
-            </el-table-column>            
+            </el-table-column>
             <el-table-column prop="name" label="名称" />
             <el-table-column prop="code" label="代码" />
-            <!-- <el-table-column prop="holding" label="持有" /> -->
             <el-table-column v-if="canDeleteStock" label="操作">
               <template #default="scope">
                 <el-button type="danger" size="small" @click="handleDeleteStock(scope.$index)"
@@ -598,9 +561,12 @@ const submitForm = async () => {
       <el-col :span="16" style="padding-left: 20px">
         <el-row>
           <el-col>
-            <div class="section-title">算法参数</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div class="section-title" style="margin-bottom: 0;">算法参数</div>
+              <el-button size="small" @click="toggleTreeExpansion">{{ isTreeExpanded ? '收起' : '展开' }}</el-button>
+            </div>
             <div style="border: 1px solid var(--el-border-color); border-radius: 4px; padding: 5px; margin-bottom: 20px;">
-              <el-tree :data="treeData" default-expand-all :expand-on-click-node="false">
+              <el-tree ref="algorithmTreeRef" :data="treeData" default-expand-all :expand-on-click-node="false">
                 <template #default="{ node, data }">
                   <span class="custom-tree-node">
                     <span>{{ node.label }}</span>
@@ -647,5 +613,4 @@ const submitForm = async () => {
   font-size: 14px;
   padding-right: 8px;
 }
-
 </style>

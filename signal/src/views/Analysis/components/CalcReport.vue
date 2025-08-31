@@ -23,7 +23,7 @@ export interface AggregatedReport {
   reports: {
     category: string
     type: string
-    report: any,
+    results: any[],
     arguments: any
   }[]
 }
@@ -35,7 +35,7 @@ const isSseConnected = ref(false)
 const logMessage = ref<string>('Waiting for calculation to start...')
 const argumentList = ref<ArgumentItem[]>([])
 
-const displayMode = ref<'tile' | 'tab'>('tile')
+const displayMode = ref<'tile' | 'tab'>('tab')
 
 const toggleDisplayMode = () => {
   displayMode.value = displayMode.value === 'tab' ? 'tile' : 'tab'
@@ -89,7 +89,7 @@ const connect = () => {
         stockEntry.reports.push({
           category: data.category,
           type: data.type,
-          report: data.report,
+          results: data.results,
           arguments: data.arguments
         })
       } else {
@@ -100,7 +100,7 @@ const connect = () => {
             {
               category: data.category,
               type: data.type,
-              report: data.report,
+              results: data.results,
               arguments: data.arguments
             }
           ]

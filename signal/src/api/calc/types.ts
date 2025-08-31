@@ -126,7 +126,7 @@ export interface CalcReportSseData {
     code: string
     name: string
   }
-  report: any
+  results: any[]
   arguments: any
 }
 

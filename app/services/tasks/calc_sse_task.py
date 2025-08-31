@@ -56,13 +56,13 @@ class CalcSseTask(Task):
     if self.uid is None or self.cid is None:
       raise ValueError("uid and cid must be provided for CalcSseTask")
 
-  async def _send_report(self, category: int, type: int, stock: StockItem, report: list[dict], arguments: dict):
+  async def _send_report(self, category: int, type: int, stock: StockItem, results: list[dict], arguments: dict):
     """Sends data to the user via SSE."""
     await sse_manager.send_data(self.uid, self.TYPE, data={
       "category": category,
       "type": type,
       "stock": asdict(stock),
-      "report": report,
+      "results": results,
       "arguments": arguments
     })
 
@@ -146,10 +146,10 @@ class CalcSseTask(Task):
           calc_options = json.loads(arg_item.arguments)
           calc_result = calc_func(history_data, calc_options)
           calc_report = report_func(history_data, calc_result, idx=report_index, options=calc_options)
-          if calc_report:
-            await self._send_report(category=arg_item.category, type=arg_item.type, stock=stock, report=calc_report, arguments=arg_item.arguments)
-          else:
-            await self._send_action(action="log",  message=f"[CalcTask {self.cid}] No report generated for {stock.code} with options {calc_options}.")
+          # if calc_report:
+          await self._send_report(category=arg_item.category, type=arg_item.type, stock=stock, results=calc_report, arguments=calc_options)
+          # else:
+          #   await self._send_action(action="log",  message=f"[CalcTask {self.cid}] No report generated for {stock.code} with options {calc_options}.")
           await asyncio.sleep(0.1)
         await asyncio.sleep(0.1)
 

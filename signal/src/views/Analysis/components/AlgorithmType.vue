@@ -66,9 +66,7 @@ const handleDelete = () => {
   <div class="type-container" v-if="typeDefinition">
     <el-row justify="space-between">
       <el-col :span="20">
-        <p>
-          <strong>{{ index }}) {{ typeDefinition.title }}</strong> ({{ modelValue.key }})
-        </p>
+        <span class="type-title">{{ index }}) {{ typeDefinition.title }} ({{ modelValue.key }})</span>
       </el-col>
       <el-col :span="4" style="text-align: right">
         <el-button type="danger" size="small" plain @click="handleDelete">删除</el-button>
@@ -132,9 +130,13 @@ const handleDelete = () => {
 <style scoped>
 .type-container {
   padding: 10px;
-  border: 1px solid #ebeef5;
+  /* border: 1px solid #ebeef5; */
   border-radius: 4px;
   margin-bottom: 10px;
+}
+.type-title {
+  font-weight: bold;
+  font-size: 12px;
 }
 .params-section {
   margin-top: 10px;

@@ -52,13 +52,13 @@ const handleDeleteType = (typeKeyToDelete: string) => {
 
 <template>
   <div class="category-container">
+    <el-divider />
+
     <div class="category-header">
       <span class="category-title">{{ index }}. {{ category.title }}</span>
       <span class="category-name">({{ categoryKey }})</span>:
       <span class="category-description">{{ category.description }}</span>
     </div>
-
-    <el-divider />
 
     <el-row :gutter="20" class="type-list">
       <el-col :span="24" v-for="(type, typeIndex) in types" :key="type.key">
@@ -78,7 +78,7 @@ const handleDeleteType = (typeKeyToDelete: string) => {
   margin-bottom: 20px;
 }
 .category-header {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   margin-bottom: 10px;
 }
