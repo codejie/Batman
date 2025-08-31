@@ -168,14 +168,14 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         alwaysShow: true
     },
     children: [
-      {
-        name: 'page',
-        path: 'page',
-        component: () => import('@/views/Analysis/Analysis.vue'),
-        meta: {
-          title: '分析测试'
-        }
-      },
+      // {
+      //   name: 'page',
+      //   path: 'page',
+      //   component: () => import('@/views/Analysis/Analysis.vue'),
+      //   meta: {
+      //     title: '分析测试'
+      //   }
+      // },
       {
         name: 'Trend',
         path: 'trend',

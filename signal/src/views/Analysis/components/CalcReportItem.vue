@@ -99,11 +99,11 @@ function onTitleClick() {
               <span>
                 {{ getCategoryTitle(row.category) }}: {{ getTypeTitle(row.category, row.type) }}
                 <span v-if="row.arguments">
-                  ({{
+                  [{{
                     Object.entries(row.arguments)
                       .map(([key, value]) => `${key}=${value}`)
                       .join(', ')
-                  }})
+                  }}]
                 </span>
               </span>
             </b>

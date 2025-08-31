@@ -20,7 +20,6 @@ class ConnectionManager:
     # The old connection will stop receiving messages.
     queue = asyncio.Queue()
     self.active_connections[uid][type] = queue
-    logger.info(f"User {uid} connected with type '{type}'.")
     return queue
 
   def disconnect(self, uid: int, type: str, queue: asyncio.Queue):
@@ -31,31 +30,26 @@ class ConnectionManager:
         del self.active_connections[uid][type]
         if not self.active_connections[uid]:
           del self.active_connections[uid]
-    logger.info(f"User {uid} with type '{type}' disconnected.")
 
   async def send_message(self, uid: int, type: str, message: str):
     """Send a message to a specific user and type."""
     if uid in self.active_connections and type in self.active_connections[uid]:
-      logger.info(f"Queueing SSE message for uid={uid}, type={type}: {message}")
       await self.active_connections[uid][type].put(message)
 
   async def send_event(self, uid: int, type: str, event: str, data: dict):
     """Send a custom event message to a specific user and type."""
     if uid in self.active_connections and type in self.active_connections[uid]:
       payload = f"event: {event}\ndata: {json.dumps(data)}\n\n"
-      logger.info(f"Queueing SSE event for uid={uid}, type={type}: {payload}")
       await self.active_connections[uid][type].put(payload)
 
   async def send_data(self, uid: int, type: str, data: dict):
     """Sends data to a specific user and type."""
     if uid in self.active_connections and type in self.active_connections[uid]:
       payload = f"data: {json.dumps(data)}\n\n"
-      logger.info(f"Queueing SSE data for uid={uid}, type={type}: {payload}")
       await self.active_connections[uid][type].put(payload)
 
   async def shutdown(self):
     """Signal all active connections to terminate."""
-    logger.info("Shutting down SSE manager, signaling all clients to disconnect.")
     for uid in list(self.active_connections.keys()):
       for type, queue in list(self.active_connections[uid].items()):
         await queue.put(None) # Sentinel value to signal shutdown
@@ -76,10 +70,8 @@ async def make_sse_task_queue(request: Request, uid: int, type: str):
       if await request.is_disconnected():
         break
           
-      logger.info(f"Yielding SSE message to uid={uid}, type={type}: {message}")
       yield f"{message}\n\n"
   except asyncio.CancelledError:
     logger.info(f"Event generation for user {uid} with type '{type}' cancelled.")
   finally:
     manager.disconnect(uid, type, queue)
-    logger.info(f"Stopped event generation for user {uid} with type '{type}'")

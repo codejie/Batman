@@ -1,6 +1,7 @@
 import asyncio
 import threading
 from typing import Optional
+from app.logger import logger
 
 class Task:
   NAME: str = "task"
@@ -16,21 +17,21 @@ class Task:
   def stop(self):
     """Stops (cancels) the individual task."""
     if self._asyncio_task and not self._asyncio_task.done():
-      print(f"Sending stop request to task '{self.name}'.")
+      logger.info(f"Sending stop request to task '{self.name}'.")
       self._asyncio_task.cancel()
     else:
-      print(f"Task '{self.name}' is not running or already finished.")
+      logger.info(f"Task '{self.name}' is not running or already finished.")
 
   async def run(self, exit_event: asyncio.Event):
-    print(f"Task {self.name} started.")
+    logger.info(f"Task {self.name} started.")
     try:
       while not exit_event.is_set():
         await asyncio.sleep(1)
-        print(f"Task {self.name} is running...")
+        logger.info(f"Task {self.name} is running...")
     except asyncio.CancelledError:
-      print(f"Task '{self.name}' was stopped (cancelled)." )
+      logger.info(f"Task '{self.name}' was stopped (cancelled)." )
     finally:
-      print(f"Task {self.name} exiting.")
+      logger.info(f"Task {self.name} exiting.")
 
 
 class TaskManager:
@@ -51,13 +52,13 @@ class TaskManager:
     try:
       fut.result()
     except asyncio.CancelledError:
-      print(f"Task '{task_name}' was cancelled.")
+      logger.info(f"Task '{task_name}' was cancelled.")
     except Exception as e:
-      print(f"Task '{task_name}' failed with an exception: {e}")
+      logger.error(f"Task '{task_name}' failed with an exception: {e}")
     
     if task_name in self._task_map:
       del self._task_map[task_name]
-      print(f"Task '{task_name}' finished and was removed from tracking.")
+      logger.info(f"Task '{task_name}' finished and was removed from tracking.")
 
   def _start_loop(self):
     self._loop = asyncio.new_event_loop()
@@ -79,7 +80,7 @@ class TaskManager:
         except asyncio.QueueEmpty:
           await asyncio.sleep(0.1)
         except Exception as e:
-          print(f"Error in task loop: {e}")
+          logger.error(f"Error in task loop: {e}")
           break
 
     self._loop.call_soon_threadsafe(asyncio.create_task, _loop_run())
@@ -89,9 +90,9 @@ class TaskManager:
       self._loop.run_forever()
     except RuntimeError as e:
       if str(e) == "Event loop is closed":
-        print("Event loop was closed, exiting task manager.")
+        logger.info("Event loop was closed, exiting task manager.")
       else:
-        print(f"Unexpected error in event loop: {e}")
+        logger.error(f"Unexpected error in event loop: {e}")
         raise e
     finally:
       pending = asyncio.all_tasks(self._loop)
@@ -101,7 +102,7 @@ class TaskManager:
 
   def start(self):
     if self._thread is not None and self._thread.is_alive():
-      print("TaskManager is already running.")
+      logger.info("TaskManager is already running.")
       return
 
     self._exit_event.clear()
@@ -116,7 +117,7 @@ class TaskManager:
     if self._thread is None or not self._thread.is_alive():
       return
 
-    print("TaskManager: Shutting down...")
+    logger.info("TaskManager: Shutting down...")
     self._exit_event.set()
     if self._loop and self._loop.is_running():
       self._loop.call_soon_threadsafe(self._loop.stop)
@@ -124,9 +125,9 @@ class TaskManager:
     self._thread.join(timeout=self.TASK_EXIT_DELAY)
 
     if self._thread.is_alive():
-      print("TaskManager: ERROR - Thread did not stop in time.")
+      logger.error("TaskManager: ERROR - Thread did not stop in time.")
     else:
-      print("TaskManager: Thread exited successfully.")
+      logger.info("TaskManager: Thread exited successfully.")
 
     self._loop = None
     self._thread = None
