@@ -60,28 +60,19 @@ const handleRowClick = (row: AlgorithmItem) => {
     </div>
     <el-table :data="tableData" style="width: 100%" :border="true" @row-click="handleRowClick">
       <el-table-column type="index" width="60" />
-      <el-table-column prop="name" label="名称" width="160" />
-      <el-table-column prop="category" label="算法分类" width="180">
-        <template #default="{ row }">
-          {{ AlgorithmCategoryDefinitions[row.category]?.title }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="type" label="算法类型" width="200">
-        <template #default="{ row }">
-          {{ AlgorithmTypeDefinitions[row.category]?.[row.type]?.title }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="list_type" label="列表类型" width="100">
+      <el-table-column prop="name" label="名称" width="220" />
+      
+      <el-table-column prop="list_type" label="列表类型" width="120">
         <template #default="{ row }">
           {{ AlgorithmStockListDefinitions[row.list_type] }}
         </template>
       </el-table-column>
-      <el-table-column prop="data_period" label="数据周期" width="100">
+      <el-table-column prop="data_period" label="数据周期" width="120">
         <template #default="{ row }">
           {{ AlgorithmDataPeriodDefinitions[row.data_period] }}
         </template>
       </el-table-column>
-      <el-table-column prop="report_period" label="报告周期" width="100">
+      <el-table-column prop="report_period" label="报告周期" width="120">
         <template #default="{ row }">
           {{ AlgorithmReportPeriodDefinitions[row.report_period] }}
         </template>

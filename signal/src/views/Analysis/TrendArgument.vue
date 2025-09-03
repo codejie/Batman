@@ -148,10 +148,14 @@ const populateDisplayedCategories = (args: ArgumentItem[]) => {
 
     const types = categoryArgs.map((arg) => {
       const params = JSON.parse(arg.arguments)
-      const options = categoryDefinition.options.map((optDef) => ({
-        option: optDef,
-        value: params[optDef.name]
-      }))
+      const typeDefinition = AlgorithmTypeDefinitions[catKey]?.types?.[arg.type]
+      let options: Array<{ option: AlgorithmCategoryOptionType, value?: any }> = []
+      if (typeDefinition && typeDefinition.options) {
+          options = typeDefinition.options.map((optDef) => ({
+            option: optDef,
+            value: params[optDef.name]
+          }))
+      }
       return {
         id: nextTypeId++,
         key: arg.type,
@@ -311,7 +315,7 @@ const onQuickViewConfirm = (item: { code: string; name: string; type: number }) 
 const treeData = computed(() => {
   return Object.keys(AlgorithmCategoryDefinitions).map((catKey) => {
     const category = AlgorithmCategoryDefinitions[catKey]
-    const typesForCategory = AlgorithmTypeDefinitions[catKey] || {}
+    const typesForCategory = AlgorithmTypeDefinitions[catKey]?.types || {}
     const children = Object.keys(typesForCategory).map((typeKey) => {
       const type = typesForCategory[typeKey]
       return {
@@ -354,10 +358,10 @@ const addAlgorithm = (value: string) => {
     existingCategory = { categoryKey: catKey, types: [] }
     displayedCategories.value.push(existingCategory)
   }
-  const categoryOptions = AlgorithmCategoryDefinitions[catKey]?.options
+  const typeDefinition = AlgorithmTypeDefinitions[catKey]?.types?.[typeKey]
   const typeOptions: Array<{ option: AlgorithmCategoryOptionType, value?: any }> = []
-  if (categoryOptions) {
-    categoryOptions.forEach((option) => {
+  if (typeDefinition && typeDefinition.options) {
+    typeDefinition.options.forEach((option) => {
       typeOptions.push({ option: option, value: option.default })
     })
   }

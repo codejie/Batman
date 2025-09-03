@@ -1,5 +1,5 @@
 import pandas as pd
-from . import ma, adx
+from . import ma, adx, macd, rsi, boll
 from typing import Callable, Tuple, Optional
 
 
@@ -14,13 +14,26 @@ def list_to_df(data: list) -> Optional[pd.DataFrame]:
 # Define a mapping from (category, type) to the corresponding module
 # Category 0: Technical Indicators
 CALC_MODULES = {
-  'MA': {
-    'MA_MA': {'calc': ma.calc, 'report': ma.report},
-    'EMA': {'calc': ma.calc, 'report': ma.report},
+  'TrendFollowing': {
+    'title': '均线趋势',
+    'types': {
+      'MA': {'calc': ma.calc, 'report': ma.report},
+      'ADX': {'calc': adx.calc, 'report': adx.report},
+      'MACD': {'calc': macd.calc, 'report': macd.report},
+    }
   },
-  'ADX': {
-    'ADX': {'calc': adx.calc, 'report': adx.report},
+  'MomentumIndicators': {
+    'title': '动量指标',
+    'types': {
+      'RSI': {'calc': rsi.calc, 'report': rsi.report},
+    }
   },
+  'VolatilityIndicators': {
+    'title': '波动率指标',
+    'types': {
+      'BOLL': {'calc': boll.calc, 'report': boll.report},
+    }
+  }
 }
 
 def get_calc_functions(category: str, type: str) -> Tuple[Optional[Callable], Optional[Callable]]:
@@ -37,7 +50,7 @@ def get_calc_functions(category: str, type: str) -> Tuple[Optional[Callable], Op
   """
   category_definitions = CALC_MODULES.get(category)
   if category_definitions:
-    type_definition = category_definitions.get(type)
+    type_definition = category_definitions.get('types').get(type)
     if type_definition:
       return (type_definition.get('calc'), type_definition.get('report'))
   

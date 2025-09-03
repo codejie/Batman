@@ -36,7 +36,7 @@ const props = defineProps({
 })
 
 const typeDefinition = computed(() => {
-  return AlgorithmTypeDefinitions[props.categoryKey]?.[props.modelValue.key]
+  return AlgorithmTypeDefinitions[props.categoryKey]?.types?.[props.modelValue.key]
 })
 
 const filledOptions = computed(() => {

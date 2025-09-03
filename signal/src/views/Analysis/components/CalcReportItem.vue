@@ -21,7 +21,7 @@ const getCategoryTitle = (category: string) => {
 }
 
 const getTypeTitle = (category: string, type: string) => {
-  return AlgorithmTypeDefinitions[category]?.[type]?.title || type
+  return AlgorithmTypeDefinitions[category]?.types?.[type]?.title || type
 }
 
 const mergedArrayData = computed(() => {
