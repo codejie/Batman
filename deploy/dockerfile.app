@@ -3,15 +3,7 @@ FROM alpine/git:v2.49.0 AS clone
 RUN git clone --branch master --single-branch --depth=1 https://github.com/codejie/Batman.git /batman
 
 # Stage 2: Build dependencies in a dedicated builder stage
-FROM python:3.13-slim AS builder
-
-# 设置 DNS（可选，解决 DNS 解析问题）
-# RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
-
-# 替换为清华大学镜像源
-RUN echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bookworm main contrib non-free" > /etc/apt/sources.list \
-    && echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian bookworm-updates main contrib non-free" >> /etc/apt/sources.list \
-    && echo "deb http://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list
+FROM  python:3.13 AS builder
 
 # Install build-time OS dependencies
 RUN apt-get update && apt-get install -y \
@@ -31,10 +23,10 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz\
 COPY --from=clone /batman/app/requirements_docker.txt /app/requirements_docker.txt
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r /app/requirements_docker.txt uvicorn
+RUN pip install --no-cache-dir -r /app/requirements_docker.txt
 
 # Stage 3: Create the final, lightweight production image
-FROM python:3.13-slim
+FROM python:3.13
 # Install only runtime OS dependencies
 RUN apt-get update && apt-get install -y \
     sqlite3 \
