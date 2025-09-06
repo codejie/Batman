@@ -52,5 +52,5 @@ VOLUME /batman/app/db
 EXPOSE ${PORT}
 
 # Set up the application directory
-WORKDIR /app
-CMD ["sh", "-c", "uvicorn main:app --host $HOST --port $PORT"]
+WORKDIR /batman
+CMD ["sh", "-c", "uvicorn app.main:app --host $HOST --port $PORT"]
