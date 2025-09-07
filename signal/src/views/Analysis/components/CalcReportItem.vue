@@ -5,7 +5,7 @@ import { ElTable, ElTableColumn, ElButton } from 'element-plus'
 import { AlgorithmCategoryDefinitions, AlgorithmTypeDefinitions } from '@/api/calc/defines'
 import type { AggregatedReport } from './CalcReport.vue'
 import { KLineDialog } from '@/components/KLine'
-import { FlexChart, SplitChartDialog, type SeriesDataItem } from '@/components/Chart'
+import { FlexChart, TripleChartDialog, type SeriesDataItem } from '@/components/Chart'
 import { apiGetHistoryData, type HistoryDataItem } from '@/api/data'
 
 const props = defineProps({
@@ -23,7 +23,7 @@ const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
 
 const chartVisibility = ref<Record<string, boolean>>({})
-const splitChartDialogVisible = ref(false)
+const tripleChartDialogVisible = ref(false)
 const selectedRowData = ref<any>(null)
 const topChartData = ref<{ seriesData: SeriesDataItem[], xAxisData: string[] }>({ seriesData: [], xAxisData: [] })
 
@@ -87,7 +87,9 @@ const getDateRange = (period: number): string => {
   return start_date.toISOString().slice(0, 10)
 }
 
-const openSplitChartDialog = async (row: any) => {
+const middleChartData = ref<{ seriesData: SeriesDataItem[] }>({ seriesData: [] })
+
+const openTripleChartDialog = async (row: any) => {
   selectedRowData.value = row
   const startDate = getDateRange(props.dataPeriod)
   const res = await apiGetHistoryData({
@@ -101,19 +103,36 @@ const openSplitChartDialog = async (row: any) => {
     const xAxisData = history.map(item => item.日期)
     const klineData = history.map(item => [item.开盘, item.收盘, item.最低, item.最高])
     const closeData = history.map(item => item.收盘)
+    const volumeData = history.map((item, index) => {
+      const open = history[index].开盘
+      const close = history[index].收盘
+      return {
+        value: item.成交量,
+        itemStyle: {
+          color: close >= open ? '#ec0000' : '#00da3c'
+        }
+      }
+    })
 
-    const series: SeriesDataItem[] = [
+    const topSeries: SeriesDataItem[] = [
       { name: 'KLine', type: 'candlestick', data: klineData },
       { name: 'MA5', type: 'line', data: calcMAData(5, closeData), symbol: 'none' },
       { name: 'MA10', type: 'line', data: calcMAData(10, closeData), symbol: 'none' },
       { name: 'MA20', type: 'line', data: calcMAData(20, closeData), symbol: 'none' }
     ]
-    topChartData.value = { seriesData: series, xAxisData: xAxisData }
+    topChartData.value = { seriesData: topSeries, xAxisData: xAxisData }
+
+    const middleSeries: SeriesDataItem[] = [
+      { name: 'Volume', type: 'bar', data: volumeData }
+    ]
+    middleChartData.value = { seriesData: middleSeries }
+
   } else {
     topChartData.value = { seriesData: [], xAxisData: [] }
+    middleChartData.value = { seriesData: [] }
   }
 
-  splitChartDialogVisible.value = true
+  tripleChartDialogVisible.value = true
 }
 
 const getChartData = (calcData: any, reportData: any[]): { seriesData: SeriesDataItem[], xAxisData: string[] } => {
@@ -244,7 +263,7 @@ function onTitleClick() {
         </el-table-column>
         <el-table-column label="Title">
           <template #default="{ row }">
-            <div class="title-cell" @click="openSplitChartDialog(row)" style="cursor: pointer;">
+            <div class="title-cell" :style="row.calc ? 'cursor: pointer;' : ''" @click="row.calc && openTripleChartDialog(row)">
               <b>
                 <span>
                   {{ getCategoryTitle(row.category) }}: {{ getTypeTitle(row.category, row.type) }}
@@ -258,18 +277,19 @@ function onTitleClick() {
                   </span>
                 </span>
               </b>
-              <el-button size="small" @click.stop="toggleChart(row)">{{ isChartVisible(row) ? '隐藏图表' : '显示图表' }}</el-button>
+              <el-button size="small" v-if="row.calc" @click.stop="toggleChart(row)">{{ isChartVisible(row) ? '隐藏图表' : '显示图表' }}</el-button>
             </div>
           </template>
         </el-table-column>
       </el-table>
     </div>
     <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" width="60%" />
-    <SplitChartDialog 
+    <TripleChartDialog 
       v-if="selectedRowData"
-      v-model="splitChartDialogVisible"
+      v-model="tripleChartDialogVisible"
       :title="dialogTitle"
       :top-series-data="topChartData.seriesData"
+      :middle-series-data="middleChartData.seriesData"
       :bottom-series-data="bottomChartData.seriesData"
       :x-axis-data="topChartData.xAxisData"
     />

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 // 1. 导入所有图表组件
-import { FlexChart, FlexChartDialog, SplitChart, SplitChartDialog, type SeriesDataItem } from '@/components/Chart'
+import { FlexChart, FlexChartDialog, SplitChart, SplitChartDialog, TripleChart, TripleChartDialog, type SeriesDataItem } from '@/components/Chart'
 
 // --- FlexChart & FlexChartDialog Demo Data ---
 const chartTitle = ref('FlexChart 综合示例')
@@ -24,6 +24,19 @@ const topChartData = ref<SeriesDataItem[]>([
 ])
 const bottomChartData = ref<SeriesDataItem[]>([
     { name: '成交量', type: 'bar', data: [100, 230, 180, 280, 200, 350, 480] }
+])
+
+// --- TripleChart & TripleChartDialog Demo Data ---
+const isTripleDialogVisible = ref(false)
+const tripleChartCategories = ref(['2023-01', '2023-02', '2023-03', '2023-04', '2023-05', '2023-06'])
+const topKLineData = ref<SeriesDataItem[]>([
+    { name: 'K线', type: 'candlestick', data: [[100, 120, 95, 122], [120, 130, 118, 135], [130, 125, 122, 138], [125, 140, 123, 142], [140, 142, 138, 145], [142, 135, 133, 148]] }
+])
+const middleVolumeData = ref<SeriesDataItem[]>([
+    { name: '成交量', type: 'bar', data: [500, 600, 750, 800, 700, 900] }
+])
+const bottomBarData = ref<SeriesDataItem[]>([
+    { name: 'MACD', type: 'bar', data: [20, -10, 30, 15, 40, -5] }
 ])
 
 </script>
@@ -95,6 +108,29 @@ const bottomChartData = ref<SeriesDataItem[]>([
         x-axis-name="日期"
         top-y-axis-name="价格"
         bottom-y-axis-name="成交量"
+    />
+
+    <hr style="margin: 40px 0;">
+
+    <h2>TripleChart 组件演示</h2>
+    <p>这是一个包含上、中、下三个图表区域，并共享X轴的示例。</p>
+    <div style="margin-bottom: 20px;">
+        <button @click="isTripleDialogVisible = true" style="padding: 5px 10px;">
+            打开三层图表对话框
+        </button>
+    </div>
+
+    <TripleChartDialog
+        v-model="isTripleDialogVisible"
+        title="K线、成交量与MACD指标"
+        :x-axis-data="tripleChartCategories"
+        :top-series-data="topKLineData"
+        :middle-series-data="middleVolumeData"
+        :bottom-series-data="bottomBarData"
+        x-axis-name="月份"
+        top-y-axis-name="价格"
+        middle-y-axis-name="成交量"
+        bottom-y-axis-name="MACD"
     />
   </div>
 </template>
