@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, PropType, watchEffect } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
-import type { SeriesDataItem } from '.'
+import type { SeriesDataItem } from './types'
 
 const props = defineProps({
   // 上方图表的系列数据
@@ -57,7 +57,7 @@ const options = ref<EChartsOption>({})
 watchEffect(() => {
   // 1. 根据Ratio计算上下grid的高度和位置
   const totalDrawHeight = 78 // 可供绘制的总高度百分比 (留出上下边距)
-  const gap = 12 // 上下grid的间距百分比
+  const gap = 4 // 上下grid的间距百分比
   const topHeight = (totalDrawHeight - gap) * (props.gridRatio / (props.gridRatio + 1))
   const bottomHeight = (totalDrawHeight - gap) * (1 / (props.gridRatio + 1))
   const topGridTop = 8 // 顶部边距
@@ -68,9 +68,19 @@ watchEffect(() => {
     ...props.topSeriesData.map((s) => s.name),
     ...props.bottomSeriesData.map((s) => s.name)
   ]
+  const processSeries = (seriesData: SeriesDataItem[], xAxisIndex: number, yAxisIndex: number) => {
+    return seriesData.map((s) => {
+      const seriesItem = { ...s, xAxisIndex, yAxisIndex }
+      if (s.type === 'line') {
+        seriesItem.lineStyle = { ...s.lineStyle, width: 1 }
+      }
+      return seriesItem
+    })
+  }
+
   const series = [
-    ...props.topSeriesData.map((s) => ({ ...s, xAxisIndex: 0, yAxisIndex: 0 })),
-    ...props.bottomSeriesData.map((s) => ({ ...s, xAxisIndex: 1, yAxisIndex: 1 }))
+    ...processSeries(props.topSeriesData, 0, 0),
+    ...processSeries(props.bottomSeriesData, 1, 1)
   ]
 
   // 3. 生成ECharts配置
@@ -83,6 +93,46 @@ watchEffect(() => {
       trigger: 'axis',
       axisPointer: {
         type: 'cross'
+      },
+      formatter: (params) => {
+        const topSeriesCount = props.topSeriesData.length
+        const topParams = params.filter(p => p.seriesIndex < topSeriesCount)
+        const bottomParams = params.filter(p => p.seriesIndex >= topSeriesCount)
+
+        let tooltipContent = `${params[0].axisValueLabel}<br/>` // X-axis label
+
+        const formatParam = (param) => {
+          const seriesName = param.seriesName
+          const value = param.value
+          const marker = param.marker
+          let formattedValue = ''
+
+          if (Array.isArray(value)) {
+            // K-line: [open, close, lowest, highest]
+            formattedValue = `O:${value[0].toFixed(2)} C:${value[1].toFixed(2)} L:${value[2].toFixed(2)} H:${value[3].toFixed(2)}`
+          } else if (typeof value === 'number') {
+            formattedValue = value.toFixed(2)
+          } else {
+            formattedValue = value
+          }
+          return `${marker} ${seriesName}: <b>${formattedValue}</b><br/>`
+        }
+
+        if (topParams.length > 0) {
+          tooltipContent += '<b>KLine</b><br/>'
+          topParams.forEach(param => {
+            tooltipContent += formatParam(param)
+          });
+        }
+
+        if (bottomParams.length > 0) {
+          tooltipContent += '<hr style="margin: 5px 0; border-style: dashed;"/>'
+          bottomParams.forEach(param => {
+            tooltipContent += formatParam(param)
+          });
+        }
+
+        return tooltipContent
       }
     },
     legend: {

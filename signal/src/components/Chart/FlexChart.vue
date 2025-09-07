@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { ref, PropType, watchEffect } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
-
-// 定义一个系列item的接口
-export interface SeriesDataItem {
-  name: string;
-  type: 'line' | 'bar' | 'candlestick';
-  data: any[];
-  // 允许传入其他echarts series支持的属性
-  [key: string]: any;
-}
+import type { SeriesDataItem } from './types'
 
 const props = defineProps({
   // 接收图表系列的配置数组
@@ -66,6 +58,27 @@ watchEffect(() => {
       trigger: 'axis',
       axisPointer: {
         type: 'cross'
+      },
+      formatter: (params) => {
+        let tooltipContent = `${params[0].axisValueLabel}<br/>`
+        params.forEach(param => {
+          const seriesName = param.seriesName
+          const value = param.value
+          const marker = param.marker
+
+          let formattedValue = ''
+          if (typeof value === 'number') {
+            formattedValue = value.toFixed(2)
+          } else if (Array.isArray(value)) {
+            // Handle Candlestick data [open, close, lowest, highest]
+            formattedValue = value.map(v => v.toFixed(2)).join(', ')
+          } else {
+            formattedValue = value
+          }
+
+          tooltipContent += `${marker} ${seriesName}: <b>${formattedValue}</b><br/>`
+        })
+        return tooltipContent
       }
     },
     // 图例，根据传入的 seriesData 动态生成
@@ -110,14 +123,16 @@ watchEffect(() => {
     },
     // 核心：根据 props.seriesData 动态生成图表系列
     series: props.seriesData.map(item => {
-      // 返回一个符合 echarts 规范的 series item
-      // 通过 ...item 可以将用户传入的自定义配置（如itemStyle, barWidth等）也应用上
-      return {
+      const seriesItem = {
         ...item,
         name: item.name,
         type: item.type,
         data: item.data
       }
+      if (item.type === 'line') {
+        seriesItem.lineStyle = { ...item.lineStyle, width: 1 }
+      }
+      return seriesItem
     }),
     // 用于K线图和成交量柱状图的颜色区分
     visualMap: {

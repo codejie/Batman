@@ -68,7 +68,7 @@ export const apiSubmitCalculation = (data: Types.SubmitCalculationRequest): Prom
  * @returns The EventSource instance, allowing you to close the connection manually.
  */
 export const apiConnectToCalcReport = (
-  onMessage: (data: Types.CalcReportSseData) => void,
+  onMessage: (data: Types.CalcReportData) => void,
   onError?: (error: Event) => void
 ): EventSource => {
     const token = useUserStoreWithOut().getTokenKey
@@ -80,7 +80,7 @@ export const apiConnectToCalcReport = (
 
   eventSource.onmessage = (event) => {
     try {
-      const parsedData: Types.CalcReportSseData = JSON.parse(event.data)
+      const parsedData: Types.CalcReportData = JSON.parse(event.data)
       onMessage(parsedData)
     } catch (e) {
       console.error('Failed to parse SSE data:', e)

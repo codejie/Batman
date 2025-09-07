@@ -2,7 +2,7 @@
 import { computed, PropType } from 'vue'
 import { ElDialog, ElButton } from 'element-plus'
 import { SplitChart } from '.'
-import type { SeriesDataItem } from '.'
+import type { SeriesDataItem } from './types'
 
 const props = defineProps({
   // v-model

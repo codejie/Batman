@@ -4,11 +4,10 @@ export interface AlgorithmItem {
   uid?: number
   name: string
   remarks?: string
-  category: string
-  type: string
   list_type: number
   data_period: number
   report_period: number
+  show_opt: number
   created: Date
 }
 
@@ -32,11 +31,10 @@ export interface ArgumentItem {
 // Requests and Results
 export interface CreateAlgorithmItemRequest {
   name: string
-  category: string
-  type: string
   list_type: number
   data_period: number
   report_period: number
+  show_opt?: number
   remarks?: string
 }
 export type CreateAlgorithmItemResult = number
@@ -57,11 +55,10 @@ export type GetAlgorithmItemResult = AlgorithmItem | null
 export interface UpdateAlgorithmItemRequest {
   id: number
   name: string
-  category: string
-  type: string
   list_type: number
   data_period: number
   report_period: number
+  show_opt: number
   remarks?: string
 }
 export type UpdateAlgorithmItemResult = number
@@ -118,7 +115,11 @@ export interface SubmitCalculationRequest {
 export type SubmitCalculationResult = number
 
 // SSE Payloads
-export interface CalcReportSseData {
+export interface CalcResultType {
+  calc: any
+  report: any
+}
+export interface CalcReportData {
   category: string
   type: string
   stock: {
@@ -126,7 +127,7 @@ export interface CalcReportSseData {
     code: string
     name: string
   }
-  results: any[]
+  result: CalcResultType
   arguments: any
 }
 

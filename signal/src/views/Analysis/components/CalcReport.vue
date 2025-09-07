@@ -3,9 +3,9 @@ import { ref, onUnmounted, defineProps, watch, computed } from 'vue'
 import { ElButton, ElTabs, ElTabPane } from 'element-plus'
 import CalcReportItem from './CalcReportItem.vue'
 import { apiConnectToCalcReport, apiDisconnectFromCalcReport, apiListArguments } from '@/api/calc'
-import type { ArgumentItem, CalcReportSseData } from '@/api/calc'
+import type { ArgumentItem, CalcReportData } from '@/api/calc'
 
-const props = defineProps<{itemId: number}>()
+const props = defineProps<{itemId: number, dataPeriod: number}>()
 
 // SSE action payload
 interface ActionPayload {
@@ -23,7 +23,8 @@ export interface AggregatedReport {
   reports: {
     category: string
     type: string
-    results: any[],
+    calc: any
+    report: any[]
     arguments: any
   }[]
 }
@@ -77,7 +78,7 @@ const connect = () => {
   isSseConnected.value = true
 
   eventSource.value = apiConnectToCalcReport(
-    (data: CalcReportSseData) => {
+    (data: CalcReportData) => {
       const stockCode = data.stock.code
       const stockType = data.stock.type
       const stockEntry = reportItems.value.find(
@@ -89,7 +90,8 @@ const connect = () => {
         stockEntry.reports.push({
           category: data.category,
           type: data.type,
-          results: data.results,
+          calc: data.result.calc,
+          report: data.result.report,
           arguments: data.arguments
         })
       } else {
@@ -100,7 +102,8 @@ const connect = () => {
             {
               category: data.category,
               type: data.type,
-              results: data.results,
+              calc: data.result.calc,
+              report: data.result.report,
               arguments: data.arguments
             }
           ]
@@ -179,11 +182,12 @@ defineExpose({
           v-for="item in reportItems"
           :key="item.stock.code"
           :data="item"
+          :data-period="props.dataPeriod"
         />
       </div>
       <el-tabs v-else>
         <el-tab-pane v-for="item in reportItems" :key="item.stock.code" :label="item.stock.name">
-          <CalcReportItem :data="item" />
+          <CalcReportItem :data="item" :data-period="props.dataPeriod" />
         </el-tab-pane>
       </el-tabs>
     </div>

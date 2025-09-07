@@ -26,11 +26,10 @@ async def submit_calculation(request: SubmitRequest, uid: int = Depends(verify_t
 
 class AlgorithmItemCreateRequest(RequestModel):
   name: str
-  category: str
-  type: str
   list_type: int
   data_period: int
   report_period: int
+  show_opt: int = 0
   remarks: Optional[str] = None
 
 class AlgorithmItemCreateResponse(ResponseModel):
@@ -38,17 +37,16 @@ class AlgorithmItemCreateResponse(ResponseModel):
 
 @router.post('/create', response_model=AlgorithmItemCreateResponse)
 async def create_algorithm_item(request: AlgorithmItemCreateRequest):
-  result = db.insert_algorithm_item(uid=DEFAULT_UID, name=request.name, category=request.category, type=request.type, list_type=request.list_type, data_period=request.data_period, report_period=request.report_period, remarks=request.remarks)
+  result = db.insert_algorithm_item(uid=DEFAULT_UID, name=request.name, list_type=request.list_type, data_period=request.data_period, report_period=request.report_period, show_opt=request.show_opt, remarks=request.remarks)
   return AlgorithmItemCreateResponse(result=result)
 
 class AlgorithmItemUpdateRequest(RequestModel):
   id: int
   name: str
-  category: str
-  type: str
   list_type: int
   data_period: int
   report_period: int
+  show_opt: int
   remarks: Optional[str] = None
 
 class AlgorithmItemUpdateResponse(ResponseModel):
@@ -60,11 +58,10 @@ async def update_algorithm_item(request: AlgorithmItemUpdateRequest):
     uid=DEFAULT_UID,
     id=request.id,
     name=request.name,
-    category=request.category,
-    type=request.type,
     list_type=request.list_type,
     data_period=request.data_period,
     report_period=request.report_period,
+    show_opt=request.show_opt,
     remarks=request.remarks
   )
   return AlgorithmItemUpdateResponse(result=0)

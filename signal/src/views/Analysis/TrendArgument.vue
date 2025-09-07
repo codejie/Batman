@@ -67,11 +67,10 @@ const goBack = () => {
 const formData = reactive<Omit<AlgorithmItem, 'id' | 'uid' | 'created'>>({
   name: '',
   remarks: '',
-  category: '',
-  type: '',
   list_type: 4, // holding + watchlist
   data_period: 1, // 6m
-  report_period: 1 // 3d
+  report_period: 1, // 3d
+  show_opt: 0
 })
 
 const isSubmitDisabled = computed(() => !formData.name || formData.name.trim() === '')
@@ -194,11 +193,10 @@ watch(
       Object.assign(formData, {
         name: '',
         remarks: '',
-        category: '',
-        type: '',
         list_type: 4,
         data_period: 1,
-        report_period: 1
+        report_period: 1,
+        show_opt: 0
       })
       loadStockList()
     }
@@ -396,11 +394,10 @@ const submitForm = async () => {
         id: effectiveId.value,
         name: formData.name,
         remarks: formData.remarks,
-        category: formData.category,
-        type: formData.type,
         list_type: formData.list_type,
         data_period: formData.data_period,
-        report_period: formData.report_period
+        report_period: formData.report_period,
+        show_opt: formData.show_opt
       })
       if (showStockTableAddButton.value) {
         const items = tableData.value.map((item) => ({
@@ -558,6 +555,11 @@ const toggleTreeExpansion = () => {
             <el-checkbox label="最近一月" value="最近一月" />
             <el-checkbox label="全部" value="全部" />
           </el-checkbox-group>
+        </div>
+
+        <div style="margin-top: 20px">
+          <div class="section-title">显示参数</div>
+          <el-checkbox v-model="formData.show_opt" label="显示计算结果图表" :true-value="1" :false-value="0" />
         </div>
       </el-col>
 

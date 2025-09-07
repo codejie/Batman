@@ -125,8 +125,8 @@ const handleSubmit = async () => {
 
     <el-divider />
 
-    <AlgorithmItemDetail v-if="showCalcReport" :item="selectedAlgorithmItem" />
-    <CalcReport v-if="showCalcReport" ref="calcReportRef" :item-id="selectedAlgorithmItem!.id!" />
+    <AlgorithmItemDetail v-if="showCalcReport && selectedAlgorithmItem" :item="selectedAlgorithmItem" />
+    <CalcReport v-if="showCalcReport && selectedAlgorithmItem" ref="calcReportRef" :item-id="selectedAlgorithmItem!.id!" :data-period="selectedAlgorithmItem!.data_period" />
   </ContentWrap>
 </template>
 

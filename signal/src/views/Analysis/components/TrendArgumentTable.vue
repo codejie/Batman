@@ -77,6 +77,11 @@ const handleRowClick = (row: AlgorithmItem) => {
           {{ AlgorithmReportPeriodDefinitions[row.report_period] }}
         </template>
       </el-table-column>
+      <el-table-column prop="show_opt" label="显示参数" width="120">
+        <template #default="{ row }">
+          {{ row.show_opt === 1 ? '显示' : '隐藏' }}
+        </template>
+      </el-table-column>
       <el-table-column prop="remarks" label="备注" />
       <el-table-column prop="created" label="更新日期" width="180">
         <template #default="{ row }">

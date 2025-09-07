@@ -12,11 +12,10 @@ class CalcAlgorithmItemsTable(TableBase):
   uid = Column(Integer, nullable=False, default=99)
   name = Column(String, nullable=False)
   remarks = Column(String)
-  category = Column(String, nullable=False)
-  type = Column(String, nullable=False)
   list_type = Column(Integer, nullable=False, default=4)  # 0: holding, 1: customized, 2:custom, 3: all, 4: holding & watchlist
   data_period = Column(Integer, nullable=False, default=1)  # 0: 3months, 1: 6months, 2: 1year, 3: 2years
   report_period = Column(Integer, nullable=False, default=1) # 0: today, 1: 3days, 2: 1week, 3: 1monthly, 4: all
+  show_opt = Column(Integer, nullable=False, default=0) # 0: hide, 1: show
   created = Column(DateTime, default=func.now())
 
 class CalcAlgorithmItemModel(BaseModel):
@@ -24,11 +23,10 @@ class CalcAlgorithmItemModel(BaseModel):
   uid: int
   name: str
   remarks: str | None = None
-  category: str
-  type: str
   list_type: int
   data_period: int
   report_period: int
+  show_opt: int
   created: datetime
 
 class CalcAlgorithmItemStockListTable(TableBase):
@@ -79,11 +77,11 @@ class CalcAlgorithmItemArgumentsModel(BaseModel):
 
 
 
-def insert_algorithm_item(uid: int, name: str, category: str, type: str, list_type: int = 2, data_period: int = 1, report_period: int = 1, remarks: str | None = None) -> int:
-  item = CalcAlgorithmItemsTable(uid=uid, name=name, category=category, type=type, list_type=list_type, data_period=data_period, report_period=report_period, remarks=remarks)
+def insert_algorithm_item(uid: int, name: str, list_type: int = 2, data_period: int = 1, report_period: int = 1, show_opt: int = 0, remarks: str | None = None) -> int:
+  item = CalcAlgorithmItemsTable(uid=uid, name=name, list_type=list_type, data_period=data_period, report_period=report_period, show_opt=show_opt, remarks=remarks)
   return dbEngine.insert_instance(item)
 
-def update_algorithm_item(uid: int, id: int, name: str, category: str, type: str, list_type: int, data_period: int, report_period: int, remarks: str | None = None) -> None:
+def update_algorithm_item(uid: int, id: int, name: str, list_type: int, data_period: int, report_period: int, show_opt: int, remarks: str | None = None) -> None:
     stmt = update(CalcAlgorithmItemsTable).where(
         and_(
             CalcAlgorithmItemsTable.id == id,
@@ -92,11 +90,10 @@ def update_algorithm_item(uid: int, id: int, name: str, category: str, type: str
     ).values(
         name=name,
         remarks=remarks,
-        category=category,
-        type=type,
         list_type=list_type,
         data_period=data_period,
-        report_period=report_period
+        report_period=report_period,
+        show_opt=show_opt
     )
     dbEngine.execute_stmt(stmt)
 
@@ -122,11 +119,10 @@ def select_algorithm_items(uid: int) -> List[CalcAlgorithmItemModel]:
     uid=item[0].uid,
     name=item[0].name,
     remarks=item[0].remarks,
-    category=item[0].category,
-    type=item[0].type,
     list_type=item[0].list_type,
     data_period=item[0].data_period,
     report_period=item[0].report_period,
+    show_opt=item[0].show_opt,
     created=item[0].created
   ) for item in results]
   return results
@@ -146,11 +142,10 @@ def select_algorithm_item(uid: int, id: int) -> Optional[CalcAlgorithmItemModel]
       uid=item.uid,
       name=item.name,
       remarks=item.remarks,
-      category=item.category,
-      type=item.type,
       list_type=item.list_type,
       data_period=item.data_period,
       report_period=item.report_period,
+      show_opt=item.show_opt,
       created=item.created
     )
   return None

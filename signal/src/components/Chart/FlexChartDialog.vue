@@ -2,7 +2,8 @@
 import { computed, PropType } from 'vue'
 import { ElDialog, ElButton } from 'element-plus'
 // 从目录索引导入，而不是直接从 .vue 文件导入
-import { FlexChart, type SeriesDataItem } from '.'
+import { FlexChart } from '.'
+import type { SeriesDataItem } from './types'
 
 const props = defineProps({
   // v-model for dialog visibility

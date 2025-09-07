@@ -1,4 +1,6 @@
 import asyncio
+import pandas as pd
+import numpy as np
 from dataclasses import asdict, dataclass
 import json
 from datetime import datetime, timedelta
@@ -56,13 +58,13 @@ class CalcSseTask(Task):
     if self.uid is None or self.cid is None:
       raise ValueError("uid and cid must be provided for CalcSseTask")
 
-  async def _send_report(self, category: int, type: int, stock: StockItem, results: list[dict], arguments: dict):
+  async def _send_report(self, category: int, type: int, stock: StockItem, result: dict, arguments: dict):
     """Sends data to the user via SSE."""
     await sse_manager.send_data(self.uid, self.TYPE, data={
       "category": category,
       "type": type,
       "stock": asdict(stock),
-      "results": results,
+      "result": result,
       "arguments": arguments
     })
 
@@ -147,7 +149,10 @@ class CalcSseTask(Task):
           calc_result = calc_func(history_data, calc_options)
           calc_report = report_func(history_data, calc_result, idx=report_index, options=calc_options)
           # if calc_report:
-          await self._send_report(category=arg_item.category, type=arg_item.type, stock=stock, results=calc_report, arguments=calc_options)
+          await self._send_report(category=arg_item.category, type=arg_item.type, stock=stock, result={
+              "calc": calc_result.replace({pd.NA: None, np.nan: None}).reset_index().to_dict(orient='list') if calc_result is not None and item.show_opt == 1 else None,
+              "report": calc_report
+            }, arguments=calc_options)
           # else:
           #   await self._send_action(action="log",  message=f"[CalcTask {self.cid}] No report generated for {stock.code} with options {calc_options}.")
           await asyncio.sleep(0.1)
