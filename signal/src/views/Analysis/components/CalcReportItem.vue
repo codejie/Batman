@@ -147,31 +147,47 @@ const getChartData = (calcData: any, reportData: any[]): { seriesData: SeriesDat
   for (const key in calcData) {
     if (key !== '日期' && key !== 'Signal') {
       const seriesValues = calcData[key]
-      const dataPoints = seriesValues.map((value, i) => {
+
+      // 1. Main line series (no symbols)
+      seriesData.push({
+        name: key,
+        type: 'line',
+        data: seriesValues,
+        showSymbol: false,
+        lineStyle: { width: 1 }
+      })
+
+      // 2. "Scatter" series using a line chart for report markers
+      const reportPoints = seriesValues.map((value, i) => {
         const date = xAxisData[i]
         if (reportTrendMap.has(date)) {
           const trend = reportTrendMap.get(date)
           return {
             value: value,
-            symbol: 'circle',
+            symbol: 'triangle',
             symbolSize: 8,
             itemStyle: {
               color: trend === 1 ? '#ec0000' : '#00da3c'
             }
           }
-        } else {
-          return {
-            value: value,
-            symbol: 'none'
-          }
         }
+        return null; // Use null to create gaps in the line
       })
 
-      seriesData.push({
-        name: key,
-        type: 'line',
-        data: dataPoints
-      })
+      // Add the marker series only if there are points to show
+      if (reportPoints.some(p => p !== null)) {
+        seriesData.push({
+          name: key + ' Events',
+          type: 'line', // Use 'line' type
+          data: reportPoints,
+          showSymbol: true, // Always show symbols
+          lineStyle: {
+            opacity: 0 // Make the line invisible
+          },
+          zlevel: 5,
+          large: false // Disable large-scale optimization
+        })
+      }
     }
   }
   return { seriesData, xAxisData }
@@ -236,6 +252,11 @@ function onTitleClick() {
           <template #default="{ row }">
             <div v-if="row.report && row.report.length > 0" class="mx-24px my-8px">
               <el-table :data="row.report" :border="true" size="small" stripe>
+                <el-table-column label="序号" width="60" align="center">
+                  <template #default="scope">
+                    ({{ scope.$index + 1 }})
+                  </template>
+                </el-table-column>
                 <el-table-column prop="index" label="日期" />
                 <el-table-column prop="trend" label="趋势信号">
                   <template #default="{ row: innerRow }">

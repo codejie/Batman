@@ -78,7 +78,6 @@
     "consola": "^3.4.2",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-define-config": "^2.1.0",
     "eslint-plugin-prettier": "^5.5.0",
     "eslint-plugin-vue": "^9.33.0",
     "esno": "^4.8.0",
