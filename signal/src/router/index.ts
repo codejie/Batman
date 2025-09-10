@@ -113,7 +113,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/Customized/List.vue'),
         meta: {
           title: t('router.customized_list'),
-          icon: 'carbon:chart-custom',
+          icon: 'vi-carbon:chart-custom',
           // noCache: true,
           // affix: false
         }
@@ -138,7 +138,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/Holding/List.vue'),
         meta: {
           title: t('router.holding_list'),
-          icon: 'carbon:currency-yen',
+          icon: 'vi-carbon:currency-yen',
           // noCache: true,
           // affix: false
         }
@@ -164,7 +164,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     component: Layout,
     meta: {
         title: '数据分析',
-        icon: 'carbon:chart-multitype',
+        icon: 'vi-carbon:chart-multitype',
         alwaysShow: true
     },
     children: [
@@ -205,7 +205,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     component: Layout,
     meta: {
       title: '三方数据',
-      icon: 'carbon:table-alias'      
+      icon: 'vi-carbon:table-alias'      
     },
     children: [
       {
@@ -288,7 +288,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/System/Configuration.vue'),
         meta: {
           title: t('router.system_configuration'),
-          icon: 'carbon:settings',
+          icon: 'vi-carbon:settings',
           // noCache: true,
           // affix: false
         }
@@ -307,7 +307,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/Test/List.vue'),
         meta: {
           title: t('router.test_list'),
-          icon: 'carbon:chart-custom',
+          icon: 'vi-carbon:chart-custom',
           // noCache: true,
           // affix: false
         }
