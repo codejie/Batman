@@ -1,5 +1,5 @@
 import pandas as pd
-from . import ma, adx, macd, rsi, boll
+from . import ma, adx, macd, rsi, boll, mom, obv, sar, kdj, ad, atr, natr, avgprice, medprice, cdlhammer, cdlengulfing, cdlmorningstar, cdldoji, cdleveningstar, cdl3whitesoldiers, cdl3blackcrows, cdldarkcloudcover, ht_dcperiod, ht_dcphase
 from typing import Callable, Tuple, Optional
 
 
@@ -20,18 +20,57 @@ CALC_MODULES = {
       'MA': {'calc': ma.calc, 'report': ma.report},
       'ADX': {'calc': adx.calc, 'report': adx.report},
       'MACD': {'calc': macd.calc, 'report': macd.report},
+      'SAR': {'calc': sar.calc, 'report': sar.report},
     }
   },
   'MomentumIndicators': {
     'title': '动量指标',
     'types': {
       'RSI': {'calc': rsi.calc, 'report': rsi.report},
+      'MOM': {'calc': mom.calc, 'report': mom.report},
+      'KDJ': {'calc': kdj.calc, 'report': kdj.report},
     }
   },
   'VolatilityIndicators': {
     'title': '波动率指标',
     'types': {
       'BOLL': {'calc': boll.calc, 'report': boll.report},
+      'ATR': {'calc': atr.calc, 'report': atr.report},
+      'NATR': {'calc': natr.calc, 'report': natr.report},
+    }
+  },
+  'VolumeIndicators': {
+    'title': '成交量指标',
+    'types': {
+      'OBV': {'calc': obv.calc, 'report': obv.report},
+      'AD': {'calc': ad.calc, 'report': ad.report},
+    }
+  },
+  'PriceTransformation': {
+    'title': '价格变换',
+    'types': {
+      'AVGPRICE': {'calc': avgprice.calc, 'report': avgprice.report},
+      'MEDPRICE': {'calc': medprice.calc, 'report': medprice.report},
+    }
+  },
+  'CandlestickPatterns': {
+    'title': 'K线形态识别',
+    'types': {
+      'CDLHAMMER': {'calc': cdlhammer.calc, 'report': cdlhammer.report},
+      'CDLENGULFING': {'calc': cdlengulfing.calc, 'report': cdlengulfing.report},
+      'CDLMORNINGSTAR': {'calc': cdlmorningstar.calc, 'report': cdlmorningstar.report},
+      'CDLDOJI': {'calc': cdldoji.calc, 'report': cdldoji.report},
+      'CDLEVENINGSTAR': {'calc': cdleveningstar.calc, 'report': cdleveningstar.report},
+      'CDL3WHITESOLDIERS': {'calc': cdl3whitesoldiers.calc, 'report': cdl3whitesoldiers.report},
+      'CDL3BLACKCROWS': {'calc': cdl3blackcrows.calc, 'report': cdl3blackcrows.report},
+      'CDLDARKCLOUDCOVER': {'calc': cdldarkcloudcover.calc, 'report': cdldarkcloudcover.report},
+    }
+  },
+  'CycleIndicators': {
+    'title': '周期指标',
+    'types': {
+      'HT_DCPERIOD': {'calc': ht_dcperiod.calc, 'report': ht_dcperiod.report},
+      'HT_DCPHASE': {'calc': ht_dcphase.calc, 'report': ht_dcphase.report},
     }
   }
 }

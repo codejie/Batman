@@ -20,6 +20,8 @@ export type AlgorithmCategoryOptionType = {
   description: string
 }
 
+
+
 export const AlgorithmCategoryDefinitions = {
   'TrendFollowing': {
     title: '均线趋势',
@@ -32,6 +34,22 @@ export const AlgorithmCategoryDefinitions = {
   'VolatilityIndicators': {
     title: '波动率指标',
     description: '波动率指标类算法'
+  },
+  'VolumeIndicators': {
+    title: '成交量指标',
+    description: '成交量指标类算法'
+  },
+  'PriceTransformation': {
+    title: '价格变换',
+    description: '价格变换类算法'
+  },
+  'CandlestickPatterns': {
+    title: 'K线形态识别',
+    description: 'K线形态识别类算法'
+  },
+  'CycleIndicators': {
+    title: '周期指标',
+    description: '周期指标类算法'
   }
 }
 
@@ -120,6 +138,26 @@ export const AlgorithmTypeDefinitions = {
             description: '信号线(MACD)的计算周期，通常为9天'
           }
         ]
+      },
+      'SAR': {
+        title: '抛物线转向指标',
+        description: 'Parabolic SAR - 抛物线转向指标',
+        options: [
+          {
+            name: 'acceleration',
+            title: '加速因子',
+            default: 0.02,
+            type: 'number',
+            description: '加速因子，通常为0.02'
+          },
+          {
+            name: 'maximum',
+            title: '加速因子最大值',
+            default: 0.2,
+            type: 'number',
+            description: '加速因子的最大值，通常为0.2'
+          }
+        ]
       }
     }
   },
@@ -135,6 +173,46 @@ export const AlgorithmTypeDefinitions = {
             default: 14,
             type: 'number',
             description: 'RSI的计算周期，通常为14天'
+          }
+        ]
+      },
+      'MOM': {
+        title: '动量指标',
+        description: 'Momentum (MOM) - 动量指标',
+        options: [
+          {
+            name: 'timeperiod',
+            title: '周期',
+            default: 10,
+            type: 'number',
+            description: 'MOM的计算周期，通常为10天'
+          }
+        ]
+      },
+      'KDJ': {
+        title: '随机指标',
+        description: 'Stochastic Oscillator (KDJ) - 随机指标',
+        options: [
+          {
+            name: 'fastk_period',
+            title: '快速K线周期',
+            default: 9,
+            type: 'number',
+            description: '快速K线(Fast %K)的计算周期，通常为9天'
+          },
+          {
+            name: 'slowk_period',
+            title: '慢速K线周期',
+            default: 3,
+            type: 'number',
+            description: '慢速K线(%K)的平滑周期，通常为3天'
+          },
+          {
+            name: 'slowd_period',
+            title: '慢速D线周期',
+            default: 3,
+            type: 'number',
+            description: '慢速D线(%D)的平滑周期，通常为3天'
           }
         ]
       }
@@ -168,6 +246,150 @@ export const AlgorithmTypeDefinitions = {
             description: '布林带下轨的标准差倍数，通常为2'
           }
         ]
+      },
+      'ATR': {
+        title: '平均真实波幅',
+        description: 'Average True Range (ATR) - 平均真实波幅',
+        options: [
+          {
+            name: 'timeperiod',
+            title: '周期',
+            default: 14,
+            type: 'number',
+            description: 'ATR的计算周期，通常为14天'
+          }
+        ]
+      },
+      'NATR': {
+        title: '归一化平均真实波幅',
+        description: 'Normalized Average True Range (NATR) - 归一化平均真实波幅',
+        options: [
+          {
+            name: 'timeperiod',
+            title: '周期',
+            default: 14,
+            type: 'number',
+            description: 'NATR的计算周期，通常为14天'
+          }
+        ]
+      }
+    }
+  },
+  'VolumeIndicators': {
+    types: {
+      'OBV': {
+        title: '能量潮',
+        description: 'On-Balance Volume (OBV) - 能量潮',
+        options: [
+          {
+            name: 'timeperiod',
+            title: '信号线周期',
+            default: 10,
+            type: 'number',
+            description: 'OBV信号线的移动平均计算周期，通常为10天'
+          }
+        ]
+      },
+      'AD': {
+        title: '聚散指标',
+        description: 'Accumulation/Distribution (A/D) - 聚散指标',
+        options: [
+          {
+            name: 'timeperiod',
+            title: '信号线周期',
+            default: 10,
+            type: 'number',
+            description: 'A/D信号线的移动平均计算周期，通常为10天'
+          }
+        ]
+      }
+    }
+  },
+  'PriceTransformation': {
+    types: {
+      'AVGPRICE': {
+        title: '平均价格',
+        description: 'Average Price (AVGPRICE) - 平均价格',
+        options: [
+          {
+            name: 'timeperiod',
+            title: '信号线周期',
+            default: 10,
+            type: 'number',
+            description: 'AVGPRICE信号线的移动平均计算周期，通常为10天'
+          }
+        ]
+      },
+      'MEDPRICE': {
+        title: '中位数价格',
+        description: 'Median Price (MEDPRICE) - 中位数价格',
+        options: [
+          {
+            name: 'timeperiod',
+            title: '信号线周期',
+            default: 10,
+            type: 'number',
+            description: 'MEDPRICE信号线的移动平均计算周期，通常为10天'
+          }
+        ]
+      }
+    }
+  },
+  'CandlestickPatterns': {
+    types: {
+      'CDLHAMMER': {
+        title: '锤头线',
+        description: 'Hammer (CDLHAMMER) - 锤头线',
+        options: []
+      },
+      'CDLENGULFING': {
+        title: '吞噬模式',
+        description: 'Engulfing Pattern (CDLENGULFING) - 吞噬模式',
+        options: []
+      },
+      'CDLMORNINGSTAR': {
+        title: '晨星',
+        description: 'Morning Star (CDLMORNINGSTAR) - 晨星',
+        options: []
+      },
+      'CDLDOJI': {
+        title: '十字星',
+        description: 'Doji (CDLDOJI) - 十字星',
+        options: []
+      },
+      'CDLEVENINGSTAR': {
+        title: '黄昏星',
+        description: 'Evening Star (CDLEVENINGSTAR) - 黄昏星',
+        options: []
+      },
+      'CDL3WHITESOLDIERS': {
+        title: '三白兵',
+        description: 'Three White Soldiers (CDL3WHITESOLDIERS) - 三白兵',
+        options: []
+      },
+      'CDL3BLACKCROWS': {
+        title: '三只乌鸦',
+        description: 'Three Black Crows (CDL3BLACKCROWS) - 三只乌鸦',
+        options: []
+      },
+      'CDLDARKCLOUDCOVER': {
+        title: '乌云盖顶',
+        description: 'Dark Cloud Cover (CDLDARKCLOUDCOVER) - 乌云盖顶',
+        options: []
+      }
+    }
+  },
+  'CycleIndicators': {
+    types: {
+      'HT_DCPERIOD': {
+        title: '希尔伯特变换-主导周期',
+        description: 'Hilbert Transform - Dominant Cycle Period (HT_DCPERIOD) - 希尔伯特变换-主导周期',
+        options: []
+      },
+      'HT_DCPHASE': {
+        title: '希尔伯特变换-主导周期相位',
+        description: 'Hilbert Transform - Dominant Cycle Phase (HT_DCPHASE) - 希尔伯特变换-主导周期相位',
+        options: []
       }
     }
   }

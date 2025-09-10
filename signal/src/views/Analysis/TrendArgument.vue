@@ -70,7 +70,7 @@ const formData = reactive<Omit<AlgorithmItem, 'id' | 'uid' | 'created'>>({
   list_type: 4, // holding + watchlist
   data_period: 1, // 6m
   report_period: 1, // 3d
-  show_opt: 0
+  show_opt: 1
 })
 
 const isSubmitDisabled = computed(() => !formData.name || formData.name.trim() === '')
@@ -196,7 +196,7 @@ watch(
         list_type: 4,
         data_period: 1,
         report_period: 1,
-        show_opt: 0
+        show_opt: 1
       })
       loadStockList()
     }
@@ -460,7 +460,7 @@ const submitForm = async () => {
   }
 }
 
-const isTreeExpanded = ref(true)
+const isTreeExpanded = ref(false)
 const algorithmTreeRef = ref<InstanceType<typeof ElTreeType> | null>(null)
 
 const toggleTreeExpansion = () => {
@@ -572,7 +572,7 @@ const toggleTreeExpansion = () => {
               <el-button size="small" @click="toggleTreeExpansion">{{ isTreeExpanded ? '收起' : '展开' }}</el-button>
             </div>
             <div style="border: 1px solid var(--el-border-color); border-radius: 4px; padding: 5px; margin-bottom: 20px;">
-              <el-tree ref="algorithmTreeRef" :data="treeData" default-expand-all :expand-on-click-node="false">
+              <el-tree ref="algorithmTreeRef" :data="treeData" :expand-on-click-node="false">
                 <template #default="{ node, data }">
                   <span class="custom-tree-node">
                     <span>{{ node.label }}</span>
