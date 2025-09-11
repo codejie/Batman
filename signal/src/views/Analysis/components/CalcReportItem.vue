@@ -2,11 +2,13 @@
 import { computed, ref } from 'vue'
 import type { PropType } from 'vue'
 import { ElTable, ElTableColumn, ElButton } from 'element-plus'
+import { useTrendStore, ReportData } from '@/store/modules/calcReport'
+import { useRouter } from 'vue-router'
 import { AlgorithmCategoryDefinitions, AlgorithmTypeDefinitions } from '@/api/calc/defines'
 import type { AggregatedReport } from './CalcReport.vue'
 import { KLineDialog } from '@/components/KLine'
 import { FlexChart, TripleChartDialog, type SeriesDataItem } from '@/components/Chart'
-import { apiGetHistoryData, type HistoryDataItem } from '@/api/data'
+import { apiGetHistoryData } from '@/api/data'
 
 const props = defineProps({
   data: {
@@ -18,6 +20,9 @@ const props = defineProps({
     required: true
   }
 })
+
+const router = useRouter()
+const trendStore = useTrendStore()
 
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
@@ -89,13 +94,15 @@ const getDateRange = (period: number): string => {
 
 const middleChartData = ref<{ seriesData: SeriesDataItem[] }>({ seriesData: [] })
 
+const dataPeriodStart = ref<string>(getDateRange(props.dataPeriod))
+
 const openTripleChartDialog = async (row: any) => {
   selectedRowData.value = row
-  const startDate = getDateRange(props.dataPeriod)
+  // const startDate = getDateRange(props.dataPeriod)
   const res = await apiGetHistoryData({
     code: props.data.stock.code,
     type: props.data.stock.type,
-    start: startDate
+    start: dataPeriodStart.value
   })
 
   if (res.result) {
@@ -231,6 +238,23 @@ const mergedArrayData = computed(() => {
   };
 })
 
+const hasCalcData = computed(() => {
+  return props.data?.reports?.some(report => !!report.calc)
+})
+
+
+
+const navigateToTrendChart = () => {
+  const uniqueId = `${props.data.stock.code}_${Date.now()}`
+  const reportDataWithPeriod: ReportData = {
+    ...props.data,
+    dataPeriodStart:dataPeriodStart.value
+  }
+  trendStore.setReportData(uniqueId, reportDataWithPeriod)
+  router.push({ name: 'TrendReportChart', params: { id: uniqueId } })
+}
+
+
 function onTitleClick() {
   reqParam.value = {
     code: props.data.stock.code,
@@ -243,7 +267,10 @@ function onTitleClick() {
 
 <template>
   <div class="report-item-container">
-    <p class="title" @click="onTitleClick">{{ props.data.stock.name }} ({{ props.data.stock.code }})</p>
+    <div class="title-container">
+      <p class="title" @click="onTitleClick">{{ props.data.stock.name }} ({{ props.data.stock.code }})</p>
+      <el-button v-if="hasCalcData" size="default" @click="navigateToTrendChart">聚合图表</el-button>
+    </div>
 
     <div v-if="mergedArrayData.reports.length > 0" class="single-report-block">
       
@@ -322,10 +349,17 @@ function onTitleClick() {
   margin-bottom: 16px;
 }
 
+.title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 .title {
   font-size: 1rem;
   font-weight: bold;
-  margin: 0 0 8px 0;
+  margin: 0;
   cursor: pointer;
 }
 

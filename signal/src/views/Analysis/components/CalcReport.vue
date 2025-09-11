@@ -3,9 +3,14 @@ import { ref, onUnmounted, defineProps, watch, computed } from 'vue'
 import { ElButton, ElTabs, ElTabPane } from 'element-plus'
 import CalcReportItem from './CalcReportItem.vue'
 import { apiConnectToCalcReport, apiDisconnectFromCalcReport, apiListArguments } from '@/api/calc'
+import { useTrendStore } from '@/store/modules/calcReport'
 import type { ArgumentItem, CalcReportData } from '@/api/calc'
+import { useTagsViewStore } from '@/store/modules/tagsView'
 
 const props = defineProps<{itemId: number, dataPeriod: number}>()
+const trendStore = useTrendStore()
+const tagsViewStore = useTagsViewStore()
+
 
 // SSE action payload
 interface ActionPayload {
@@ -23,8 +28,8 @@ export interface AggregatedReport {
   reports: {
     category: string
     type: string
-    calc: any
-    report: any[]
+    calc?: any
+    report?: any[]
     arguments: any
   }[]
 }
@@ -68,11 +73,22 @@ watch(
   { immediate: true }
 )
 
+const closeOpenTrendCharts = () => {
+  const trendChartViews = tagsViewStore.getVisitedViews.filter(
+    (view) => view.name === 'TrendReportChart'
+  )
+  trendChartViews.forEach((view) => {
+    tagsViewStore.delVisitedView(view)
+  })
+}
+
 const connect = () => {
   if (eventSource.value) {
     return // Already connected
   }
 
+  trendStore.clearAllReportData()
+  closeOpenTrendCharts()
   reportItems.value = [] // Reset data on new connection
   logMessage.value = 'Connecting...'
   isSseConnected.value = true
@@ -155,6 +171,8 @@ const disconnect = () => {
 
 onUnmounted(() => {
   disconnect()
+  trendStore.clearAllReportData()
+  closeOpenTrendCharts()
 })
 
 defineExpose({
@@ -214,4 +232,5 @@ defineExpose({
 .report-items-container {
   margin-bottom: 1rem;
 }
+
 </style>

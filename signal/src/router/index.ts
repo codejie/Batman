@@ -196,6 +196,17 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           canTo: true,
           activeMenu: '/trend/trend'          
         }
+      },
+      {
+        name: 'TrendReportChart',
+        path: 'trend-report-chart/:id',
+        component: () => import('@/views/Analysis/TrendReportChart.vue'),
+        meta: {
+          title: '聚合图表',
+          noCache: true,
+          hidden: true,
+          canTo: true
+        }
       }
     ]
   },
