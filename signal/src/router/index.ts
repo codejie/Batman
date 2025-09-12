@@ -306,6 +306,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
       }
     ]
   },
+  /*
   {
     name: 'Test',
     path: '/test',
@@ -325,6 +326,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
       }
     ]
   }
+  */
   // {
   //   path: '/dashboard',
   //   component: Layout,

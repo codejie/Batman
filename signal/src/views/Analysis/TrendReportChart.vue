@@ -130,9 +130,9 @@ watch(
 
         const klineSeries: SeriesDataItem[] = [
           { name: 'KLine', type: 'candlestick', data: klineData },
-          { name: 'MA5', type: 'line', data: calcMAData(5, closeData), symbol: 'none' },
-          { name: 'MA10', type: 'line', data: calcMAData(10, closeData), symbol: 'none' },
-          { name: 'MA20', type: 'line', data: calcMAData(20, closeData), symbol: 'none' }
+          { name: 'MA5', type: 'line', data: calcMAData(5, closeData), symbol: 'none', lineStyle: { width: 1 } },
+          { name: 'MA10', type: 'line', data: calcMAData(10, closeData), symbol: 'none', lineStyle: { width: 1 } },
+          { name: 'MA20', type: 'line', data: calcMAData(20, closeData), symbol: 'none', lineStyle: { width: 1 } }
         ]
 
         const volumeSeries: SeriesDataItem[] = [{ name: 'Volume', type: 'bar', data: volumeData }]
@@ -164,6 +164,16 @@ watch(
   },
   { immediate: true }
 )
+
+const chartHeight = computed(() => {
+  const numCharts = chartData.value.series.length
+  if (numCharts === 0) {
+    return '500px'
+  }
+  const totalWeight = numCharts > 1 ? numCharts + 1 : 2
+  const height = Math.ceil((100 * 100 * totalWeight) / (85 * 0.7))
+  return `${height}px`
+})
 
 const mainChartTitle = computed(() => {
   if (!reportData.value) return ''
@@ -199,13 +209,13 @@ const handleClose = () => {
         <ElButton type="danger" @click="handleClose">关闭</ElButton>
       </div>
     </template>
-    <div v-if="reportData" class="p-4">
+    <div v-if="reportData" class="px-4 pb-4">
+      <div class="text-left font-bold text-base py-2">{{ mainChartTitle }}</div>
       <SplitChart
         v-if="chartData.xAxisData.length"
-        :main-title="mainChartTitle"
         :x-axis-data="chartData.xAxisData"
         :series="chartData.series"
-        height="80vh"
+        :height="chartHeight"
       />
       <div v-else class="p-4 text-center text-gray-500">
         <p>Loading chart data...</p>

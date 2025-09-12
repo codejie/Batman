@@ -269,7 +269,7 @@ function onTitleClick() {
   <div class="report-item-container">
     <div class="title-container">
       <p class="title" @click="onTitleClick">{{ props.data.stock.name }} ({{ props.data.stock.code }})</p>
-      <el-button v-if="hasCalcData" size="default" @click="navigateToTrendChart">聚合图表</el-button>
+      <el-button v-if="hasCalcData" size="default" @click="navigateToTrendChart" style="margin-left: 1rem">聚合图表</el-button>
     </div>
 
     <div v-if="mergedArrayData.reports.length > 0" class="single-report-block">
@@ -351,7 +351,6 @@ function onTitleClick() {
 
 .title-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }

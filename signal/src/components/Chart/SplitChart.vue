@@ -5,10 +5,6 @@ import { computed, PropType } from 'vue'
 import type { SeriesDataItem } from './types'
 
 const props = defineProps({
-  mainTitle: {
-    type: String,
-    default: ''
-  },
   height: {
     type: String,
     default: '600px'
@@ -57,20 +53,7 @@ const option = computed((): EChartsOption => {
   const weights = [2, ...Array(numCharts > 1 ? numCharts - 1 : 0).fill(1)]
   const totalWeight = weights.reduce((a, b) => a + b, 0)
 
-  let topMargin = 2
-  if (props.mainTitle) {
-    title.push({
-      text: props.mainTitle,
-      top: '0%',
-      left: '0',
-      textStyle: {
-        fontWeight: 'bold',
-        fontSize: 16
-      }
-    })
-    topMargin = 5 // Increase top margin if there is a main title
-  }
-
+  const topMargin = 0
   const availableHeight = 85 // Use 85% of the container for charts and titles
   const totalChartHeight = availableHeight - topMargin
 
@@ -137,6 +120,12 @@ const option = computed((): EChartsOption => {
       padding: 10,
       textStyle: {
         color: '#000'
+      },
+      valueFormatter: (value) => {
+        if (typeof value === 'number') {
+          return value.toFixed(2)
+        }
+        return value
       }
     },
     axisPointer: {
@@ -148,7 +137,7 @@ const option = computed((): EChartsOption => {
     legend: {
       orient: 'vertical',
       right: 10,
-      top: 'center',
+      top: 'top',
       data: props.series.flatMap((chart) => chart.series.map((s) => s.name))
     },
     grid,
