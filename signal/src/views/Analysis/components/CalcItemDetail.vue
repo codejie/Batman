@@ -43,14 +43,14 @@ const reportPeriodText = computed(() => {
 <template>
   <div v-if="item" class="calc-item-details">
     <p class="detail-title">计算详情</p>
-    <el-descriptions :column="3" :border="true" label-width="160">
+        <el-descriptions :column="6" :border="true" label-width="160">
       <el-descriptions-item label="名称">
         <span @click="goToDetails" class="clickable-name">{{ item.name }}</span>
       </el-descriptions-item>
-      <el-descriptions-item label="备注" :span="2">{{ item.remarks }}</el-descriptions-item>
       <el-descriptions-item label="列表类型">{{ listTypeText }}</el-descriptions-item>
       <el-descriptions-item label="数据期间">{{ dataPeriodText }}</el-descriptions-item>
       <el-descriptions-item label="报告期间">{{ reportPeriodText }}</el-descriptions-item>
+      <el-descriptions-item label="备注" :span="2">{{ item.remarks }}</el-descriptions-item>
     </el-descriptions>
   </div>
 </template>

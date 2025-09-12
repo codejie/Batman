@@ -59,13 +59,11 @@ def calc(history_data: pd.DataFrame, options: dict = defaultOptions) -> pd.DataF
       'Long': long
   })
 
-  for i in range(1, len(result['Short'])):
-    if result['Short'].iloc[i] > result['Long'].iloc[i] and result['Short'].iloc[i-1] <= result['Long'].iloc[i-1]:
-      result.loc[result.index[i], 'Signal'] = 1 # Uptrend
-    elif result['Short'].iloc[i] < result['Long'].iloc[i] and result['Short'].iloc[i-1] >= result['Long'].iloc[i-1]:
-      result.loc[result.index[i], 'Signal'] = -1  # Downtrend
-    else:
-      result.loc[result.index[i], 'Signal'] = 0 # Neutral
+  result['Signal'] = 0
+  # Golden cross
+  result.loc[(result['Short'] > result['Long']) & (result['Short'].shift(1) <= result['Long'].shift(1)), 'Signal'] = 1
+  # Death cross
+  result.loc[(result['Short'] < result['Long']) & (result['Short'].shift(1) >= result['Long'].shift(1)), 'Signal'] = -1
 
   return result
 
@@ -73,35 +71,21 @@ def report(history_data: pd.DataFrame, ma_data: pd.DataFrame, idx: int = 0, opti
   options = defaultOptions | options
   
   result: list[dict] = []
+  
+  signal_points = ma_data[ma_data['Signal'] != 0]
+
   if idx == 0:
-    for i in range(len(ma_data)):
-      if ma_data['Signal'].iloc[i] == 1 or ma_data['Signal'].iloc[i] == -1:
-        # trend = "Uptrend" if ma_data['Signal'].iloc[i] == 1 else "Downtrend"
-        # result.append(f"{ma_data.index[i]}: {trend} [Price: {history_data[options['column']].iloc[i]}]")
-        result.append({
-          "index": str(ma_data.index[i]),
-          "price": float(history_data[options['column']].iloc[i]),
-          "trend": ma_data['Signal'].iloc[i]
-        })
+      selected_points = signal_points
   elif idx < 0:
-    for i in range(len(ma_data) + idx, len(ma_data)):
-      if ma_data['Signal'].iloc[i] == 1 or ma_data['Signal'].iloc[i] == -1:
-        # trend = "Uptrend" if ma_data['Signal'].iloc[i] == 1 else "Downtrend"
-        # result.append(f"{ma_data.index[i]}: {trend} [Price: {history_data[options['column']].iloc[i]}]")
-        result.append({
-          "index": str(ma_data.index[i]),
-          "price": float(history_data[options['column']].iloc[i]),
-          "trend": ma_data['Signal'].iloc[i]
-        })        
-  elif idx > 0:
-    for i in range(idx, len(ma_data)):
-      if ma_data['Signal'].iloc[i] == 1 or ma_data['Signal'].iloc[i] == -1:
-        # trend = "Uptrend" if ma_data['Signal'].iloc[i] == 1 else "Downtrend"
-        # result.append(f"{ma_data.index[i]}: {trend} [Price: {history_data[options['column']].iloc[i]}]")
-        result.append({
-          "index": str(ma_data.index[i]),
-          "price": float(history_data[options['column']].iloc[i]),
-          "trend": ma_data['Signal'].iloc[i]
-        })
+      selected_points = signal_points.tail(abs(idx))
+  else: # idx > 0
+      selected_points = signal_points.iloc[idx-1:]
+
+  for i, row in selected_points.iterrows():
+      result.append({
+          "index": str(i),
+          "price": float(history_data.loc[i, options['column']]),
+          "trend": int(row['Signal'])
+      })
         
   return result

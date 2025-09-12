@@ -33,17 +33,16 @@ def calc(history_data: pd.DataFrame, options: dict = defaultOptions) -> pd.DataF
       '-DI': minus_di
   })
 
-  # if options['signal']:
-  for i in range(1, len(result)):
-    if result['ADX'].iloc[i] > options['threshold']:
-      if  result['+DI'].iloc[i-1] <= result['-DI'].iloc[i-1] and result['+DI'].iloc[i] > result['-DI'].iloc[i]:
-        result.loc[result.index[i], 'Signal'] = 1
-      elif result['+DI'].iloc[i-1] >= result['-DI'].iloc[i-1] and result['+DI'].iloc[i] < result['-DI'].iloc[i]:
-        result.loc[result.index[i], 'Signal'] = -1
-      else:
-        result.loc[result.index[i], 'Signal'] = 0
-    else:
-      result.loc[result.index[i], 'Signal'] = 0
+  result['Signal'] = 0
+  is_trending = result['ADX'] > options['threshold']
+  
+  # Buy Signal
+  is_di_buy_cross = (result['+DI'] > result['-DI']) & (result['+DI'].shift(1) <= result['-DI'].shift(1))
+  result.loc[is_trending & is_di_buy_cross, 'Signal'] = 1
+
+  # Sell Signal
+  is_di_sell_cross = (result['+DI'] < result['-DI']) & (result['+DI'].shift(1) >= result['-DI'].shift(1))
+  result.loc[is_trending & is_di_sell_cross, 'Signal'] = -1
 
   return result
 
@@ -52,21 +51,22 @@ def report(history_data: pd.DataFrame, adx_data: pd.DataFrame, idx: int = 0, opt
   
   result: list[dict] = []
   
-  start_index = 0
-  if idx > 0:
-    start_index = idx
-  elif idx < 0:
-    start_index = len(adx_data) + idx
+  signal_points = adx_data[adx_data['Signal'] != 0]
 
-  for i in range(start_index, len(adx_data)):
-    signal = adx_data['Signal'].iloc[i]
-    if signal == 1 or signal == -1:
+  if idx == 0:
+      selected_points = signal_points
+  elif idx < 0:
+      selected_points = signal_points.tail(abs(idx))
+  else: # idx > 0
+      selected_points = signal_points.iloc[idx-1:]
+
+  for i, row in selected_points.iterrows():
       result.append({
-        "index": str(adx_data.index[i]),
-        "price": float(history_data[options['columns'][2]].iloc[i]),
-        "trend": signal
+          "index": str(i),
+          "price": float(history_data.loc[i, options['columns'][2]]),
+          "trend": int(row['Signal'])
       })
-      
+        
   return result
 
 # ADX, OBV, RSI
