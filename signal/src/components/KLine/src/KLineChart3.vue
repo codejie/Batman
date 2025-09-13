@@ -2,8 +2,8 @@
 KLine that support add lines or data
 -->
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Echart, EChartsOption } from '@/components/Echart';
+import { ref } from 'vue'
+import { Echart, EChartsOption } from '@/components/Echart'
 
 const upColor = '#ec0000'
 const downColor = '#00da3c'
@@ -40,23 +40,25 @@ const blankOption = {
     textStyle: {
       color: '#000'
     }
-  },  
+  },
   legend: {
     bottom: '0%',
     icon: 'circle',
     data: []
-  }, 
-  yAxis: [{
-    type: 'value',
-    gridIndex: 0,
-    show: true,
-    position: 'left',
-    nameGap: 30,
-    scale: true,
-    splitArea: {
-      show: true
+  },
+  yAxis: [
+    {
+      type: 'value',
+      gridIndex: 0,
+      show: true,
+      position: 'left',
+      nameGap: 30,
+      scale: true,
+      splitArea: {
+        show: true
+      }
     }
-  }],
+  ],
   series: []
 }
 
@@ -70,8 +72,7 @@ function test() {
 }
 
 function reset() {
-  yMin = -1,
-  yMax = -1
+  ;(yMin = -1), (yMax = -1)
   options.value.xAxis![0].data = []
 }
 
@@ -120,32 +121,30 @@ function arrayMin(arr) {
   return arr.reduce(function (p, v) {
     if (isNaN(p)) return v
     if (isNaN(v)) return p
-    return ( p < v ? p : v );
-  });
+    return p < v ? p : v
+  })
 }
 
 function arrayMax(arr) {
   return arr.reduce(function (p, v) {
     if (isNaN(p)) return v
-    if (isNaN(v)) return p    
-    return ( p > v ? p : v );
-  });
+    if (isNaN(v)) return p
+    return p > v ? p : v
+  })
 }
 
 function getArrayRange(array: number[]) {
   return {
-    max: 
-      array.reduce(function (p, v) {
-          if (isNaN(p)) return v
-          if (isNaN(v)) return p
-          return ( p > v ? p : v );
-        }),
-    min: 
-      array.reduce(function (p, v) {
-          if (isNaN(p)) return v
-          if (isNaN(v)) return p
-          return ( p < v ? p : v );
-        })        
+    max: array.reduce(function (p, v) {
+      if (isNaN(p)) return v
+      if (isNaN(v)) return p
+      return p > v ? p : v
+    }),
+    min: array.reduce(function (p, v) {
+      if (isNaN(p)) return v
+      if (isNaN(v)) return p
+      return p < v ? p : v
+    })
   }
 }
 
@@ -162,9 +161,9 @@ function addLine(name: string, data: number[], fit: boolean = true, legend: bool
       const diff2 = max - min
       const arg1 = diff1 / diff2
       const arg2 = arg1 * min - yMin
-      data = data.map(item => (arg1 * item - arg2))
+      data = data.map((item) => arg1 * item - arg2)
       name = name + '(f)'
-    }    
+    }
   }
 
   const option = {
@@ -179,7 +178,7 @@ function addLine(name: string, data: number[], fit: boolean = true, legend: bool
     // itemStyle: {
     //   color: '#ec0000'
     // },
-    data: data.map(item => isNaN(item) ? item : item.toFixed(2))
+    data: data.map((item) => (isNaN(item) ? item : item.toFixed(2)))
   }
   options.value.series!.push(option)
   if (legend) {
@@ -200,7 +199,7 @@ function addLine(name: string, data: number[], fit: boolean = true, legend: bool
 //     name = name + '(f)'
 //   } else {
 //     yMax = arrayMax(data)
-//     yMin = arrayMin(data)    
+//     yMin = arrayMin(data)
 //   }
 
 //   console.log(data)
@@ -224,7 +223,7 @@ function addLine(name: string, data: number[], fit: boolean = true, legend: bool
 
 function remove(name: string, fit: boolean = false) {
   if (fit) name = name + '(f)'
-  options.value.series = options.value.series!.filter(item => item.name != name)
+  options.value.series = options.value.series!.filter((item) => item.name != name)
 }
 
 function addBar(name: string, data: number[], fit: boolean = true, legend: boolean = true) {
@@ -235,9 +234,9 @@ function addBar(name: string, data: number[], fit: boolean = true, legend: boole
       const diff2 = max - min
       const arg1 = diff1 / diff2
       const arg2 = arg1 * min - yMin
-      data = data.map(item => (arg1 * item - arg2))
+      data = data.map((item) => arg1 * item - arg2)
       name = name + '(f)'
-    }    
+    }
   }
 
   const option = {
@@ -251,12 +250,12 @@ function addBar(name: string, data: number[], fit: boolean = true, legend: boole
         return item.value > 0 ? upColor : downColor
       }
     },
-    data: data.map(item => isNaN(item) ? item : item.toFixed(2))
+    data: data.map((item) => (isNaN(item) ? item : item.toFixed(2)))
   }
   options.value.series!.push(option)
   if (legend) {
     options.value.legend!.data.push(name)
-  } 
+  }
 }
 
 defineExpose({
@@ -268,10 +267,8 @@ defineExpose({
   addLine,
   addBar,
   // addFitLine,
-  remove,
-
+  remove
 })
-
 </script>
 <template>
   <Echart :options="options" />

@@ -3,7 +3,13 @@ import { ContentDetailWrap } from '@/components/ContentDetailWrap'
 import { computed, onMounted, PropType, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton, ElRow, ElTable, ElTableColumn, ElText } from 'element-plus'
-import { calcProfitData, calcProfitTraceData, getHoldListData, HoldingListItem, ProfitTraceItem } from '@/calc/holding'
+import {
+  calcProfitData,
+  calcProfitTraceData,
+  getHoldListData,
+  HoldingListItem,
+  ProfitTraceItem
+} from '@/calc/holding'
 import { apiGetHistoryData, HistoryDataItem } from '@/api/data'
 import * as Utils from '@/utils/dateUtil'
 import DetailChart from './components/DetailChart.vue'
@@ -25,7 +31,7 @@ const props = defineProps({
 })
 
 const holdingId = ref<number>(Number(props.id))
-const holdingIds =  ref<number[]>(props.ids.split(',').map(id => Number(id)))
+const holdingIds = ref<number[]>(props.ids.split(',').map((id) => Number(id)))
 
 const holdingData = ref<HoldingListItem[]>()
 const historyData = ref<HistoryDataItem[]>([])
@@ -40,7 +46,7 @@ const reqParam = ref<any>({})
 async function fetchData(id) {
   // holding
   holdingData.value = await getHoldListData(id)
-  
+
   const operationData = holdingData.value[0]?.items ?? []
   if (operationData.length > 0) {
     // history
@@ -60,7 +66,7 @@ async function fetchData(id) {
     // trace
     profitTraceData.value = calcProfitTraceData(operationData, historyData.value)
     if (profitTableToggle.value) {
-      profitTableData.value = profitTraceData.value//.reverse()
+      profitTableData.value = profitTraceData.value //.reverse()
     } else {
       profitTableData.value = calcProfitData(operationData, historyData.value)
     }
@@ -74,20 +80,19 @@ async function fetchData(id) {
       start: Utils.formatToDate(start),
       end: Utils.formatToDate(end)
     })
-    historyData.value = historyRet.result    
+    historyData.value = historyRet.result
   }
 }
 
 function onProfitTableShow() {
   profitTableToggle.value = !profitTableToggle.value
-  if (holdingData.value && holdingData.value.length >0) {
+  if (holdingData.value && holdingData.value.length > 0) {
     if (profitTableToggle.value) {
-        profitTableData.value = profitTraceData.value
+      profitTableData.value = profitTraceData.value
     } else {
       if (holdingData.value && holdingData.value.length > 0)
         profitTableData.value = calcProfitData(holdingData.value[0].items!, historyData.value)
-      else
-        profitTableData.value = []
+      else profitTableData.value = []
     }
   }
   // profitTableData.value = profitTableData.value.reverse()
@@ -109,7 +114,7 @@ function onRecordClick(row: HoldingRecordItem) {
   reqParam.value = {
     code: row.code,
     name: row.name,
-    type: row.type,
+    type: row.type
     // start: row.created,
     // end: new Date()
   }
@@ -147,28 +152,40 @@ async function onNext() {
 function onProfitTableExpandChange(row, expandedRows) {
   profitTableExpanded.value = expandedRows.length > 0
 }
-
 </script>
 
 <template>
-  <ContentDetailWrap style="height: 300px;">
+  <ContentDetailWrap style="height: 300px">
     <template #header>
       <ElButton type="primary" @click="go(-1)">返回</ElButton>
       <!-- <ElButton type="primary" @click="onTest">Test</ElButton> -->
-       <div style="float: right; margin-right: 16px;">
+      <div style="float: right; margin-right: 16px">
         <ElButton :disabled="checkPrev()" @click="onPrev()">上一个</ElButton>
         <ElButton :disabled="checkNext()" @click="onNext()">下一个</ElButton>
-       </div>
+      </div>
     </template>
     <ElRow :gutter="24">
-      <ElTable :data="holdingData" stripe :border="true" :default-expand-all="profitTableExpanded"  @expand-change="onProfitTableExpandChange">
+      <ElTable
+        :data="holdingData"
+        stripe
+        :border="true"
+        :default-expand-all="profitTableExpanded"
+        @expand-change="onProfitTableExpandChange"
+      >
         <ElTableColumn type="expand">
           <div class="mx-4px my-4px">
-            <ElButton size="small" class="mx-8" type="primary" @click="onProfitTableShow()">{{ profitTableTitle() }}</ElButton>
+            <ElButton size="small" class="mx-8" type="primary" @click="onProfitTableShow()">{{
+              profitTableTitle()
+            }}</ElButton>
           </div>
           <div class="mx-24px my-8px">
-            <ElTable :data="profitTableData" stripe :border="true" :default-sort="{ prop: 'date', order: 'descending' }">
-              <ElTableColumn  type="index" width="50" />
+            <ElTable
+              :data="profitTableData"
+              stripe
+              :border="true"
+              :default-sort="{ prop: 'date', order: 'descending' }"
+            >
+              <ElTableColumn type="index" width="50" />
               <ElTableColumn prop="date" label="日期" min-width="60" />
               <ElTableColumn prop="quantity" label="操作" min-width="50" />
               <ElTableColumn prop="price" label="买入" min-width="60">
@@ -181,12 +198,12 @@ function onProfitTableExpandChange(row, expandedRows) {
                   {{ formatNumberString(row.expense) }}
                 </template>
               </ElTableColumn>
-              <ElTableColumn prop="holding" label="持有" min-width="60" />              
+              <ElTableColumn prop="holding" label="持有" min-width="60" />
               <ElTableColumn label="总额" min-width="80">
                 <template #default="{ row }">
                   {{ formatNumberString(row.amount) }}
                 </template>
-              </ElTableColumn>              
+              </ElTableColumn>
               <ElTableColumn label="均价" min-width="60">
                 <template #default="{ row }">
                   {{ formatNumberString(row.price_avg) }}
@@ -214,19 +231,35 @@ function onProfitTableExpandChange(row, expandedRows) {
               </ElTableColumn>
               <ElTableColumn label="昨差" min-width="80">
                 <template #default="{ row }">
-                  <div :class="row.pre_profit_diff > 0 ? 'red-text' : (row.pre_profit_diff < 0 ? 'green-text' : '')">
-                    {{ formatNumberString(row.pre_profit_diff)}}
+                  <div
+                    :class="
+                      row.pre_profit_diff > 0
+                        ? 'red-text'
+                        : row.pre_profit_diff < 0
+                          ? 'green-text'
+                          : ''
+                    "
+                  >
+                    {{ formatNumberString(row.pre_profit_diff) }}
                   </div>
                 </template>
               </ElTableColumn>
               <ElTableColumn label="昨差率 %" min-width="100">
                 <template #default="{ row }">
-                  <div :class="row.pre_profit_rate > 0 ? 'red-text' : (row.pre_profit_rate < 0 ? 'green-text' : '')">
+                  <div
+                    :class="
+                      row.pre_profit_rate > 0
+                        ? 'red-text'
+                        : row.pre_profit_rate < 0
+                          ? 'green-text'
+                          : ''
+                    "
+                  >
                     {{ formatRateString(row.pre_profit_rate) }}
                   </div>
                 </template>
-              </ElTableColumn>              
-            </ElTable>            
+              </ElTableColumn>
+            </ElTable>
           </div>
         </ElTableColumn>
         <ElTableColumn prop="record.code" label="代码" min-width="80">
@@ -245,7 +278,9 @@ function onProfitTableExpandChange(row, expandedRows) {
         </ElTableColumn>
         <ElTableColumn prop="calc?.price_cur" label="现价/日期" min-width="80">
           <template #default="{ row }">
-            {{ formatNumberString(row.calc?.price_cur) }} [{{ `${row.calc?.date_cur.substring(5)}` }}]
+            {{ formatNumberString(row.calc?.price_cur) }} [{{
+              `${row.calc?.date_cur.substring(5)}`
+            }}]
           </template>
         </ElTableColumn>
         <ElTableColumn prop="calc?.revenue" label="市值" min-width="80">
@@ -280,17 +315,27 @@ function onProfitTableExpandChange(row, expandedRows) {
       </ElTable>
     </ElRow>
     <ElRow :gutter="24">
-      <DetailChart :history-data="historyData" :profit-data="profitTraceData" :width="'100%'" :height="'630px'" />
+      <DetailChart
+        :history-data="historyData"
+        :profit-data="profitTraceData"
+        :width="'100%'"
+        :height="'630px'"
+      />
     </ElRow>
-    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="onKLineDialogClose" width="60%" />    
+    <KLineDialog
+      :visible="klineDialogVisible"
+      :req-param="reqParam"
+      @update:on-close="onKLineDialogClose"
+      width="60%"
+    />
   </ContentDetailWrap>
 </template>
 <style lang="css" scoped>
 .green-text {
-    color: green;
+  color: green;
 }
 
 .red-text {
-    color: red;
+  color: red;
 }
 </style>

@@ -108,7 +108,7 @@ const loadStockList = async () => {
     const customizedStocks = await fetchCustomized()
     stocks = Array.from(new Map(customizedStocks.map((item) => [item.code, item])).values())
   } else if (listType === 2) {
-     if (effectiveId.value) {
+    if (effectiveId.value) {
       try {
         const res = await apiListStockList({ cid: effectiveId.value })
         stocks = res.result.map((item) => ({ ...item, src: 2 }))
@@ -148,12 +148,12 @@ const populateDisplayedCategories = (args: ArgumentItem[]) => {
     const types = categoryArgs.map((arg) => {
       const params = JSON.parse(arg.arguments)
       const typeDefinition = AlgorithmTypeDefinitions[catKey]?.types?.[arg.type]
-      let options: Array<{ option: AlgorithmCategoryOptionType, value?: any }> = []
+      let options: Array<{ option: AlgorithmCategoryOptionType; value?: any }> = []
       if (typeDefinition && typeDefinition.options) {
-          options = typeDefinition.options.map((optDef) => ({
-            option: optDef,
-            value: params[optDef.name]
-          }))
+        options = typeDefinition.options.map((optDef) => ({
+          option: optDef,
+          value: params[optDef.name]
+        }))
       }
       return {
         id: nextTypeId++,
@@ -243,7 +243,7 @@ const handleStockListChange = (val: string[]) => {
   } else if (lastSelection === all) {
     stockListUi.value = [all]
   } else {
-    stockListUi.value = newSelection.filter(item => item === holding || item === watchlist)
+    stockListUi.value = newSelection.filter((item) => item === holding || item === watchlist)
   }
 
   const selection = stockListUi.value
@@ -285,9 +285,7 @@ const handleReportRangeChange = (val: string[]) => {
     formData.report_period = index
   }
 }
-const showStockTable = computed(() =>
-  !stockListUi.value.includes(AlgorithmStockListDefinitions[3])
-)
+const showStockTable = computed(() => !stockListUi.value.includes(AlgorithmStockListDefinitions[3]))
 const showStockTableAddButton = computed(() =>
   stockListUi.value.includes(AlgorithmStockListDefinitions[2])
 )
@@ -302,7 +300,7 @@ const handleAddStockClick = () => {
 }
 
 const onQuickViewConfirm = (item: { code: string; name: string; type: number }) => {
-  if (tableData.value.some((i) => (i.code === item.code && i.type === item.type))) {
+  if (tableData.value.some((i) => i.code === item.code && i.type === item.type)) {
     ElMessage.warning('代码已存在')
     return
   }
@@ -330,17 +328,19 @@ const treeData = computed(() => {
   })
 })
 
-const displayedCategories = ref<Array<{
+const displayedCategories = ref<
+  Array<{
     categoryKey: string
     types: Array<{
-      id: number,
-      key: string,
+      id: number
+      key: string
       options: Array<{
-        option: AlgorithmCategoryOptionType,
+        option: AlgorithmCategoryOptionType
         value?: any
       }>
     }>
-  }>>([])
+  }>
+>([])
 
 let nextTypeId = 0
 
@@ -357,7 +357,7 @@ const addAlgorithm = (value: string) => {
     displayedCategories.value.push(existingCategory)
   }
   const typeDefinition = AlgorithmTypeDefinitions[catKey]?.types?.[typeKey]
-  const typeOptions: Array<{ option: AlgorithmCategoryOptionType, value?: any }> = []
+  const typeOptions: Array<{ option: AlgorithmCategoryOptionType; value?: any }> = []
   if (typeDefinition && typeDefinition.options) {
     typeDefinition.options.forEach((option) => {
       typeOptions.push({ option: option, value: option.default })
@@ -505,7 +505,7 @@ const toggleTreeExpansion = () => {
     <!-- Bottom Section -->
     <el-row :gutter="24">
       <!-- Left Column -->
-      <el-col :span="8" style="border-right: 1px solid var(--el-border-color); padding-right: 20px">
+      <el-col :span="8" style="padding-right: 20px; border-right: 1px solid var(--el-border-color)">
         <div>
           <div class="section-title">股票列表</div>
           <el-checkbox-group v-model="stockListUi" @change="handleStockListChange">
@@ -517,7 +517,12 @@ const toggleTreeExpansion = () => {
           <div v-if="showStockTable && showStockTableAddButton" style="margin-top: 10px">
             <el-button size="small" @click="handleAddStockClick">添加</el-button>
           </div>
-          <el-table v-if="showStockTable" :data="tableData" style="width: 100%; margin-top: 10px" :border="true">
+          <el-table
+            v-if="showStockTable"
+            :data="tableData"
+            style="width: 100%; margin-top: 10px"
+            :border="true"
+          >
             <el-table-column type="index" label="序号" width="60" />
             <el-table-column prop="type" label="类型" width="60">
               <template #default="scope">
@@ -559,7 +564,12 @@ const toggleTreeExpansion = () => {
 
         <div style="margin-top: 20px">
           <div class="section-title">显示参数</div>
-          <el-checkbox v-model="formData.show_opt" label="显示计算结果图表" :true-value="1" :false-value="0" />
+          <el-checkbox
+            v-model="formData.show_opt"
+            label="显示计算结果图表"
+            :true-value="1"
+            :false-value="0"
+          />
         </div>
       </el-col>
 
@@ -567,16 +577,36 @@ const toggleTreeExpansion = () => {
       <el-col :span="16" style="padding-left: 20px">
         <el-row>
           <el-col>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <div class="section-title" style="margin-bottom: 0;">算法参数</div>
-              <el-button size="small" @click="toggleTreeExpansion">{{ isTreeExpanded ? '收起' : '展开' }}</el-button>
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+              "
+            >
+              <div class="section-title" style="margin-bottom: 0">算法参数</div>
+              <el-button size="small" @click="toggleTreeExpansion">{{
+                isTreeExpanded ? '收起' : '展开'
+              }}</el-button>
             </div>
-            <div style="border: 1px solid var(--el-border-color); border-radius: 4px; padding: 5px; margin-bottom: 20px;">
+            <div
+              style="
+                padding: 5px;
+                margin-bottom: 20px;
+                border: 1px solid var(--el-border-color);
+                border-radius: 4px;
+              "
+            >
               <el-tree ref="algorithmTreeRef" :data="treeData" :expand-on-click-node="false">
                 <template #default="{ node, data }">
                   <span class="custom-tree-node">
                     <span>{{ node.label }}</span>
-                    <el-button v-if="!data.disabled" @click.stop="addAlgorithm(data.value)" size="small">
+                    <el-button
+                      v-if="!data.disabled"
+                      @click.stop="addAlgorithm(data.value)"
+                      size="small"
+                    >
                       添加
                     </el-button>
                   </span>
@@ -606,17 +636,19 @@ const toggleTreeExpansion = () => {
   justify-content: space-between;
   width: 100%;
 }
+
 .section-title {
+  margin-bottom: 10px;
   font-size: 14px;
   font-weight: 700;
-  margin-bottom: 10px;
 }
+
 .custom-tree-node {
-  flex: 1;
   display: flex;
+  padding-right: 8px;
+  font-size: 14px;
+  flex: 1;
   align-items: center;
   justify-content: space-between;
-  font-size: 14px;
-  padding-right: 8px;
 }
 </style>

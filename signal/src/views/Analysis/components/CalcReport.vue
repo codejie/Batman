@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, defineProps, watch, computed } from 'vue'
+import { ref, onUnmounted, watch, computed } from 'vue'
 import { ElButton, ElTabs, ElTabPane } from 'element-plus'
 import CalcReportItem from './CalcReportItem.vue'
 import { apiConnectToCalcReport, apiDisconnectFromCalcReport, apiListArguments } from '@/api/calc'
@@ -7,10 +7,9 @@ import { useTrendStore } from '@/store/modules/calcReport'
 import type { ArgumentItem, CalcReportData } from '@/api/calc'
 import { useTagsViewStore } from '@/store/modules/tagsView'
 
-const props = defineProps<{itemId: number, dataPeriod: number}>()
+const props = defineProps<{ itemId: number; dataPeriod: number }>()
 const trendStore = useTrendStore()
 const tagsViewStore = useTagsViewStore()
-
 
 // SSE action payload
 interface ActionPayload {
@@ -186,12 +185,23 @@ defineExpose({
     <div class="section-header">
       <div>
         <span class="section-title">计算结果</span>
-        <el-button v-if="reportItems.length > 0" type="primary" size="small" @click="toggleDisplayMode" style="margin-left: 12px;">{{ displayModeText }}</el-button>
+        <el-button
+          v-if="reportItems.length > 0"
+          type="primary"
+          size="small"
+          @click="toggleDisplayMode"
+          style="margin-left: 12px"
+          >{{ displayModeText }}</el-button
+        >
       </div>
-      <el-button v-if="isSseConnected" type="danger" size="small" @click="disconnect">停止</el-button>
+      <el-button v-if="isSseConnected" type="danger" size="small" @click="disconnect"
+        >停止</el-button
+      >
     </div>
     <div class="text-component" v-if="isSseConnected">
-      <p><small>{{ logMessage }}</small></p>
+      <p
+        ><small>{{ logMessage }}</small></p
+      >
     </div>
 
     <div class="report-items-container" v-if="reportItems.length > 0">
@@ -212,9 +222,6 @@ defineExpose({
   </div>
 </template>
 
-
-
-
 <style scoped>
 .section-header {
   display: flex;
@@ -222,15 +229,17 @@ defineExpose({
   align-items: center;
   margin-bottom: 10px;
 }
+
 .section-title {
   font-size: 16px;
   font-weight: 700;
 }
+
 .text-component {
   margin-bottom: 1rem;
 }
+
 .report-items-container {
   margin-bottom: 1rem;
 }
-
 </style>

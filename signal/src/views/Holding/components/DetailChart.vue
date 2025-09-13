@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { HistoryDataItem } from '@/api/data';
-import { ProfitTraceItem } from '@/calc/holding';
-import { Echart } from '@/components/Echart';
-import { EChartsOption } from 'echarts';
-import { ref, watch } from 'vue';
-import * as Calc from '@/calc/data';
+import { HistoryDataItem } from '@/api/data'
+import { ProfitTraceItem } from '@/calc/holding'
+import { Echart } from '@/components/Echart'
+import { EChartsOption } from 'echarts'
+import { ref, watch } from 'vue'
+import * as Calc from '@/calc/data'
 
 const props = defineProps({
   profitData: {
@@ -47,316 +47,317 @@ const holdingData = ref<number[]>()
 
 const chartOptionOrigin: EChartsOption = {
   grid: [
-      {
-        id: 0,
-        left: '4%',
-        top: '4%',
-        right: '4%',
-        bottom: '70%'
+    {
+      id: 0,
+      left: '4%',
+      top: '4%',
+      right: '4%',
+      bottom: '70%'
+    },
+    {
+      id: 1,
+      left: '4%',
+      top: '33%',
+      right: '4%',
+      bottom: '20%'
+    },
+    {
+      id: 2,
+      left: '4%',
+      top: '85%',
+      right: '4%',
+      bottom: '2%'
+    }
+  ],
+  xAxis: [
+    {
+      type: 'category',
+      gridIndex: 1,
+      // data: xData.value,
+      boundaryGap: false,
+      axisLine: { onZero: true },
+      axisTick: { show: true },
+      splitLine: { show: false },
+      axisLabel: { show: true }
+    },
+    {
+      type: 'category',
+      gridIndex: 2,
+      // data: xData.value,
+      boundaryGap: false,
+      axisLine: { onZero: true },
+      axisTick: { show: false },
+      splitLine: { show: false },
+      axisLabel: { show: false }
+    },
+    {
+      type: 'category',
+      gridIndex: 0,
+      // data: xData.value,
+      boundaryGap: false,
+      axisLine: { onZero: true },
+      axisTick: { show: false },
+      splitLine: { show: false },
+      axisLabel: { show: false }
+    }
+  ],
+  yAxis: [
+    {
+      type: 'value', // kline
+      // nameLocation : 'middle',
+      show: true,
+      gridIndex: 1,
+      position: 'left',
+      nameGap: 30,
+      scale: true,
+      splitArea: {
+        show: true
       },
-      {
-        id: 1,
-        left: '4%',
-        top: '33%',
-        right: '4%',
-        bottom: '20%'
+      splitNumber: 8,
+      axisLabel: { show: true },
+      axisLine: { show: true },
+      axisTick: { show: true },
+      splitLine: { show: false }
+    },
+    {
+      // volume
+      type: 'value',
+      // nameLocation : 'middle',
+      show: true,
+      gridIndex: 2,
+      position: 'left',
+      nameGap: 30,
+      scale: true,
+      splitArea: {
+        show: true
       },
+      splitNumber: 8,
+      axisLabel: { show: false },
+      axisLine: { show: true },
+      axisTick: { show: false },
+      splitLine: { show: false }
+    },
+    {
+      // price avg
+      type: 'value',
+      show: true,
+      gridIndex: 0,
+      position: 'left',
+      alignTicks: true,
+      // nameGap: 30,
+      scale: true,
+      offset: -120,
+      // splitArea: {
+      //   show: true
+      // },
+      // min: 0,
+      axisLabel: { show: true },
+      axisLine: { show: true },
+      axisTick: { show: true },
+      splitLine: { show: true }
+    },
+    {
+      // profit
+      type: 'value',
+      show: true,
+      gridIndex: 0,
+      position: 'left',
+      alignTicks: true,
+      // nameGap: 30,
+      offset: -60,
+      scale: true,
+      // splitArea: {
+      //   show: true
+      // },
+      // min: 0,
+      axisLabel: { show: true },
+      axisLine: { show: true },
+      axisTick: { show: true },
+      splitLine: { show: true }
+    },
+    {
+      // revenue
+      type: 'value',
+      show: true,
+      gridIndex: 0,
+      position: 'left',
+      alignTicks: true,
+      // nameGap: 30,
+      scale: true,
+      // splitArea: {
+      //   show: true
+      // },
+      // min: 0,
+      axisLabel: { show: true },
+      axisLine: { show: true },
+      axisTick: { show: true },
+      splitLine: { show: true }
+    },
+    {
+      // holding
+      type: 'value',
+      show: true,
+      gridIndex: 0,
+      position: 'right',
+      alignTicks: true,
+      // nameGap: 30,
+      scale: true,
+      // splitArea: {
+      //   show: true
+      // },
+      min: 0,
+      axisLabel: { show: true },
+      axisLine: { show: true },
+      axisTick: { show: true },
+      splitLine: { show: true }
+    }
+  ],
+  axisPointer: {
+    link: [
       {
-        id: 2,
-        left: '4%',
-        top: '85%',
-        right: '4%',
-        bottom: '2%'
+        xAxisIndex: 'all'
       }
     ],
-    xAxis: [
-      {
-        type: 'category',
-        gridIndex: 1,
-        // data: xData.value,
-        boundaryGap: false,
-        axisLine: { onZero: true },
-        axisTick: { show: true },
-        splitLine: { show: false },
-        axisLabel: { show: true }
-      },
-      {
-        type: 'category',
-        gridIndex: 2,
-        // data: xData.value,
-        boundaryGap: false,
-        axisLine: { onZero: true },
-        axisTick: { show: false },
-        splitLine: { show: false },
-        axisLabel: { show: false }
-      },
-      {
-        type: 'category',
-        gridIndex: 0,
-        // data: xData.value,
-        boundaryGap: false,
-        axisLine: { onZero: true },
-        axisTick: { show: false },
-        splitLine: { show: false },
-        axisLabel: { show: false }
-      }    
-    ],
-    yAxis: [
-      {
-        type: 'value', // kline
-        // nameLocation : 'middle',
-        show: true,
-        gridIndex: 1,
-        position: 'left',
-        nameGap: 30,
-        scale: true,
-        splitArea: {
-          show: true
-        },
-        splitNumber: 8,
-        axisLabel: { show: true },
-        axisLine: { show: true },
-        axisTick: { show: true },
-        splitLine: { show: false }
-      },
-      {// volume
-        type: 'value',
-        // nameLocation : 'middle',
-        show: true,
-        gridIndex: 2,
-        position: 'left',
-        nameGap: 30,
-        scale: true,
-        splitArea: {
-          show: true
-        },
-        splitNumber: 8,
-        axisLabel: { show: false },
-        axisLine: { show: true },
-        axisTick: { show: false },
-        splitLine: { show: false }
-      },
-      { // price avg
-        type: 'value',
-        show: true,
-        gridIndex: 0,
-        position: 'left',
-        alignTicks: true,
-        // nameGap: 30,
-        scale: true,
-        offset: -120,
-        // splitArea: {
-        //   show: true
-        // },
-        // min: 0,
-        axisLabel: { show: true },
-        axisLine: { show: true },
-        axisTick: { show: true },
-        splitLine: { show: true }
-      },
-      { // profit
-        type: 'value',
-        show: true,
-        gridIndex: 0,
-        position: 'left',
-        alignTicks: true,
-        // nameGap: 30,
-        offset: -60,
-        scale: true,
-        // splitArea: {
-        //   show: true
-        // },
-        // min: 0,
-        axisLabel: { show: true },
-        axisLine: { show: true },
-        axisTick: { show: true },
-        splitLine: { show: true }
-      },
-      { // revenue
-        type: 'value',
-        show: true,
-        gridIndex: 0,
-        position: 'left',
-        alignTicks: true,
-        // nameGap: 30,
-        scale: true,
-        // splitArea: {
-        //   show: true
-        // },
-        // min: 0,
-        axisLabel: { show: true },
-        axisLine: { show: true },
-        axisTick: { show: true },
-        splitLine: { show: true }
-      },      
-      { // holding
-        type: 'value',
-        show: true,
-        gridIndex: 0,
-        position: 'right',
-        alignTicks: true,
-        // nameGap: 30,
-        scale: true,
-        // splitArea: {
-        //   show: true
-        // },
-        min: 0,
-        axisLabel: { show: true },
-        axisLine: { show: true },
-        axisTick: { show: true },
-        splitLine: { show: true }
-      }
-    ],
+    label: {
+      backgroundColor: '#777'
+    }
+  },
+  tooltip: {
+    trigger: 'axis',
     axisPointer: {
-      link: [
-        {
-          xAxisIndex: 'all'
+      type: 'cross'
+    },
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    textStyle: {
+      color: '#000'
+    }
+    // position: function (pos, params, el, elRect, size) {
+    //   const obj = {
+    //     top: 10
+    //   };
+    //   obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+    //   return obj;
+    // }
+  },
+  series: [
+    {
+      type: 'candlestick',
+      name: 'Kline',
+      itemStyle: {
+        color: upColor,
+        color0: downColor
+      },
+      xAxisIndex: 0,
+      yAxisIndex: 0,
+      markLine: {
+        symbol: ['none', 'none'],
+        data: []
+      }
+      // data: klineData.value
+    },
+    {
+      type: 'bar',
+      name: 'Volume',
+      xAxisIndex: 1,
+      yAxisIndex: 1,
+      showSymbol: false,
+      itemStyle: {
+        color: (item) => {
+          if (item.value.length > 2) return item.value[2] > 0 ? upColor : downColor
+          else return upColor
         }
-      ],
-      label: {
-        backgroundColor: '#777'
       }
-    },    
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'cross'
+      // data: volumeData.value
+    },
+    {
+      type: 'line',
+      // nameLocation : 'middle',
+      name: '均价',
+      show: true,
+      xAxisIndex: 2,
+      yAxisIndex: 2,
+      // nameGap: 30,
+      scale: true,
+      splitArea: {
+        show: true
       },
-      borderWidth: 1,
-      borderColor: '#ccc',
-      padding: 10,
-      textStyle: {
-        color: '#000'
+      lineStyle: {
+        width: 1
       },
-      // position: function (pos, params, el, elRect, size) {
-      //   const obj = {
-      //     top: 10
-      //   };
-      //   obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
-      //   return obj;
-      // }    
-    },        
-    series: [
-      {
-        type: 'candlestick',
-        name: 'Kline',
-        itemStyle: {
-          color: upColor,
-          color0: downColor
-        },
-        xAxisIndex: 0,
-        yAxisIndex: 0,
-        markLine: {
-          symbol: ['none', 'none'],
-          data: []
-        },
-        // data: klineData.value
+      connectNulls: true,
+      axisLabel: { show: true },
+      axisLine: { show: false },
+      axisTick: { show: true },
+      splitLine: { show: false }
+    },
+    {
+      type: 'line',
+      // nameLocation : 'middle',
+      name: '盈亏',
+      show: true,
+      xAxisIndex: 2,
+      yAxisIndex: 3,
+      // nameGap: 30,
+      scale: true,
+      splitArea: {
+        show: true
       },
-      {
-        type: 'bar',
-        name: 'Volume',
-        xAxisIndex: 1,
-        yAxisIndex: 1,
-        showSymbol: false,
-        itemStyle: {
-          color: (item) => {
-            if (item.value.length > 2)
-              return item.value[2] > 0 ? upColor : downColor
-            else
-              return upColor
-          }
-        },
-        // data: volumeData.value
+      lineStyle: {
+        width: 1
       },
-      {
-        type: 'line',
-        // nameLocation : 'middle',
-        name: '均价',
-        show: true,
-        xAxisIndex: 2,
-        yAxisIndex: 2,
-        // nameGap: 30,
-        scale: true,
-        splitArea: {
-          show: true
-        },
-        lineStyle: {
-          width: 1
-        },
-        connectNulls: true,
-        axisLabel: { show: true },
-        axisLine: { show: false },
-        axisTick: { show: true },
-        splitLine: { show: false }
+      connectNulls: true,
+      axisLabel: { show: true },
+      axisLine: { show: false },
+      axisTick: { show: true },
+      splitLine: { show: false }
+    },
+    {
+      type: 'line',
+      // nameLocation : 'middle',
+      name: '市值',
+      show: true,
+      xAxisIndex: 2,
+      yAxisIndex: 4,
+      // nameGap: 30,
+      scale: true,
+      splitArea: {
+        show: true
       },
-      {
-        type: 'line',
-        // nameLocation : 'middle',
-        name: '盈亏',
-        show: true,
-        xAxisIndex: 2,
-        yAxisIndex: 3,
-        // nameGap: 30,
-        scale: true,
-        splitArea: {
-          show: true
-        },
-        lineStyle: {
-          width: 1
-        },
-        connectNulls: true,
-        axisLabel: { show: true },
-        axisLine: { show: false },
-        axisTick: { show: true },
-        splitLine: { show: false }
+      lineStyle: {
+        width: 1
       },
-      {
-        type: 'line',
-        // nameLocation : 'middle',
-        name: '市值',
-        show: true,
-        xAxisIndex: 2,
-        yAxisIndex: 4,
-        // nameGap: 30,
-        scale: true,
-        splitArea: {
-          show: true
-        },
-        lineStyle: {
-          width: 1
-        },
-        connectNulls: true,
-        axisLabel: { show: true },
-        axisLine: { show: false },
-        axisTick: { show: true },
-        splitLine: { show: false }
-      },      
-      {
-        type: 'bar',
-        name: '持有',
-        show: true,
-        xAxisIndex: 2,
-        yAxisIndex: 5,        
-        // nameGap: 30,
-        scale: true,
-        splitArea: {
-          show: true
-        },
-        itemStyle: {
-          color: (item) => {
-            if (item.value.length > 2)
-              return item.value[2] > 0 ? holdingColor1 : holdingColor2
-            else
-              return upColor
-          }
-        },
-        axisLabel: { show: true },
-        axisLine: { show: false },
-        axisTick: { show: true },
-        splitLine: { show: false }
-      }
-    ]  
-  }
+      connectNulls: true,
+      axisLabel: { show: true },
+      axisLine: { show: false },
+      axisTick: { show: true },
+      splitLine: { show: false }
+    },
+    {
+      type: 'bar',
+      name: '持有',
+      show: true,
+      xAxisIndex: 2,
+      yAxisIndex: 5,
+      // nameGap: 30,
+      scale: true,
+      splitArea: {
+        show: true
+      },
+      itemStyle: {
+        color: (item) => {
+          if (item.value.length > 2) return item.value[2] > 0 ? holdingColor1 : holdingColor2
+          else return upColor
+        }
+      },
+      axisLabel: { show: true },
+      axisLine: { show: false },
+      axisTick: { show: true },
+      splitLine: { show: false }
+    }
+  ]
+}
 
 const chartOption = ref<EChartsOption>({ ...chartOptionOrigin })
 
@@ -377,13 +378,12 @@ function makeMASeries() {
   }
 }
 
-
 function setKLineData(data: HistoryDataItem[]) {
-  xData.value = data.map(item => item.日期)
-  klineData.value = data.map(item => [item.开盘, item.收盘, item.最低, item.最高])
-  volumeData.value = data.map(item => [item.日期, item.成交量, item.开盘 <= item.收盘 ? 1 : -1])
+  xData.value = data.map((item) => item.日期)
+  klineData.value = data.map((item) => [item.开盘, item.收盘, item.最低, item.最高])
+  volumeData.value = data.map((item) => [item.日期, item.成交量, item.开盘 <= item.收盘 ? 1 : -1])
 
-  const closeData = data.map(item => item.收盘)
+  const closeData = data.map((item) => item.收盘)
   maData.value = []
   for (const ma of maItems) {
     maData.value.push(Calc.calcMAData(ma, closeData))
@@ -401,11 +401,15 @@ function setKLineData(data: HistoryDataItem[]) {
 
 function setTraceData(data: ProfitTraceItem[]) {
   // profitTraceData.value = calcProfitTraceData(data, historyData)
-  
-  priceAvgData.value = data.map(item => [item.date, item.price_avg?.toFixed(2)])
-  revenueData.value = data.map(item => [item.date, item.revenue])
-  profitData.value = data.map(item => [item.date, item.profit])
-  holdingData.value = data.map(item => [item.date, Math.abs(item.holding), item.holding > 0 ? 1 : -1])
+
+  priceAvgData.value = data.map((item) => [item.date, item.price_avg?.toFixed(2)])
+  revenueData.value = data.map((item) => [item.date, item.revenue])
+  profitData.value = data.map((item) => [item.date, item.profit])
+  holdingData.value = data.map((item) => [
+    item.date,
+    Math.abs(item.holding),
+    item.holding > 0 ? 1 : -1
+  ])
 
   chartOption.value.series[2].data = priceAvgData.value
   chartOption.value.series[3].data = profitData.value
@@ -420,20 +424,21 @@ watch(
       // chartOption.value = { ...chartOptionOrigin }
       setKLineData(value)
     }
-})
+  }
+)
 
 watch(
   () => props.profitData,
   (value) => {
     if (value) {
       // chartOption.value = { ...chartOptionOrigin }
-      if(props.historyData) {
+      if (props.historyData) {
         setTraceData(value)
       }
     }
-})
-
+  }
+)
 </script>
 <template>
-    <Echart :options="chartOption" class="my-4" ref="kline" :height="height" />
+  <Echart :options="chartOption" class="my-4" ref="kline" :height="height" />
 </template>

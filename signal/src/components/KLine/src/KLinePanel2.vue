@@ -1,17 +1,29 @@
 <script setup lang="ts">
-import { onMounted, PropType, ref, watch } from 'vue';
-import { ElRow, ElCol, ElButton, ElCheckboxGroup, ElCheckboxButton, ElRadioGroup, ElRadioButton, ElMessage, ElDropdown, ElDropdownMenu, ElDropdownItem } from 'element-plus';
-import { KLineChart4, ReqParam } from '..';
-import { apiMACD } from '@/api/libs/talib';
-import { apiGetHistoryData, HistoryDataItem } from '@/api/data';
-import { apiCreate } from '@/api/customized';
+import { onMounted, PropType, ref, watch } from 'vue'
+import {
+  ElRow,
+  ElCol,
+  ElButton,
+  ElCheckboxGroup,
+  ElCheckboxButton,
+  ElRadioGroup,
+  ElRadioButton,
+  ElMessage,
+  ElDropdown,
+  ElDropdownMenu,
+  ElDropdownItem
+} from 'element-plus'
+import { KLineChart4, ReqParam } from '..'
+import { apiMACD } from '@/api/libs/talib'
+import { apiGetHistoryData, HistoryDataItem } from '@/api/data'
+import { apiCreate } from '@/api/customized'
 
 type InitParam = {
   // startGroup: string[],
   // startRange: string,
-  maGroup: number[],
-  maLines: number[],
-  zoom: boolean,
+  maGroup: number[]
+  maLines: number[]
+  zoom: boolean
   volume: boolean
 }
 
@@ -57,14 +69,14 @@ defineExpose({
 })
 
 function calcMAData(ma: number, data: number[]) {
-  var result: any[] = [];
-  for (var i = 0, len = data.length; i < len; i++) {
+  const result: any[] = []
+  for (let i = 0, len = data.length; i < len; i++) {
     if (i < ma) {
       result.push('-')
-      continue;
+      continue
     }
-    var sum = 0;
-    for (var j = 0; j < ma; j++) {
+    let sum = 0
+    for (let j = 0; j < ma; j++) {
       sum += +data[i - j]
     }
     result.push((sum / ma).toFixed(2))
@@ -106,33 +118,37 @@ function setMALines(data: HistoryDataItem[]) {
   kchart.value?.remove('MA', true)
 
   if (maLines.value.length > 0) {
-    const closeData = data.map(item => item.收盘)
+    const closeData = data.map((item) => item.收盘)
     for (const ma of maLines.value) {
       kchart.value?.addLine(0, `MA${ma}`, calcMAData(ma, closeData))
     }
-  }  
+  }
 }
 
 function setVolumeData(data: any[]) {
-  kchart.value?.addBar(1, 'Volume', data, true)  
+  kchart.value?.addBar(1, 'Volume', data, true)
 }
 
 async function setMACD(data: HistoryDataItem[]) {
-  const closeData = data.map(item => item.收盘)
+  const closeData = data.map((item) => item.收盘)
   const ret = await apiMACD({
-    value: closeData    
+    value: closeData
   })
   const arrayData = ret.result.data
   const dif: any[] = []
   const dea: any[] = []
   const macd: any[] = []
-  for (let i = 0; i < data.length; ++ i) {
+  for (let i = 0; i < data.length; ++i) {
     // if (typeof(arrayData[i][1]) !== 'string') {
-    //   dea.push([data[i]['date'], parseFloat(arrayData[i][1]).toFixed(2)])  
+    //   dea.push([data[i]['date'], parseFloat(arrayData[i][1]).toFixed(2)])
     // }
     dif.push([data[i]['日期'], parseFloat(arrayData[i][0]).toFixed(2)])
     dea.push([data[i]['日期'], parseFloat(arrayData[i][1]).toFixed(2)])
-    macd.push([data[i]['日期'], parseFloat(arrayData[i][2]).toFixed(2), arrayData[i][2] >= 0 ? 1 : -1]);
+    macd.push([
+      data[i]['日期'],
+      parseFloat(arrayData[i][2]).toFixed(2),
+      arrayData[i][2] >= 0 ? 1 : -1
+    ])
   }
   kchart.value?.addLine(1, 'DIF', dif)
   kchart.value?.addLine(1, 'DEA', dea)
@@ -173,14 +189,14 @@ function resetChart() {
 }
 
 function updateChartOptions(data: HistoryDataItem[]) {
-  xData = data.map(item => item.日期)
-  klineData = data.map(({开盘, 收盘, 最低, 最高}) => ([开盘, 收盘, 最低, 最高]))
-  volumeData = data.map(item => [item.日期, item.成交量, item.开盘 <= item.收盘 ? 1 : -1])
+  xData = data.map((item) => item.日期)
+  klineData = data.map(({ 开盘, 收盘, 最低, 最高 }) => [开盘, 收盘, 最低, 最高])
+  volumeData = data.map((item) => [item.日期, item.成交量, item.开盘 <= item.收盘 ? 1 : -1])
 
   resetChart()
 }
 
-onMounted(async () =>{
+onMounted(async () => {
   if (!props.reqParam.start) {
     const date: Date = new Date()
     date.setMonth(date.getMonth() - 6)
@@ -196,18 +212,19 @@ watch(
   async () => {
     await fetchHistoryData()
     updateChartOptions(historyData)
-})
+  }
+)
 
 async function onCustomizedClick() {
   const ret = await apiCreate({
     code: props.reqParam.code,
-    type: props.reqParam.type,
+    type: props.reqParam.type
   })
   if (ret.code == 0) {
     ElMessage({
-        type: 'success',
-        message: `${props.reqParam.code} added to customized list.`
-      })    
+      type: 'success',
+      message: `${props.reqParam.code} added to customized list.`
+    })
   }
 }
 
@@ -224,7 +241,7 @@ function onMaGroupChanged() {
 
 async function onStartChanged() {
   const date: Date = new Date()
-  switch(startRange.value) {
+  switch (startRange.value) {
     case '两年':
       date.setFullYear(date.getFullYear() - 2)
       break
@@ -245,28 +262,43 @@ function onGridModeChanged(mode) {
   grid2Mode.value = mode
   resetGrid2(grid2Mode.value)
 }
-
 </script>
 <template>
   <ElRow :gutter="24">
     <ElCol :span="4">
-      <div style="float: left;">
+      <div style="float: left">
         <!-- {{ title }} -->
         <ElButton size="small" @click="onCustomizedClick">加入自选</ElButton>
       </div>
     </ElCol>
     <ElCol :span="5">
-      <ElRadioGroup v-model="startRange" size="small" style="float: right;" @change="onStartChanged">
+      <ElRadioGroup v-model="startRange" size="small" style="float: right" @change="onStartChanged">
         <ElRadioButton v-for="item in startGroup" :key="item" :value="item" :label="item" />
       </ElRadioGroup>
     </ElCol>
     <ElCol :span="9">
-      <ElCheckboxGroup v-model="maLines" size="small" style="float: center; margin-right: 12px;" @change="onMaGroupChanged">
-        <ElCheckboxButton v-for="item in maGroup" :key="item" :value="item" :label="item" :checked="item in maLines" />
+      <ElCheckboxGroup
+        v-model="maLines"
+        size="small"
+        style="float: center; margin-right: 12px"
+        @change="onMaGroupChanged"
+      >
+        <ElCheckboxButton
+          v-for="item in maGroup"
+          :key="item"
+          :value="item"
+          :label="item"
+          :checked="item in maLines"
+        />
       </ElCheckboxGroup>
     </ElCol>
     <ElCol :span="6">
-      <ElDropdown :disabled="zoom_kline.includes('Zoom')" size="small" trigger="click" @command="onGridModeChanged">
+      <ElDropdown
+        :disabled="zoom_kline.includes('Zoom')"
+        size="small"
+        trigger="click"
+        @command="onGridModeChanged"
+      >
         <ElButton :disabled="zoom_kline.includes('Zoom')" size="small">{{ grid2Mode }}</ElButton>
         <template #dropdown>
           <ElDropdownMenu>
@@ -275,14 +307,24 @@ function onGridModeChanged(mode) {
           </ElDropdownMenu>
         </template>
       </ElDropdown>
-      <ElCheckboxGroup v-model="zoom_kline" size="small" style="float: right;" @change="onKLineChanged">
-        <ElCheckboxButton v-for="item in klineGroup" :key="item" :value="item" :label="item" :checked="item in zoom_kline" />
-      </ElCheckboxGroup>        
+      <ElCheckboxGroup
+        v-model="zoom_kline"
+        size="small"
+        style="float: right"
+        @change="onKLineChanged"
+      >
+        <ElCheckboxButton
+          v-for="item in klineGroup"
+          :key="item"
+          :value="item"
+          :label="item"
+          :checked="item in zoom_kline"
+        />
+      </ElCheckboxGroup>
     </ElCol>
   </ElRow>
-  <ElRow style="margin-top: 12px;">
+  <ElRow style="margin-top: 12px">
     <KLineChart4 ref="kchart" />
-  </ElRow> 
+  </ElRow>
 </template>
-<style lang="css">
-</style>
+<style lang="css"></style>

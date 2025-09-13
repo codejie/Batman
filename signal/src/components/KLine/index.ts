@@ -12,19 +12,19 @@ import KLineDialog from './src/KLineDialog.vue'
 export { KLineChart4, KLinePanel2, KLineDialog }
 
 export type ReqParam = {
-  type: number,
-  code: string,
-  name?: string,
-  start?: string,
-  end?: string,
-  period?: string,
+  type: number
+  code: string
+  name?: string
+  start?: string
+  end?: string
+  period?: string
   adjust?: string
 }
 
 export type ShowParam = {
-  maLines: number[],
-  markLines?: boolean,
-  hideVolume?: boolean,  
+  maLines: number[]
+  markLines?: boolean
+  hideVolume?: boolean
   hideKLine?: boolean
 }
 

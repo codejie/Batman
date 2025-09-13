@@ -11,6 +11,8 @@ export const apiGetFunds = (data: Types.GetRequest): Promise<IResponse<Types.Get
   return request.post({ url: '/funds/get', data })
 }
 
-export const apiUpdateFunds = (data: Types.UpdateRequest): Promise<IResponse<Types.UpdateResult>> => {
+export const apiUpdateFunds = (
+  data: Types.UpdateRequest
+): Promise<IResponse<Types.UpdateResult>> => {
   return request.post({ url: '/funds/update', data })
 }

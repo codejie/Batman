@@ -1,7 +1,7 @@
-import { HistoryDataItem, SpotDataItem } from "@/api/data";
-import { CustomizedCalcItem } from "./types";
+import { HistoryDataItem, SpotDataItem } from '@/api/data'
+import { CustomizedCalcItem } from './types'
 
-export * from "./types"
+export * from './types'
 
 // export function calcCustomizedData(data: HistoryDataItem): CustomizedCalcItem | undefined {
 //   if (!data) {

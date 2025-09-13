@@ -29,14 +29,14 @@ const chartData = ref<{
 })
 
 const calcMAData = (ma: number, data: number[]) => {
-  var result: any[] = []
-  for (var i = 0, len = data.length; i < len; i++) {
+  const result: any[] = []
+  for (let i = 0, len = data.length; i < len; i++) {
     if (i < ma) {
       result.push('-')
       continue
     }
-    var sum = 0
-    for (var j = 0; j < ma; j++) {
+    let sum = 0
+    for (let j = 0; j < ma; j++) {
       sum += +data[i - j]
     }
     result.push(parseFloat((sum / ma).toFixed(2)))
@@ -55,48 +55,48 @@ const getCalcChartData = (
   const reportTrendMap = new Map(reportData.map((r) => [r.index, r.trend]))
   const xAxisData = calcData['日期']
   const seriesData: SeriesDataItem[] = []
+  let isFirstSeries = true
 
   for (const key in calcData) {
     if (key !== '日期' && key !== 'Signal') {
       const seriesValues = calcData[key]
+      let markPointData = {}
+
+      if (isFirstSeries) {
+        const reportPoints = seriesValues
+          .map((value, i) => {
+            const date = xAxisData[i]
+            if (reportTrendMap.has(date) && typeof value === 'number') {
+              const trend = reportTrendMap.get(date)
+              return {
+                xAxis: date,
+                yAxis: value,
+                symbol: 'triangle',
+                symbolRotate: trend === 1 ? 0 : 180,
+                symbolSize: 8,
+                itemStyle: {
+                  color: trend === 1 ? '#ec0000' : '#00da3c'
+                }
+              }
+            }
+            return null
+          })
+          .filter((p) => p !== null)
+
+        if (reportPoints.length > 0) {
+          markPointData = { data: reportPoints }
+        }
+        isFirstSeries = false
+      }
 
       seriesData.push({
         name: key,
         type: 'line',
         data: seriesValues,
         showSymbol: false,
-        lineStyle: { width: 1 }
+        lineStyle: { width: 1 },
+        markPoint: markPointData
       })
-
-      const reportPoints = seriesValues.map((value, i) => {
-        const date = xAxisData[i]
-        if (reportTrendMap.has(date)) {
-          const trend = reportTrendMap.get(date)
-          return {
-            value: value,
-            symbol: 'triangle',
-            symbolSize: 8,
-            itemStyle: {
-              color: trend === 1 ? '#ec0000' : '#00da3c'
-            }
-          }
-        }
-        return null
-      })
-
-      if (reportPoints.some((p) => p !== null)) {
-        seriesData.push({
-          name: key + ' Events',
-          type: 'line',
-          data: reportPoints,
-          showSymbol: true,
-          lineStyle: {
-            opacity: 0
-          },
-          zlevel: 5,
-          large: false
-        })
-      }
     }
   }
   return { seriesData, xAxisData }
@@ -130,9 +130,27 @@ watch(
 
         const klineSeries: SeriesDataItem[] = [
           { name: 'KLine', type: 'candlestick', data: klineData },
-          { name: 'MA5', type: 'line', data: calcMAData(5, closeData), symbol: 'none', lineStyle: { width: 1 } },
-          { name: 'MA10', type: 'line', data: calcMAData(10, closeData), symbol: 'none', lineStyle: { width: 1 } },
-          { name: 'MA20', type: 'line', data: calcMAData(20, closeData), symbol: 'none', lineStyle: { width: 1 } }
+          {
+            name: 'MA5',
+            type: 'line',
+            data: calcMAData(5, closeData),
+            symbol: 'none',
+            lineStyle: { width: 1 }
+          },
+          {
+            name: 'MA10',
+            type: 'line',
+            data: calcMAData(10, closeData),
+            symbol: 'none',
+            lineStyle: { width: 1 }
+          },
+          {
+            name: 'MA20',
+            type: 'line',
+            data: calcMAData(20, closeData),
+            symbol: 'none',
+            lineStyle: { width: 1 }
+          }
         ]
 
         const volumeSeries: SeriesDataItem[] = [{ name: 'Volume', type: 'bar', data: volumeData }]
@@ -157,7 +175,11 @@ watch(
 
         chartData.value = {
           xAxisData,
-          series: [{ name: 'K-Line', series: klineSeries }, { name: 'Volume', series: volumeSeries }, ...calcSeries]
+          series: [
+            { name: 'K-Line', series: klineSeries },
+            { name: 'Volume', series: volumeSeries },
+            ...calcSeries
+          ]
         }
       }
     }

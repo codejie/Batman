@@ -7,9 +7,19 @@ interface ViewForm {
 </script>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { ElDialog, ElText, ElForm, ElFormItem, ElInput, ElButton, ElSelect, ElOption, ElMessage } from 'element-plus'
-import { apiGetItemInfo, TYPE_INDEX, TYPE_STOCK, apiGetName } from '@/api/data';
+import { ref, watch } from 'vue'
+import {
+  ElDialog,
+  ElText,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElButton,
+  ElSelect,
+  ElOption,
+  ElMessage
+} from 'element-plus'
+import { apiGetItemInfo, TYPE_INDEX, TYPE_STOCK, apiGetName } from '@/api/data'
 
 const props = defineProps({
   visible: {
@@ -21,15 +31,17 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'confirm'])
 
 const viewDialogVisible = ref(props.visible)
-watch(() => props.visible, (val) => {
-  viewDialogVisible.value = val
-})
+watch(
+  () => props.visible,
+  (val) => {
+    viewDialogVisible.value = val
+  }
+)
 watch(viewDialogVisible, (val) => {
   if (!val) {
     emit('update:visible', false)
   }
 })
-
 
 const viewForm = ref<ViewForm>({
   type: '股票',
@@ -63,12 +75,12 @@ async function onConfirm() {
     type: type,
     code: viewForm.value.code
   })
-  
+
   if (ret.result) {
     emit('confirm', {
       code: viewForm.value.code,
       name: ret.result,
-      type: type,
+      type: type
     })
   } else {
     ElMessage.error('Failed to get name')
@@ -77,36 +89,42 @@ async function onConfirm() {
 }
 
 function onCancel() {
-    emit('update:visible', false)
+  emit('update:visible', false)
 }
-
 </script>
 
 <template>
-    <ElDialog v-model="viewDialogVisible" :destroy-on-close="true" width="25%">
-      <template #header>
-        <ElText tag="b">快速查看</ElText>
-      </template>
-      <template #default>
-        <ElForm :model="viewForm" label-position="right" label-width="auto">
-          <ElFormItem label="类型">
-            <ElSelect v-model="viewForm.type" @change="onSearchChanged">
-              <ElOption label="股票" value="股票" />
-              <ElOption label="指数" value="指数" />
-            </ElSelect>
-          </ElFormItem>
-          <ElFormItem label="名称/代码">
-            <ElInput v-model="viewForm.title" placeholder="请输入代码或名称" :maxlength="6" @change="onSearchChanged">
-              <template #append>
-                <ElButton :disabled="viewForm.title === ''" @click="searchItem(viewForm.title)">搜索</ElButton>
-              </template>
-            </ElInput>
-          </ElFormItem>
-        </ElForm>
-      </template>
-      <template #footer>
-        <ElButton @click="onCancel">取消</ElButton>
-        <ElButton type="primary" :disabled="viewForm.code === ''" @click="onConfirm">确定</ElButton>
-      </template>
-    </ElDialog>
+  <ElDialog v-model="viewDialogVisible" :destroy-on-close="true" width="25%">
+    <template #header>
+      <ElText tag="b">快速查看</ElText>
+    </template>
+    <template #default>
+      <ElForm :model="viewForm" label-position="right" label-width="auto">
+        <ElFormItem label="类型">
+          <ElSelect v-model="viewForm.type" @change="onSearchChanged">
+            <ElOption label="股票" value="股票" />
+            <ElOption label="指数" value="指数" />
+          </ElSelect>
+        </ElFormItem>
+        <ElFormItem label="名称/代码">
+          <ElInput
+            v-model="viewForm.title"
+            placeholder="请输入代码或名称"
+            :maxlength="6"
+            @change="onSearchChanged"
+          >
+            <template #append>
+              <ElButton :disabled="viewForm.title === ''" @click="searchItem(viewForm.title)"
+                >搜索</ElButton
+              >
+            </template>
+          </ElInput>
+        </ElFormItem>
+      </ElForm>
+    </template>
+    <template #footer>
+      <ElButton @click="onCancel">取消</ElButton>
+      <ElButton type="primary" :disabled="viewForm.code === ''" @click="onConfirm">确定</ElButton>
+    </template>
+  </ElDialog>
 </template>

@@ -113,13 +113,13 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/Customized/List.vue'),
         meta: {
           title: t('router.customized_list'),
-          icon: 'vi-carbon:chart-custom',
+          icon: 'vi-carbon:chart-custom'
           // noCache: true,
           // affix: false
         }
       }
     ]
-  },  
+  },
   {
     name: 'Holding',
     path: '/holding',
@@ -138,7 +138,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/Holding/List.vue'),
         meta: {
           title: t('router.holding_list'),
-          icon: 'vi-carbon:currency-yen',
+          icon: 'vi-carbon:currency-yen'
           // noCache: true,
           // affix: false
         }
@@ -147,7 +147,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         name: 'Detail',
         path: 'detail',
         component: () => import('@/views/Holding/Detail.vue'),
-        props: router => ({id: router.query.id, ids: router.query.ids}),
+        props: (router) => ({ id: router.query.id, ids: router.query.ids }),
         meta: {
           title: t('router.holding_detail'),
           noCache: true,
@@ -163,9 +163,9 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     path: '/analysis',
     component: Layout,
     meta: {
-        title: '数据分析',
-        icon: 'vi-carbon:chart-multitype',
-        alwaysShow: true
+      title: '数据分析',
+      icon: 'vi-carbon:chart-multitype',
+      alwaysShow: true
     },
     children: [
       // {
@@ -194,7 +194,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           noCache: true,
           hidden: true,
           canTo: true,
-          activeMenu: '/trend/trend'          
+          activeMenu: '/trend/trend'
         }
       },
       {
@@ -216,7 +216,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     component: Layout,
     meta: {
       title: '三方数据',
-      icon: 'vi-carbon:table-alias'      
+      icon: 'vi-carbon:table-alias'
     },
     children: [
       {
@@ -266,7 +266,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
             meta: {
               title: '涨停股池'
             }
-          }          
+          }
         ]
       },
       {
@@ -286,7 +286,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         }
       }
     ]
-  },  
+  },
   {
     name: 'System',
     path: '/sytem',
@@ -299,13 +299,13 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/System/Configuration.vue'),
         meta: {
           title: t('router.system_configuration'),
-          icon: 'vi-carbon:settings',
+          icon: 'vi-carbon:settings'
           // noCache: true,
           // affix: false
         }
       }
     ]
-  },
+  }
   /*
   {
     name: 'Test',

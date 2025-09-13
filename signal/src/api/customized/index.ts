@@ -15,14 +15,20 @@ export const apiRemove = (data: Types.RemoveRequest): Promise<IResponse<Types.Re
   return request.post({ url: '/customized/remove', data })
 }
 
-export const apiUpdateComment = (data: Types.UpdateCommentRequest): Promise<IResponse<Types.UpdateCommentResult>> => {
+export const apiUpdateComment = (
+  data: Types.UpdateCommentRequest
+): Promise<IResponse<Types.UpdateCommentResult>> => {
   return request.post({ url: '/customized/update_comment', data })
 }
 
-export const apiUpdateTarget = (data: Types.UpdateTargetRequest): Promise<IResponse<Types.UpdateTargetResult>> => {
+export const apiUpdateTarget = (
+  data: Types.UpdateTargetRequest
+): Promise<IResponse<Types.UpdateTargetResult>> => {
   return request.post({ url: '/customized/update_target', data })
 }
 
-export const apiUpdateOrder = (data: Types.UpdateOrderRequest): Promise<IResponse<Types.UpdateOrderResult>> => {
+export const apiUpdateOrder = (
+  data: Types.UpdateOrderRequest
+): Promise<IResponse<Types.UpdateOrderResult>> => {
   return request.post({ url: '/customized/update_order', data })
 }

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { TYPE_STOCK } from '@/api/data';
-import { apiHighVolume } from '@/api/third';
+import { TYPE_STOCK } from '@/api/data'
+import { apiHighVolume } from '@/api/third'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ReqParam } from '@/components/KLine';
-import { ElText, ElSelect, ElOption, ElTableV2, ElAutoResizer } from 'element-plus';
-import { onMounted, ref } from 'vue';
-import KDialog from './components/KDialog.vue';
+import { ReqParam } from '@/components/KLine'
+import { ElText, ElSelect, ElOption, ElTableV2, ElAutoResizer } from 'element-plus'
+import { onMounted, ref } from 'vue'
+import KDialog from './components/KDialog.vue'
 
 // type Column = {
 //   name: string
@@ -29,12 +29,12 @@ function fetch(): Promise<void> {
   data.value = []
   columns.value = []
 
-  return new Promise<void>((resolve) =>{
+  return new Promise<void>((resolve) => {
     apiHighVolume({
       days: days.value
     }).then((ret) => {
       const cols = ret.result.columns
-      for (let i = 0; i < cols.length; ++ i) {
+      for (let i = 0; i < cols.length; ++i) {
         columns.value.push({
           key: cols[i],
           dataKey: cols[i],
@@ -44,10 +44,10 @@ function fetch(): Promise<void> {
       }
 
       const items = ret.result.data
-      const temp: any[] =[]
-      items.forEach(item => {
+      const temp: any[] = []
+      items.forEach((item) => {
         const d = {}
-        for (let i = 0; i < columns.value.length; ++ i) {
+        for (let i = 0; i < columns.value.length; ++i) {
           d[columns.value[i].dataKey] = item[i]
         }
         temp.push(d)
@@ -77,22 +77,28 @@ function onRowClick(event: any) {
 async function onDaysChanged() {
   await fetch()
 }
-
 </script>
 <template>
   <ContentWrap title="持续放量">
     <div class="title">
-      <ElText tag="b" style="padding-right: 4px;">持续放量天数大于</ElText>
-      <ElSelect v-model="days" style="width: 60px;" @change="onDaysChanged">
+      <ElText tag="b" style="padding-right: 4px">持续放量天数大于</ElText>
+      <ElSelect v-model="days" style="width: 60px" @change="onDaysChanged">
         <ElOption v-for="i in daysOptions" :key="i" :value="i" :label="i" />
       </ElSelect>
-      <ElText tag="b" style="padding-left: 4px;">天</ElText>
+      <ElText tag="b" style="padding-left: 4px">天</ElText>
     </div>
     <ElAutoResizer>
-      <template #default="{width}">
-        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :row-event-handlers="{ onClick: onRowClick }" :height="700"/>
+      <template #default="{ width }">
+        <ElTableV2
+          :columns="columns"
+          :data="data"
+          :fixed="true"
+          :width="width"
+          :row-event-handlers="{ onClick: onRowClick }"
+          :height="700"
+        />
       </template>
-    </ElAutoResizer>     
+    </ElAutoResizer>
     <!-- <ElTable class="table" v-loading="loading" :data="data" :border="true" highlight-current-row @row-click="onRowClick">
       <ElTableColumn type="index" width="60" />
       <ElTableColumn v-for="item in columns" :key="item.name" :label="item.name" :prop="item.name" :width="item.width" />
@@ -103,7 +109,11 @@ async function onDaysChanged() {
         <ElButton type="primary" @click="klineDialogVisible=false">Close</ElButton>
       </template>    
     </ElDialog>     -->
-    <KDialog :visible ="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" />    
+    <KDialog
+      :visible="klineDialogVisible"
+      :req-param="reqParam"
+      @update:on-close="klineDialogVisible = false"
+    />
   </ContentWrap>
 </template>
 <style lang="css">
@@ -111,4 +121,3 @@ async function onDaysChanged() {
   padding: 14px;
 }
 </style>
-

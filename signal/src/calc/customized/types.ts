@@ -1,4 +1,4 @@
-import { SpotDataItem } from "@/api/data"
+import { SpotDataItem } from '@/api/data'
 
 // export interface CustomizedCalcItem {
 //   price: number

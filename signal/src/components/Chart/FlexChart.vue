@@ -61,7 +61,7 @@ watchEffect(() => {
       },
       formatter: (params) => {
         let tooltipContent = `${params[0].axisValueLabel}<br/>`
-        params.forEach(param => {
+        params.forEach((param) => {
           const seriesName = param.seriesName
           const value = param.value
           const marker = param.marker
@@ -71,7 +71,7 @@ watchEffect(() => {
             formattedValue = value.toFixed(2)
           } else if (Array.isArray(value)) {
             // Handle Candlestick data [open, close, lowest, highest]
-            formattedValue = value.map(v => v.toFixed(2)).join(', ')
+            formattedValue = value.map((v) => v.toFixed(2)).join(', ')
           } else {
             formattedValue = value
           }
@@ -84,7 +84,7 @@ watchEffect(() => {
     // 图例，根据传入的 seriesData 动态生成
     legend: {
       show: props.showLegend,
-      data: props.seriesData.map(s => s.name),
+      data: props.seriesData.map((s) => s.name),
       bottom: 0,
       icon: 'circle'
     },
@@ -122,13 +122,8 @@ watchEffect(() => {
       }
     },
     // 核心：根据 props.seriesData 动态生成图表系列
-    series: props.seriesData.map(item => {
-      const seriesItem = {
-        ...item,
-        name: item.name,
-        type: item.type,
-        data: item.data
-      }
+    series: props.seriesData.map((item) => {
+      const seriesItem = { ...item }
       if (item.type === 'line') {
         seriesItem.lineStyle = { ...item.lineStyle, width: 1 }
       }
@@ -137,7 +132,7 @@ watchEffect(() => {
     // 用于K线图和成交量柱状图的颜色区分
     visualMap: {
       show: false,
-      seriesIndex: props.seriesData.findIndex(s => s.type === 'bar'), // 作用于柱状图
+      seriesIndex: props.seriesData.findIndex((s) => s.type === 'bar'), // 作用于柱状图
       dimension: 2,
       pieces: [
         { value: 1, color: '#ec0000' }, // 红色

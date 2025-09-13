@@ -231,7 +231,6 @@ const getRole = async () => {
   //   appStore.getDynamicRouter && appStore.getServerDynamicRouter
   //     ? await permissionStore.generateRoutes('server', routers).catch(() => {})
   //     : await permissionStore.generateRoutes('frontEnd', routers).catch(() => {})
-
   //   permissionStore.getAddRouters.forEach((route) => {
   //     addRoute(route as RouteRecordRaw) // 动态添加可访问路由表
   //   })

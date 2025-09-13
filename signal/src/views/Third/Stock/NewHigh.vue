@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ContentWrap } from '@/components/ContentWrap'
-import NewHighTable from './components/NewHighTable.vue';
-import { ElTabs, ElTabPane } from 'element-plus';
-import { ref } from 'vue';
+import NewHighTable from './components/NewHighTable.vue'
+import { ElTabs, ElTabPane } from 'element-plus'
+import { ref } from 'vue'
 
 const activeName = ref('first')
 </script>
 <template>
   <ContentWrap title="创新高">
-    <ElTabs v-model="activeName" style="height: auto;">
+    <ElTabs v-model="activeName" style="height: auto">
       <ElTabPane label="历史新高" name="first">
         <NewHighTable name="历史新高" :category="3" />
       </ElTabPane>
@@ -20,7 +20,7 @@ const activeName = ref('first')
       </ElTabPane>
       <ElTabPane label="月创新高" name="forth">
         <NewHighTable name="月创新高" :category="0" />
-      </ElTabPane>      
+      </ElTabPane>
     </ElTabs>
     <!-- <ElRow :gutter="24">
       <ElCol :span="12">

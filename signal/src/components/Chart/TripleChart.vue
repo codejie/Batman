@@ -68,7 +68,7 @@ watchEffect(() => {
   const totalDrawHeight = 88 // 可供绘制的总高度百分比 (留出上下边距)
   const gap = 4 // grid之间的间距百分比
   const totalRatio = props.gridRatios.reduce((sum, ratio) => sum + ratio, 0)
-  
+
   const topHeight = (totalDrawHeight - gap * 2) * (props.gridRatios[0] / totalRatio)
   const middleHeight = (totalDrawHeight - gap * 2) * (props.gridRatios[1] / totalRatio)
   const bottomHeight = (totalDrawHeight - gap * 2) * (props.gridRatios[2] / totalRatio)
@@ -83,7 +83,7 @@ watchEffect(() => {
     ...props.middleSeriesData.map((s) => s.name),
     ...props.bottomSeriesData.map((s) => s.name)
   ]
-  
+
   const processSeries = (seriesData: SeriesDataItem[], xAxisIndex: number, yAxisIndex: number) => {
     return seriesData.map((s) => {
       const seriesItem = { ...s, xAxisIndex, yAxisIndex }
@@ -115,9 +115,14 @@ watchEffect(() => {
         const topSeriesCount = props.topSeriesData.length
         const middleSeriesCount = props.middleSeriesData.length
 
-        const topParams = params.filter(p => p.seriesIndex < topSeriesCount)
-        const middleParams = params.filter(p => p.seriesIndex >= topSeriesCount && p.seriesIndex < topSeriesCount + middleSeriesCount)
-        const bottomParams = params.filter(p => p.seriesIndex >= topSeriesCount + middleSeriesCount)
+        const topParams = params.filter((p) => p.seriesIndex < topSeriesCount)
+        const middleParams = params.filter(
+          (p) =>
+            p.seriesIndex >= topSeriesCount && p.seriesIndex < topSeriesCount + middleSeriesCount
+        )
+        const bottomParams = params.filter(
+          (p) => p.seriesIndex >= topSeriesCount + middleSeriesCount
+        )
 
         let tooltipContent = `${params[0].axisValueLabel}<br/>`
 
@@ -138,23 +143,23 @@ watchEffect(() => {
         }
 
         if (topParams.length > 0) {
-          topParams.forEach(param => {
+          topParams.forEach((param) => {
             tooltipContent += formatParam(param)
-          });
+          })
         }
 
         if (middleParams.length > 0) {
           tooltipContent += '<hr style="margin: 5px 0; border-style: dashed;"/>'
-          middleParams.forEach(param => {
+          middleParams.forEach((param) => {
             tooltipContent += formatParam(param)
-          });
+          })
         }
 
         if (bottomParams.length > 0) {
           tooltipContent += '<hr style="margin: 5px 0; border-style: dashed;"/>'
-          bottomParams.forEach(param => {
+          bottomParams.forEach((param) => {
             tooltipContent += formatParam(param)
-          });
+          })
         }
 
         return tooltipContent

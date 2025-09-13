@@ -13,14 +13,14 @@
 // }
 </script>
 <script setup lang="ts">
-import { ElMenu, ElSubMenu, ElMenuItem, ElIcon, ElButton, ElLink } from 'element-plus';
-import * as Icons from '@element-plus/icons-vue';
-import { options } from '../Links.vue';
-import { onMounted, ref } from 'vue';
-import { GroupInfoModel, LinkInfoModel } from '@/api/third/types';
-import { apiInfoLinks } from '@/api/third';
+import { ElMenu, ElSubMenu, ElMenuItem, ElIcon, ElButton, ElLink } from 'element-plus'
+import * as Icons from '@element-plus/icons-vue'
+import { options } from '../Links.vue'
+import { onMounted, ref } from 'vue'
+import { GroupInfoModel, LinkInfoModel } from '@/api/third/types'
+import { apiInfoLinks } from '@/api/third'
 
-// import menuGroup from './menu_group.json'; 
+// import menuGroup from './menu_group.json';
 
 const menuGroup = ref<GroupInfoModel[]>([])
 
@@ -31,51 +31,58 @@ onMounted(() => {
 })
 
 function onSelected(key: string) {
-    const [groupIndex, linkIndex] = key.split('-').map(Number)
-    const link: LinkInfoModel = menuGroup.value[groupIndex]?.links[linkIndex]
-    if (link && link?.url) {
-        if (link.inWindow) {
-            return
-        }
-        if (link.needCode && options.code) {
-            link.url = link.url.replace('{code}', options.code)
-        }
-        options.target = link.url
+  const [groupIndex, linkIndex] = key.split('-').map(Number)
+  const link: LinkInfoModel = menuGroup.value[groupIndex]?.links[linkIndex]
+  if (link && link?.url) {
+    if (link.inWindow) {
+      return
     }
+    if (link.needCode && options.code) {
+      link.url = link.url.replace('{code}', options.code)
+    }
+    options.target = link.url
+  }
 }
 
 function checkDisabled(link: LinkInfoModel): boolean {
-    if (link.url === undefined) {
-        return true
-    }
-    if (link.needCode && !options.code) {
-        return true
-    }
-    return false
+  if (link.url === undefined) {
+    return true
+  }
+  if (link.needCode && !options.code) {
+    return true
+  }
+  return false
 }
 </script>
 <template>
-    <ElMenu
-        default-active="0-0"
-        :collapse="options.collapse"
-        class="el-menu-vertical"
-        @select="onSelected">
-        <ElSubMenu v-for="(group, gindex) in menuGroup" :key="gindex" :index="gindex.toString()">
-            <template #title>
-                <ElIcon>
-                    <component :is="Icons[group.icon]" />
-                </ElIcon>
-                <span style="font-weight: bold;">{{ group.title }}</span>
-            </template>
-            <ElMenuItem v-for="(link, index) in group.links" :key="index" :index="gindex.toString() + '-' + index.toString()">
-                <!-- <a :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.title }} </a> -->
-                <template #title>
-                    <ElLink v-if="link.inWindow" underline="hover" :href=link.url target="_blank"> {{ link.title }} </ElLink>
-                    <ElButton v-else :link="true" :disabled="checkDisabled(link)" > {{ link.title }}</ElButton>
-                </template>                
-            </ElMenuItem>
-        </ElSubMenu>
-    </ElMenu>
+  <ElMenu
+    default-active="0-0"
+    :collapse="options.collapse"
+    class="el-menu-vertical"
+    @select="onSelected"
+  >
+    <ElSubMenu v-for="(group, gindex) in menuGroup" :key="gindex" :index="gindex.toString()">
+      <template #title>
+        <ElIcon>
+          <component :is="Icons[group.icon]" />
+        </ElIcon>
+        <span style="font-weight: bold">{{ group.title }}</span>
+      </template>
+      <ElMenuItem
+        v-for="(link, index) in group.links"
+        :key="index"
+        :index="gindex.toString() + '-' + index.toString()"
+      >
+        <!-- <a :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.title }} </a> -->
+        <template #title>
+          <ElLink v-if="link.inWindow" underline="hover" :href="link.url" target="_blank">
+            {{ link.title }}
+          </ElLink>
+          <ElButton v-else :link="true" :disabled="checkDisabled(link)"> {{ link.title }}</ElButton>
+        </template>
+      </ElMenuItem>
+    </ElSubMenu>
+  </ElMenu>
 </template>
 <style>
 .el-menu-vertical:not(.el-menu--collapse) {

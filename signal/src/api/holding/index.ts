@@ -19,14 +19,20 @@ export const apiRecord = (data: Types.RecordRequest): Promise<IResponse<Types.Re
   return request.post({ url: '/holding/record', data })
 }
 
-export const apiOperationList = (data: Types.OperationListRequest): Promise<IResponse<Types.OperationListResult>> => {
+export const apiOperationList = (
+  data: Types.OperationListRequest
+): Promise<IResponse<Types.OperationListResult>> => {
   return request.post({ url: '/holding/operation/list', data })
 }
 
-export const apiOperationCreate = (data: Types.OperationCreateRequest): Promise<IResponse<Types.OperationCreateResult>> => {
+export const apiOperationCreate = (
+  data: Types.OperationCreateRequest
+): Promise<IResponse<Types.OperationCreateResult>> => {
   return request.post({ url: '/holding/operation/create', data })
 }
 
-export const apiOperationRemove = (data: Types.OperationRemoveRequest): Promise<IResponse<Types.OperationRemoveResult>> => {
+export const apiOperationRemove = (
+  data: Types.OperationRemoveRequest
+): Promise<IResponse<Types.OperationRemoveResult>> => {
   return request.post({ url: '/holding/operation/remove', data })
 }

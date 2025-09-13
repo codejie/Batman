@@ -3,19 +3,19 @@ const FUNDS_STOCK: number = 1
 // const OPERATION_ACTION_OUT: number = 2
 
 export interface FundsItem {
-  id: number,
-  type: number,
+  id: number
+  type: number
   amount: number // 资金，本金
   available: number // 可用资金
   updated: Date
 }
 
-export interface OperationItem  {
-  id: number,
-  funds: number,
+export interface OperationItem {
+  id: number
+  funds: number
   // action: number,
-  amount: number,
-  comment?: string,
+  amount: number
+  comment?: string
   created: Date
 }
 
@@ -36,4 +36,3 @@ export interface UpdateRequest {
   amount: number
 }
 export type UpdateResult = number
-

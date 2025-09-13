@@ -10,13 +10,15 @@ const props = defineProps({
     required: true
   },
   types: {
-    type: Array as PropType<Array<{
-        key: string,
+    type: Array as PropType<
+      Array<{
+        key: string
         options: Array<{
-          option: AlgorithmCategoryOptionType,
-          value?: any  
+          option: AlgorithmCategoryOptionType
+          value?: any
         }>
-    }>>,
+      }>
+    >,
     required: true
   },
   index: {
@@ -77,11 +79,13 @@ const handleDeleteType = (typeKeyToDelete: string) => {
 .category-container {
   margin-bottom: 20px;
 }
+
 .category-header {
+  margin-bottom: 10px;
   font-size: 14px;
   font-weight: bold;
-  margin-bottom: 10px;
 }
+
 .type-list {
   margin-left: 20px;
 }

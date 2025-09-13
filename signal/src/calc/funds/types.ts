@@ -14,7 +14,7 @@ export interface FundsData {
   amount: number // 本金，资金
   holding: number // 持仓
   expense: number // 费用
-  available: number  
+  available: number
   revenue: number // 市值
   profit: number // 盈亏
   profit_rate?: number

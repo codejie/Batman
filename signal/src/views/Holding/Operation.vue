@@ -3,7 +3,5 @@ import { ContentWrap } from '@/components/ContentWrap'
 </script>
 
 <template>
-  <ContentWrap title="Operation">
-  </ContentWrap>
+  <ContentWrap title="Operation" />
 </template>
-

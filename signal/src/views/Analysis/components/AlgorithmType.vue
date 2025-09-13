@@ -17,11 +17,11 @@ import { computed, type PropType } from 'vue'
 const props = defineProps({
   modelValue: {
     type: Object as PropType<{
-        key: string,
-        options: Array<{
-          option: AlgorithmCategoryOptionType,
-          value?: any
-        }>
+      key: string
+      options: Array<{
+        option: AlgorithmCategoryOptionType
+        value?: any
+      }>
     }>,
     required: true
   },
@@ -66,16 +66,15 @@ const handleDelete = () => {
   <div class="type-container" v-if="typeDefinition">
     <el-row justify="space-between">
       <el-col :span="20">
-        <span class="type-title">{{ index }}) {{ typeDefinition.title }} ({{ modelValue.key }})</span>
+        <span class="type-title"
+          >{{ index }}) {{ typeDefinition.title }} ({{ modelValue.key }})</span
+        >
       </el-col>
       <el-col :span="4" style="text-align: right">
         <el-button type="danger" size="small" plain @click="handleDelete">删除</el-button>
       </el-col>
     </el-row>
-    <div
-      v-if="modelValue.options && modelValue.options.length > 0"
-      class="params-section"
-    >
+    <div v-if="modelValue.options && modelValue.options.length > 0" class="params-section">
       <el-descriptions :column="6" :border="true" size="small">
         <el-descriptions-item
           v-for="item in filledOptions"
@@ -107,19 +106,10 @@ const handleDelete = () => {
               placeholder="Select"
               size="small"
             >
-              <el-option
-                v-for="opt in item.option.options"
-                :key="opt"
-                :label="opt"
-                :value="opt"
-              />
+              <el-option v-for="opt in item.option.options" :key="opt" :label="opt" :value="opt" />
             </el-select>
             <!-- String and other types -->
-            <el-input
-              v-else
-              v-model="item.value"
-              size="small"
-            />
+            <el-input v-else v-model="item.value" size="small" />
           </template>
         </el-descriptions-item>
       </el-descriptions>
@@ -130,22 +120,27 @@ const handleDelete = () => {
 <style scoped>
 .type-container {
   padding: 10px;
+  margin-bottom: 10px;
+
   /* border: 1px solid #ebeef5; */
   border-radius: 4px;
-  margin-bottom: 10px;
 }
+
 .type-title {
-  font-weight: bold;
   font-size: 12px;
+  font-weight: bold;
 }
+
 .params-section {
   margin-top: 10px;
 }
+
 .params-section :deep(.el-select),
 .params-section :deep(.el-input-number),
 .params-section :deep(.el-input) {
   width: 80px;
 }
+
 .params-section :deep(.el-input-number .el-input__inner) {
   text-align: left;
 }

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { apiNewHigh } from '@/api/third';
-import { onMounted, ref } from 'vue';
-import { ElTableV2, ElAutoResizer } from 'element-plus';
-import { ReqParam } from '@/components/KLine';
-import KDialog from './KDialog.vue';
-import { TYPE_STOCK } from '@/api/data';
+import { apiNewHigh } from '@/api/third'
+import { onMounted, ref } from 'vue'
+import { ElTableV2, ElAutoResizer } from 'element-plus'
+import { ReqParam } from '@/components/KLine'
+import KDialog from './KDialog.vue'
+import { TYPE_STOCK } from '@/api/data'
 
 const props = defineProps({
   category: {
@@ -46,7 +46,7 @@ async function fetchNewHigh() {
   loading.value = false
   //columns.value = ret.result.columns.slice(1)
   const cols = ret.result.columns
-  for (let i = 0; i < cols.length; ++ i) {
+  for (let i = 0; i < cols.length; ++i) {
     columns.value.push({
       // name: cols[i],
       // width: columnWidths[i] || undefined
@@ -58,10 +58,10 @@ async function fetchNewHigh() {
     })
   }
   const items = ret.result.data
-  const temp:any[] = []
-  items.forEach(item => {
+  const temp: any[] = []
+  items.forEach((item) => {
     const d = {}
-    for (let i = 0; i < columns.value.length; ++ i) {
+    for (let i = 0; i < columns.value.length; ++i) {
       d[columns.value[i].dataKey] = item[i]
     }
     temp.push(d)
@@ -83,7 +83,6 @@ function onRowClick(event: any) {
 onMounted(async () => {
   await fetchNewHigh()
 })
-
 </script>
 <template>
   <!-- <ElText tag="b" class="title">{{ name }}</ElText> -->
@@ -94,10 +93,18 @@ onMounted(async () => {
   </ElTable>
 </ElAutoResizer> -->
   <ElAutoResizer>
-    <template #default="{width}">
-      <ElTableV2 class="table" :columns="columns" :data="data" :fixed="true" :width="width" :height="700" :row-event-handlers="{ onClick: onRowClick }" />
+    <template #default="{ width }">
+      <ElTableV2
+        class="table"
+        :columns="columns"
+        :data="data"
+        :fixed="true"
+        :width="width"
+        :height="700"
+        :row-event-handlers="{ onClick: onRowClick }"
+      />
     </template>
-  </ElAutoResizer>  
+  </ElAutoResizer>
   <!-- <ElDialog v-model="klineDialogVisible" width="60%" :destroy-on-close="true">
     <template #header>
       <ElLink @click="onTitleClick">
@@ -111,15 +118,21 @@ onMounted(async () => {
       <ElButton type="primary" @click="klineDialogVisible=false">关闭</ElButton>
     </template>    
   </ElDialog> -->
-    <KDialog :visible ="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" />  
+  <KDialog
+    :visible="klineDialogVisible"
+    :req-param="reqParam"
+    @update:on-close="klineDialogVisible = false"
+  />
 </template>
 <style lang="css">
 .title {
   margin: 4px;
 }
+
 .table {
   padding: 8px;
   outline: 1px solid gainsboro;
+
   /* outline-offset:-4px;    */
 }
 </style>

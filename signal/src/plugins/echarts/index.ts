@@ -17,10 +17,16 @@ import {
   PolarComponent,
   AriaComponent,
   ParallelComponent,
-  LegendComponent
+  LegendComponent,
+  VisualMapComponent
 } from 'echarts/components'
 
 import { CanvasRenderer } from 'echarts/renderers'
+import {
+  DataZoomComponent,
+  MarkPointComponent,
+  VisualMapComponent
+} from 'echarts/components'
 
 echarts.use([
   LegendComponent,
@@ -37,7 +43,10 @@ echarts.use([
   CanvasRenderer,
   PictorialBarChart,
   RadarChart,
-  CandlestickChart
+  CandlestickChart,
+  VisualMapComponent,
+  DataZoomComponent,
+  MarkPointComponent
 ])
 
 export default echarts

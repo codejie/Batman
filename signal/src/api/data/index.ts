@@ -3,7 +3,9 @@ import * as Types from './types'
 
 export * from './types'
 
-export const apiDownloadList = (data: Types.DownloadListRequest): Promise<IResponse<Types.DownloadListResult>> => {
+export const apiDownloadList = (
+  data: Types.DownloadListRequest
+): Promise<IResponse<Types.DownloadListResult>> => {
   return request.post({
     url: '/data/download_list',
     data
@@ -44,7 +46,9 @@ export const apiGetName = (data: Types.GetNameRequest): Promise<IResponse<Types.
   })
 }
 
-export const apiGetItemInfo = (data: Types.GetItemInfoRequest): Promise<IResponse<Types.GetItemInfoResult>> => {
+export const apiGetItemInfo = (
+  data: Types.GetItemInfoRequest
+): Promise<IResponse<Types.GetItemInfoResult>> => {
   return request.post({
     url: '/data/get_item_info',
     data

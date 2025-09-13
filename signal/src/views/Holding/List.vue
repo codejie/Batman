@@ -1,5 +1,4 @@
 <script lang="ts">
-
 interface FundsForm {
   amount?: number
 }
@@ -19,20 +18,49 @@ interface OperationForm {
   quantity: number
   price: number
   expense: number | string
-  comment?: string    
+  comment?: string
 }
-
 </script>
 
 <script setup lang="ts">
-import { apiCreate, apiFlag, apiOperationCreate, apiOperationList, apiOperationRemove, apiRecord } from '@/api/holding'
-import { HOLDING_FLAG_REMOVED, HoldingRecordItem, OPERATION_ACTION_BUY, OPERATION_ACTION_SELL, OPERATION_ACTION_INTEREST } from '@/api/holding/types'
+import {
+  apiCreate,
+  apiFlag,
+  apiOperationCreate,
+  apiOperationList,
+  apiOperationRemove,
+  apiRecord
+} from '@/api/holding'
+import {
+  HOLDING_FLAG_REMOVED,
+  HoldingRecordItem,
+  OPERATION_ACTION_BUY,
+  OPERATION_ACTION_SELL,
+  OPERATION_ACTION_INTEREST
+} from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref, watch } from 'vue'
 import {
-  ElText, ElDialog, ElButton, ElRow, ElCol, ElInput, ElForm, ElFormItem, ElTable, ElTableColumn, ElTooltip,
-  ElRadioGroup, ElRadioButton, ElDatePicker, ElMessageBox, ElDescriptions, ElDescriptionsItem, ElDivider, ElCheckbox
- } from 'element-plus'
+  ElText,
+  ElDialog,
+  ElButton,
+  ElRow,
+  ElCol,
+  ElInput,
+  ElForm,
+  ElFormItem,
+  ElTable,
+  ElTableColumn,
+  ElTooltip,
+  ElRadioGroup,
+  ElRadioButton,
+  ElDatePicker,
+  ElMessageBox,
+  ElDescriptions,
+  ElDescriptionsItem,
+  ElDivider,
+  ElCheckbox
+} from 'element-plus'
 import { formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
@@ -87,9 +115,11 @@ async function fetchData() {
   data.value = data.value.reverse()
   for (const holding of data.value) {
     holding.calc = await calcHoldingData(holding.record, useLocale.value)
-    holding.items = (await apiOperationList({
-      holding: holding.record.id
-    })).result
+    holding.items = (
+      await apiOperationList({
+        holding: holding.record.id
+      })
+    ).result
   }
   const fret = await apiGetFunds({})
   if (fret.result) {
@@ -109,7 +139,7 @@ async function fetchHoldingData() {
   // //   data.value = data.value.reverse()
   // //   data.value.forEach((v) => {
   // //     v.items = v.items.reverse()
-  // //  })    
+  // //  })
   // } else
   //   funds.value = undefined
 }
@@ -125,7 +155,7 @@ async function onFunds() {
       amount: fundsForm.value.amount
     })
     fundsDialogVisible.value = false
-    await fetchHoldingData()    
+    await fetchHoldingData()
   }
 }
 
@@ -147,26 +177,36 @@ function onOperation(row: HoldingRecordItem) {
 }
 
 function onPriceBlur() {
-  operationForm.value.expense = (operationForm.value.quantity * operationForm.value.price).toFixed(2)
+  operationForm.value.expense = (operationForm.value.quantity * operationForm.value.price).toFixed(
+    2
+  )
 }
 
 function onQuantityBlur() {
-  operationForm.value.expense = (operationForm.value.quantity * operationForm.value.price).toFixed(2)
+  operationForm.value.expense = (operationForm.value.quantity * operationForm.value.price).toFixed(
+    2
+  )
 }
 
-watch(() => operationForm.value.action, (newVal) => {
-  if (newVal === OPERATION_ACTION_INTEREST) {
-    operationForm.value.quantity = 0
-    operationForm.value.price = 0
+watch(
+  () => operationForm.value.action,
+  (newVal) => {
+    if (newVal === OPERATION_ACTION_INTEREST) {
+      operationForm.value.quantity = 0
+      operationForm.value.price = 0
+    }
   }
-})
+)
 
-watch(() => operationForm.value.action, (newVal) => {
-  if (newVal === OPERATION_ACTION_INTEREST) {
-    operationForm.value.quantity = 0
-    operationForm.value.price = 0
+watch(
+  () => operationForm.value.action,
+  (newVal) => {
+    if (newVal === OPERATION_ACTION_INTEREST) {
+      operationForm.value.quantity = 0
+      operationForm.value.price = 0
+    }
   }
-})
+)
 
 async function onAddOperation() {
   const ret = await apiOperationCreate({
@@ -174,7 +214,10 @@ async function onAddOperation() {
     action: operationForm.value.action,
     quantity: operationForm.value.quantity,
     price: operationForm.value.price,
-    expense: (typeof operationForm.value.expense === 'string' ? parseFloat(operationForm.value.expense) : operationForm.value.expense),
+    expense:
+      typeof operationForm.value.expense === 'string'
+        ? parseFloat(operationForm.value.expense)
+        : operationForm.value.expense,
     comment: operationForm.value.comment,
     created: operationForm.value.date
   })
@@ -183,14 +226,11 @@ async function onAddOperation() {
 }
 
 async function onOperationRemove(id: number) {
-  const confirm = await ElMessageBox.confirm(
-    '是否确认删除?',
-    '提示',
-    {
-      confirmButtonText: '确认',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+  const confirm = await ElMessageBox.confirm('是否确认删除?', '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
   if (confirm) {
     await apiOperationRemove({
       id: id
@@ -200,15 +240,11 @@ async function onOperationRemove(id: number) {
 }
 
 async function onRemove(id: number) {
-  const confirm = await ElMessageBox.confirm(
-    '是否确认删除?',
-    '提示',
-    {
-      confirmButtonText: '确认',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  )
+  const confirm = await ElMessageBox.confirm('是否确认删除?', '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
   if (confirm) {
     await apiFlag({
       id: id,
@@ -242,9 +278,9 @@ function onRecordClick(row: HoldingRecordItem) {
   reqParam.value = {
     code: row.code,
     name: row.name,
-    type: row.type,
-  //   start: row.record.created,
-  //   end: new Date()
+    type: row.type
+    //   start: row.record.created,
+    //   end: new Date()
   }
   klineDialogVisible.value = true
 }
@@ -252,7 +288,6 @@ function onRecordClick(row: HoldingRecordItem) {
 function onReload() {
   fetchHoldingData()
 }
-
 </script>
 
 <template>
@@ -270,48 +305,89 @@ function onReload() {
         </ElTooltip>
       </ElDescriptionsItem>
       <ElDescriptionsItem label="成本">
-        <ElText tag="b">{{ formatNumberString(funds?.expense ? -funds?.expense : undefined) }} / </ElText>
+        <ElText tag="b"
+          >{{ formatNumberString(funds?.expense ? -funds?.expense : undefined) }} /
+        </ElText>
         <ElTooltip effect="dark" content="成本/本金%" placement="top">
-          <ElText tag="b">{{ formatRateString2(funds?.expense ? -funds?.expense : undefined, funds?.amount) }}</ElText>
+          <ElText tag="b">{{
+            formatRateString2(funds?.expense ? -funds?.expense : undefined, funds?.amount)
+          }}</ElText>
         </ElTooltip>
       </ElDescriptionsItem>
       <ElDescriptionsItem label="本金">
         <template #default>
           <ElText tag="b">{{ funds?.amount.toFixed(2) }}</ElText>
-          <ElButton size="small" style="float: right" @click="fundsDialogVisible = true">调整</ElButton>
+          <ElButton size="small" style="float: right" @click="fundsDialogVisible = true"
+            >调整</ElButton
+          >
         </template>
       </ElDescriptionsItem>
-      <ElDescriptionsItem label="市值"><ElText tag="b">{{ formatNumberString(funds?.revenue) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="盈亏"><ElText tag="b">{{ formatNumberString(funds?.profit) }}</ElText></ElDescriptionsItem>
-      <ElDescriptionsItem label="盈亏率"><ElText tag="b">{{ formatRateString(funds?.profit_rate) }}</ElText></ElDescriptionsItem>
+      <ElDescriptionsItem label="市值"
+        ><ElText tag="b">{{ formatNumberString(funds?.revenue) }}</ElText></ElDescriptionsItem
+      >
+      <ElDescriptionsItem label="盈亏"
+        ><ElText tag="b">{{ formatNumberString(funds?.profit) }}</ElText></ElDescriptionsItem
+      >
+      <ElDescriptionsItem label="盈亏率"
+        ><ElText tag="b">{{ formatRateString(funds?.profit_rate) }}</ElText></ElDescriptionsItem
+      >
     </ElDescriptions>
     <ElDivider calss="mx-8px" content-position="left">持股记录</ElDivider>
     <ElRow :gutter="24">
       <ElCol :span="12">
-        <ElButton class="my-4" type="primary" @click="createDialogVisible=true">增加持股</ElButton>
+        <ElButton class="my-4" type="primary" @click="createDialogVisible = true"
+          >增加持股</ElButton
+        >
       </ElCol>
       <ElCol :span="12">
-        <ElButton class="my-4" style="float: right;"  @click="onReload">刷新记录</ElButton>
-        <ElCheckbox v-model="useLocale" class="my-4" style="margin-right: 12px; float: right;" label="使用本地数据" />
+        <ElButton class="my-4" style="float: right" @click="onReload">刷新记录</ElButton>
+        <ElCheckbox
+          v-model="useLocale"
+          class="my-4"
+          style="float: right; margin-right: 12px"
+          label="使用本地数据"
+        />
       </ElCol>
     </ElRow>
     <ElRow :gutter="24">
-      <ElTable :data="data" :row-key="getHoldingKey" :expand-row-keys="expandRows" @expand-change="onExpandChanged" stripe :border="true" :default-sort="{ prop: 'record.created', order: 'descending' }">
+      <ElTable
+        :data="data"
+        :row-key="getHoldingKey"
+        :expand-row-keys="expandRows"
+        @expand-change="onExpandChanged"
+        stripe
+        :border="true"
+        :default-sort="{ prop: 'record.created', order: 'descending' }"
+      >
         <ElTableColumn type="index" width="40" />
         <ElTableColumn type="expand">
           <template #default="{ row }">
             <div class="mx-24px my-8px">
               <ElRow :gutter="24">
-                  <ElText tag="b">操作记录 ({{ row.items.length }})</ElText>
-                  <ElButton size="small" class="mx-8" type="primary" @click="onOperation(row.record)">增加操作</ElButton>
+                <ElText tag="b">操作记录 ({{ row.items.length }})</ElText>
+                <ElButton size="small" class="mx-8" type="primary" @click="onOperation(row.record)"
+                  >增加操作</ElButton
+                >
               </ElRow>
             </div>
-            <div class="mx-24px my-8px">       
-              <ElTable size="small" :data="row.items" stripe :border="true" :default-sort="{ prop: 'created', order: 'descending' }">
+            <div class="mx-24px my-8px">
+              <ElTable
+                size="small"
+                :data="row.items"
+                stripe
+                :border="true"
+                :default-sort="{ prop: 'created', order: 'descending' }"
+              >
                 <ElTableColumn type="index" width="40" />
                 <ElTableColumn label="操作" prop="action" width="80">
                   <template #default="{ row }">
-                    {{ row.action == OPERATION_ACTION_BUY ? '买入' : (row.action == OPERATION_ACTION_SELL ? '卖出' : '计息') }}
+                    {{
+                      row.action == OPERATION_ACTION_BUY
+                        ? '买入'
+                        : row.action == OPERATION_ACTION_SELL
+                          ? '卖出'
+                          : '计息'
+                    }}
                   </template>
                 </ElTableColumn>
                 <ElTableColumn label="数量" prop="quantity" min-width="80" />
@@ -341,125 +417,171 @@ function onReload() {
           </template>
         </ElTableColumn>
         <!-- <ElTableColumn prop="id" label="ID" width="50" /> -->
-          <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
-          <ElTableColumn prop="record.code" label="名称/代码" min-width="60">
-            <template #header>
-              <ElText>名称/代码</ElText>
-            </template>
-            <template #default="{ row }">
-              <div @click="onRecordClick(row.record)">
-                <div><ElText tag="b">{{ row.record.name }}</ElText></div>
-                <div><ElText tag="b">{{ row.record.code }}</ElText></div>
-              </div>
-            </template>
-          </ElTableColumn>
-          <!-- <ElTableColumn prop="record.name" label="名称" min-width="80">
+        <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
+        <ElTableColumn prop="record.code" label="名称/代码" min-width="60">
+          <template #header>
+            <ElText>名称/代码</ElText>
+          </template>
+          <template #default="{ row }">
+            <div @click="onRecordClick(row.record)">
+              <div
+                ><ElText tag="b">{{ row.record.name }}</ElText></div
+              >
+              <div
+                ><ElText tag="b">{{ row.record.code }}</ElText></div
+              >
+            </div>
+          </template>
+        </ElTableColumn>
+        <!-- <ElTableColumn prop="record.name" label="名称" min-width="80">
             <template #header>
               <ElText>名称</ElText>
             </template>
           </ElTableColumn> -->
-          <ElTableColumn prop="record.quantity" label="持仓/占比" min-width="100">
-            <template #header>
-              <ElTooltip effect="dark" content="持仓/仓位%" placement="top">
-                <ElText>持仓/占比</ElText>
-              </ElTooltip>
-            </template>
-            <template #default="{ row }">
-              {{ formatNumberString(row.record.quantity) }} / {{ formatRateString2(row.record.quantity, funds?.holding) }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="record.expense" label="成本/占比" min-width="110">
-            <template #header>
-              <ElTooltip effect="dark" content="成本/费用%" placement="top">
-                <ElText>成本/占比</ElText>
-              </ElTooltip>
-            </template>
-            <template #default="{ row }">
-            {{ formatNumberString(row.record.expense) }} / {{ formatRateString2(row.record.expense, funds?.expense) }} 
-            </template>
-          </ElTableColumn>
-          <ElTableColumn label="均价/价差" min-width="80">
-            <template #header>
-              <ElTooltip effect="dark" content="（成本/持仓）/(现价-均价)" placement="top">
-                <ElText>均价/价差</ElText>
-              </ElTooltip>
-            </template>
-            <template #default="{ row }">
-              {{ formatNumberString(row.calc?.price_avg) }} /
-              <ElText :class="(row.calc?.price_cur - row.calc?.price_avg) > 0 ? 'red-text' : ((row.calc?.price_cur - row.calc?.price_avg) < 0 ? 'green-text' : 'red-text')">
-                {{ formatNumberString(row.calc?.price_cur - row.calc?.price_avg) }}
-              </ElText>
-            </template>
-          </ElTableColumn>
-          <ElTableColumn label="现价/日期" min-width="100">
-            <template #header>
-              <ElTooltip effect="dark" content="当日价格" placement="top">
-                <ElText>现价/日期</ElText>
-              </ElTooltip>
-            </template>
-            <template #default="{ row }">
-              {{ formatNumberString(row.calc?.price_cur) }} [{{ `${row.calc ? row.calc?.date_cur?.substring(5) : '-'}` }}]
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="100">
-            <template #header>
-              <ElTooltip effect="dark" content="与前一日价格差/价格差率%" placement="top">
-                <ElText>昨差/昨差率%</ElText>
-              </ElTooltip>
-            </template>
-            <template #default="{ row }">
-              <div :class="row.calc?.pre_price_rate > 0 ? 'red-text' : (row.calc?.pre_price_rate < 0 ? 'green-text' : '')">
-                {{ formatNumberString(row.calc?.price_cur - row.calc?.pre_price) }} / {{ formatRateString(row.calc?.pre_price_rate) }}
-              </div>
-            </template>
-          </ElTableColumn>          
-          <ElTableColumn prop="calc.revenue" label="市值/占比" min-width="120">
-            <template #header>
-              <ElTooltip effect="dark" content="市值/总市值%" placement="top">
-                <ElText>市值/占比</ElText>
-              </ElTooltip>
-            </template>
-            <template #default="{ row }">
-              {{ formatNumberString(row.calc?.revenue) }} / {{ formatRateString2(row.calc?.revenue, funds?.revenue) }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="calc.profit" label="盈亏/占比" min-width="120">
-            <template #header>
-              <ElTooltip effect="dark" content="盈亏/总盈亏%" placement="top">
-                <ElText>盈亏/占比</ElText>
-              </ElTooltip>
-            </template>
-            <template #default="{ row }">
-              <div :class="row.calc?.profit > 0 ? 'red-text' : (row.calc?.profit < 0 ? 'green-text' : '')">
-                {{ formatNumberString(row.calc?.profit) }} / {{ formatRateString2(row.calc?.profit, funds?.profit) }}
-              </div>
-            </template>
-          </ElTableColumn>
-          <ElTableColumn label="盈亏率 %" min-width="80">
-            <template #header>
-              <ElTooltip effect="dark" content="盈亏/成本%" placement="top">
-                <ElText>盈亏率%</ElText>
-              </ElTooltip>
-            </template>
-            <template #default="{ row }">
-              <div :class="row.calc?.profit_rate > 0 ? 'red-text' : (row.calc?.profit_rate < 0 ? 'green-text' : '')">
-                {{ formatRateString(row.calc?.profit_rate) }}
-              </div>
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="100">
-            <template #header>
-              <ElTooltip effect="dark" content="与前一日盈利差/盈利差率%" placement="top">
-                <ElText>昨差/昨差率%</ElText>
-              </ElTooltip>
-            </template>
-            <template #default="{ row }">
-              <div :class="row.calc?.pre_profit_rate > 0 ? 'red-text' : (row.calc?.pre_profit_rate < 0 ? 'green-text' : '')">
-                {{ formatNumberString(row.calc?.pre_profit_diff) }} / {{ formatRateString(row.calc?.pre_profit_rate) }}
-              </div>
-            </template>
-          </ElTableColumn>          
-          <!-- <ElTableColumn prop="record.created" label="创建时间" min-width="120">
+        <ElTableColumn prop="record.quantity" label="持仓/占比" min-width="100">
+          <template #header>
+            <ElTooltip effect="dark" content="持仓/仓位%" placement="top">
+              <ElText>持仓/占比</ElText>
+            </ElTooltip>
+          </template>
+          <template #default="{ row }">
+            {{ formatNumberString(row.record.quantity) }} /
+            {{ formatRateString2(row.record.quantity, funds?.holding) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="record.expense" label="成本/占比" min-width="110">
+          <template #header>
+            <ElTooltip effect="dark" content="成本/费用%" placement="top">
+              <ElText>成本/占比</ElText>
+            </ElTooltip>
+          </template>
+          <template #default="{ row }">
+            {{ formatNumberString(row.record.expense) }} /
+            {{ formatRateString2(row.record.expense, funds?.expense) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="均价/价差" min-width="80">
+          <template #header>
+            <ElTooltip effect="dark" content="（成本/持仓）/(现价-均价)" placement="top">
+              <ElText>均价/价差</ElText>
+            </ElTooltip>
+          </template>
+          <template #default="{ row }">
+            {{ formatNumberString(row.calc?.price_avg) }} /
+            <ElText
+              :class="
+                row.calc?.price_cur - row.calc?.price_avg > 0
+                  ? 'red-text'
+                  : row.calc?.price_cur - row.calc?.price_avg < 0
+                    ? 'green-text'
+                    : 'red-text'
+              "
+            >
+              {{ formatNumberString(row.calc?.price_cur - row.calc?.price_avg) }}
+            </ElText>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="现价/日期" min-width="100">
+          <template #header>
+            <ElTooltip effect="dark" content="当日价格" placement="top">
+              <ElText>现价/日期</ElText>
+            </ElTooltip>
+          </template>
+          <template #default="{ row }">
+            {{ formatNumberString(row.calc?.price_cur) }} [{{
+              `${row.calc ? row.calc?.date_cur?.substring(5) : '-'}`
+            }}]
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="100">
+          <template #header>
+            <ElTooltip effect="dark" content="与前一日价格差/价格差率%" placement="top">
+              <ElText>昨差/昨差率%</ElText>
+            </ElTooltip>
+          </template>
+          <template #default="{ row }">
+            <div
+              :class="
+                row.calc?.pre_price_rate > 0
+                  ? 'red-text'
+                  : row.calc?.pre_price_rate < 0
+                    ? 'green-text'
+                    : ''
+              "
+            >
+              {{ formatNumberString(row.calc?.price_cur - row.calc?.pre_price) }} /
+              {{ formatRateString(row.calc?.pre_price_rate) }}
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="calc.revenue" label="市值/占比" min-width="120">
+          <template #header>
+            <ElTooltip effect="dark" content="市值/总市值%" placement="top">
+              <ElText>市值/占比</ElText>
+            </ElTooltip>
+          </template>
+          <template #default="{ row }">
+            {{ formatNumberString(row.calc?.revenue) }} /
+            {{ formatRateString2(row.calc?.revenue, funds?.revenue) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="calc.profit" label="盈亏/占比" min-width="120">
+          <template #header>
+            <ElTooltip effect="dark" content="盈亏/总盈亏%" placement="top">
+              <ElText>盈亏/占比</ElText>
+            </ElTooltip>
+          </template>
+          <template #default="{ row }">
+            <div
+              :class="row.calc?.profit > 0 ? 'red-text' : row.calc?.profit < 0 ? 'green-text' : ''"
+            >
+              {{ formatNumberString(row.calc?.profit) }} /
+              {{ formatRateString2(row.calc?.profit, funds?.profit) }}
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="盈亏率 %" min-width="80">
+          <template #header>
+            <ElTooltip effect="dark" content="盈亏/成本%" placement="top">
+              <ElText>盈亏率%</ElText>
+            </ElTooltip>
+          </template>
+          <template #default="{ row }">
+            <div
+              :class="
+                row.calc?.profit_rate > 0
+                  ? 'red-text'
+                  : row.calc?.profit_rate < 0
+                    ? 'green-text'
+                    : ''
+              "
+            >
+              {{ formatRateString(row.calc?.profit_rate) }}
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="100">
+          <template #header>
+            <ElTooltip effect="dark" content="与前一日盈利差/盈利差率%" placement="top">
+              <ElText>昨差/昨差率%</ElText>
+            </ElTooltip>
+          </template>
+          <template #default="{ row }">
+            <div
+              :class="
+                row.calc?.pre_profit_rate > 0
+                  ? 'red-text'
+                  : row.calc?.pre_profit_rate < 0
+                    ? 'green-text'
+                    : ''
+              "
+            >
+              {{ formatNumberString(row.calc?.pre_profit_diff) }} /
+              {{ formatRateString(row.calc?.pre_profit_rate) }}
+            </div>
+          </template>
+        </ElTableColumn>
+        <!-- <ElTableColumn prop="record.created" label="创建时间" min-width="120">
             <template #header>
               <ElText>创建时间</ElText>
             </template>
@@ -467,17 +589,17 @@ function onReload() {
               {{ formatToDate(row.record.created) }}
             </template>
           </ElTableColumn> -->
-          <!-- <ElTableColumn label="更新时间" min-width="120">
+        <!-- <ElTableColumn label="更新时间" min-width="120">
             <template #default="{ row }">
               {{ formatToDate(row.record.updated) }}
             </template>
           </ElTableColumn> -->
-          <ElTableColumn label="" width="160">
-            <template #default="{ row }">
-              <ElButton size="small" @click="onDetail(row.record.id)">详情</ElButton>
-              <ElButton size="small" @click="onRemove(row.record.id)">删除</ElButton>
-            </template>
-          </ElTableColumn>      
+        <ElTableColumn label="" width="160">
+          <template #default="{ row }">
+            <ElButton size="small" @click="onDetail(row.record.id)">详情</ElButton>
+            <ElButton size="small" @click="onRemove(row.record.id)">删除</ElButton>
+          </template>
+        </ElTableColumn>
       </ElTable>
     </ElRow>
     <ElDialog v-model="fundsDialogVisible" :destroy-on-close="true" width="25%">
@@ -494,9 +616,9 @@ function onReload() {
         </ElForm>
       </template>
       <template #footer>
-        <ElButton @click="fundsDialogVisible=false">取消</ElButton>
+        <ElButton @click="fundsDialogVisible = false">取消</ElButton>
         <ElButton type="primary" @click="onFunds">确定</ElButton>
-      </template>         
+      </template>
     </ElDialog>
     <ElDialog v-model="createDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
@@ -513,9 +635,9 @@ function onReload() {
         </ElForm>
       </template>
       <template #footer>
-        <ElButton @click="createDialogVisible=false">取消</ElButton>
+        <ElButton @click="createDialogVisible = false">取消</ElButton>
         <ElButton type="primary" @click="onAdd">确定</ElButton>
-      </template>      
+      </template>
     </ElDialog>
     <ElDialog v-model="operationDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
@@ -549,10 +671,16 @@ function onReload() {
             </ElRow>
           </ElFormItem>
           <ElFormItem label="数量" @change="onQuantityBlur">
-            <ElInput v-model="operationForm.quantity" :disabled="operationForm.action === OPERATION_ACTION_INTEREST" />
+            <ElInput
+              v-model="operationForm.quantity"
+              :disabled="operationForm.action === OPERATION_ACTION_INTEREST"
+            />
           </ElFormItem>
           <ElFormItem label="价格" @change="onPriceBlur">
-            <ElInput v-model="operationForm.price" :disabled="operationForm.action === OPERATION_ACTION_INTEREST">
+            <ElInput
+              v-model="operationForm.price"
+              :disabled="operationForm.action === OPERATION_ACTION_INTEREST"
+            >
               <template #append>元</template>
             </ElInput>
           </ElFormItem>
@@ -567,19 +695,24 @@ function onReload() {
         </ElForm>
       </template>
       <template #footer>
-        <ElButton @click="operationDialogVisible=false">取消</ElButton>
+        <ElButton @click="operationDialogVisible = false">取消</ElButton>
         <ElButton type="primary" @click="onAddOperation">确定</ElButton>
-      </template>        
+      </template>
     </ElDialog>
-    <KLineDialog :visible="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" width="60%" />
+    <KLineDialog
+      :visible="klineDialogVisible"
+      :req-param="reqParam"
+      @update:on-close="klineDialogVisible = false"
+      width="60%"
+    />
   </ContentWrap>
 </template>
 <style lang="css" scoped>
 .green-text {
-    color: green;
+  color: green;
 }
 
 .red-text {
-    color: red;
+  color: red;
 }
 </style>

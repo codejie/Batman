@@ -15,7 +15,8 @@ const props = defineProps({
     type: Array as PropType<SeriesDataItem[]>,
     required: true
   },
-  middleSeriesData: { // Added
+  middleSeriesData: {
+    // Added
     type: Array as PropType<SeriesDataItem[]>,
     required: true
   },
@@ -47,7 +48,8 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  middleYAxisName: { // Added
+  middleYAxisName: {
+    // Added
     type: String,
     default: ''
   },
@@ -55,7 +57,8 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  gridRatios: { // Added
+  gridRatios: {
+    // Added
     type: Array as PropType<number[]>,
     default: () => [3, 1, 2]
   }
@@ -72,12 +75,7 @@ const dialogVisible = computed({
 </script>
 
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    :title="props.title"
-    width="85%"
-    top="5vh"
-  >
+  <el-dialog v-model="dialogVisible" :title="props.title" width="85%" top="5vh">
     <TripleChart
       :top-series-data="props.topSeriesData"
       :middle-series-data="props.middleSeriesData"
@@ -93,9 +91,7 @@ const dialogVisible = computed({
     />
     <template #footer>
       <span class="dialog-footer">
-        <el-button type="primary" @click="dialogVisible = false">
-          确定
-        </el-button>
+        <el-button type="primary" @click="dialogVisible = false"> 确定 </el-button>
       </span>
     </template>
   </el-dialog>

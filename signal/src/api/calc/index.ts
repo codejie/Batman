@@ -5,59 +5,87 @@ import { useUserStoreWithOut } from '@/store/modules/user'
 
 export * from './types'
 
-export const apiCreateAlgorithmItem = (data: Types.CreateAlgorithmItemRequest): Promise<IResponse<Types.CreateAlgorithmItemResult>> => {
+export const apiCreateAlgorithmItem = (
+  data: Types.CreateAlgorithmItemRequest
+): Promise<IResponse<Types.CreateAlgorithmItemResult>> => {
   return request.post({ url: '/calc/create', data })
 }
 
-export const apiListAlgorithmItems = (data: Types.ListAlgorithmItemsRequest): Promise<IResponse<Types.ListAlgorithmItemsResult>> => {
+export const apiListAlgorithmItems = (
+  data: Types.ListAlgorithmItemsRequest
+): Promise<IResponse<Types.ListAlgorithmItemsResult>> => {
   return request.post({ url: '/calc/list', data })
 }
 
-export const apiDeleteAlgorithmItem = (data: Types.DeleteAlgorithmItemRequest): Promise<IResponse<Types.DeleteAlgorithmItemResult>> => {
+export const apiDeleteAlgorithmItem = (
+  data: Types.DeleteAlgorithmItemRequest
+): Promise<IResponse<Types.DeleteAlgorithmItemResult>> => {
   return request.post({ url: '/calc/remove', data })
 }
 
-export const apiGetAlgorithmItem = (data: Types.GetAlgorithmItemRequest): Promise<IResponse<Types.GetAlgorithmItemResult>> => {
+export const apiGetAlgorithmItem = (
+  data: Types.GetAlgorithmItemRequest
+): Promise<IResponse<Types.GetAlgorithmItemResult>> => {
   return request.post({ url: '/calc/item', data })
 }
 
-export const apiUpdateAlgorithmItem = (data: Types.UpdateAlgorithmItemRequest): Promise<IResponse<Types.UpdateAlgorithmItemResult>> => {
+export const apiUpdateAlgorithmItem = (
+  data: Types.UpdateAlgorithmItemRequest
+): Promise<IResponse<Types.UpdateAlgorithmItemResult>> => {
   return request.post({ url: '/calc/update', data })
 }
 
-export const apiCreateStockList = (data: Types.CreateStockListRequest): Promise<IResponse<Types.CreateStockListResult>> => {
+export const apiCreateStockList = (
+  data: Types.CreateStockListRequest
+): Promise<IResponse<Types.CreateStockListResult>> => {
   return request.post({ url: '/calc/stock_list_create', data })
 }
 
-export const apiUpdateStockList = (data: Types.UpdateStockListRequest): Promise<IResponse<Types.UpdateStockListResult>> => {
+export const apiUpdateStockList = (
+  data: Types.UpdateStockListRequest
+): Promise<IResponse<Types.UpdateStockListResult>> => {
   return request.post({ url: '/calc/stock_list_update', data })
 }
 
-export const apiListStockList = (data: Types.ListStockListRequest): Promise<IResponse<Types.ListStockListResult>> => {
+export const apiListStockList = (
+  data: Types.ListStockListRequest
+): Promise<IResponse<Types.ListStockListResult>> => {
   return request.post({ url: '/calc/stock_list', data })
 }
 
-export const apiDeleteStockList = (data: Types.DeleteStockListRequest): Promise<IResponse<Types.DeleteStockListResult>> => {
+export const apiDeleteStockList = (
+  data: Types.DeleteStockListRequest
+): Promise<IResponse<Types.DeleteStockListResult>> => {
   return request.post({ url: '/calc/stock_list_remove', data })
 }
 
-export const apiCreateArguments = (data: Types.CreateArgumentsRequest): Promise<IResponse<Types.CreateArgumentsResult>> => {
+export const apiCreateArguments = (
+  data: Types.CreateArgumentsRequest
+): Promise<IResponse<Types.CreateArgumentsResult>> => {
   return request.post({ url: '/calc/arguments_create', data })
 }
 
-export const apiUpdateArguments = (data: Types.UpdateArgumentsRequest): Promise<IResponse<Types.UpdateArgumentsResult>> => {
+export const apiUpdateArguments = (
+  data: Types.UpdateArgumentsRequest
+): Promise<IResponse<Types.UpdateArgumentsResult>> => {
   return request.post({ url: '/calc/arguments_update', data })
 }
 
-export const apiListArguments = (data: Types.ListArgumentsRequest): Promise<IResponse<Types.ListArgumentsResult>> => {
+export const apiListArguments = (
+  data: Types.ListArgumentsRequest
+): Promise<IResponse<Types.ListArgumentsResult>> => {
   return request.post({ url: '/calc/arguments', data })
 }
 
-export const apiDeleteArguments = (data: Types.DeleteArgumentsRequest): Promise<IResponse<Types.DeleteArgumentsResult>> => {
+export const apiDeleteArguments = (
+  data: Types.DeleteArgumentsRequest
+): Promise<IResponse<Types.DeleteArgumentsResult>> => {
   return request.post({ url: '/calc/arguments_remove', data })
 }
 
-export const apiSubmitCalculation = (data: Types.SubmitCalculationRequest): Promise<IResponse<Types.SubmitCalculationResult>> => {
+export const apiSubmitCalculation = (
+  data: Types.SubmitCalculationRequest
+): Promise<IResponse<Types.SubmitCalculationResult>> => {
   return request.post({ url: '/calc/submit', data })
 }
 
@@ -71,7 +99,7 @@ export const apiConnectToCalcReport = (
   onMessage: (data: Types.CalcReportData) => void,
   onError?: (error: Event) => void
 ): EventSource => {
-    const token = useUserStoreWithOut().getTokenKey
+  const token = useUserStoreWithOut().getTokenKey
   if (!token) {
     console.error('No token found, cannot connect to SSE.')
   }
@@ -95,7 +123,7 @@ export const apiConnectToCalcReport = (
     eventSource.close()
   }
 
-    return eventSource
+  return eventSource
 }
 
 export const apiDisconnectFromCalcReport = (eventSource: EventSource | null) => {

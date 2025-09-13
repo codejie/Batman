@@ -1,5 +1,5 @@
 export type DataFrameSetModel = {
-  columns: string[],
+  columns: string[]
   data: any[]
 }
 
@@ -30,20 +30,20 @@ export type LimitUpPoolRequest = {
 export type LimitUpPoolResult = DataFrameSetModel
 
 export type LinkInfoModel = {
-  title: string,
-  url: string,
-  tip?: string,
-  needCode?: boolean,
+  title: string
+  url: string
+  tip?: string
+  needCode?: boolean
   inWindow?: boolean
 }
 
 export type GroupInfoModel = {
-  title: string,
-  icon: string,
+  title: string
+  icon: string
   links: LinkInfoModel[]
 }
 
 export type InfoLinksRequest = {
   flag?: number
 }
-export type InfoLinksResult =  GroupInfoModel[]
+export type InfoLinksResult = GroupInfoModel[]

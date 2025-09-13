@@ -22,7 +22,7 @@ export function formatRateString2(value1?: number, value2?: number): string {
   }
   if (value2 === undefined || value2 === null || isNaN(value2)) {
     return '-'
-  }  
+  }
 
-  return (value1 / value2 * 100).toFixed(2) + '%'
+  return ((value1 / value2) * 100).toFixed(2) + '%'
 }

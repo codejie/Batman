@@ -2,7 +2,7 @@
 import { ContentWrap } from '@/components/ContentWrap'
 import { ElInput, ElButton } from 'element-plus'
 import { ref, onUnmounted } from 'vue'
-import { useUserStoreWithOut } from '@/store/modules/user';
+import { useUserStoreWithOut } from '@/store/modules/user'
 
 // refer to https://github.com/DR-lin-eng/stock-scanner
 
@@ -47,7 +47,6 @@ onUnmounted(() => {
       :rows="10"
       readonly
       placeholder="等待接收消息…"
-    ></ElInput>
+    />
   </ContentWrap>
 </template>
-

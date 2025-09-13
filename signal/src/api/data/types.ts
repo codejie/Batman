@@ -26,7 +26,7 @@ export interface HistoryDataItem {
   振幅: number
   涨跌幅: number
   涨跌额: number
-  换手率: number  
+  换手率: number
 }
 
 export interface SpotDataItem {
@@ -52,7 +52,7 @@ export interface SpotDataItem {
   涨速?: number
   涨跌5分钟?: number
   涨跌幅60日?: number
-  年初至今涨跌幅?: number  
+  年初至今涨跌幅?: number
 }
 
 export interface GetLatestHistoryDataRequest {
@@ -63,7 +63,7 @@ export interface GetLatestHistoryDataRequest {
   limit?: number // default 1
   record_flag?: number
 }
-export type  GetLatestHistoryDataResult = HistoryDataItem | HistoryDataItem[] | undefined
+export type GetLatestHistoryDataResult = HistoryDataItem | HistoryDataItem[] | undefined
 
 export interface GetHistoryDataRequest {
   type: number
@@ -71,8 +71,8 @@ export interface GetHistoryDataRequest {
   start?: string
   end?: string
   period?: string
-  adjust?: string,
-  limit?: number,
+  adjust?: string
+  limit?: number
   record_flag?: number
 }
 export type GetHistoryDataResult = HistoryDataItem[]

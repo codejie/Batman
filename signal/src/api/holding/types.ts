@@ -1,8 +1,8 @@
-export const HOLDING_FLAG_ACTIVE: number = 1;
-export const HOLDING_FLAG_REMOVED: number = 2;
-export const OPERATION_ACTION_BUY: number = 1;
-export const OPERATION_ACTION_SELL: number = 2;
-export const OPERATION_ACTION_INTEREST: number = 3;
+export const HOLDING_FLAG_ACTIVE: number = 1
+export const HOLDING_FLAG_REMOVED: number = 2
+export const OPERATION_ACTION_BUY: number = 1
+export const OPERATION_ACTION_SELL: number = 2
+export const OPERATION_ACTION_INTEREST: number = 3
 
 export interface CreateRequest {
   type: number

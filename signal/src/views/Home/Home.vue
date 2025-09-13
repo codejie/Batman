@@ -3,6 +3,5 @@ import { ContentWrap } from '@/components/ContentWrap'
 </script>
 
 <template>
-  <ContentWrap title="Home">
-  </ContentWrap>
+  <ContentWrap title="Home" />
 </template>

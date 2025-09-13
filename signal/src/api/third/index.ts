@@ -15,30 +15,38 @@ export const apiUptrend = (data: Types.UptrendRequest): Promise<IResponse<Types.
   })
 }
 
-export const apiHighVolume = (data: Types.HighVolumeRequest): Promise<IResponse<Types.HighVolumeResult>> => {
+export const apiHighVolume = (
+  data: Types.HighVolumeRequest
+): Promise<IResponse<Types.HighVolumeResult>> => {
   return request.post({
     url: '/data/third/stock/high_volume',
     data
-  })  
+  })
 }
 
-export const apiRiseVolumePrice = (data: Types.RiseVolumePriceRequest): Promise<IResponse<Types.RiseVolumePriceResult>> => {
+export const apiRiseVolumePrice = (
+  data: Types.RiseVolumePriceRequest
+): Promise<IResponse<Types.RiseVolumePriceResult>> => {
   return request.post({
     url: '/data/third/stock/rise_volume_price',
     data
-  })   
+  })
 }
 
-export const apiLimitUpPool = (data: Types.LimitUpPoolRequest): Promise<IResponse<Types.LimitUpPoolResult>> => {
+export const apiLimitUpPool = (
+  data: Types.LimitUpPoolRequest
+): Promise<IResponse<Types.LimitUpPoolResult>> => {
   return request.post({
     url: '/data/third/stock/limit_up_pool',
     data
-  })   
+  })
 }
 
-export const apiInfoLinks = (data: Types.InfoLinksRequest): Promise<IResponse<Types.InfoLinksResult>> => {
+export const apiInfoLinks = (
+  data: Types.InfoLinksRequest
+): Promise<IResponse<Types.InfoLinksResult>> => {
   return request.post({
     url: '/data/third/info/links',
     data
-  })   
+  })
 }

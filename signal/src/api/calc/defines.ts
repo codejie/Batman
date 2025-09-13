@@ -1,62 +1,59 @@
-
 export const AlgorithmStockListDefinitions = [
-  '持仓列表', '自选列表', '自定义列表', '全部列表', '持仓&自选'
+  '持仓列表',
+  '自选列表',
+  '自定义列表',
+  '全部列表',
+  '持仓&自选'
 ]
 
-export const AlgorithmDataPeriodDefinitions = [
-  '三个月', '六个月', '一年', '两年'
-]
+export const AlgorithmDataPeriodDefinitions = ['三个月', '六个月', '一年', '两年']
 
-export const AlgorithmReportPeriodDefinitions = [
-  '当天', '最近三天', '最近一周', '最近一月', '全部'
-]
+export const AlgorithmReportPeriodDefinitions = ['当天', '最近三天', '最近一周', '最近一月', '全部']
 
 export type AlgorithmCategoryOptionType = {
-  name: string,
-  title: string,
-  type: string,
-  default: any,
-  options?: any,
+  name: string
+  title: string
+  type: string
+  default: any
+  options?: any
   description: string
 }
 
-
-
 export const AlgorithmCategoryDefinitions = {
-  'TrendFollowing': {
+  TrendFollowing: {
     title: '均线趋势',
     description: '均线趋势类算法'
   },
-  'MomentumIndicators': {
+  MomentumIndicators: {
     title: '动量指标',
     description: '动量指标类算法'
   },
-  'VolatilityIndicators': {
+  VolatilityIndicators: {
     title: '波动率指标',
     description: '波动率指标类算法'
   },
-  'VolumeIndicators': {
+  VolumeIndicators: {
     title: '成交量指标',
     description: '成交量指标类算法'
   },
-  'PriceTransformation': {
+  PriceTransformation: {
     title: '价格变换',
     description: '价格变换类算法'
   },
-  'CandlestickPatterns': {
+  CandlestickPatterns: {
     title: 'K线形态识别',
     description: 'K线形态识别类算法'
   },
-  'CycleIndicators': {
+  CycleIndicators: {
     title: '周期指标',
     description: '周期指标类算法'
   }
 }
 
 export const AlgorithmTypeDefinitions = {
-  'TrendFollowing': {
+  TrendFollowing: {
     types: {
-      'MA': {
+      MA: {
         title: '移动均线',
         description: 'Moving Average (MA) - 移动平均线',
         options: [
@@ -92,7 +89,7 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      'ADX': {
+      ADX: {
         title: '平均趋向指数',
         description: 'Average Directional Index (ADX) - 平均趋向指标',
         options: [
@@ -112,7 +109,7 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      'MACD': {
+      MACD: {
         title: '异同移动平均线',
         description: 'Moving Average Convergence Divergence (MACD) - 平滑异同移动平均线',
         options: [
@@ -139,7 +136,7 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      'SAR': {
+      SAR: {
         title: '抛物线转向指标',
         description: 'Parabolic SAR - 抛物线转向指标',
         options: [
@@ -161,9 +158,9 @@ export const AlgorithmTypeDefinitions = {
       }
     }
   },
-  'MomentumIndicators': {
+  MomentumIndicators: {
     types: {
-      'RSI': {
+      RSI: {
         title: '相对强弱指数',
         description: 'Relative Strength Index (RSI) - 相对强弱指数',
         options: [
@@ -176,7 +173,7 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      'MOM': {
+      MOM: {
         title: '动量指标',
         description: 'Momentum (MOM) - 动量指标',
         options: [
@@ -189,7 +186,7 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      'KDJ': {
+      KDJ: {
         title: '随机指标',
         description: 'Stochastic Oscillator (KDJ) - 随机指标',
         options: [
@@ -218,9 +215,9 @@ export const AlgorithmTypeDefinitions = {
       }
     }
   },
-  'VolatilityIndicators': {
+  VolatilityIndicators: {
     types: {
-      'BOLL': {
+      BOLL: {
         title: '布林带',
         description: 'Bollinger Bands (BOLL) - 布林带',
         options: [
@@ -247,7 +244,7 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      'ATR': {
+      ATR: {
         title: '平均真实波幅',
         description: 'Average True Range (ATR) - 平均真实波幅',
         options: [
@@ -260,7 +257,7 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      'NATR': {
+      NATR: {
         title: '归一化平均真实波幅',
         description: 'Normalized Average True Range (NATR) - 归一化平均真实波幅',
         options: [
@@ -275,9 +272,9 @@ export const AlgorithmTypeDefinitions = {
       }
     }
   },
-  'VolumeIndicators': {
+  VolumeIndicators: {
     types: {
-      'OBV': {
+      OBV: {
         title: '能量潮',
         description: 'On-Balance Volume (OBV) - 能量潮',
         options: [
@@ -290,7 +287,7 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      'AD': {
+      AD: {
         title: '聚散指标',
         description: 'Accumulation/Distribution (A/D) - 聚散指标',
         options: [
@@ -305,9 +302,9 @@ export const AlgorithmTypeDefinitions = {
       }
     }
   },
-  'PriceTransformation': {
+  PriceTransformation: {
     types: {
-      'AVGPRICE': {
+      AVGPRICE: {
         title: '平均价格',
         description: 'Average Price (AVGPRICE) - 平均价格',
         options: [
@@ -320,7 +317,7 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      'MEDPRICE': {
+      MEDPRICE: {
         title: '中位数价格',
         description: 'Median Price (MEDPRICE) - 中位数价格',
         options: [
@@ -335,60 +332,62 @@ export const AlgorithmTypeDefinitions = {
       }
     }
   },
-  'CandlestickPatterns': {
+  CandlestickPatterns: {
     types: {
-      'CDLHAMMER': {
+      CDLHAMMER: {
         title: '锤头线',
         description: 'Hammer (CDLHAMMER) - 锤头线',
         options: []
       },
-      'CDLENGULFING': {
+      CDLENGULFING: {
         title: '吞噬模式',
         description: 'Engulfing Pattern (CDLENGULFING) - 吞噬模式',
         options: []
       },
-      'CDLMORNINGSTAR': {
+      CDLMORNINGSTAR: {
         title: '晨星',
         description: 'Morning Star (CDLMORNINGSTAR) - 晨星',
         options: []
       },
-      'CDLDOJI': {
+      CDLDOJI: {
         title: '十字星',
         description: 'Doji (CDLDOJI) - 十字星',
         options: []
       },
-      'CDLEVENINGSTAR': {
+      CDLEVENINGSTAR: {
         title: '黄昏星',
         description: 'Evening Star (CDLEVENINGSTAR) - 黄昏星',
         options: []
       },
-      'CDL3WHITESOLDIERS': {
+      CDL3WHITESOLDIERS: {
         title: '三白兵',
         description: 'Three White Soldiers (CDL3WHITESOLDIERS) - 三白兵',
         options: []
       },
-      'CDL3BLACKCROWS': {
+      CDL3BLACKCROWS: {
         title: '三只乌鸦',
         description: 'Three Black Crows (CDL3BLACKCROWS) - 三只乌鸦',
         options: []
       },
-      'CDLDARKCLOUDCOVER': {
+      CDLDARKCLOUDCOVER: {
         title: '乌云盖顶',
         description: 'Dark Cloud Cover (CDLDARKCLOUDCOVER) - 乌云盖顶',
         options: []
       }
     }
   },
-  'CycleIndicators': {
+  CycleIndicators: {
     types: {
-      'HT_DCPERIOD': {
+      HT_DCPERIOD: {
         title: '希尔伯特变换-主导周期',
-        description: 'Hilbert Transform - Dominant Cycle Period (HT_DCPERIOD) - 希尔伯特变换-主导周期',
+        description:
+          'Hilbert Transform - Dominant Cycle Period (HT_DCPERIOD) - 希尔伯特变换-主导周期',
         options: []
       },
-      'HT_DCPHASE': {
+      HT_DCPHASE: {
         title: '希尔伯特变换-主导周期相位',
-        description: 'Hilbert Transform - Dominant Cycle Phase (HT_DCPHASE) - 希尔伯特变换-主导周期相位',
+        description:
+          'Hilbert Transform - Dominant Cycle Phase (HT_DCPHASE) - 希尔伯特变换-主导周期相位',
         options: []
       }
     }

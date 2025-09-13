@@ -5,7 +5,12 @@ import { ContentWrap } from '@/components/ContentWrap'
 import TrendArgumentTable from './components/TrendArgumentTable.vue'
 import CalcReport from './components/CalcReport.vue'
 import AlgorithmItemDetail from './components/CalcItemDetail.vue'
-import { apiListAlgorithmItems, apiDeleteAlgorithmItem, apiSubmitCalculation, AlgorithmItem } from '@/api/calc'
+import {
+  apiListAlgorithmItems,
+  apiDeleteAlgorithmItem,
+  apiSubmitCalculation,
+  AlgorithmItem
+} from '@/api/calc'
 import { useRefreshStore } from '@/store/modules/refresh'
 
 const selectedValue = ref('')
@@ -50,7 +55,8 @@ watch(selectedValue, (newValue) => {
   if (newValue) {
     // Update the selected item details based on the new selection
     if (newValue !== selectedAlgorithmItem.value?.name) {
-      selectedAlgorithmItem.value = algorithmItems.value.find((item) => item.name === newValue) || null
+      selectedAlgorithmItem.value =
+        algorithmItems.value.find((item) => item.name === newValue) || null
     }
   } else {
     // If selection is cleared, ensure item is also cleared
@@ -113,7 +119,13 @@ const handleSubmit = async () => {
           :value="item.name"
         />
       </el-select>
-      <el-button type="primary" style="margin-left: 10px;" :disabled="!selectedValue" @click="handleSubmit">提交</el-button>
+      <el-button
+        type="primary"
+        style="margin-left: 10px"
+        :disabled="!selectedValue"
+        @click="handleSubmit"
+        >提交</el-button
+      >
       <el-button @click="toggleTable">{{ showArgumentTable ? '收起列表' : '查看列表' }}</el-button>
     </div>
     <TrendArgumentTable
@@ -125,22 +137,32 @@ const handleSubmit = async () => {
 
     <el-divider />
 
-    <AlgorithmItemDetail v-if="showCalcReport && selectedAlgorithmItem" :item="selectedAlgorithmItem" />
-    <CalcReport v-if="showCalcReport && selectedAlgorithmItem" ref="calcReportRef" :item-id="selectedAlgorithmItem!.id!" :data-period="selectedAlgorithmItem!.data_period" />
+    <AlgorithmItemDetail
+      v-if="showCalcReport && selectedAlgorithmItem"
+      :item="selectedAlgorithmItem"
+    />
+    <CalcReport
+      v-if="showCalcReport && selectedAlgorithmItem"
+      ref="calcReportRef"
+      :item-id="selectedAlgorithmItem!.id!"
+      :data-period="selectedAlgorithmItem!.data_period"
+    />
   </ContentWrap>
 </template>
 
 <style scoped>
 .section-title {
+  margin-bottom: 10px;
   font-size: 16px;
   font-weight: 700;
-  margin-bottom: 10px;
 }
+
 .action-container {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
+
 .select-width {
   width: 33.33%;
 }

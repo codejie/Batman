@@ -4,8 +4,8 @@ KLine that support fetch data by code
 <script setup lang="ts">
 import { ref, PropType, watch, unref } from 'vue'
 import { Echart, EChartsOption } from '@/components/Echart'
-import { DataParam, ReqParam, ShowParam } from '..';
-import { apiHistory } from '@/api/data/wrap';
+import { DataParam, ReqParam, ShowParam } from '..'
+import { apiHistory } from '@/api/data/wrap'
 
 const DEFAULT_START: string = '2023-01-01'
 
@@ -40,7 +40,7 @@ const dataChanged = ref<boolean>(false)
 
 defineExpose({
   originData,
-  dataChanged,
+  dataChanged
 })
 
 let xData: string[] = []
@@ -64,7 +64,7 @@ const options = ref<EChartsOption>({
       right: '8%',
       bottom: '10%',
       height: '25%'
-    }     
+    }
   ],
   legend: {
     bottom: 0,
@@ -72,7 +72,7 @@ const options = ref<EChartsOption>({
     data: [],
     icon: 'circle'
   },
-  xAxis:[
+  xAxis: [
     {
       type: 'category',
       gridIndex: 0,
@@ -89,16 +89,16 @@ const options = ref<EChartsOption>({
       axisLine: { onZero: false },
       axisTick: { show: false },
       splitLine: { show: false },
-      axisLabel: { show: false },
+      axisLabel: { show: false }
       // min: 'dataMin',
       // max: 'dataMax'
-    }        
+    }
   ],
   yAxis: [
     {
       type: 'value',
       // name: 'Value',
-      nameLocation : 'middle',
+      nameLocation: 'middle',
       show: true,
       gridIndex: 0,
       position: 'left',
@@ -112,7 +112,7 @@ const options = ref<EChartsOption>({
     {
       type: 'value',
       // name: 'Volume',
-      nameLocation : 'middle',
+      nameLocation: 'middle',
       show: true,
       gridIndex: 1,
       position: 'left',
@@ -127,7 +127,7 @@ const options = ref<EChartsOption>({
       axisLine: { show: false },
       axisTick: { show: false },
       splitLine: { show: false }
-    }     
+    }
   ],
   series: [
     {
@@ -149,7 +149,7 @@ const options = ref<EChartsOption>({
     },
     {
       name: 'Volume',
-      type: 'bar',    
+      type: 'bar',
       xAxisIndex: 1,
       yAxisIndex: 1,
       data: []
@@ -184,11 +184,11 @@ const options = ref<EChartsOption>({
     position: function (pos, params, el, elRect, size) {
       const obj = {
         top: 10
-      };
-      obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
-      return obj;
+      }
+      obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30
+      return obj
     }
-  },  
+  },
   axisPointer: {
     link: [
       {
@@ -198,19 +198,22 @@ const options = ref<EChartsOption>({
     label: {
       backgroundColor: '#777'
     }
-  }  
+  }
 })
 
 watch(
   () => props.reqParam,
   async () => {
     // console.log(`type = ${props.reqParam.type}`)
-    const ret = await apiHistory({
-      code: props.reqParam.code,
-      start: props.reqParam.start || DEFAULT_START,
-      end: props.reqParam.end
-    }, props.reqParam.type)
-    originData.value = (ret.result as DataParam)
+    const ret = await apiHistory(
+      {
+        code: props.reqParam.code,
+        start: props.reqParam.start || DEFAULT_START,
+        end: props.reqParam.end
+      },
+      props.reqParam.type
+    )
+    originData.value = ret.result as DataParam
     dataChanged.value = true
     updateData(unref(originData))
     updateOptions()
@@ -225,9 +228,9 @@ watch(
 )
 
 function updateData(data: DataParam) {
-  xData = data.map(item => item.date)
-  klineData = data.map(({open, close, low, high}) => ([open, close, low, high]))
-  volumeData = data.map(item => [item.date, item.volume, item.open > item.close ? 1 : -1])
+  xData = data.map((item) => item.date)
+  klineData = data.map(({ open, close, low, high }) => [open, close, low, high])
+  volumeData = data.map((item) => [item.date, item.volume, item.open > item.close ? 1 : -1])
 }
 
 function updateOptions() {
@@ -264,16 +267,16 @@ function updateOptions() {
     options.value.grid![1].height = '0%'
   } else {
     options.value.grid![0].height = '60%'
-    options.value.grid![1].height = '25%'    
+    options.value.grid![1].height = '25%'
   }
 
   options.value.xAxis![0].data = xData
   options.value.xAxis![1].data = xData
   options.value.series![0].data = klineData
   options.value.series![1].data = volumeData
-  
+
   if (props.showParam.maLines.length > 0) {
-    const closeData = klineData.map(item => item[1])
+    const closeData = klineData.map((item) => item[1])
     for (const ma of props.showParam.maLines) {
       options.value.series!.push({
         name: `MA${ma}`,
@@ -292,21 +295,20 @@ function updateOptions() {
 }
 
 function calcMAData(ma: number, data: number[]) {
-  var result: any[] = [];
-  for (var i = 0, len = data.length; i < len; i++) {
+  const result: any[] = []
+  for (let i = 0, len = data.length; i < len; i++) {
     if (i < ma) {
       result.push('-')
-      continue;
+      continue
     }
-    var sum = 0;
-    for (var j = 0; j < ma; j++) {
+    let sum = 0
+    for (let j = 0; j < ma; j++) {
       sum += +data[i - j]
     }
     result.push((sum / ma).toFixed(2))
   }
   return result
 }
-
 </script>
 <template>
   <!-- <Echart v-if="param != undefined" :options="options" /> -->

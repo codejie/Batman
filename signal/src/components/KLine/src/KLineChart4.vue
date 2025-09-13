@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Echart, EChartsOption } from '@/components/Echart';
+import { ref } from 'vue'
+import { Echart, EChartsOption } from '@/components/Echart'
 
 const upColor = '#ec0000'
 const downColor = '#00da3c'
@@ -41,7 +41,7 @@ function makeMarkLine(min: boolean) {
     name: min ? 'min' : 'max',
     type: min ? 'min' : 'max',
     valueDim: 'close'
-  }  
+  }
 }
 
 function makeLineOption(grid: number, name: string, data: any[]) {
@@ -57,7 +57,7 @@ function makeLineOption(grid: number, name: string, data: any[]) {
     // itemStyle: {
     //   color: '#ec0000'
     // },
-    data: data    
+    data: data
   }
 }
 
@@ -70,10 +70,8 @@ function makeBarOption(grid: number, name: string, data: any[]) {
     showSymbol: false,
     itemStyle: {
       color: (item) => {
-        if (item.value.length > 2)
-          return item.value[2] > 0 ? upColor : downColor
-        else
-          return upColor
+        if (item.value.length > 2) return item.value[2] > 0 ? upColor : downColor
+        else return upColor
       }
     },
     data: data
@@ -94,7 +92,7 @@ function makeStepLineOption(grid: number, name: string, data: any[], step: strin
     // itemStyle: {
     //   color: '#ec0000'
     // },
-    data: data    
+    data: data
   }
 }
 
@@ -111,7 +109,7 @@ const options = ref<EChartsOption>({
   }
 })
 
-function reset() { 
+function reset() {
   options.value = {
     title: [],
     grid: [],
@@ -126,7 +124,15 @@ function reset() {
   }
 }
 
-function addGrid(id: number, left: number | string, top: number | string, right: number | string, bottom: number | string, width?: number | string, height?: number | string) {
+function addGrid(
+  id: number,
+  left: number | string,
+  top: number | string,
+  right: number | string,
+  bottom: number | string,
+  width?: number | string,
+  height?: number | string
+) {
   options.value.grid!.push({
     id,
     left,
@@ -147,7 +153,7 @@ function addAxisPointer(grids: number[]) {
     ],
     label: {
       backgroundColor: '#777'
-    }    
+    }
   }
   options.value['tooltip'] = {
     trigger: 'axis',
@@ -159,14 +165,14 @@ function addAxisPointer(grids: number[]) {
     padding: 10,
     textStyle: {
       color: '#000'
-    },
+    }
     // position: function (pos, params, el, elRect, size) {
     //   const obj = {
     //     top: 10
     //   };
     //   obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
     //   return obj;
-    // }    
+    // }
   }
 }
 
@@ -179,7 +185,7 @@ function addAxis(grid: number, xdata: number[] | string[], showTick: boolean = t
     axisLine: { onZero: true },
     axisTick: { show: true },
     splitLine: { show: false },
-    axisLabel: { show: showTick },    
+    axisLabel: { show: showTick }
   })
   options.value.yAxis!.push({
     type: 'value',
@@ -196,11 +202,17 @@ function addAxis(grid: number, xdata: number[] | string[], showTick: boolean = t
     axisLabel: { show: showTick },
     axisLine: { show: showTick },
     axisTick: { show: showTick },
-    splitLine: { show: false }       
-  })  
+    splitLine: { show: false }
+  })
 }
 
-function addKLine(grid: number, name: string, data: any[], markLine: boolean = true, legend: boolean = false) {
+function addKLine(
+  grid: number,
+  name: string,
+  data: any[],
+  markLine: boolean = true,
+  legend: boolean = false
+) {
   const klineOpt = makeKLineOption(grid, name, data)
   if (markLine) {
     klineOpt.markLine.data.push(makeMarkLine(true))
@@ -217,7 +229,7 @@ function addLine(grid: number, name: string, data: number[], legend: boolean = t
   options.value.series!.push(lineOpt)
   if (legend) {
     options.value.legend!.data.push(name)
-  }  
+  }
 }
 
 function addBar(grid: number, name: string, data: number[], legend: boolean = true) {
@@ -225,15 +237,21 @@ function addBar(grid: number, name: string, data: number[], legend: boolean = tr
   options.value.series!.push(barOpt)
   if (legend) {
     options.value.legend!.data.push(name)
-  }  
+  }
 }
 
-function addStepLine(grid: number, name: string, data: any[], legend: boolean = true, step: string = 'end') {
+function addStepLine(
+  grid: number,
+  name: string,
+  data: any[],
+  legend: boolean = true,
+  step: string = 'end'
+) {
   const lineOpt = makeStepLineOption(grid, name, data, step)
   options.value.series?.push(lineOpt)
   if (legend) {
     options.value.legend!.data.push(name)
-  }  
+  }
 }
 
 // function remove(name: string, wildcard: boolean = false) {
@@ -252,21 +270,21 @@ function remove(name: string, mode: number = 0) {
   let func1
   switch (mode) {
     case 1: // wildcard
-      func = item => !item.includes(name)
-      func1 = item => !item.name.includes(name)
+      func = (item) => !item.includes(name)
+      func1 = (item) => !item.name.includes(name)
       break
     case 2: // prefix
-      func = item => !item.startsWith(name)
-      func1 = item => !item.name.startsWith(name)
+      func = (item) => !item.startsWith(name)
+      func1 = (item) => !item.name.startsWith(name)
       break
     case 3: // suffix
-      func = item => !item.endsWith(name) // (item.indexOf(name, item.length - name.length) !== -1)
-      func1 = item => !item.name.endsWith(name) // !(item.indexOf(name, item.length - name.length) !== -1)
+      func = (item) => !item.endsWith(name) // (item.indexOf(name, item.length - name.length) !== -1)
+      func1 = (item) => !item.name.endsWith(name) // !(item.indexOf(name, item.length - name.length) !== -1)
       break
     case 0: // match
     default:
       func = (item) => item != name
-      func1 = (item) => item.name != name 
+      func1 = (item) => item.name != name
   }
 
   options.value.legend!.data = options.value.legend!.data.filter(func)
@@ -284,8 +302,6 @@ defineExpose({
   addStepLine,
   remove
 })
-
-
 </script>
 <template>
   <Echart :options="options" />

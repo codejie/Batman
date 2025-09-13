@@ -2,18 +2,18 @@ import { defineStore } from 'pinia'
 
 export interface ReportData {
   stock: {
-    code: string;
-    name: string;
-    type: number;
-  };
+    code: string
+    name: string
+    type: number
+  }
   reports: {
-    category: string;
-    type: string;
-    arguments: any;
-    calc?: any;
-    report?: any[];
-  }[];
-  dataPeriodStart: string;
+    category: string
+    type: string
+    arguments: any
+    calc?: any
+    report?: any[]
+  }[]
+  dataPeriodStart: string
 }
 
 interface ReportDataState {

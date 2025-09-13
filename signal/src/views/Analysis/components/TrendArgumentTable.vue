@@ -55,13 +55,13 @@ const handleRowClick = (row: AlgorithmItem) => {
 
 <template>
   <div>
-    <div style="margin-bottom: 10px; display: flex; justify-content: flex-end;">
+    <div style="display: flex; margin-bottom: 10px; justify-content: flex-end">
       <el-button type="primary" @click="goToTrendArgument">新增</el-button>
     </div>
     <el-table :data="tableData" style="width: 100%" :border="true" @row-click="handleRowClick">
       <el-table-column type="index" width="60" />
       <el-table-column prop="name" label="名称" width="220" />
-      
+
       <el-table-column prop="list_type" label="列表类型" width="120">
         <template #default="{ row }">
           {{ AlgorithmStockListDefinitions[row.list_type] }}
@@ -91,12 +91,11 @@ const handleRowClick = (row: AlgorithmItem) => {
       <el-table-column label="操作" width="160">
         <template #default="{ row }">
           <el-button :link="true" type="" @click="goToDetails(row)">详情</el-button>
-          <el-button :link="true" style="color: red;" @click="handleDelete(row.id)">删除</el-button>
+          <el-button :link="true" style="color: red" @click="handleDelete(row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

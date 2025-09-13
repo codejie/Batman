@@ -43,7 +43,7 @@ const reportPeriodText = computed(() => {
 <template>
   <div v-if="item" class="calc-item-details">
     <p class="detail-title">计算详情</p>
-        <el-descriptions :column="6" :border="true" label-width="160">
+    <el-descriptions :column="6" :border="true" label-width="160">
       <el-descriptions-item label="名称">
         <span @click="goToDetails" class="clickable-name">{{ item.name }}</span>
       </el-descriptions-item>
@@ -59,15 +59,18 @@ const reportPeriodText = computed(() => {
 .calc-item-details {
   margin-bottom: 20px;
 }
+
 .detail-title {
   margin-bottom: 15px;
   font-size: 16px;
   font-weight: 600;
 }
+
 .clickable-name {
-  cursor: pointer;
   color: var(--el-color-primary);
+  cursor: pointer;
 }
+
 .clickable-name:hover {
   text-decoration: underline;
 }

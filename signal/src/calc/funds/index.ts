@@ -1,9 +1,12 @@
-import { HoldingListItem } from "../holding"
-import * as Types  from "./types"
+import { HoldingListItem } from '../holding'
+import * as Types from './types'
 
-export * from "./types"
+export * from './types'
 
-export function calcFundsData(funds: Types.FundsItem, holdigns: HoldingListItem[]): Types.FundsData {
+export function calcFundsData(
+  funds: Types.FundsItem,
+  holdigns: HoldingListItem[]
+): Types.FundsData {
   // let total = 0
   let holding = 0
   let expense = 0
@@ -29,7 +32,7 @@ export function calcFundsData(funds: Types.FundsItem, holdigns: HoldingListItem[
     available: funds.available,
     revenue: revenue,
     profit: profit,
-    profit_rate: (expense === 0 ? undefined : profit / -expense)
+    profit_rate: expense === 0 ? undefined : profit / -expense
   }
   return ret
 }

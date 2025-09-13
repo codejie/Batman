@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { TYPE_STOCK } from '@/api/data';
-import { apiLimitUpPool } from '@/api/third';
+import { TYPE_STOCK } from '@/api/data'
+import { apiLimitUpPool } from '@/api/third'
 import { ContentWrap } from '@/components/ContentWrap'
-import { ReqParam } from '@/components/KLine';
-import { formatToDate } from '@/utils/dateUtil';
-import { ElDatePicker, ElText, ElTableV2, ElAutoResizer } from 'element-plus';
-import { onMounted, ref } from 'vue';
-import KDialog from './components/KDialog.vue';
+import { ReqParam } from '@/components/KLine'
+import { formatToDate } from '@/utils/dateUtil'
+import { ElDatePicker, ElText, ElTableV2, ElAutoResizer } from 'element-plus'
+import { onMounted, ref } from 'vue'
+import KDialog from './components/KDialog.vue'
 
 // type Column = {
 //   name: string
@@ -32,9 +32,9 @@ function fetch(): Promise<void> {
 
   // data.value = []
   // columns.value = []
-  const temp_data:any[] = []
+  const temp_data: any[] = []
   const temp_columns: any[] = []
-  return new Promise<void>((resolve) =>{
+  return new Promise<void>((resolve) => {
     apiLimitUpPool({
       date: dateValue.value
     }).then((ret) => {
@@ -44,7 +44,7 @@ function fetch(): Promise<void> {
       }
 
       const cols = ret.result.columns
-      for (let i = 0; i < cols.length; ++ i) {
+      for (let i = 0; i < cols.length; ++i) {
         temp_columns.push({
           key: cols[i],
           dataKey: cols[i],
@@ -54,22 +54,22 @@ function fetch(): Promise<void> {
         })
       }
 
-    //   temp_columns.push({
-    //     key: 'Action',
-    //     dateKey: 'Action',
-    //     title: '操作',
-    //     width: 90,
-    //     cellRenderer: () => (
-    //   <>
-    //     <ElButton size="small">Edit</ElButton>
-    //   </>
-    // )
-    //   })
+      //   temp_columns.push({
+      //     key: 'Action',
+      //     dateKey: 'Action',
+      //     title: '操作',
+      //     width: 90,
+      //     cellRenderer: () => (
+      //   <>
+      //     <ElButton size="small">Edit</ElButton>
+      //   </>
+      // )
+      //   })
 
       const items = ret.result.data
-      items.forEach(item => {
+      items.forEach((item) => {
         const d = {}
-        for (let i = 0; i < temp_columns.length; ++ i) {
+        for (let i = 0; i < temp_columns.length; ++i) {
           switch (i) {
             case 3:
               item[i] = parseFloat(item[i]).toFixed(2) + '%'
@@ -78,15 +78,15 @@ function fetch(): Promise<void> {
               item[i] = parseFloat(item[i]).toFixed(2)
               break
             case 5:
-              // item[i] = (parseFloat(item[i]) / 10000).toFixed(2) + '万'
-              // break
+            // item[i] = (parseFloat(item[i]) / 10000).toFixed(2) + '万'
+            // break
             case 6:
             case 7:
             case 9:
               item[i] = (parseFloat(item[i]) / 100000000).toFixed(2) + '亿'
               break
             case 8:
-              item[i] = (parseFloat(item[i])).toFixed(2) + '%'
+              item[i] = parseFloat(item[i]).toFixed(2) + '%'
               break
             case 10:
             case 11:
@@ -124,23 +124,26 @@ function onRowClick(event: any) {
 function isworkday(date) {
   const today = new Date()
 
-  if (date.date > today || date.date < today.setDate(today.getDate() - 20))
-    return 'text'
-  return date.date.getDay() == 0 || date.date.getDay() == 6 ? 'text': 'workday'
+  if (date.date > today || date.date < today.setDate(today.getDate() - 20)) return 'text'
+  return date.date.getDay() == 0 || date.date.getDay() == 6 ? 'text' : 'workday'
 }
 
 async function onDateChanged(value) {
-  if (value > getToday())
-    dateValue.value = getToday()
+  if (value > getToday()) dateValue.value = getToday()
   await fetch()
 }
-
 </script>
 <template>
   <ContentWrap title="涨停股池">
     <div class="title">
-      <ElText tag="b" style="padding-right: 8px;">日期</ElText>
-      <ElDatePicker v-model="dateValue" type="date" format="YYYY-MM-DD" value-format="YYYYMMDD" @change="onDateChanged">
+      <ElText tag="b" style="padding-right: 8px">日期</ElText>
+      <ElDatePicker
+        v-model="dateValue"
+        type="date"
+        format="YYYY-MM-DD"
+        value-format="YYYYMMDD"
+        @change="onDateChanged"
+      >
         <template #default="cell">
           <div class="cell" :class="{ current: cell.isCurrent }">
             <span :class="isworkday(cell)">{{ cell.text }}</span>
@@ -149,8 +152,15 @@ async function onDateChanged(value) {
       </ElDatePicker>
     </div>
     <ElAutoResizer>
-      <template #default="{width}">
-        <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="width" :row-event-handlers="{ onClick: onRowClick }" :height="700"/>
+      <template #default="{ width }">
+        <ElTableV2
+          :columns="columns"
+          :data="data"
+          :fixed="true"
+          :width="width"
+          :row-event-handlers="{ onClick: onRowClick }"
+          :height="700"
+        />
       </template>
     </ElAutoResizer>
     <!-- <ElTableV2 :columns="columns" :data="data" :fixed="true" :width="1600" :height="600"/> -->
@@ -164,7 +174,11 @@ async function onDateChanged(value) {
         <ElButton type="primary" @click="klineDialogVisible=false">关闭</ElButton>
       </template>    
     </ElDialog>     -->
-    <KDialog :visible ="klineDialogVisible" :req-param="reqParam" @update:on-close="klineDialogVisible = false" />
+    <KDialog
+      :visible="klineDialogVisible"
+      :req-param="reqParam"
+      @update:on-close="klineDialogVisible = false"
+    />
   </ContentWrap>
 </template>
 <style lang="css">
@@ -179,39 +193,38 @@ async function onDateChanged(value) {
 }
 
 .cell .text {
-  width: 24px;
-  height: 24px;
-  display: block;
-  margin: 0 auto;
-  line-height: 24px;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin: 0 auto;
+  line-height: 24px;
   border-radius: 50%;
+  transform: translateX(-50%);
 }
 
 .cell.current .text {
-  background: #626aef;
   color: #fff;
+  background: #626aef;
 }
 
 .cell .workday {
-  width: 24px;
-  height: 24px;
-  display: block;
-  margin: 0 auto;
-  line-height: 24px;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
-  border-radius: 50%;  
-  color: black;
+  display: block;
+  width: 24px;
+  height: 24px;
+  margin: 0 auto;
   font-weight: bold;
+  line-height: 24px;
+  color: black;
+  border-radius: 50%;
+  transform: translateX(-50%);
 }
 
 .cell.current .workday {
-  background: #626aef;
   color: #fff;
+  background: #626aef;
 }
 </style>
-
