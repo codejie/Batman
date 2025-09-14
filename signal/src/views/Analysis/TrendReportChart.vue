@@ -161,12 +161,14 @@ watch(
             const category = AlgorithmCategoryDefinitions[report.category]?.title || report.category
             const type =
               AlgorithmTypeDefinitions[report.category]?.types?.[report.type]?.title || report.type
+            const name =
+              AlgorithmTypeDefinitions[report.category]?.types?.[report.type]?.name || report.type
             const args = report.arguments
               ? ` (${Object.entries(report.arguments)
                   .map(([k, v]) => `${k}=${v}`)
                   .join(', ')})`
               : ''
-            const chartName = `${category}: ${type}${args}`
+            const chartName = `${category}: ${type}(${name})${args}`
             return {
               name: chartName,
               series: getCalcChartData(report.calc, report.report).seriesData
