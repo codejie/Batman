@@ -16,6 +16,14 @@ const props = defineProps({
   series: {
     type: Array as PropType<{ name: string; series: SeriesDataItem[] }[]>,
     required: true
+  },
+  showLegend: {
+    type: Boolean,
+    default: true
+  },
+  showZoomSlider: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -34,16 +42,19 @@ const option = computed((): EChartsOption => {
       xAxisIndex: xAxisIndices,
       start: 0,
       end: 100
-    },
-    {
+    }
+  ]
+
+  if (props.showZoomSlider) {
+    dataZoom.push({
       show: true,
       xAxisIndex: xAxisIndices,
       type: 'slider',
       bottom: 10,
       start: 0,
       end: 100
-    }
-  ]
+    })
+  }
 
   if (numCharts === 0) {
     // Return a blank chart if there are no series
@@ -100,16 +111,21 @@ const option = computed((): EChartsOption => {
     })
 
     chart.series.forEach((s) => {
-      series.push({
+      const newSeries: any = {
         ...s,
         xAxisIndex: index,
         yAxisIndex: index
-      })
+      }
+      if (newSeries.type === 'line') {
+        newSeries.symbol = 'none'
+        newSeries.lineStyle = { width: 1 }
+      }
+      series.push(newSeries)
     })
     currentTop += singleChartAllocation
   })
 
-  return {
+  const options: EChartsOption = {
     tooltip: {
       trigger: 'axis',
       axisPointer: {
@@ -134,12 +150,6 @@ const option = computed((): EChartsOption => {
         backgroundColor: '#777'
       }
     },
-    legend: {
-      orient: 'vertical',
-      right: 10,
-      top: 'top',
-      data: props.series.flatMap((chart) => chart.series.map((s) => s.name))
-    },
     grid,
     xAxis,
     yAxis,
@@ -147,6 +157,17 @@ const option = computed((): EChartsOption => {
     dataZoom,
     title
   }
+
+  if (props.showLegend) {
+    options.legend = {
+      orient: 'vertical',
+      right: 10,
+      top: 'top',
+      data: props.series.flatMap((chart) => chart.series.map((s) => s.name))
+    }
+  }
+
+  return options
 })
 </script>
 

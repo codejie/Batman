@@ -1,4 +1,4 @@
-version: "3.8"
+# version: "3.8"
 name: batman
 services:
   app:
@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/batman/app/db
+      - ../app/db:/batman/app/db # compose start under deploy folder
     environment:
       - PORT=8000
     networks:

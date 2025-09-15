@@ -9,6 +9,7 @@ import type { AggregatedReport } from './CalcReport.vue'
 import { KLineDialog } from '@/components/KLine'
 import { FlexChart, TripleChartDialog, type SeriesDataItem } from '@/components/Chart'
 import { apiGetHistoryData } from '@/api/data'
+import CalcReportBackTestDialog from './CalcReportBackTestDialog.vue'
 
 const props = defineProps({
   data: {
@@ -34,6 +35,14 @@ const topChartData = ref<{ seriesData: SeriesDataItem[]; xAxisData: string[] }>(
   seriesData: [],
   xAxisData: []
 })
+
+const selectedReportForBacktest = ref(null)
+const isBacktestDialogVisible = ref(false)
+
+const onBacktestClick = (row: any) => {
+  selectedReportForBacktest.value = row
+  isBacktestDialogVisible.value = true
+}
 
 const get_row_key = (row: any) => {
   return `${row.category}-${row.type}-${JSON.stringify(row.arguments)}`
@@ -342,9 +351,12 @@ function onTitleClick() {
                   </span>
                 </span>
               </b>
-              <el-button size="small" v-if="row.calc" @click.stop="toggleChart(row)">{{
-                isChartVisible(row) ? '隐藏图表' : '显示图表'
-              }}</el-button>
+              <div>
+                <el-button size="small" v-if="row.calc" @click.stop="onBacktestClick(row)">模拟回测</el-button>
+                <el-button size="small" v-if="row.calc" @click.stop="toggleChart(row)">{{
+                  isChartVisible(row) ? '隐藏图表' : '显示图表'
+                }}</el-button>
+              </div>
             </div>
           </template>
         </el-table-column>
@@ -365,6 +377,7 @@ function onTitleClick() {
       :bottom-series-data="bottomChartData.seriesData"
       :x-axis-data="topChartData.xAxisData"
     />
+    <CalcReportBackTestDialog v-if="selectedReportForBacktest" v-model:visible="isBacktestDialogVisible" :stock="props.data.stock" :result="selectedReportForBacktest" :dataPeriodStart="dataPeriodStart" />
   </div>
 </template>
 
