@@ -151,19 +151,26 @@ const chartOptions = computed<EChartsOption>(() => ({
   ]
 }))
 
+const capitalOptions = [1000, 2000, 5000, 10000, 20000, 50000, 100000]
+const priceStrategyOptions = ['开盘价', '收盘价', '最高价', '最低价', '中间价']
+const buyQuantityStrategyOptions = ['全仓(资金)', '1/2(资金)', '1/3(资金)', '1/4(资金)', '全仓(持仓)', '1/2(持仓)', '1/3(持仓)', '1/4(持仓)']
+const sellQuantityStrategyOptions = ['全仓(持仓)', '1/2(持仓)', '1/3(持仓)', '1/4(持仓)']
+const timingStrategyOptions = ['无条件', '+1%(现价)', '+3%(现价)', '+5%(现价)', '+10%(现价)', '+15%(现价)', '-15%(现价)', '-10%(现价)', '-5%(现价)', '-3%(现价)', '-1%(现价)', '+1%(成本)', '+3%(成本)', '+5%(成本)', '+10%(成本)', '+15%(成本)', '-15%(成本)', '-10%(成本)', '-5%(成本)', '-3%(成本)', '-1%(成本)']
+
 const form = ref({
-  capital: 100000,
-  buyPriceStrategy: '',
-  buyQuantityStrategy: '',
-  buyTimingStrategy: '',
-  sellPriceStrategy: '',
-  sellQuantityStrategy: '',
-  sellTimingStrategy: ''
+  capital: 6, // Corresponds to 100000
+  buyPriceStrategy: 0,
+  buyQuantityStrategy: 1,
+  buyTimingStrategy: 0,
+  sellPriceStrategy: 0,
+  sellQuantityStrategy: 1,
+  sellTimingStrategy: 0
 })
 
 const tableData = ref([])
 const totalAmount = computed(() => {
-  return form.value.capital + tableData.value.reduce((sum, item) => sum + item.fee, 0)
+  const selectedCapital = capitalOptions[form.value.capital]
+  return selectedCapital + tableData.value.reduce((sum, item) => sum + item.fee, 0)
 })
 
 const onExecute = () => {
@@ -314,42 +321,73 @@ watch(
       <el-col :span="8">
         <el-form :model="form" label-width="120px">
           <el-form-item label="本金">
-            <el-input v-model="form.capital" />
+            <el-select v-model="form.capital" placeholder="please select" style="width: 100%">
+              <el-option
+                v-for="(item, index) in capitalOptions"
+                :key="index"
+                :label="item"
+                :value="index"
+              ></el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="买入价格策略">
-            <el-select v-model="form.buyPriceStrategy" placeholder="please select">
-              <el-option label="Strategy 1" value="s1"></el-option>
-              <el-option label="Strategy 2" value="s2"></el-option>
+            <el-select v-model="form.buyPriceStrategy" placeholder="please select" style="width: 100%">
+              <el-option
+                v-for="(item, index) in priceStrategyOptions"
+                :key="index"
+                :label="item"
+                :value="index"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="买入数量策略">
-            <el-select v-model="form.buyQuantityStrategy" placeholder="please select">
-              <el-option label="Strategy 1" value="s1"></el-option>
-              <el-option label="Strategy 2" value="s2"></el-option>
+            <el-select v-model="form.buyQuantityStrategy" placeholder="please select" style="width: 100%">
+              <el-option
+                v-for="(item, index) in buyQuantityStrategyOptions"
+                :key="index"
+                :label="item"
+                :value="index"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="买入时机策略">
-            <el-select v-model="form.buyTimingStrategy" placeholder="please select">
-              <el-option label="Strategy 1" value="s1"></el-option>
-              <el-option label="Strategy 2" value="s2"></el-option>
+            <el-select v-model="form.buyTimingStrategy" placeholder="please select" style="width: 100%">
+              <el-option
+                v-for="(item, index) in timingStrategyOptions"
+                :key="index"
+                :label="item"
+                :value="index"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="卖出价格策略">
-            <el-select v-model="form.sellPriceStrategy" placeholder="please select">
-              <el-option label="Strategy 1" value="s1"></el-option>
-              <el-option label="Strategy 2" value="s2"></el-option>
+            <el-select v-model="form.sellPriceStrategy" placeholder="please select" style="width: 100%">
+              <el-option
+                v-for="(item, index) in priceStrategyOptions"
+                :key="index"
+                :label="item"
+                :value="index"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="卖出数量策略">
-            <el-select v-model="form.sellQuantityStrategy" placeholder="please select">
-              <el-option label="Strategy 1" value="s1"></el-option>
-              <el-option label="Strategy 2" value="s2"></el-option>
+            <el-select v-model="form.sellQuantityStrategy" placeholder="please select" style="width: 100%">
+              <el-option
+                v-for="(item, index) in sellQuantityStrategyOptions"
+                :key="index"
+                :label="item"
+                :value="index"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="卖出时机策略">
-            <el-select v-model="form.sellTimingStrategy" placeholder="please select">
-              <el-option label="Strategy 1" value="s1"></el-option>
-              <el-option label="Strategy 2" value="s2"></el-option>
+            <el-select v-model="form.sellTimingStrategy" placeholder="please select" style="width: 100%">
+              <el-option
+                v-for="(item, index) in timingStrategyOptions"
+                :key="index"
+                :label="item"
+                :value="index"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item>
@@ -382,4 +420,3 @@ watch(
     </template>
   </el-dialog>
 </template>
-
