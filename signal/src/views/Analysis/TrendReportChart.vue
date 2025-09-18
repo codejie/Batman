@@ -240,6 +240,7 @@ const handleClose = () => {
         :x-axis-data="chartData.xAxisData"
         :series="chartData.series"
         :height="chartHeight"
+        :show-zoom-slider="false"
       />
       <div v-else class="p-4 text-center text-gray-500">
         <p>Loading chart data...</p>

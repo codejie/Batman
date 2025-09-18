@@ -36,14 +36,7 @@ const option = computed((): EChartsOption => {
   const numCharts = props.series.length
   const xAxisIndices = Array.from({ length: numCharts }, (_, k) => k)
 
-  const dataZoom: any[] = [
-    {
-      type: 'inside',
-      xAxisIndex: xAxisIndices,
-      start: 0,
-      end: 100
-    }
-  ]
+  const dataZoom: any[] = []
 
   if (props.showZoomSlider) {
     dataZoom.push({
