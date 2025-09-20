@@ -20,38 +20,38 @@ export type AlgorithmCategoryOptionType = {
 }
 
 export const AlgorithmCategoryDefinitions = {
-  TrendFollowing: {
-    title: '均线趋势',
-    description: '均线趋势类算法'
+  OverlapStudies: {
+    title: '覆盖研究',
+    description: '覆盖研究类指标（如均线、SAR等）'
   },
   MomentumIndicators: {
     title: '动量指标',
-    description: '动量指标类算法'
+    description: '动量指标类（如ADX、MACD、RSI、MOM、KDJ等）'
   },
   VolatilityIndicators: {
     title: '波动率指标',
-    description: '波动率指标类算法'
+    description: '波动率指标类（如BOLL、ATR、NATR等）'
   },
   VolumeIndicators: {
     title: '成交量指标',
-    description: '成交量指标类算法'
+    description: '成交量指标类（如OBV、AD等）'
   },
-  PriceTransformation: {
+  PriceTransform: {
     title: '价格变换',
-    description: '价格变换类算法'
+    description: '价格变换类（如AVGPRICE、MEDPRICE等）'
   },
-  CandlestickPatterns: {
+  PatternRecognition: {
     title: 'K线形态识别',
-    description: 'K线形态识别类算法'
+    description: 'K线形态识别类（如CDLHAMMER等）'
   },
   CycleIndicators: {
     title: '周期指标',
-    description: '周期指标类算法'
+    description: '周期指标类（如HT_DCPERIOD、HT_DCPHASE等）'
   }
 }
 
 export const AlgorithmTypeDefinitions = {
-  TrendFollowing: {
+  OverlapStudies: {
     types: {
       MA: {
         title: '移动均线',
@@ -89,6 +89,30 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
+      SAR: {
+        title: '抛物线转向指标',
+        description: 'Parabolic SAR - 抛物线转向指标',
+        options: [
+          {
+            name: 'acceleration',
+            title: '加速因子',
+            default: 0.02,
+            type: 'number',
+            description: '加速因子，通常为0.02'
+          },
+          {
+            name: 'maximum',
+            title: '加速因子最大值',
+            default: 0.2,
+            type: 'number',
+            description: '加速因子的最大值，通常为0.2'
+          }
+        ]
+      }
+    }
+  },
+  MomentumIndicators: {
+    types: {
       ADX: {
         title: '平均趋向指数',
         description: 'Average Directional Index (ADX) - 平均趋向指标',
@@ -136,30 +160,57 @@ export const AlgorithmTypeDefinitions = {
           }
         ]
       },
-      SAR: {
-        title: '抛物线转向指标',
-        description: 'Parabolic SAR - 抛物线转向指标',
+      MACDEXT: {
+        title: '扩展型异同移动平均线',
+        description: 'MACDEXT (Extended MACD) - 扩展型异同移动平均线',
         options: [
           {
-            name: 'acceleration',
-            title: '加速因子',
-            default: 0.02,
+            name: 'fastperiod',
+            title: '快线周期',
+            default: 12,
             type: 'number',
-            description: '加速因子，通常为0.02'
+            description: '快线(DIF)的计算周期，通常为12天'
           },
           {
-            name: 'maximum',
-            title: '加速因子最大值',
-            default: 0.2,
+            name: 'fastmatype',
+            title: '快线均线类型',
+            type: 'option',
+            default: 'SMA',
+            options: ['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3'],
+            description: "['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3']"
+          },
+          {
+            name: 'slowperiod',
+            title: '慢线周期',
+            default: 26,
             type: 'number',
-            description: '加速因子的最大值，通常为0.2'
+            description: '慢线(DEA)的计算周期，通常为26天'
+          },
+          {
+            name: 'slowmatype',
+            title: '慢线均线类型',
+            type: 'option',
+            default: 'SMA',
+            options: ['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3'],
+            description: "['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3']"
+          },
+          {
+            name: 'signalperiod',
+            title: '信号线周期',
+            default: 9,
+            type: 'number',
+            description: '信号线(MACD)的计算周期，通常为9天'
+          },
+          {
+            name: 'signalmatype',
+            title: '信号线均线类型',
+            type: 'option',
+            default: 'SMA',
+            options: ['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3'],
+            description: "['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3']"
           }
         ]
-      }
-    }
-  },
-  MomentumIndicators: {
-    types: {
+      },
       RSI: {
         title: '相对强弱指数',
         description: 'Relative Strength Index (RSI) - 相对强弱指数',
@@ -302,7 +353,7 @@ export const AlgorithmTypeDefinitions = {
       }
     }
   },
-  PriceTransformation: {
+  PriceTransform: {
     types: {
       AVGPRICE: {
         title: '平均价格',
@@ -332,7 +383,7 @@ export const AlgorithmTypeDefinitions = {
       }
     }
   },
-  CandlestickPatterns: {
+  PatternRecognition: {
     types: {
       CDLHAMMER: {
         title: '锤头线',

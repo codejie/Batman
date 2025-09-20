@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { apiGetHistoryData } from '@/api/data'
 import {
   ElDialog,
@@ -161,8 +161,9 @@ const timingStrategyOptions = ['无条件', '+1%(现价)', '+3%(现价)', '+5%(�
 const BUY_COMMISSION_RATE = 0
 const SELL_COMMISSION_RATE = 0
 
-const formRef = ref(null)
+const formRef = ref<InstanceType<typeof ElForm> | null>(null)
 const tableMaxHeight = ref(400)
+const tableData = ref<any[]>([])
 
 const form = ref({
   capital: 6, // Corresponds to 100000
@@ -174,7 +175,6 @@ const form = ref({
   sellTimingStrategy: 0
 })
 
-const tableData = ref([])
 const totalAmount = computed(() => {
   if (tableData.value.length === 0) {
     return '0.00'
@@ -471,26 +471,6 @@ watch(
   },
   { immediate: true }
 )
-
-let resizeObserver = null
-
-onMounted(() => {
-  if (formRef.value?.$el) {
-    resizeObserver = new ResizeObserver(() => {
-      if (formRef.value?.$el) {
-        tableMaxHeight.value = formRef.value.$el.offsetHeight
-      }
-    })
-    resizeObserver.observe(formRef.value.$el)
-  }
-})
-
-onUnmounted(() => {
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-  }
-})
-
 </script>
 
 <template>
@@ -584,7 +564,7 @@ onUnmounted(() => {
           </el-form-item>
           <el-form-item>
             <div style="width: 100%; text-align: right;">
-              <el-button type="normal" @click="onExecute">执行</el-button>
+              <el-button type="default" @click="onExecute">回测</el-button>
             </div>
           </el-form-item>
         </el-form>
@@ -597,7 +577,8 @@ onUnmounted(() => {
             <el-table-column prop="action" label="操作" width="60" />
             <el-table-column prop="price" label="价格" width="80" />
             <el-table-column prop="quantity" label="数量" width="100" />
-            <el-table-column prop="fee" label="费用" />
+            <!-- “费用”更名为“金额”更准确 -->
+            <el-table-column prop="fee" label="金额" />
             <el-table-column prop="capital" label="本金" />
             <el-table-column prop="capital_diff" label="差额" />
           </el-table>

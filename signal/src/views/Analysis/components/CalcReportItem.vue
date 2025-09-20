@@ -214,7 +214,8 @@ const getChartData = (
 }
 
 const getCategoryTitle = (category: string) => {
-  return AlgorithmCategoryDefinitions[category]?.title || category
+  const title = AlgorithmCategoryDefinitions[category]?.title || category
+  return `${title}(${category})`
 }
 
 const getTypeTitle = (category: string, type: string) => {

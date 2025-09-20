@@ -321,7 +321,7 @@ const treeData = computed(() => {
     })
     return {
       value: catKey,
-      label: `${category.title} - ${category.description}`,
+      label: `${category.title}(${catKey}) - ${category.description}`,
       children: children,
       disabled: true
     }
@@ -585,7 +585,7 @@ const toggleTreeExpansion = () => {
                 margin-bottom: 10px;
               "
             >
-              <div class="section-title" style="margin-bottom: 0">算法参数</div>
+              <div class="section-title" style="margin-bottom: 0">算法选择</div>
               <el-button size="small" @click="toggleTreeExpansion">{{
                 isTreeExpanded ? '收起' : '展开'
               }}</el-button>
@@ -598,17 +598,22 @@ const toggleTreeExpansion = () => {
                 border-radius: 4px;
               "
             >
-              <el-tree ref="algorithmTreeRef" :data="treeData" :expand-on-click-node="false">
+              <el-tree
+                ref="algorithmTreeRef"
+                :data="treeData"
+                :expand-on-click-node="false"
+              >
                 <template #default="{ node, data }">
-                  <span class="custom-tree-node">
-                    <span>{{ node.label }}</span>
+                  <span class="custom-tree-node" style="justify-content: flex-start;">
                     <el-button
                       v-if="!data.disabled"
                       @click.stop="addAlgorithm(data.value)"
                       size="small"
+                      style="margin-right: 6px;"
                     >
                       添加
                     </el-button>
+                    <span>{{ node.label }}</span>
                   </span>
                 </template>
               </el-tree>
@@ -649,6 +654,7 @@ const toggleTreeExpansion = () => {
   font-size: 14px;
   flex: 1;
   align-items: center;
-  justify-content: space-between;
+  /* justify-content: space-between; */
+  justify-content: flex-start;
 }
 </style>

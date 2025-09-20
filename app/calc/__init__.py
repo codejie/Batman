@@ -1,7 +1,6 @@
 import pandas as pd
-from . import ma, adx, macd, rsi, boll, mom, obv, sar, kdj, ad, atr, natr, avgprice, medprice, cdlhammer, cdlengulfing, cdlmorningstar, cdldoji, cdleveningstar, cdl3whitesoldiers, cdl3blackcrows, cdldarkcloudcover, ht_dcperiod, ht_dcphase
+from . import ma, adx, macd, macdext, rsi, boll, mom, obv, sar, kdj, ad, atr, natr, avgprice, medprice, cdlhammer, cdlengulfing, cdlmorningstar, cdldoji, cdleveningstar, cdl3whitesoldiers, cdl3blackcrows, cdldarkcloudcover, ht_dcperiod, ht_dcphase
 from typing import Callable, Tuple, Optional
-
 
 def list_to_df(data: list) -> Optional[pd.DataFrame]:
   if data:
@@ -11,50 +10,50 @@ def list_to_df(data: list) -> Optional[pd.DataFrame]:
       return ret
   return None
 
-# Define a mapping from (category, type) to the corresponding module
-# Category 0: Technical Indicators
+# 分类和命名调整为 ta-lib 官方定义
 CALC_MODULES = {
-  'TrendFollowing': {
-    'title': '均线趋势',
+  'OverlapStudies': {  # 覆盖研究
+    'title': 'Overlap Studies',
     'types': {
       'MA': {'calc': ma.calc, 'report': ma.report},
-      'ADX': {'calc': adx.calc, 'report': adx.report},
-      'MACD': {'calc': macd.calc, 'report': macd.report},
       'SAR': {'calc': sar.calc, 'report': sar.report},
     }
   },
-  'MomentumIndicators': {
-    'title': '动量指标',
+  'MomentumIndicators': {  # 动量指标
+    'title': 'Momentum Indicators',
     'types': {
+      'ADX': {'calc': adx.calc, 'report': adx.report},
+      'MACD': {'calc': macd.calc, 'report': macd.report},
+      'MACDEXT': {'calc': macdext.calc, 'report': macdext.report},
       'RSI': {'calc': rsi.calc, 'report': rsi.report},
       'MOM': {'calc': mom.calc, 'report': mom.report},
       'KDJ': {'calc': kdj.calc, 'report': kdj.report},
     }
   },
-  'VolatilityIndicators': {
-    'title': '波动率指标',
+  'VolatilityIndicators': {  # 波动率指标
+    'title': 'Volatility Indicators',
     'types': {
       'BOLL': {'calc': boll.calc, 'report': boll.report},
       'ATR': {'calc': atr.calc, 'report': atr.report},
       'NATR': {'calc': natr.calc, 'report': natr.report},
     }
   },
-  'VolumeIndicators': {
-    'title': '成交量指标',
+  'VolumeIndicators': {  # 成交量指标
+    'title': 'Volume Indicators',
     'types': {
       'OBV': {'calc': obv.calc, 'report': obv.report},
       'AD': {'calc': ad.calc, 'report': ad.report},
     }
   },
-  'PriceTransformation': {
-    'title': '价格变换',
+  'PriceTransform': {  # 价格变换
+    'title': 'Price Transform',
     'types': {
       'AVGPRICE': {'calc': avgprice.calc, 'report': avgprice.report},
       'MEDPRICE': {'calc': medprice.calc, 'report': medprice.report},
     }
   },
-  'CandlestickPatterns': {
-    'title': 'K线形态识别',
+  'PatternRecognition': {  # K线形态识别
+    'title': 'Pattern Recognition',
     'types': {
       'CDLHAMMER': {'calc': cdlhammer.calc, 'report': cdlhammer.report},
       'CDLENGULFING': {'calc': cdlengulfing.calc, 'report': cdlengulfing.report},
@@ -66,8 +65,8 @@ CALC_MODULES = {
       'CDLDARKCLOUDCOVER': {'calc': cdldarkcloudcover.calc, 'report': cdldarkcloudcover.report},
     }
   },
-  'CycleIndicators': {
-    'title': '周期指标',
+  'CycleIndicators': {  # 周期指标
+    'title': 'Cycle Indicators',
     'types': {
       'HT_DCPERIOD': {'calc': ht_dcperiod.calc, 'report': ht_dcperiod.report},
       'HT_DCPHASE': {'calc': ht_dcphase.calc, 'report': ht_dcphase.report},
@@ -80,8 +79,8 @@ def get_calc_functions(category: str, type: str) -> Tuple[Optional[Callable], Op
   A factory function that returns calculation and report functions based on category and type.
 
   Args:
-    category (str): The category of the calculation (e.g., 'MA' for Technical Indicators).
-    type (str): The type of calculation within the category (e.g., 'MA_MA' for MA, 'ADX_ADX' for ADX).
+    category (str): The category of the calculation (e.g., 'OverlapStudies' for MA, SAR).
+    type (str): The type of calculation within the category (e.g., 'MA', 'ADX').
 
   Returns:
     Tuple[Optional[Callable], Optional[Callable]]: A tuple containing the calc function

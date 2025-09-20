@@ -243,11 +243,11 @@ const handleClose = () => {
         :show-zoom-slider="false"
       />
       <div v-else class="p-4 text-center text-gray-500">
-        <p>Loading chart data...</p>
+        <p>正在加载图表数据...</p>
       </div>
     </div>
     <div v-else class="p-4 text-center text-gray-500">
-      <p>No data available. Please go back and select a report.</p>
+      <p>暂无数据，请返回并选择报告。</p>
     </div>
   </ContentDetailWrap>
 </template>
