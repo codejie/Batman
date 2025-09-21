@@ -158,7 +158,10 @@ export const AlgorithmTypeDefinitions = {
             type: 'number',
             description: '信号线(MACD)的计算周期，通常为9天'
           }
-        ]
+        ],
+        reportSeriesType: {
+          MACD: 'bar'
+        }
       },
       MACDEXT: {
         title: '扩展型异同移动平均线',
@@ -209,7 +212,10 @@ export const AlgorithmTypeDefinitions = {
             options: ['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3'],
             description: "['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3']"
           }
-        ]
+        ],
+        reportSeriesType: {
+          MACD: 'bar'
+        }
       },
       RSI: {
         title: '相对强弱指数',

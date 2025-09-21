@@ -50,16 +50,16 @@ def calc(history_data: pd.DataFrame, options: dict = defaultOptions) -> pd.DataF
   )
 
   result = pd.DataFrame({
-    'MACD': macd,
-    'Signal_Line': signal,
-    'Hist': hist
+    'DIF': macd,
+    'DFA': signal,
+    'MACD': hist
   })
 
   result['Signal'] = 0
   # MACD线上穿信号线 - 看涨信号
-  result.loc[(result['MACD'] > result['Signal_Line']) & (result['MACD'].shift(1) <= result['Signal_Line'].shift(1)), 'Signal'] = 1
+  result.loc[(result['DIF'] > result['DFA']) & (result['DIF'].shift(1) <= result['DFA'].shift(1)), 'Signal'] = 1
   # MACD线下穿信号线 - 看跌信号
-  result.loc[(result['MACD'] < result['Signal_Line']) & (result['MACD'].shift(1) >= result['Signal_Line'].shift(1)), 'Signal'] = -1
+  result.loc[(result['DIF'] < result['DFA']) & (result['DIF'].shift(1) >= result['DFA'].shift(1)), 'Signal'] = -1
 
   return result
 

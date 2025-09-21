@@ -601,7 +601,7 @@ const toggleTreeExpansion = () => {
               <el-tree
                 ref="algorithmTreeRef"
                 :data="treeData"
-                :expand-on-click-node="false"
+                :expand-on-click-node="true"
               >
                 <template #default="{ node, data }">
                   <span class="custom-tree-node" style="justify-content: flex-start;">
