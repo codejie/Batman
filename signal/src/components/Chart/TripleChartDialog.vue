@@ -34,7 +34,7 @@ const props = defineProps({
   },
   height: {
     type: String,
-    default: '75vh' // Adjusted height
+    default: '60vh' // Adjusted height
   },
   showLegend: {
     type: Boolean,
@@ -75,7 +75,7 @@ const dialogVisible = computed({
 </script>
 
 <template>
-  <el-dialog v-model="dialogVisible" :title="props.title" width="85%" top="5vh">
+  <el-dialog v-model="dialogVisible" :title="props.title" width="75%" top="5vh">
     <TripleChart
       :top-series-data="props.topSeriesData"
       :middle-series-data="props.middleSeriesData"

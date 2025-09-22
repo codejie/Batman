@@ -92,8 +92,8 @@ watchEffect(() => {
     grid: {
       left: '5%',
       right: '5%',
-      bottom: '10%',
-      top: '15%',
+      bottom: '5%',
+      top: '5%',
       containLabel: true
     },
     // X轴

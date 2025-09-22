@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { apiGetHistoryData } from '@/api/data'
 import {
   ElDialog,
   ElForm,
   ElFormItem,
-  ElInput,
   ElSelect,
   ElOption,
   ElButton,
@@ -18,6 +17,8 @@ import {
 import { AlgorithmCategoryDefinitions, AlgorithmTypeDefinitions } from '@/api/calc/defines'
 import { Echart, EChartsOption } from '@/components/Echart'
 import type { SeriesDataItem } from '@/components/Chart/types'
+
+import { generateCalcChartSeries,calcMAData } from '@/calc/analyis/chart'
 
 const props = defineProps({
   visible: {
@@ -131,9 +132,9 @@ const chartOptions = computed<EChartsOption>(() => ({
       }
   },
   grid: [
-    { left: '5%', right: '5%', height: '40%', top: '10%' },
-    { left: '5%', right: '5%', top: '55%', height: '20%' },
-    { left: '5%', right: '5%', top: '80%', height: '20%' }
+    { left: '5%', right: '5%', height: '40%', top: '4%' },
+    { left: '5%', right: '5%', top: '54%', height: '20%' },
+    { left: '5%', right: '5%', height: '20%', bottom: '2%' }
   ],
   xAxis: [
     { type: 'category', data: xAxisData.value, scale: true, boundaryGap: false, axisLine: { onZero: false }, splitLine: { show: false }, splitNumber: 20, min: 'dataMin', max: 'dataMax' },
@@ -328,96 +329,6 @@ const handleClose = () => {
   tableData.value = []
 }
 
-const getCalcChartData = (
-  calcData: any,
-  reportData: any[]
-): { seriesData: SeriesDataItem[]; xAxisData: string[] } => {
-  if (!calcData || !calcData['日期']) {
-    return { seriesData: [], xAxisData: [] }
-  }
-
-  const typeDefinition =
-    AlgorithmTypeDefinitions[props.result.category]?.types?.[props.result.type]
-  const seriesStyle = typeDefinition?.seriesStyle || {}
-
-  const reportTrendMap = new Map(reportData.map((r) => [r.index, r.trend]))
-  const xAxisData = calcData['日期']
-  const seriesData: SeriesDataItem[] = []
-  let isFirstSeries = true
-
-  for (const key in calcData) {
-    if (key !== '日期' && key !== 'Signal') {
-      const seriesValues = calcData[key]
-      let markPointData = {}
-
-      if (isFirstSeries) {
-        const reportPoints = seriesValues
-          .map((value, i) => {
-            const date = xAxisData[i]
-            if (reportTrendMap.has(date) && typeof value === 'number') {
-              const trend = reportTrendMap.get(date)
-              return {
-                xAxis: date,
-                yAxis: value,
-                symbol: 'triangle',
-                symbolRotate: trend === 1 ? 0 : 180,
-                symbolSize: 8,
-                itemStyle: {
-                  color: trend === 1 ? '#ec0000' : '#00da3c'
-                }
-              }
-            }
-            return null
-          })
-          .filter((p) => p !== null)
-
-        if (reportPoints.length > 0) {
-          markPointData = { data: reportPoints }
-        }
-        isFirstSeries = false
-      }
-
-      const style = seriesStyle[key]
-      const type = style?.type || 'line'
-      let data = seriesValues
-      if (type === 'bar' && style?.style === 'macd') {
-        data = seriesValues.map((value: number) => ({
-          value,
-          itemStyle: {
-            color: value >= 0 ? '#ec0000' : '#00da3c'
-          }
-        }))
-      }
-
-      seriesData.push({
-        name: key,
-        type: type,
-        data: data,
-        showSymbol: false,
-        lineStyle: { width: 1 },
-        markPoint: markPointData
-      })
-    }
-  }
-  return { seriesData, xAxisData }
-}
-
-const calculateMA = (dayCount: number, data: any[]) => {
-  var result = [];
-  for (var i = 0, len = data.length; i < len; i++) {
-    if (i < dayCount) {
-      result.push('-');
-      continue;
-    }
-    var sum = 0;
-    for (var j = 0; j < dayCount; j++) {
-      sum += data[i - j].收盘;
-    }
-    result.push(parseFloat((sum / dayCount).toFixed(2)));
-  }
-  return result;
-}
-
 watch(
   () => props.visible,
   (val) => {
@@ -437,9 +348,9 @@ watch(
 
           const klineSeries = [
             { name: 'K-Line', type: 'candlestick', data: klineData },
-            { name: 'MA5', type: 'line', data: calculateMA(5, history), symbol: 'none', lineStyle: { width: 1 } },
-            { name: 'MA10', type: 'line', data: calculateMA(10, history), symbol: 'none', lineStyle: { width: 1 } },
-            { name: 'MA15', type: 'line', data: calculateMA(15, history), symbol: 'none', lineStyle: { width: 1 } }
+            { name: 'MA5', type: 'line', data: calcMAData(5, history.map(item => item.收盘)), symbol: 'none', lineStyle: { width: 1 } },
+            { name: 'MA10', type: 'line', data: calcMAData(10, history.map(item => item.收盘)), symbol: 'none', lineStyle: { width: 1 } },
+            { name: 'MA15', type: 'line', data: calcMAData(15, history.map(item => item.收盘)), symbol: 'none', lineStyle: { width: 1 } }
           ]
 
           const volumeSeries = [{ name: 'Volume', type: 'bar', data: volumeData }]
@@ -473,7 +384,7 @@ watch(
 
           const calcSeries = {
             name: 'Calc',
-            series: getCalcChartData(alignedCalcData, props.result.report).seriesData
+            series: generateCalcChartSeries(props.result, alignedCalcData, props.result.report).seriesData
           }
 
           chartSeries.value = [
@@ -487,6 +398,8 @@ watch(
   },
   { immediate: true }
 )
+
+
 </script>
 
 <template>
@@ -496,7 +409,7 @@ watch(
     width="60%"
     @close="handleClose"
   >
-    <el-row>
+    <el-row :gutter="24">
       <el-col :span="24">
         <div style="height: 250px; display: flex; justify-content: center; margin-bottom: 10px;">
           <Echart v-if="xAxisData.length" :options="chartOptions" :height="'100%'" />

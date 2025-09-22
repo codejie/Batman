@@ -10,6 +10,7 @@ import { KLineDialog } from '@/components/KLine'
 import { FlexChart, TripleChartDialog, type SeriesDataItem } from '@/components/Chart'
 import { apiGetHistoryData } from '@/api/data'
 import CalcReportBackTestDialog from './CalcReportBackTestDialog.vue'
+import { generateCalcChartSeries,calcMAData } from '@/calc/analyis/chart'
 
 const props = defineProps({
   data: {
@@ -57,25 +58,14 @@ const toggleChart = (row: any) => {
   chartVisibility.value[key] = !isChartVisible(row)
 }
 
-const calcMAData = (ma: number, data: number[]) => {
-  const result: any[] = []
-  for (let i = 0, len = data.length; i < len; i++) {
-    if (i < ma) {
-      result.push('-')
-      continue
-    }
-    let sum = 0
-    for (let j = 0; j < ma; j++) {
-      sum += +data[i - j]
-    }
-    result.push(parseFloat((sum / ma).toFixed(2)))
-  }
-  return result
-}
 
 const bottomChartData = computed(() => {
   if (!selectedRowData.value) return { seriesData: [], xAxisData: [] }
-  return getChartData(selectedRowData.value, selectedRowData.value.calc, selectedRowData.value.report)
+  return generateCalcChartSeries(
+    selectedRowData.value,
+    selectedRowData.value.calc,
+    selectedRowData.value.report
+  )
 })
 
 const dialogTitle = computed(() => {
@@ -155,80 +145,7 @@ const openTripleChartDialog = async (row: any) => {
   tripleChartDialogVisible.value = true
 }
 
-const getChartData = (
-  rowData: any,
-  calcData: any,
-  reportData: any[]
-): { seriesData: SeriesDataItem[]; xAxisData: string[] } => {
-  if (!calcData || !calcData['日期']) {
-    return { seriesData: [], xAxisData: [] }
-  }
 
-  const typeDefinition =
-    AlgorithmTypeDefinitions[rowData.category]?.types?.[rowData.type]
-  const seriesStyle = typeDefinition?.seriesStyle || {}
-
-  const reportTrendMap = new Map(reportData.map((r) => [r.index, r.trend]))
-  const xAxisData = calcData['日期']
-  const seriesData: SeriesDataItem[] = []
-  let isFirstSeries = true
-
-  for (const key in calcData) {
-    if (key !== '日期' && key !== 'Signal') {
-      const seriesValues = calcData[key]
-      let markPointData = {}
-
-      if (isFirstSeries) {
-        const reportPoints = seriesValues
-          .map((value, i) => {
-            const date = xAxisData[i]
-            if (reportTrendMap.has(date) && typeof value === 'number') {
-              const trend = reportTrendMap.get(date)
-              return {
-                xAxis: date,
-                yAxis: value,
-                symbol: 'triangle',
-                symbolRotate: trend === 1 ? 0 : 180,
-                symbolSize: 8,
-                itemStyle: {
-                  color: trend === 1 ? '#ec0000' : '#00da3c'
-                }
-              }
-            }
-            return null
-          })
-          .filter((p) => p !== null)
-
-        if (reportPoints.length > 0) {
-          markPointData = { data: reportPoints }
-        }
-        isFirstSeries = false
-      }
-
-      const style = seriesStyle[key]
-      const type = style?.type || 'line'
-      let data = seriesValues
-      if (type === 'bar' && style?.style === 'macd') {
-        data = seriesValues.map((value: number) => ({
-          value,
-          itemStyle: {
-            color: value >= 0 ? '#ec0000' : '#00da3c'
-          }
-        }))
-      }
-
-      seriesData.push({
-        name: key,
-        type: type,
-        data: data,
-        showSymbol: false,
-        lineStyle: { width: 1 },
-        markPoint: markPointData
-      })
-    }
-  }
-  return { seriesData, xAxisData }
-}
 
 const getCategoryTitle = (category: string) => {
   const title = AlgorithmCategoryDefinitions[category]?.title || category
@@ -337,9 +254,9 @@ function onTitleClick() {
             </div>
             <div v-if="isChartVisible(row) && row.calc" class="chart-container">
               <FlexChart
-                :series-data="getChartData(row, row.calc, row.report).seriesData"
-                :x-axis-data="getChartData(row, row.calc, row.report).xAxisData"
-                height="300px"
+                :series-data="generateCalcChartSeries(row, row.calc, row.report).seriesData"
+                :x-axis-data="generateCalcChartSeries(row, row.calc, row.report).xAxisData"
+                height="200px"
               />
             </div>
           </template>

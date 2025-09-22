@@ -65,7 +65,7 @@ const options = ref<EChartsOption>({})
 
 watchEffect(() => {
   // 1. 根据Ratios计算上中下grid的高度和位置
-  const totalDrawHeight = 88 // 可供绘制的总高度百分比 (留出上下边距)
+  const totalDrawHeight = 90 // 可供绘制的总高度百分比 (留出上下边距)
   const gap = 4 // grid之间的间距百分比
   const totalRatio = props.gridRatios.reduce((sum, ratio) => sum + ratio, 0)
 
@@ -73,7 +73,7 @@ watchEffect(() => {
   const middleHeight = (totalDrawHeight - gap * 2) * (props.gridRatios[1] / totalRatio)
   const bottomHeight = (totalDrawHeight - gap * 2) * (props.gridRatios[2] / totalRatio)
 
-  const topGridTop = 8 // 顶部边距
+  const topGridTop = 2 // 顶部边距
   const middleGridTop = topGridTop + topHeight + gap
   const bottomGridTop = middleGridTop + middleHeight + gap
 
@@ -168,7 +168,7 @@ watchEffect(() => {
     legend: {
       show: props.showLegend,
       data: legendData,
-      bottom: 0,
+      top: `${bottomGridTop + bottomHeight + 2}%`, // Adjust this
       icon: 'circle'
     },
     axisPointer: {
