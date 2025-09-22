@@ -254,6 +254,7 @@ function onTitleClick() {
             </div>
             <div v-if="isChartVisible(row) && row.calc" class="chart-container">
               <FlexChart
+                :key="get_row_key(row)"
                 :series-data="generateCalcChartSeries(row, row.calc, row.report).seriesData"
                 :x-axis-data="generateCalcChartSeries(row, row.calc, row.report).xAxisData"
                 height="200px"
