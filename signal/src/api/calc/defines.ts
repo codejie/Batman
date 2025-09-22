@@ -159,8 +159,8 @@ export const AlgorithmTypeDefinitions = {
             description: '信号线(MACD)的计算周期，通常为9天'
           }
         ],
-        reportSeriesType: {
-          MACD: 'bar'
+        seriesStyle: {
+          MACD: { type: 'bar', style: 'macd' }
         }
       },
       MACDEXT: {
@@ -213,8 +213,8 @@ export const AlgorithmTypeDefinitions = {
             description: "['SMA', 'EMA', 'WMA', 'DEMA', 'TEMA', 'TRIMA', 'KAMA', 'MAMA', 'T3']"
           }
         ],
-        reportSeriesType: {
-          MACD: 'bar'
+        seriesStyle: {
+          MACD: { type: 'bar', style: 'macd' }
         }
       },
       RSI: {
@@ -268,7 +268,12 @@ export const AlgorithmTypeDefinitions = {
             type: 'number',
             description: '慢速D线(%D)的平滑周期，通常为3天'
           }
-        ]
+        ],
+        seriesStyle: {
+          K: { type: 'line' },
+          D: { type: 'line' },
+          J: { type: 'line' }
+        }
       }
     }
   },

@@ -75,7 +75,7 @@ const calcMAData = (ma: number, data: number[]) => {
 
 const bottomChartData = computed(() => {
   if (!selectedRowData.value) return { seriesData: [], xAxisData: [] }
-  return getChartData(selectedRowData.value.calc, selectedRowData.value.report)
+  return getChartData(selectedRowData.value, selectedRowData.value.calc, selectedRowData.value.report)
 })
 
 const dialogTitle = computed(() => {
@@ -156,12 +156,17 @@ const openTripleChartDialog = async (row: any) => {
 }
 
 const getChartData = (
+  rowData: any,
   calcData: any,
   reportData: any[]
 ): { seriesData: SeriesDataItem[]; xAxisData: string[] } => {
   if (!calcData || !calcData['日期']) {
     return { seriesData: [], xAxisData: [] }
   }
+
+  const typeDefinition =
+    AlgorithmTypeDefinitions[rowData.category]?.types?.[rowData.type]
+  const seriesStyle = typeDefinition?.seriesStyle || {}
 
   const reportTrendMap = new Map(reportData.map((r) => [r.index, r.trend]))
   const xAxisData = calcData['日期']
@@ -200,10 +205,22 @@ const getChartData = (
         isFirstSeries = false
       }
 
+      const style = seriesStyle[key]
+      const type = style?.type || 'line'
+      let data = seriesValues
+      if (type === 'bar' && style?.style === 'macd') {
+        data = seriesValues.map((value: number) => ({
+          value,
+          itemStyle: {
+            color: value >= 0 ? '#ec0000' : '#00da3c'
+          }
+        }))
+      }
+
       seriesData.push({
         name: key,
-        type: 'line',
-        data: seriesValues,
+        type: type,
+        data: data,
         showSymbol: false,
         lineStyle: { width: 1 },
         markPoint: markPointData
@@ -320,8 +337,8 @@ function onTitleClick() {
             </div>
             <div v-if="isChartVisible(row) && row.calc" class="chart-container">
               <FlexChart
-                :series-data="getChartData(row.calc, row.report).seriesData"
-                :x-axis-data="getChartData(row.calc, row.report).xAxisData"
+                :series-data="getChartData(row, row.calc, row.report).seriesData"
+                :x-axis-data="getChartData(row, row.calc, row.report).xAxisData"
                 height="300px"
               />
             </div>

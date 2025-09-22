@@ -45,12 +45,16 @@ const calcMAData = (ma: number, data: number[]) => {
 }
 
 const getCalcChartData = (
+  report: any,
   calcData: any,
   reportData: any[]
 ): { seriesData: SeriesDataItem[]; xAxisData: string[] } => {
   if (!calcData || !calcData['日期']) {
     return { seriesData: [], xAxisData: [] }
   }
+
+  const typeDefinition = AlgorithmTypeDefinitions[report.category]?.types?.[report.type]
+  const seriesStyle = typeDefinition?.seriesStyle || {}
 
   const reportTrendMap = new Map(reportData.map((r) => [r.index, r.trend]))
   const xAxisData = calcData['日期']
@@ -89,10 +93,22 @@ const getCalcChartData = (
         isFirstSeries = false
       }
 
+      const style = seriesStyle[key]
+      const type = style?.type || 'line'
+      let data = seriesValues
+      if (type === 'bar' && style?.style === 'macd') {
+        data = seriesValues.map((value: number) => ({
+          value,
+          itemStyle: {
+            color: value >= 0 ? '#ec0000' : '#00da3c'
+          }
+        }))
+      }
+
       seriesData.push({
         name: key,
-        type: 'line',
-        data: seriesValues,
+        type: type,
+        data: data,
         showSymbol: false,
         lineStyle: { width: 1 },
         markPoint: markPointData
@@ -171,7 +187,7 @@ watch(
             const chartName = `${category}: ${type}(${name})${args}`
             return {
               name: chartName,
-              series: getCalcChartData(report.calc, report.report).seriesData
+              series: getCalcChartData(report, report.calc, report.report).seriesData
             }
           })
 

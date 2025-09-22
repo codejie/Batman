@@ -336,6 +336,10 @@ const getCalcChartData = (
     return { seriesData: [], xAxisData: [] }
   }
 
+  const typeDefinition =
+    AlgorithmTypeDefinitions[props.result.category]?.types?.[props.result.type]
+  const seriesStyle = typeDefinition?.seriesStyle || {}
+
   const reportTrendMap = new Map(reportData.map((r) => [r.index, r.trend]))
   const xAxisData = calcData['日期']
   const seriesData: SeriesDataItem[] = []
@@ -373,10 +377,22 @@ const getCalcChartData = (
         isFirstSeries = false
       }
 
+      const style = seriesStyle[key]
+      const type = style?.type || 'line'
+      let data = seriesValues
+      if (type === 'bar' && style?.style === 'macd') {
+        data = seriesValues.map((value: number) => ({
+          value,
+          itemStyle: {
+            color: value >= 0 ? '#ec0000' : '#00da3c'
+          }
+        }))
+      }
+
       seriesData.push({
         name: key,
-        type: 'line',
-        data: seriesValues,
+        type: type,
+        data: data,
         showSymbol: false,
         lineStyle: { width: 1 },
         markPoint: markPointData
