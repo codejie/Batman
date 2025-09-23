@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ../app/db:/batman/app/db # compose start under deploy folder
+      - .:/batman/app/db # compose start under deploy folder
     environment:
       - PORT=8000
     networks:
