@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from typing import Optional
 from sqlalchemy import delete, inspect, or_, select, text, update
 from app.database import dbEngine
@@ -129,7 +129,7 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
     data = data.reset_index().to_dict(orient='records')
     results = [
       Define.HistoryData(
-        日期=row['日期'].strftime('%Y-%m-%d'),
+        日期=row['日期'].strftime('%Y-%m-%d') if isinstance(row['日期'], date) else row['日期'],
         开盘=row['开盘'],
         最高=row['最高'],
         最低=row['最低'],
