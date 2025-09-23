@@ -109,7 +109,7 @@ def make_history_data_table_name(type: int, code: str, period: str, adjust: str 
   else:
     raise ValueError(f"Unknown type: {type}")
 
-def download_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> int:
+def download_history_data(type: int, code: str, start: str, end: str, period: str, adjust: str = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> list[Define.HistoryData]:
   if start is None:
     start = Utils.date_to_string_1(datetime.today() - timedelta(weeks=52))
   if end is None:
@@ -121,15 +121,30 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
     data = Index.download_history_data(code=code, period=period, start=Utils.convert_history_date_2(start), end=Utils.convert_history_date_2(end))
 
   if data is not None:
-    table_name = make_history_data_table_name(type=type, code=code, period=period, adjust=adjust)
-    data.to_sql(table_name, dbEngine.engine, if_exists='replace', index=True, index_label='日期')
-
     if record_flag != Define.RECORD_FLAG_DISABLED:
+      table_name = make_history_data_table_name(type=type, code=code, period=period, adjust=adjust)
+      data.to_sql(table_name, dbEngine.engine, if_exists='replace', index=True, index_label='日期')
       update_download_records(type=type, code=code, period=period, adjust=adjust, start=start, end=end)
 
-    return len(data)
+    data = data.reset_index().to_dict(orient='records')
+    results = [
+      Define.HistoryData(
+        日期=row['日期'].strftime('%Y-%m-%d'),
+        开盘=row['开盘'],
+        最高=row['最高'],
+        最低=row['最低'],
+        收盘=row['收盘'],
+        成交量=row['成交量'],
+        成交额=row['成交额'],
+        涨跌额=row['涨跌额'],
+        涨跌幅=row['涨跌幅'],
+        换手率=row.get('换手率', 0.0),
+        振幅=row.get('振幅', 0.0)
+      ) for row in data
+    ]
+    return results
   else:
-    return 0
+    return []
 
 def fetch_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq', limit: int = None) -> list[Define.HistoryData]:
   table_name = make_history_data_table_name(type=type, code=code, period=period, adjust=adjust)
@@ -155,7 +170,7 @@ def fetch_history_data(type: int, code: str, start: str, end: str, period: str =
 def get_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq', limit: int = None, record_flag: int = Define.RECORD_FLAG_NORMAL) -> list[Define.HistoryData]:
   checked = check_download_records(type=type, code=code, period=period, adjust=adjust, start=start, end=end) if record_flag != Define.RECORD_FLAG_DISABLED else None
   if checked is None:
-    download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, record_flag=record_flag)
+    return download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, record_flag=record_flag)
   return fetch_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
 
 def get_latest_history_data(type: int, code: str, period: str, adjust: str, limit: int = None, record_flag: int = Define.RECORD_FLAG_DISABLED) -> Optional[Define.HistoryData] | Optional[list[Define.HistoryData]]:

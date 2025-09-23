@@ -167,7 +167,7 @@ const tableMaxHeight = ref(400)
 const tableData = ref<any[]>([])
 
 const form = ref({
-  capital: 6, // Corresponds to 100000
+  capital: 3, // Corresponds to 10000
   buyPriceStrategy: 0,
   buyQuantityStrategy: 0,
   buyTimingStrategy: 0,
@@ -452,7 +452,7 @@ watch(
             </el-select>
           </el-form-item>
           <el-form-item label="买入时机策略">
-            <el-select v-model="form.buyTimingStrategy" placeholder="please select" style="width: 100%">
+            <el-select v-model="form.buyTimingStrategy" placeholder="please select" style="width: 100%" disabled>
               <el-option
                 v-for="(item, index) in timingStrategyOptions"
                 :key="index"
@@ -482,7 +482,7 @@ watch(
             </el-select>
           </el-form-item>
           <el-form-item label="卖出时机策略">
-            <el-select v-model="form.sellTimingStrategy" placeholder="please select" style="width: 100%">
+            <el-select v-model="form.sellTimingStrategy" placeholder="please select" style="width: 100%" disabled>
               <el-option
                 v-for="(item, index) in timingStrategyOptions"
                 :key="index"
