@@ -124,7 +124,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     name: 'Holding',
     path: '/holding',
     component: Layout,
-    // redirect: '/holding/list',
+    redirect: '/holding/list',
     meta: {
       // title: t('router.holding'),
       // icon: 'carbon:currency-yen',
@@ -138,9 +138,9 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         component: () => import('@/views/Holding/List.vue'),
         meta: {
           title: t('router.holding_list'),
-          icon: 'vi-carbon:currency-yen'
-          // noCache: true,
-          // affix: false
+          icon: 'vi-carbon:currency-yen',
+          noCache: true,
+          affix: true
         }
       },
       {
@@ -150,10 +150,15 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
         props: (router) => ({ id: router.query.id, ids: router.query.ids }),
         meta: {
           title: t('router.holding_detail'),
+          // noCache: true,
+          // affix: false,
+          // hidden: true,
+          // canTo: true
+          noTagsView: true,
           noCache: true,
-          affix: false,
           hidden: true,
-          canTo: true
+          canTo: true,
+          activeMenu: '/holding/list'          
         }
       }
     ]
