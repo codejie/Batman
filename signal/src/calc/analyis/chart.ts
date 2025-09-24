@@ -90,3 +90,38 @@ export const calcMAData = (ma: number, data: number[]) => {
   }
   return result
 }
+
+export const alignCalcData = (calcData: any, xAxisData: string[]): any => {
+  const fullLength = xAxisData.length
+  const calcLength = calcData && calcData['日期'] ? calcData['日期'].length : 0
+
+  if (!calcData || !calcLength || calcLength >= fullLength) {
+    return calcData
+  }
+
+  const paddedCalcData = {}
+  const dateToIndexMap = new Map(xAxisData.map((d, i) => [d, i]))
+
+  for (const key in calcData) {
+    if (Object.prototype.hasOwnProperty.call(calcData, key)) {
+      paddedCalcData[key] = Array(fullLength).fill(null)
+    }
+  }
+  paddedCalcData['日期'] = [...xAxisData]
+
+  const originalDates = calcData['日期']
+  for (let i = 0; i < calcLength; i++) {
+    const date = originalDates[i]
+    const targetIndex = dateToIndexMap.get(date)
+    if (targetIndex !== undefined) {
+      for (const key in calcData) {
+        if (key !== '日期' && Object.prototype.hasOwnProperty.call(calcData, key)) {
+          if (calcData[key] && calcData[key][i] !== undefined) {
+            paddedCalcData[key][targetIndex] = calcData[key][i]
+          }
+        }
+      }
+    }
+  }
+  return paddedCalcData
+}

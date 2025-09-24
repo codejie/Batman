@@ -10,7 +10,7 @@ import { SplitChart } from '@/components/Chart'
 import type { SeriesDataItem } from '@/components/Chart'
 import { apiGetHistoryData } from '@/api/data'
 import { AlgorithmCategoryDefinitions, AlgorithmTypeDefinitions } from '@/api/calc/defines'
-import { generateCalcChartSeries,calcMAData } from '@/calc/analyis/chart'
+import { generateCalcChartSeries, calcMAData, alignCalcData } from '@/calc/analyis/chart'
 
 const router = useRouter()
 const route = useRoute()
@@ -86,6 +86,8 @@ watch(
         const calcSeries = data.reports
           .filter((report) => report.calc)
           .map((report) => {
+            const finalCalcData = alignCalcData(report.calc, xAxisData)
+
             const category = AlgorithmCategoryDefinitions[report.category]?.title || report.category
             const type =
               AlgorithmTypeDefinitions[report.category]?.types?.[report.type]?.title || report.type
@@ -99,7 +101,7 @@ watch(
             const chartName = `${category}: ${type}(${name})${args}`
             return {
               name: chartName,
-              series: generateCalcChartSeries(report, report.calc, report.report).seriesData
+              series: generateCalcChartSeries(report, finalCalcData, report.report).seriesData
             }
           })
 
