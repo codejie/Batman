@@ -7,7 +7,7 @@ an data analysis tool.
 ```
 2. 启动应用
 ```shell
-  docker compose -f .\deploy\docker-compose-services.yml up -d
+  docker compose -f docker-compose-services.yml up -d
 ```
 3. 应用开启
     - <a href="http://localhost:3030" target="_blank">http://localhost:3000</a>

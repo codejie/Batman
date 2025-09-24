@@ -10,7 +10,7 @@ import { KLineDialog } from '@/components/KLine'
 import { FlexChart, TripleChartDialog, type SeriesDataItem } from '@/components/Chart'
 import { apiGetHistoryData } from '@/api/data'
 import CalcReportBackTestDialog from './CalcReportBackTestDialog.vue'
-import { generateCalcChartSeries,calcMAData } from '@/calc/analyis/chart'
+import { generateCalcChartSeries, calcMAData, alignCalcData } from '@/calc/analyis/chart'
 
 const props = defineProps({
   data: {
@@ -59,11 +59,16 @@ const toggleChart = (row: any) => {
 }
 
 
+
+
 const bottomChartData = computed(() => {
   if (!selectedRowData.value) return { seriesData: [], xAxisData: [] }
+
+  const finalCalcData = alignCalcData(selectedRowData.value.calc, topChartData.value.xAxisData)
+
   return generateCalcChartSeries(
     selectedRowData.value,
-    selectedRowData.value.calc,
+    finalCalcData,
     selectedRowData.value.report
   )
 })
