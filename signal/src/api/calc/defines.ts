@@ -8,7 +8,7 @@ export const AlgorithmStockListDefinitions = [
 
 export const AlgorithmDataPeriodDefinitions = ['三个月', '六个月', '一年', '两年']
 
-export const AlgorithmReportPeriodDefinitions = ['当天', '最近三天', '最近一周', '最近一月', '全部']
+export const AlgorithmReportPeriodDefinitions = ['最近一天', '最近三天', '最近一周', '最近一月', '全部']
 
 export type AlgorithmCategoryOptionType = {
   name: string
