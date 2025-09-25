@@ -8,7 +8,7 @@ export const AlgorithmStockListDefinitions = [
 
 export const AlgorithmDataPeriodDefinitions = ['三个月', '六个月', '一年', '两年']
 
-export const AlgorithmReportPeriodDefinitions = ['当天', '最近三天', '最近一周', '最近一月', '全部']
+export const AlgorithmReportPeriodDefinitions = ['最近一天', '最近三天', '最近一周', '最近一月', '全部']
 
 export type AlgorithmCategoryOptionType = {
   name: string
@@ -359,6 +359,19 @@ export const AlgorithmTypeDefinitions = {
             default: 10,
             type: 'number',
             description: 'A/D信号线的移动平均计算周期，通常为10天'
+          }
+        ]
+      },
+      VWAP: {
+        title: '成交量加权平均价',
+        description: 'Volume Weighted Average Price (VWAP) - 成交量加权平均价',
+        options: [
+          {
+            name: 'timeperiod',
+            title: '周期',
+            default: 30,
+            type: 'number',
+            description: 'VWAP的计算周期，通常为30天'
           }
         ]
       }

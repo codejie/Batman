@@ -1,5 +1,5 @@
 import pandas as pd
-from . import ma, adx, macd, macdext, rsi, boll, mom, obv, sar, kdj, ad, atr, natr, avgprice, medprice, cdlhammer, cdlengulfing, cdlmorningstar, cdldoji, cdleveningstar, cdl3whitesoldiers, cdl3blackcrows, cdldarkcloudcover, ht_dcperiod, ht_dcphase
+from . import ma, adx, macd, macdext, rsi, boll, mom, obv, sar, kdj, ad, atr, natr, avgprice, medprice, cdlhammer, cdlengulfing, cdlmorningstar, cdldoji, cdleveningstar, cdl3whitesoldiers, cdl3blackcrows, cdldarkcloudcover, ht_dcperiod, ht_dcphase, vwap
 from typing import Callable, Tuple, Optional
 
 def list_to_df(data: list) -> Optional[pd.DataFrame]:
@@ -43,6 +43,7 @@ CALC_MODULES = {
     'types': {
       'OBV': {'calc': obv.calc, 'report': obv.report},
       'AD': {'calc': ad.calc, 'report': ad.report},
+      'VWAP': {'calc': vwap.calc, 'report': vwap.report},
     }
   },
   'PriceTransform': {  # 价格变换

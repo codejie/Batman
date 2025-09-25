@@ -3,8 +3,6 @@ import { ElTable, ElTableColumn, ElButton, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import type { PropType } from 'vue'
 import {
-  AlgorithmCategoryDefinitions,
-  AlgorithmTypeDefinitions,
   AlgorithmStockListDefinitions,
   AlgorithmDataPeriodDefinitions,
   AlgorithmReportPeriodDefinitions

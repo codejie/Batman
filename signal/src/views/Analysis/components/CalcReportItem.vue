@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, nextTick } from 'vue'
 import type { PropType } from 'vue'
 import { ElTable, ElTableColumn, ElButton } from 'element-plus'
 import { useTrendStore, ReportData } from '@/store/modules/calcReport'
@@ -40,6 +40,16 @@ const topChartData = ref<{ seriesData: SeriesDataItem[]; xAxisData: string[] }>(
 const selectedReportForBacktest = ref(null)
 const isBacktestDialogVisible = ref(false)
 
+const flexChartRefs = ref<Map<string, InstanceType<typeof FlexChart>>>(new Map())
+
+const setFlexChartRef = (el: any, key: string) => {
+  if (el) {
+    flexChartRefs.value.set(key, el)
+  } else {
+    flexChartRefs.value.delete(key)
+  }
+}
+
 const onBacktestClick = (row: any) => {
   selectedReportForBacktest.value = row
   isBacktestDialogVisible.value = true
@@ -56,9 +66,16 @@ const isChartVisible = (row: any) => {
 const toggleChart = (row: any) => {
   const key = get_row_key(row)
   chartVisibility.value[key] = !isChartVisible(row)
+  if (chartVisibility.value[key]) {
+    // Chart is now visible, resize it
+    nextTick(() => {
+      const chartInstance = flexChartRefs.value.get(key)
+      if (chartInstance && typeof chartInstance.resizeChart === 'function') {
+        chartInstance.resizeChart()
+      }
+    })
+  }
 }
-
-
 
 
 const bottomChartData = computed(() => {
@@ -196,6 +213,13 @@ const hasCalcData = computed(() => {
 })
 
 const navigateToTrendChart = () => {
+  // Hide all FlexCharts
+  for (const key in chartVisibility.value) {
+    if (chartVisibility.value[key]) {
+      chartVisibility.value[key] = false
+    }
+  }
+
   const uniqueId = `${props.data.stock.code}_${Date.now()}`
   const reportDataWithPeriod: ReportData = {
     ...props.data,
@@ -259,6 +283,7 @@ function onTitleClick() {
             </div>
             <div v-if="isChartVisible(row) && row.calc" class="chart-container">
               <FlexChart
+                :ref="(el) => setFlexChartRef(el, get_row_key(row))"
                 :key="get_row_key(row)"
                 :series-data="generateCalcChartSeries(row, row.calc, row.report).seriesData"
                 :x-axis-data="generateCalcChartSeries(row, row.calc, row.report).xAxisData"

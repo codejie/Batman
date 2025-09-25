@@ -92,7 +92,7 @@ watchEffect(() => {
     grid: {
       left: '5%',
       right: '5%',
-      bottom: '5%',
+      bottom: '10%',
       top: '5%',
       containLabel: true
     },

@@ -554,7 +554,7 @@ const toggleTreeExpansion = () => {
         <div style="margin-top: 20px">
           <div class="section-title">报告期间</div>
           <el-checkbox-group v-model="reportRangeUi" @change="handleReportRangeChange">
-            <el-checkbox label="当天" value="当天" />
+            <el-checkbox label="最近一天" value="最近一天" />
             <el-checkbox label="最近三天" value="最近三天" />
             <el-checkbox label="最近一周" value="最近一周" />
             <el-checkbox label="最近一月" value="最近一月" />
