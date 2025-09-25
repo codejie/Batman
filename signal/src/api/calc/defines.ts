@@ -361,6 +361,19 @@ export const AlgorithmTypeDefinitions = {
             description: 'A/D信号线的移动平均计算周期，通常为10天'
           }
         ]
+      },
+      VWAP: {
+        title: '成交量加权平均价',
+        description: 'Volume Weighted Average Price (VWAP) - 成交量加权平均价',
+        options: [
+          {
+            name: 'timeperiod',
+            title: '周期',
+            default: 30,
+            type: 'number',
+            description: 'VWAP的计算周期，通常为30天'
+          }
+        ]
       }
     }
   },
