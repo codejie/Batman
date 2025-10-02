@@ -29,10 +29,12 @@ const notes = ref<NoteItem[]>([])
 const vditor = ref<Vditor | null>(null)
 const searchQuery = ref('')
 const filterType = ref('title') // 'title' or 'tags'
-const selectedNote = ref<NoteItem | null>(null)
+const selectedNote = ref<NoteItem | null>(null) // For highlighting in the list
+const editingNote = ref<NoteItem | null>(null) // For the editor's content and tags
 const dialogVisible = ref(false)
 const newTagName = ref('')
 const isVditorEditable = ref(false)
+const hasUnsavedChanges = ref(false)
 
 const filteredNotes = computed(() => {
   if (!searchQuery.value) {
@@ -48,34 +50,69 @@ const filteredNotes = computed(() => {
   })
 })
 
+const confirmSaveAndProceed = async (): Promise<boolean> => {
+  if (!hasUnsavedChanges.value) {
+    return true // No unsaved changes, proceed
+  }
+  try {
+    await ElMessageBox.confirm('当前笔记有未保存的修改，是否保存？', '提示', {
+      confirmButtonText: '保存',
+      cancelButtonText: '不保存',
+      distinguishCancelAndClose: true,
+      type: 'warning'
+    })
+    // User clicked '保存'
+    await saveNote()
+    return true
+  } catch (action) {
+    if (action === 'cancel') {
+      // User clicked '不保存'
+      return true
+    }
+    // User clicked close button or other error
+    return false
+  }
+}
+
 const getNotesList = async () => {
   try {
     const res = await apiListNotes({})
     notes.value = res.result
     if (notes.value.length > 0) {
+      // Select the first note if available
+      // This will also set editingNote, vditor content, and enable editor
       selectNote(notes.value[0])
-      isVditorEditable.value = true
-      vditor.value?.enable()
     } else {
       selectedNote.value = null
+      editingNote.value = null
       vditor.value?.setValue('# 韭菜笔记\n\n请在左侧选择或创建一篇笔记。')
       isVditorEditable.value = false
       vditor.value?.disabled()
     }
+    hasUnsavedChanges.value = false // No unsaved changes after loading list
   } catch (error) {
     ElMessage.error('获取笔记列表失败')
   }
 }
 
-const selectNote = (note: NoteItem) => {
-  selectedNote.value = note
-  vditor.value?.setValue(note.content)
+const selectNote = async (note: NoteItem) => {
+  if (selectedNote.value?.id === note.id) {
+    return // Already selected
+  }
+  const proceed = await confirmSaveAndProceed()
+  if (!proceed) {
+    return // User cancelled or error during save
+  }
+
+  selectedNote.value = note // Highlight in the list
+  editingNote.value = JSON.parse(JSON.stringify(note)) // Deep copy for editing
+  vditor.value?.setValue(editingNote.value!.content)
   isVditorEditable.value = true // Enable editor when a note is selected
   vditor.value?.enable()
+  hasUnsavedChanges.value = false // Reset unsaved changes flag
 }
 
-const extractTitleFromContent = (content: string): string => {
-  if (!content) {
+const extractTitleFromContent = (content: string): string => {  if (!content) {
     return '未命名笔记'
   }
   const firstLine = content.split('\n')[0].trim()
@@ -87,42 +124,52 @@ const extractTitleFromContent = (content: string): string => {
   return title
 }
 
-const createNewNote = () => {
-  selectedNote.value = {
+const createNewNote = async () => {
+  const proceed = await confirmSaveAndProceed()
+  if (!proceed) {
+    return // User cancelled or error during save
+  }
+
+  selectedNote.value = null // No item highlighted in the list
+  editingNote.value = {
     id: undefined,
     title: '未命名笔记',
     tags: [],
     content: '# 新笔记',
     updated: new Date()
   }
-  vditor.value?.setValue(selectedNote.value.content)
+  vditor.value?.setValue(editingNote.value.content)
   isVditorEditable.value = true // Enable editor for new note
   vditor.value?.enable()
+  hasUnsavedChanges.value = false // Reset unsaved changes flag
 }
 
 const saveNote = async () => {
-  if (!selectedNote.value) {
-    ElMessage.warning('没有选中的笔记')
+  if (!editingNote.value) {
+    ElMessage.warning('没有可保存的笔记')
     return
   }
 
   try {
     const currentContent = vditor.value?.getValue() || ''
-    const noteToSave: NoteItem = {
-      ...selectedNote.value,
-      content: currentContent,
-      title: extractTitleFromContent(currentContent) // Extract title from content
-    }
+    editingNote.value.content = currentContent
+    editingNote.value.title = extractTitleFromContent(currentContent) // Extract title from content
 
-    if (!noteToSave.id) {
+    if (!editingNote.value.id) {
       // Create new note
-      await apiCreateNote(noteToSave)
+      await apiCreateNote(editingNote.value)
       ElMessage.success('创建成功')
     } else {
       // Update existing note
-      await apiUpdateNote(noteToSave)
+      await apiUpdateNote({
+        id: editingNote.value.id,
+        title: editingNote.value.title,
+        tags: editingNote.value.tags,
+        content: editingNote.value.content
+      })
       ElMessage.success('保存成功')
     }
+    hasUnsavedChanges.value = false // Reset unsaved changes flag after successful save
     await getNotesList() // Refresh to get new ID/timestamp and data
   } catch (error) {
     ElMessage.error('保存笔记失败')
@@ -143,6 +190,7 @@ const deleteNote = async () => {
     await apiDeleteNote({ id: selectedNote.value.id })
     ElMessage.success('删除成功')
     await getNotesList()
+    hasUnsavedChanges.value = false // Reset unsaved changes flag after successful delete
   } catch (error) {
     // If error is 'cancel', it means user clicked cancel button
     if (error !== 'cancel') {
@@ -152,14 +200,14 @@ const deleteNote = async () => {
 }
 
 const handleTagClose = (tag: string) => {
-  if (selectedNote.value) {
-    selectedNote.value.tags = selectedNote.value.tags.filter((t) => t !== tag)
-    // saveNote() will be called by the '保存' button
+  if (editingNote.value) {
+    editingNote.value.tags = editingNote.value.tags.filter((t) => t !== tag)
+    hasUnsavedChanges.value = true // Mark as unsaved
   }
 }
 
 const addNewTag = () => {
-  if (!selectedNote.value || !isVditorEditable.value) {
+  if (!editingNote.value || !isVditorEditable.value) {
     ElMessage.warning('请先选择或创建一篇可编辑的笔记')
     return
   }
@@ -169,9 +217,9 @@ const addNewTag = () => {
 
 const confirmAddNewTag = () => {
   const newTag = newTagName.value.trim()
-  if (newTag && selectedNote.value && !selectedNote.value.tags.includes(newTag)) {
-    selectedNote.value.tags.push(newTag)
-    // saveNote() will be called by the '保存' button
+  if (newTag && editingNote.value && !editingNote.value.tags.includes(newTag)) {
+    editingNote.value.tags.push(newTag)
+    hasUnsavedChanges.value = true // Mark as unsaved
   }
   dialogVisible.value = false
 }
@@ -182,6 +230,9 @@ onMounted(() => {
     minHeight: 400,
     preview: {
       maxWidth: 10000
+    },
+    input: () => {
+      hasUnsavedChanges.value = true
     },
     after: () => {
       getNotesList()
@@ -222,7 +273,7 @@ onMounted(() => {
             >
               <div class="note-title">
                 <span class="title-text">{{ note.title }}</span>
-                <span class="note-date">{{ new Date(note.updated).toLocaleDateString() }}</span>
+                <span class="note-date">{{ note.updated?.toLocaleDateString() }}</span>
               </div>
               <div class="note-tags">
                 <ElTag v-for="tag in note.tags" :key="tag" size="small" type="info">{{ tag }}</ElTag>
@@ -238,9 +289,9 @@ onMounted(() => {
           <!-- Action Bar -->
           <div class="action-bar">
             <ElButton type="primary" @click="saveNote" :disabled="!isVditorEditable">保存</ElButton>
-            <div class="tags-display" v-if="selectedNote">
+            <div class="tags-display" v-if="editingNote">
               <ElTag
-                v-for="tag in selectedNote.tags"
+                v-for="tag in editingNote.tags"
                 :key="tag"
                 effect="plain"
                 class="ml-10px"
