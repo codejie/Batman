@@ -288,7 +288,7 @@ onMounted(() => {
         <ElCard shadow="never" class="right-panel vditor-card">
           <!-- Action Bar -->
           <div class="action-bar">
-            <ElButton type="primary" @click="saveNote" :disabled="!isVditorEditable">保存</ElButton>
+            <ElButton type="primary" @click="saveNote" :disabled="!isVditorEditable || !hasUnsavedChanges">保存</ElButton>
             <div class="tags-display" v-if="editingNote">
               <ElTag
                 v-for="tag in editingNote.tags"
