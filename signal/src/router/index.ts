@@ -293,6 +293,23 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     ]
   },
   {
+    name: 'Notes',
+    path: '/notes',
+    component: Layout,
+    meta: {},
+    children: [
+      {
+        name: 'LeekNotes',
+        path: 'leek-notes',
+        component: () => import('@/views/Notes/index.vue'),
+        meta: {
+          title: '韭菜笔记',
+          icon: 'vi-carbon:notebook'
+        }
+      }
+    ]
+  },
+  {
     name: 'System',
     path: '/sytem',
     component: Layout,
