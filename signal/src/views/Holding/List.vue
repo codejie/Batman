@@ -76,7 +76,7 @@ const fundsDialogVisible = ref<boolean>(false)
 const createDialogVisible = ref<boolean>(false)
 const operationDialogVisible = ref<boolean>(false)
 const klineDialogVisible = ref<boolean>(false)
-const useLocale = ref<boolean>(true)
+const useLocale = ref<boolean>(false)
 const reqParam = ref<any>({})
 
 const fundsForm = ref<FundsForm>({
