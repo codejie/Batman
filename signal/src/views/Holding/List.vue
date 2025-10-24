@@ -536,7 +536,7 @@ function onReload() {
               :class="row.calc?.profit > 0 ? 'red-text' : row.calc?.profit < 0 ? 'green-text' : ''"
             >
               {{ formatNumberString(row.calc?.profit) }} /
-              {{ formatRateString2(row.calc?.profit, funds?.profit) }}
+              {{ Math.abs(formatRateString2(row.calc?.profit, funds?.profit)) }}
             </div>
           </template>
         </ElTableColumn>
