@@ -76,7 +76,7 @@ const fundsDialogVisible = ref<boolean>(false)
 const createDialogVisible = ref<boolean>(false)
 const operationDialogVisible = ref<boolean>(false)
 const klineDialogVisible = ref<boolean>(false)
-const useLocale = ref<boolean>(true)
+const useLocale = ref<boolean>(false)
 const reqParam = ref<any>({})
 
 const fundsForm = ref<FundsForm>({
@@ -536,7 +536,7 @@ function onReload() {
               :class="row.calc?.profit > 0 ? 'red-text' : row.calc?.profit < 0 ? 'green-text' : ''"
             >
               {{ formatNumberString(row.calc?.profit) }} /
-              {{ formatRateString2(row.calc?.profit, funds?.profit) }}
+              {{ Math.abs(formatRateString2(row.calc?.profit, funds?.profit)) }}
             </div>
           </template>
         </ElTableColumn>
