@@ -32,11 +32,15 @@ import {
   apiRecord
 } from '@/api/holding'
 import {
+  HOLDING_FLAG_ACTIVE,
   HOLDING_FLAG_REMOVED,
+  HOLDING_FLAG_SOLDOUT,
   HoldingRecordItem,
   OPERATION_ACTION_BUY,
   OPERATION_ACTION_SELL,
-  OPERATION_ACTION_INTEREST
+  OPERATION_ACTION_INTEREST,
+  SOLDOUT_FLAG_NO,
+  SOLDOUT_FLAG_YES
 } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref, watch } from 'vue'
@@ -106,7 +110,7 @@ const funds = ref<FundsData>()
 const expandRows = ref<string[]>([])
 
 async function fetchData() {
-  const holdingData = await apiRecord({})
+  const holdingData = await apiRecord({ flag: HOLDING_FLAG_ACTIVE })
   data.value = holdingData.result.map((item: HoldingRecordItem) => ({
     record: item,
     calc: undefined,
@@ -121,6 +125,7 @@ async function fetchData() {
       })
     ).result
   }
+
   const fret = await apiGetFunds({})
   if (fret.result) {
     funds.value = calcFundsData(fret.result, data.value)
@@ -168,7 +173,10 @@ async function onAdd() {
   await fetchHoldingData()
 }
 
+const operationHoldingQuantity = ref<number>(0)
+
 function onOperation(row: HoldingRecordItem) {
+  operationHoldingQuantity.value = row.quantity
   operationForm.value.holding = row.id
   operationForm.value.type = row.type
   operationForm.value.code = row.code
@@ -209,6 +217,20 @@ watch(
 )
 
 async function onAddOperation() {
+  if (
+    operationForm.value.action === OPERATION_ACTION_SELL &&
+    operationForm.value.quantity > operationHoldingQuantity.value
+  ) {
+    await ElMessageBox.alert('卖出数量不能大于持仓数量', '错误', {
+      confirmButtonText: '确定',
+      type: 'error'
+    })
+    return
+  }
+
+  const isSoldout = operationForm.value.action === OPERATION_ACTION_SELL &&
+    operationForm.value.quantity === operationHoldingQuantity.value
+
   const ret = await apiOperationCreate({
     holding: operationForm.value.holding,
     action: operationForm.value.action,
@@ -219,8 +241,17 @@ async function onAddOperation() {
         ? parseFloat(operationForm.value.expense)
         : operationForm.value.expense,
     comment: operationForm.value.comment,
-    created: operationForm.value.date
+    created: operationForm.value.date,
+    soldout: isSoldout ? SOLDOUT_FLAG_YES : SOLDOUT_FLAG_NO
   })
+
+  if (isSoldout) {
+    await apiFlag({
+      id: operationForm.value.holding,
+      flag: HOLDING_FLAG_SOLDOUT
+    })
+  }
+
   operationDialogVisible.value = false
   await fetchHoldingData()
 }
@@ -381,13 +412,23 @@ function onReload() {
                 <ElTableColumn type="index" width="40" />
                 <ElTableColumn label="操作" prop="action" width="80">
                   <template #default="{ row }">
-                    {{
-                      row.action == OPERATION_ACTION_BUY
-                        ? '买入'
-                        : row.action == OPERATION_ACTION_SELL
-                          ? '卖出'
-                          : '计息'
-                    }}
+                    <ElText
+                      :class="
+                        row.action == OPERATION_ACTION_BUY
+                          ? 'red-text'
+                          : row.action == OPERATION_ACTION_SELL
+                            ? 'green-text'
+                            : ''
+                      "
+                    >
+                      {{
+                        row.action == OPERATION_ACTION_BUY
+                          ? '买入'
+                          : row.action == OPERATION_ACTION_SELL
+                            ? '卖出'
+                            : '计息'
+                      }}
+                    </ElText>
                   </template>
                 </ElTableColumn>
                 <ElTableColumn label="数量" prop="quantity" min-width="80" />
@@ -672,7 +713,7 @@ function onReload() {
           </ElFormItem>
           <ElFormItem label="数量" @change="onQuantityBlur">
             <ElInput
-              v-model="operationForm.quantity"
+              v-model.number="operationForm.quantity"
               :disabled="operationForm.action === OPERATION_ACTION_INTEREST"
             />
           </ElFormItem>
