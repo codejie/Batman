@@ -1,11 +1,12 @@
-import { HoldingListItem } from '../holding'
+import { HoldingListItem, SoldoutListItem } from '../holding'
 import * as Types from './types'
 
 export * from './types'
 
 export function calcFundsData(
   funds: Types.FundsItem,
-  holdigns: HoldingListItem[]
+  holdigns: HoldingListItem[],
+  soldoutItems: SoldoutListItem[]
 ): Types.FundsData {
   // let total = 0
   let holding = 0
@@ -32,6 +33,7 @@ export function calcFundsData(
     available: funds.available,
     revenue: revenue,
     profit: profit,
+    soldout_profit: soldoutItems.reduce((acc, item) => acc + (item.calc?.profit || 0), 0),
     profit_rate: expense === 0 ? undefined : profit / -expense
   }
   return ret

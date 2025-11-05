@@ -23,7 +23,7 @@ async def create(request: CreateRequest):
 class ListRequest(RequestModel):
   type: Optional[int] = None
   code: Optional[int] = None
-  flag: Optional[int] = db.HOLDING_FLAG_ACTIVE
+  flag: Optional[int] = None
 
 class ListResponse(ResponseModel):
    result: list[db.UserHoldingRecord] = []
@@ -35,7 +35,7 @@ async def list(request: ListRequest):
 
 class FlagRequest(RequestModel):
   id: int
-  flag: Optional[int] = db.HOLDING_FLAG_REMOVED
+  flag: Optional[int] = db.HOLDING_FLAG_SOLDOUT
 
 class FlagResponse(ResponseModel):
   result: int
@@ -53,6 +53,7 @@ class OperationCreateRequest(RequestModel):
   expense: Optional[float] = None # 买入为负,卖出为正，router不处理
   comment: Optional[str] = None
   created: Optional[datetime.datetime] = None
+  soldout: Optional[int] = db.SOLDOUT_FLAG_NO
 
 class OperationCreateResponse(ResponseModel):
   result: int
@@ -61,7 +62,7 @@ class OperationCreateResponse(ResponseModel):
 async def operation(request: OperationCreateRequest):
   if request.expense is None:
     request.expense = request.price * request.quantity
-  result = db.insert_operation(id=request.holding, action=request.action, quantity=request.quantity, price=request.price, expense=request.expense, comment=request.comment, created=request.created)
+  result = db.insert_operation(id=request.holding, action=request.action, quantity=request.quantity, price=request.price, expense=request.expense, comment=request.comment, created=request.created, soldout=request.soldout)
   # funds operation # 本金是不变量, 更新available
   # amount = -request.expense if request.action == db.OPERATION_ACTION_BUY else request.expense
   if request.action == db.OPERATION_ACTION_BUY:
@@ -78,7 +79,7 @@ class RecordRequest(RequestModel):
   id: Optional[int] = None
   type: Optional[int] = None
   code: Optional[str] = None
-  flag: Optional[int] = db.HOLDING_FLAG_ACTIVE
+  flag: Optional[int] = None
 
 class RecordResponse(ResponseModel):
   result: List[db.UserHoldingRecord] = []
@@ -98,6 +99,7 @@ class HoldingOperationTableModel(BaseModel):
   quantity: int
   price: float
   expense: float
+  soldout: int
   comment: Optional[str] = None
   created: datetime.datetime
 
@@ -113,7 +115,7 @@ async def operation_list(request: OperationListRequest):
   results = []
   for record in records:
     r = record[0]
-    results.append(HoldingOperationTableModel(id=r.id, holding=r.holding, action=r.action, quantity=r.quantity, price=r.price, expense=r.expense, comment=r.comment, created=r.created))
+    results.append(HoldingOperationTableModel(id=r.id, holding=r.holding, action=r.action, quantity=r.quantity, price=r.price, expense=r.expense, soldout=r.soldout, comment=r.comment, created=r.created))
   # rows = db.select_operation(uid=DEFAULT_UID, holding=request.holding)
   # results = []
   # for row in rows:

@@ -7,9 +7,12 @@ from app.database.data import define as Data
 
 HOLDING_FLAG_ACTIVE: int = 1
 HOLDING_FLAG_REMOVED: int = 2
+HOLDING_FLAG_SOLDOUT: int = 3
 OPERATION_ACTION_BUY: int = 1
 OPERATION_ACTION_SELL: int = 2
 OPERATION_ACTION_INTEREST: int = 3
+SOLDOUT_FLAG_NO: int = 0
+SOLDOUT_FLAG_YES: int = 1
 
 class HoldingTable(TableBase):
   __tablename__ = 'user_holding_table'
@@ -35,6 +38,7 @@ class HoldingOperationTable(TableBase):
   quantity = Column(Integer, nullable=False) # 买入为正，卖出为负
   price = Column(Float, nullable=False) # 买入/卖出价
   expense = Column(Float, nullable=False) # 买入为负，卖出为正
+  soldout = Column(Integer, nullable=False, default=SOLDOUT_FLAG_NO)
   comment = Column(String, nullable=True)
   created = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -52,7 +56,7 @@ class UserHoldingRecord(BaseModel):
 def insert_holding(uid: int, type: int, code: str, flag: int = HOLDING_FLAG_ACTIVE) -> int:
   return dbEngine.insert_instance(HoldingTable(uid=uid, type=type, code=code, flag=flag))
 
-def insert_operation(id: int, action: int, quantity: int, price: float, expense: float, comment: str = None, created: datetime.datetime = None) -> int:
+def insert_operation(id: int, action: int, quantity: int, price: float, expense: float, comment: str = None, created: datetime.datetime = None, soldout: int = SOLDOUT_FLAG_NO) -> int:
   if action == OPERATION_ACTION_SELL:
     quantity = -quantity
     expense = expense
@@ -63,7 +67,7 @@ def insert_operation(id: int, action: int, quantity: int, price: float, expense:
     quantity = 0
     expense = expense
 
-  return dbEngine.insert_instance(HoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment, created=created))
+  return dbEngine.insert_instance(HoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment, created=created, soldout=soldout))
 
 def select_holding(uid: int, type: int = None, code: str = None, flag: int = None) -> list[HoldingTable]:
   stmt = select(HoldingTable).where(HoldingTable.uid == uid)

@@ -1,4 +1,4 @@
-import { apiOperationList, apiRecord, HoldingRecordItem } from '@/api/holding'
+import { apiOperationList, apiRecord, HoldingRecordItem, HoldingOperationItem } from '@/api/holding'
 import { formatDateToYYYYMMDD } from '../comm'
 import * as Types from '@/calc/holding/types'
 import { apiGetLatestHistoryData } from '@/api/data'
@@ -82,6 +82,16 @@ export function calcHoldingData(
       }
     })
   })
+}
+
+export function calcSoldoutData(operations: HoldingOperationItem[]): Types.SoldoutItem {
+  const soldoutOps = operations.filter(op => op.soldout === 1);
+  const profit = soldoutOps.reduce((acc, item) => acc + item.expense, 0);
+  const quantity = soldoutOps.reduce((acc, item) => acc + item.quantity, 0);
+  const price = quantity ? profit / Math.abs(quantity) : 0;
+  const date = new Date(Math.max(...soldoutOps.map(item => new Date(item.created).getTime())));
+
+  return { profit, quantity, price, date };
 }
 
 export async function getHoldListData(

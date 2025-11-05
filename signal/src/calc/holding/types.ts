@@ -19,6 +19,19 @@ export interface HoldingListItem {
   calc?: CalcItem
 }
 
+export interface SoldoutItem {
+  profit: number
+  quantity: number
+  price: number
+  date: Date
+}
+
+export interface SoldoutListItem {
+  record: HoldingRecordItem
+  items?: HoldingOperationItem[]
+  calc?: SoldoutItem
+}
+
 export type OperationItem = HoldingOperationItem
 
 // Trace Data
