@@ -17,5 +17,6 @@ export interface FundsData {
   available: number
   revenue: number // 市值
   profit: number // 盈亏
+  soldout_profit: number // 已实现盈亏
   profit_rate?: number
 }

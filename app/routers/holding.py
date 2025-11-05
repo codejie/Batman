@@ -99,6 +99,7 @@ class HoldingOperationTableModel(BaseModel):
   quantity: int
   price: float
   expense: float
+  soldout: int
   comment: Optional[str] = None
   created: datetime.datetime
 
@@ -114,7 +115,7 @@ async def operation_list(request: OperationListRequest):
   results = []
   for record in records:
     r = record[0]
-    results.append(HoldingOperationTableModel(id=r.id, holding=r.holding, action=r.action, quantity=r.quantity, price=r.price, expense=r.expense, comment=r.comment, created=r.created))
+    results.append(HoldingOperationTableModel(id=r.id, holding=r.holding, action=r.action, quantity=r.quantity, price=r.price, expense=r.expense, soldout=r.soldout, comment=r.comment, created=r.created))
   # rows = db.select_operation(uid=DEFAULT_UID, holding=request.holding)
   # results = []
   # for row in rows:

@@ -20,6 +20,7 @@ interface OperationForm {
   expense: number | string
   comment?: string
 }
+
 </script>
 
 <script setup lang="ts">
@@ -69,7 +70,7 @@ import { formatToDateTime } from '@/utils/dateUtil'
 import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 import { useRouter } from 'vue-router'
 import { calcFundsData, FUNDS_STOCK, FundsData } from '@/calc/funds'
-import { calcHoldingData, HoldingListItem } from '@/calc/holding'
+import { calcHoldingData, calcSoldoutData, HoldingListItem, SoldoutListItem } from '@/calc/holding'
 import { apiGetFunds, apiUpdateFunds } from '@/api/funds'
 import { formatNumberString, formatRateString, formatRateString2 } from '@/utils/fmtUtil'
 import { KLineDialog } from '@/components/KLine'
@@ -108,6 +109,9 @@ const data = ref<HoldingListItem[]>([]) // ref<HoldingInfoItem[]>([])
 // const total = ref<ProfitTotalData>()
 const funds = ref<FundsData>()
 const expandRows = ref<string[]>([])
+const soldoutData = ref<SoldoutListItem[]>([])
+const soldoutExpandRows = ref<string[]>([])
+const showSoldoutTable = ref<boolean>(true)
 
 async function fetchData() {
   const holdingData = await apiRecord({ flag: HOLDING_FLAG_ACTIVE })
@@ -126,9 +130,25 @@ async function fetchData() {
     ).result
   }
 
+  const soldoutHoldingData = await apiRecord({ flag: HOLDING_FLAG_SOLDOUT })
+  soldoutData.value = soldoutHoldingData.result.map((item: HoldingRecordItem) => ({
+    record: item,
+    calc: undefined,
+    items: []
+  }))
+  soldoutData.value = soldoutData.value.reverse()
+  for (const holding of soldoutData.value) {
+    holding.items = (
+      await apiOperationList({
+        holding: holding.record.id
+      })
+    ).result
+    holding.calc = calcSoldoutData(holding.items)
+  }
+
   const fret = await apiGetFunds({})
   if (fret.result) {
-    funds.value = calcFundsData(fret.result, data.value)
+    funds.value = calcFundsData(fret.result, data.value, soldoutData.value)
   } else {
     funds.value = undefined
   }
@@ -136,17 +156,6 @@ async function fetchData() {
 
 async function fetchHoldingData() {
   await fetchData()
-
-  // const fret = await apiGetFunds({})
-  // if (fret.result) {
-  //   data.value = await getHoldListData()
-  //   funds.value = calcFundsData(fret.result, data.value)
-  // //   data.value = data.value.reverse()
-  // //   data.value.forEach((v) => {
-  // //     v.items = v.items.reverse()
-  // //  })
-  // } else
-  //   funds.value = undefined
 }
 
 onMounted(async () => {
@@ -305,6 +314,10 @@ function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[])
   expandRows.value = expandedRows.map((x) => x.record.id.toString())
 }
 
+function onSoldoutExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[]) {
+  soldoutExpandRows.value = expandedRows.map((x) => x.record.id.toString())
+}
+
 function onRecordClick(row: HoldingRecordItem) {
   reqParam.value = {
     code: row.code,
@@ -356,14 +369,32 @@ function onReload() {
       <ElDescriptionsItem label="市值"
         ><ElText tag="b">{{ formatNumberString(funds?.revenue) }}</ElText></ElDescriptionsItem
       >
-      <ElDescriptionsItem label="盈亏"
-        ><ElText tag="b">{{ formatNumberString(funds?.profit) }}</ElText></ElDescriptionsItem
-      >
-      <ElDescriptionsItem label="盈亏率"
-        ><ElText tag="b">{{ formatRateString(funds?.profit_rate) }}</ElText></ElDescriptionsItem
-      >
+      <ElDescriptionsItem label="盈亏">
+        <ElTooltip effect="dark" content="清仓盈亏合计" placement="top">
+          <ElText tag="b">
+            {{ formatNumberString(funds?.profit) }}
+            <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable">
+              (+ {{ formatNumberString(funds?.soldout_profit) }} =
+              {{ formatNumberString((funds?.profit || 0) + (funds?.soldout_profit || 0)) }})
+            </template>
+          </ElText>
+        </ElTooltip>
+      </ElDescriptionsItem>
+      <ElDescriptionsItem label="盈亏率">
+        <ElTooltip effect="dark" content="清仓盈亏率合计" placement="top">
+          <ElText tag="b">{{
+            formatRateString(funds?.profit_rate)
+          }} <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable">({{
+            formatRateString(
+              funds?.expense === 0
+                ? 0
+                : ((funds?.profit || 0) + (funds?.soldout_profit || 0)) / -funds?.expense
+            )
+          }})</template></ElText>
+        </ElTooltip>
+      </ElDescriptionsItem>
     </ElDescriptions>
-    <ElDivider calss="mx-8px" content-position="left">持股记录</ElDivider>
+    <ElDivider class="mx-8px" content-position="left"><span style="font-weight: bold;">持股记录</span></ElDivider>
     <ElRow :gutter="24">
       <ElCol :span="12">
         <ElButton class="my-4" type="primary" @click="createDialogVisible = true"
@@ -459,7 +490,7 @@ function onReload() {
         </ElTableColumn>
         <!-- <ElTableColumn prop="id" label="ID" width="50" /> -->
         <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
-        <ElTableColumn prop="record.code" label="名称/代码" min-width="60">
+        <ElTableColumn prop="record.code" label="名称/代码" min-width="80">
           <template #header>
             <ElText>名称/代码</ElText>
           </template>
@@ -581,7 +612,7 @@ function onReload() {
             </div>
           </template>
         </ElTableColumn>
-        <ElTableColumn label="盈亏率 %" min-width="80">
+        <ElTableColumn label="盈亏率 %" min-width="60">
           <template #header>
             <ElTooltip effect="dark" content="盈亏/成本%" placement="top">
               <ElText>盈亏率%</ElText>
@@ -641,9 +672,120 @@ function onReload() {
             <ElButton size="small" @click="onRemove(row.record.id)">删除</ElButton>
           </template>
         </ElTableColumn>
-      </ElTable>
+              </ElTable>
+          </ElRow>
+          <ElDivider class="mx-8px" content-position="left" style="margin-top: 36px;"><span style="font-weight: bold;">清仓记录</span></ElDivider>
+    <ElRow>
+        <ElCol :span="24" style="text-align: right;">
+            <ElButton @click="showSoldoutTable = !showSoldoutTable">显示/隐藏</ElButton>
+        </ElCol>
     </ElRow>
-    <ElDialog v-model="fundsDialogVisible" :destroy-on-close="true" width="25%">
+    <ElRow :gutter="24" v-if="showSoldoutTable">
+      <ElTable
+        :data="soldoutData"
+        :row-key="getHoldingKey"
+        :expand-row-keys="soldoutExpandRows"
+        @expand-change="onSoldoutExpandChanged"
+        stripe
+        :border="true"
+        :default-sort="{ prop: 'record.updated', order: 'descending' }"
+      >
+        <ElTableColumn type="index" width="40" />
+        <ElTableColumn type="expand">
+          <template #default="{ row }">
+            <div class="mx-24px my-8px">
+              <ElRow :gutter="24">
+                <ElText tag="b">操作记录 ({{ row.items.filter(item => item.soldout === 1).length }})</ElText>
+              </ElRow>
+            </div>
+            <div class="mx-24px my-8px">
+              <ElTable
+                size="small"
+                :data="row.items.filter(item => item.soldout === 1)"
+                stripe
+                :border="true"
+                :default-sort="{ prop: 'created', order: 'descending' }"
+              >
+                <ElTableColumn type="index" width="40" />
+                <ElTableColumn label="操作" prop="action" width="80">
+                  <template #default="{ row }">
+                    <ElText
+                      :class="
+                        row.action == OPERATION_ACTION_BUY
+                          ? 'red-text'
+                          : row.action == OPERATION_ACTION_SELL
+                            ? 'green-text'
+                            : ''
+                      "
+                    >
+                      {{
+                        row.action == OPERATION_ACTION_BUY
+                          ? '买入'
+                          : row.action == OPERATION_ACTION_SELL
+                            ? '卖出'
+                            : '计息'
+                      }}
+                    </ElText>
+                  </template>
+                </ElTableColumn>
+                <ElTableColumn label="数量" prop="quantity" min-width="80" />
+                <ElTableColumn label="买入" prop="price" min-width="80">
+                  <template #default="{ row }">
+                    {{ row.price.toFixed(2) }}
+                  </template>
+                </ElTableColumn>
+                <ElTableColumn label="费用" prop="expense" min-width="80">
+                  <template #default="{ row }">
+                    {{ row.expense.toFixed(2) }}
+                  </template>
+                </ElTableColumn>
+                <ElTableColumn label="操作时间" prop="created" min-width="120">
+                  <template #default="{ row }">
+                    {{ formatToDateTime(row.created) }}
+                  </template>
+                </ElTableColumn>
+                <ElTableColumn label="备注" prop="comment" />
+              </ElTable>
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn prop="record.code" label="名称/代码" min-width="60">
+          <template #header>
+            <ElText>名称/代码</ElText>
+          </template>
+          <template #default="{ row }">
+            <div @click="onRecordClick(row.record)">
+              <div><ElText tag="b">{{ row.record.name }}</ElText></div>
+              <div><ElText tag="b">{{ row.record.code }}</ElText></div>
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="盈亏" min-width="120">
+          <template #default="{ row }">
+            <ElText
+              :class="row.calc?.profit >= 0 ? 'red-text' : 'green-text'"
+            >
+              {{ formatNumberString(row.calc?.profit) }}
+            </ElText>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="数量" min-width="100">
+          <template #default="{ row }">
+            {{ formatNumberString(row.calc?.quantity) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="价格" min-width="80">
+          <template #default="{ row }">
+            {{ formatNumberString(row.calc?.price) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="操作时间" min-width="120">
+          <template #default="{ row }">
+            {{ formatToDateTime(row.calc?.date) }}
+          </template>
+        </ElTableColumn>
+      </ElTable>
+    </ElRow>    <ElDialog v-model="fundsDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
         <ElText tag="b">资金数据</ElText>
       </template>

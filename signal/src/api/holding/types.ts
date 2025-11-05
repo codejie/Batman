@@ -70,6 +70,7 @@ export interface HoldingOperationItem {
   quantity: number
   price: number
   expense: number
+  soldout: number
   comment?: string
   created: Date
 }
