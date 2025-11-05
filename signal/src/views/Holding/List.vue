@@ -39,9 +39,8 @@ import {
   HoldingRecordItem,
   OPERATION_ACTION_BUY,
   OPERATION_ACTION_SELL,
-  OPERATION_ACTION_INTEREST,
-  SOLDOUT_FLAG_NO,
-  SOLDOUT_FLAG_YES
+  OPERATION_ACTION_SOLDOUT,
+  OPERATION_ACTION_INTEREST
 } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref, watch } from 'vue'
@@ -237,9 +236,6 @@ async function onAddOperation() {
     return
   }
 
-  const isSoldout = operationForm.value.action === OPERATION_ACTION_SELL &&
-    operationForm.value.quantity === operationHoldingQuantity.value
-
   const ret = await apiOperationCreate({
     holding: operationForm.value.holding,
     action: operationForm.value.action,
@@ -250,16 +246,8 @@ async function onAddOperation() {
         ? parseFloat(operationForm.value.expense)
         : operationForm.value.expense,
     comment: operationForm.value.comment,
-    created: operationForm.value.date,
-    soldout: isSoldout ? SOLDOUT_FLAG_YES : SOLDOUT_FLAG_NO
+    created: operationForm.value.date
   })
-
-  if (isSoldout) {
-    await apiFlag({
-      id: operationForm.value.holding,
-      flag: HOLDING_FLAG_SOLDOUT
-    })
-  }
 
   operationDialogVisible.value = false
   await fetchHoldingData()
@@ -457,7 +445,9 @@ function onReload() {
                           ? '买入'
                           : row.action == OPERATION_ACTION_SELL
                             ? '卖出'
-                            : '计息'
+                            : row.action == OPERATION_ACTION_SOLDOUT
+                              ? '清仓'
+                              : '计息'
                       }}
                     </ElText>
                   </template>
@@ -695,13 +685,13 @@ function onReload() {
           <template #default="{ row }">
             <div class="mx-24px my-8px">
               <ElRow :gutter="24">
-                <ElText tag="b">操作记录 ({{ row.items.filter(item => item.soldout === 1).length }})</ElText>
+                <ElText tag="b">操作记录 ({{ row.items.filter(item => item.action === OPERATION_ACTION_SOLDOUT).length }})</ElText>
               </ElRow>
             </div>
             <div class="mx-24px my-8px">
               <ElTable
                 size="small"
-                :data="row.items.filter(item => item.soldout === 1)"
+                :data="row.items.filter(item => item.action === OPERATION_ACTION_SOLDOUT)"
                 stripe
                 :border="true"
                 :default-sort="{ prop: 'created', order: 'descending' }"
@@ -723,7 +713,9 @@ function onReload() {
                           ? '买入'
                           : row.action == OPERATION_ACTION_SELL
                             ? '卖出'
-                            : '计息'
+                            : row.action == OPERATION_ACTION_SOLDOUT
+                              ? '清仓'
+                              : '计息'
                       }}
                     </ElText>
                   </template>
