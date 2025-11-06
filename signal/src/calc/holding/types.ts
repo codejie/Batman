@@ -21,6 +21,7 @@ export interface HoldingListItem {
 
 export interface SoldoutItem {
   profit: number
+  profit_rate: number
   quantity: number
   price: number
   date: Date

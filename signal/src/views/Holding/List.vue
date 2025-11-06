@@ -514,7 +514,7 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
                   </template>
                 </ElTableColumn>
                 <ElTableColumn label="数量" prop="quantity" min-width="80" />
-                <ElTableColumn label="买入" prop="price" min-width="80">
+                <ElTableColumn label="价格" prop="price" min-width="80">
                   <template #default="{ row }">
                     {{ row.price.toFixed(2) }}
                   </template>
@@ -780,7 +780,7 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
                   </template>
                 </ElTableColumn>
                 <ElTableColumn label="数量" prop="quantity" min-width="80" />
-                <ElTableColumn label="买入" prop="price" min-width="80">
+                <ElTableColumn label="价格" prop="price" min-width="80">
                   <template #default="{ row }">
                     {{ row.price.toFixed(2) }}
                   </template>
@@ -820,14 +820,19 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
             </ElText>
           </template>
         </ElTableColumn>
+        <ElTableColumn label="盈亏率" min-width="80">
+          <template #default="{ row }">
+            {{ formatRateString(row.calc?.profit_rate) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="每股盈亏" min-width="80">
+          <template #default="{ row }">
+            {{ formatNumberString(row.calc?.price) }}
+          </template>
+        </ElTableColumn>
         <ElTableColumn label="数量" min-width="100">
           <template #default="{ row }">
             {{ formatNumberString(row.calc?.quantity) }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="价格" min-width="80">
-          <template #default="{ row }">
-            {{ formatNumberString(row.calc?.price) }}
           </template>
         </ElTableColumn>
         <ElTableColumn label="操作时间" min-width="120">
