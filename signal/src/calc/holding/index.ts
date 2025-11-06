@@ -159,6 +159,8 @@ export function mergeOperationData(
   let holding: number = 0
   let amount: number = 0
   for (const item of operationData) {
+    if (item.action === OPERATION_ACTION_SOLDOUT) continue // ignore SOLDOUT item.action
+    
     const date = formatDateToYYYYMMDD(item.created)
     const index = ret.findIndex((elment) => elment.date === date)
     holding += item.quantity

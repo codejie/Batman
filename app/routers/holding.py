@@ -17,6 +17,15 @@ class CreateResponse(ResponseModel):
 
 @router.post('/create', response_model=CreateResponse)
 async def create(request: CreateRequest):
+  existing_records = db.records(uid=DEFAULT_UID, type=request.type, code=request.code, flag=None)
+  if existing_records:
+    existing_record = existing_records[0]
+    if existing_record.flag == db.HOLDING_FLAG_ACTIVE:
+      return CreateResponse(result=existing_record.id)
+    else:
+      db.update_holding_flag(uid=DEFAULT_UID, id=existing_record.id, flag=db.HOLDING_FLAG_ACTIVE)
+      return CreateResponse(result=existing_record.id)
+  
   result = db.insert_holding(uid=DEFAULT_UID, type=request.type, code=request.code, flag=request.flag)
   return CreateResponse(result=result)
 

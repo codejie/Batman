@@ -176,6 +176,8 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
               ).group_by(HoldingTable.id
               ).order_by(HoldingTable.updated.asc())  
 
+  stmt = stmt.where(HoldingOperationTable.action != OPERATION_ACTION_SOLDOUT)
+
   if id:
     stmt = stmt.where(HoldingTable.id == id)
   if type:
