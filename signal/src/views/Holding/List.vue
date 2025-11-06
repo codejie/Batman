@@ -39,9 +39,8 @@ import {
   HoldingRecordItem,
   OPERATION_ACTION_BUY,
   OPERATION_ACTION_SELL,
-  OPERATION_ACTION_INTEREST,
-  SOLDOUT_FLAG_NO,
-  SOLDOUT_FLAG_YES
+  OPERATION_ACTION_SOLDOUT,
+  OPERATION_ACTION_INTEREST
 } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
 import { onMounted, ref, watch } from 'vue'
@@ -237,9 +236,6 @@ async function onAddOperation() {
     return
   }
 
-  const isSoldout = operationForm.value.action === OPERATION_ACTION_SELL &&
-    operationForm.value.quantity === operationHoldingQuantity.value
-
   const ret = await apiOperationCreate({
     holding: operationForm.value.holding,
     action: operationForm.value.action,
@@ -250,16 +246,8 @@ async function onAddOperation() {
         ? parseFloat(operationForm.value.expense)
         : operationForm.value.expense,
     comment: operationForm.value.comment,
-    created: operationForm.value.date,
-    soldout: isSoldout ? SOLDOUT_FLAG_YES : SOLDOUT_FLAG_NO
+    created: operationForm.value.date
   })
-
-  if (isSoldout) {
-    await apiFlag({
-      id: operationForm.value.holding,
-      flag: HOLDING_FLAG_SOLDOUT
-    })
-  }
 
   operationDialogVisible.value = false
   await fetchHoldingData()
@@ -302,6 +290,16 @@ async function onDetail(id: number) {
     query: {
       id: id,
       ids: data.value.map((x) => x.record.id).join(',')
+    }
+  })
+}
+
+function onSoldoutDetail(id: number) {
+  push({
+    path: '/holding/detail',
+    query: {
+      id: id,
+      ids: soldoutData.value.map((x) => x.record.id).join(',')
     }
   })
 }
@@ -370,42 +368,44 @@ function onReload() {
         ><ElText tag="b">{{ formatNumberString(funds?.revenue) }}</ElText></ElDescriptionsItem
       >
       <ElDescriptionsItem label="盈亏">
-        <ElTooltip effect="dark" content="清仓盈亏合计" placement="top">
-          <ElText tag="b">
-            {{ formatNumberString(funds?.profit) }}
+        <ElText tag="b">
+          {{ formatNumberString(funds?.profit) }}
+          <ElTooltip v-if="showSoldoutTable" effect="dark" content="清仓盈亏合计" placement="top">
             <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable">
               (+ {{ formatNumberString(funds?.soldout_profit) }} =
               {{ formatNumberString((funds?.profit || 0) + (funds?.soldout_profit || 0)) }})
             </template>
-          </ElText>
-        </ElTooltip>
+          </ElTooltip>
+        </ElText>
       </ElDescriptionsItem>
       <ElDescriptionsItem label="盈亏率">
-        <ElTooltip effect="dark" content="清仓盈亏率合计" placement="top">
-          <ElText tag="b">{{
-            formatRateString(funds?.profit_rate)
-          }} <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable">({{
+        <ElText tag="b">{{ formatRateString(funds?.profit_rate)}} 
+        <ElTooltip v-if="showSoldoutTable" effect="dark" content="清仓盈亏率合计" placement="top">
+          <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable">({{
             formatRateString(
               funds?.expense === 0
                 ? 0
-                : ((funds?.profit || 0) + (funds?.soldout_profit || 0)) / -funds?.expense
+                : ((funds?.profit || 0) + (funds?.soldout_profit || 0)) / -funds?.expense!
             )
-          }})</template></ElText>
+            }})
+          </template>
         </ElTooltip>
+      </ElText>
       </ElDescriptionsItem>
     </ElDescriptions>
     <ElDivider class="mx-8px" content-position="left"><span style="font-weight: bold;">持股记录</span></ElDivider>
     <ElRow :gutter="24">
       <ElCol :span="12">
-        <ElButton class="my-4" type="primary" @click="createDialogVisible = true"
+        <ElButton class="my-4" size="small" type="primary" @click="createDialogVisible = true"
           >增加持股</ElButton
         >
       </ElCol>
       <ElCol :span="12">
-        <ElButton class="my-4" style="float: right" @click="onReload">刷新记录</ElButton>
+        <ElButton class="my-4" size="small" style="float: right" @click="onReload">刷新记录</ElButton>
         <ElCheckbox
           v-model="useLocale"
           class="my-4"
+          size="small"
           style="float: right; margin-right: 12px"
           label="使用本地数据"
         />
@@ -457,7 +457,9 @@ function onReload() {
                           ? '买入'
                           : row.action == OPERATION_ACTION_SELL
                             ? '卖出'
-                            : '计息'
+                            : row.action == OPERATION_ACTION_SOLDOUT
+                              ? '清仓'
+                              : '计息'
                       }}
                     </ElText>
                   </template>
@@ -517,7 +519,7 @@ function onReload() {
             </ElTooltip>
           </template>
           <template #default="{ row }">
-            {{ formatNumberString(row.record.quantity) }} /
+            {{ row.record.quantity }} /
             {{ formatRateString2(row.record.quantity, funds?.holding) }}
           </template>
         </ElTableColumn>
@@ -586,7 +588,7 @@ function onReload() {
             </div>
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.revenue" label="市值/占比" min-width="120">
+        <ElTableColumn prop="calc.revenue" label="市值/占比" min-width="110">
           <template #header>
             <ElTooltip effect="dark" content="市值/总市值%" placement="top">
               <ElText>市值/占比</ElText>
@@ -597,7 +599,7 @@ function onReload() {
             {{ formatRateString2(row.calc?.revenue, funds?.revenue) }}
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.profit" label="盈亏/占比" min-width="120">
+        <ElTableColumn prop="calc.profit" label="盈亏/占比" min-width="110">
           <template #header>
             <ElTooltip effect="dark" content="盈亏/总盈亏%" placement="top">
               <ElText>盈亏/占比</ElText>
@@ -612,7 +614,7 @@ function onReload() {
             </div>
           </template>
         </ElTableColumn>
-        <ElTableColumn label="盈亏率 %" min-width="60">
+        <ElTableColumn label="盈亏率 %" min-width="80">
           <template #header>
             <ElTooltip effect="dark" content="盈亏/成本%" placement="top">
               <ElText>盈亏率%</ElText>
@@ -666,7 +668,7 @@ function onReload() {
               {{ formatToDate(row.record.updated) }}
             </template>
           </ElTableColumn> -->
-        <ElTableColumn label="" width="160">
+        <ElTableColumn label="" width="140">
           <template #default="{ row }">
             <ElButton size="small" @click="onDetail(row.record.id)">详情</ElButton>
             <ElButton size="small" @click="onRemove(row.record.id)">删除</ElButton>
@@ -674,12 +676,10 @@ function onReload() {
         </ElTableColumn>
               </ElTable>
           </ElRow>
-          <ElDivider class="mx-8px" content-position="left" style="margin-top: 36px;"><span style="font-weight: bold;">清仓记录</span></ElDivider>
-    <ElRow>
-        <ElCol :span="24" style="text-align: right;">
-            <ElButton @click="showSoldoutTable = !showSoldoutTable">显示/隐藏</ElButton>
-        </ElCol>
-    </ElRow>
+          <ElDivider class="mx-8px" content-position="left" style="margin-top: 36px;">
+            <span style="font-weight: bold;">清仓记录</span>
+            <ElButton class="ml-12px" size="small" @click="showSoldoutTable = !showSoldoutTable">{{ showSoldoutTable ? '隐藏' : '显示' }}</ElButton>
+          </ElDivider>
     <ElRow :gutter="24" v-if="showSoldoutTable">
       <ElTable
         :data="soldoutData"
@@ -695,13 +695,13 @@ function onReload() {
           <template #default="{ row }">
             <div class="mx-24px my-8px">
               <ElRow :gutter="24">
-                <ElText tag="b">操作记录 ({{ row.items.filter(item => item.soldout === 1).length }})</ElText>
+                <ElText tag="b">操作记录 ({{ row.items.length }})</ElText>
               </ElRow>
             </div>
             <div class="mx-24px my-8px">
               <ElTable
                 size="small"
-                :data="row.items.filter(item => item.soldout === 1)"
+                :data="row.items"
                 stripe
                 :border="true"
                 :default-sort="{ prop: 'created', order: 'descending' }"
@@ -723,7 +723,9 @@ function onReload() {
                           ? '买入'
                           : row.action == OPERATION_ACTION_SELL
                             ? '卖出'
-                            : '计息'
+                            : row.action == OPERATION_ACTION_SOLDOUT
+                              ? '清仓'
+                              : '计息'
                       }}
                     </ElText>
                   </template>
@@ -782,6 +784,11 @@ function onReload() {
         <ElTableColumn label="操作时间" min-width="120">
           <template #default="{ row }">
             {{ formatToDateTime(row.calc?.date) }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="" width="140">
+          <template #default="{ row }">
+            <ElButton size="small" @click="onSoldoutDetail(row.record.id)">详情</ElButton>
           </template>
         </ElTableColumn>
       </ElTable>

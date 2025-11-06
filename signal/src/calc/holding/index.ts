@@ -1,4 +1,4 @@
-import { apiOperationList, apiRecord, HoldingRecordItem, HoldingOperationItem } from '@/api/holding'
+import { apiOperationList, apiRecord, HoldingRecordItem, HoldingOperationItem, OPERATION_ACTION_SOLDOUT } from '@/api/holding'
 import { formatDateToYYYYMMDD } from '../comm'
 import * as Types from '@/calc/holding/types'
 import { apiGetLatestHistoryData } from '@/api/data'
@@ -85,13 +85,29 @@ export function calcHoldingData(
 }
 
 export function calcSoldoutData(operations: HoldingOperationItem[]): Types.SoldoutItem {
-  const soldoutOps = operations.filter(op => op.soldout === 1);
-  const profit = soldoutOps.reduce((acc, item) => acc + item.expense, 0);
-  const quantity = soldoutOps.reduce((acc, item) => acc + item.quantity, 0);
-  const price = quantity ? profit / Math.abs(quantity) : 0;
-  const date = new Date(Math.max(...soldoutOps.map(item => new Date(item.created).getTime())));
+  const soldoutItems = operations.filter((item) => item.action === OPERATION_ACTION_SOLDOUT);
 
-  return { profit, quantity, price, date };
+  if (soldoutItems.length > 0) {
+    const totalProfit = soldoutItems.reduce((acc, item) => acc + item.expense, 0);
+    const totalQuantity = soldoutItems.reduce((acc, item) => acc + item.quantity, 0);
+    const avgPrice = totalQuantity !== 0 ? totalProfit / totalQuantity : 0;
+    const lastSoldout = soldoutItems[soldoutItems.length - 1]; // To get the most recent date
+
+    return {
+      profit: totalProfit,
+      quantity: totalQuantity,
+      price: avgPrice,
+      date: lastSoldout.created
+    };
+  }
+
+  // Fallback if no SOLDOUT record is found
+  return {
+    profit: 0,
+    quantity: 0,
+    price: 0,
+    date: new Date()
+  };
 }
 
 export async function getHoldListData(
@@ -143,6 +159,8 @@ export function mergeOperationData(
   let holding: number = 0
   let amount: number = 0
   for (const item of operationData) {
+    if (item.action === OPERATION_ACTION_SOLDOUT) continue // ignore SOLDOUT item.action
+    
     const date = formatDateToYYYYMMDD(item.created)
     const index = ret.findIndex((elment) => elment.date === date)
     holding += item.quantity
