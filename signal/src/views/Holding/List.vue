@@ -396,15 +396,16 @@ function onReload() {
     <ElDivider class="mx-8px" content-position="left"><span style="font-weight: bold;">持股记录</span></ElDivider>
     <ElRow :gutter="24">
       <ElCol :span="12">
-        <ElButton class="my-4" type="primary" @click="createDialogVisible = true"
+        <ElButton class="my-4" size="small" type="primary" @click="createDialogVisible = true"
           >增加持股</ElButton
         >
       </ElCol>
       <ElCol :span="12">
-        <ElButton class="my-4" style="float: right" @click="onReload">刷新记录</ElButton>
+        <ElButton class="my-4" size="small" style="float: right" @click="onReload">刷新记录</ElButton>
         <ElCheckbox
           v-model="useLocale"
           class="my-4"
+          size="small"
           style="float: right; margin-right: 12px"
           label="使用本地数据"
         />
@@ -675,12 +676,10 @@ function onReload() {
         </ElTableColumn>
               </ElTable>
           </ElRow>
-          <ElDivider class="mx-8px" content-position="left" style="margin-top: 36px;"><span style="font-weight: bold;">清仓记录</span></ElDivider>
-    <ElRow>
-        <ElCol :span="24" style="text-align: right;">
-            <ElButton class="mb-4px" size="small" @click="showSoldoutTable = !showSoldoutTable">显示/隐藏</ElButton>
-        </ElCol>
-    </ElRow>
+          <ElDivider class="mx-8px" content-position="left" style="margin-top: 36px;">
+            <span style="font-weight: bold;">清仓记录</span>
+            <ElButton class="ml-12px" size="small" @click="showSoldoutTable = !showSoldoutTable">{{ showSoldoutTable ? '隐藏' : '显示' }}</ElButton>
+          </ElDivider>
     <ElRow :gutter="24" v-if="showSoldoutTable">
       <ElTable
         :data="soldoutData"
