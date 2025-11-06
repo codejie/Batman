@@ -43,7 +43,7 @@ import {
   OPERATION_ACTION_INTEREST
 } from '@/api/holding/types'
 import { ContentWrap } from '@/components/ContentWrap'
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, h } from 'vue'
 import {
   ElText,
   ElDialog,
@@ -330,6 +330,53 @@ function onRecordClick(row: HoldingRecordItem) {
 function onReload() {
   fetchHoldingData()
 }
+
+const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) => {
+  const { columns, data } = param
+  const sums: (string | import('vue').VNode)[] = []
+
+  const revenueTotal = data.reduce((prev, curr) => prev + (curr.calc?.revenue || 0), 0)
+  const profitTotal = data.reduce((prev, curr) => prev + (curr.calc?.profit || 0), 0)
+  const preProfitDiffTotal = data.reduce(
+    (prev, curr) => prev + (curr.calc?.pre_profit_diff || 0),
+    0
+  )
+
+  columns.forEach((column, index) => {
+    if (index === 0) {
+      sums[index] = ''
+      return
+    }
+
+    const renderSummaryCell = (value: number) => {
+      return h(
+        'span',
+        {
+          style: {
+            fontWeight: 'bold',
+            color: value >= 0 ? 'red' : 'green'
+          }
+        },
+        formatNumberString(value)
+      )
+    }
+
+    if (index === 8) {
+      // 市值/占比
+      sums[index] = renderSummaryCell(revenueTotal)
+    } else if (index === 9) {
+      // 盈亏/占比
+      sums[index] = renderSummaryCell(profitTotal)
+    } else if (index === 11) {
+      // 昨差/昨差率%
+      sums[index] = renderSummaryCell(preProfitDiffTotal)
+    } else {
+      sums[index] = ''
+    }
+  })
+
+  return sums
+}
 </script>
 
 <template>
@@ -420,6 +467,8 @@ function onReload() {
         stripe
         :border="true"
         :default-sort="{ prop: 'record.created', order: 'descending' }"
+        show-summary
+        :summary-method="getHoldingSummary"
       >
         <ElTableColumn type="index" width="40" />
         <ElTableColumn type="expand">
@@ -555,7 +604,7 @@ function onReload() {
             </ElText>
           </template>
         </ElTableColumn>
-        <ElTableColumn label="现价/日期" min-width="100">
+        <ElTableColumn label="现价/日期" min-width="90">
           <template #header>
             <ElTooltip effect="dark" content="当日价格" placement="top">
               <ElText>现价/日期</ElText>
@@ -567,7 +616,7 @@ function onReload() {
             }}]
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="100">
+        <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="90">
           <template #header>
             <ElTooltip effect="dark" content="与前一日价格差/价格差率%" placement="top">
               <ElText>昨差/昨差率%</ElText>
@@ -614,7 +663,7 @@ function onReload() {
             </div>
           </template>
         </ElTableColumn>
-        <ElTableColumn label="盈亏率 %" min-width="80">
+        <ElTableColumn label="盈亏率 %" min-width="70">
           <template #header>
             <ElTooltip effect="dark" content="盈亏/成本%" placement="top">
               <ElText>盈亏率%</ElText>
@@ -634,7 +683,7 @@ function onReload() {
             </div>
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="100">
+        <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="120">
           <template #header>
             <ElTooltip effect="dark" content="与前一日盈利差/盈利差率%" placement="top">
               <ElText>昨差/昨差率%</ElText>
