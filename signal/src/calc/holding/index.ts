@@ -89,12 +89,14 @@ export function calcSoldoutData(operations: HoldingOperationItem[]): Types.Soldo
 
   if (soldoutItems.length > 0) {
     const totalProfit = soldoutItems.reduce((acc, item) => acc + item.expense, 0);
+    const totalExpense = soldoutItems.reduce((acc, item) => acc + item.quantity * item.price, 0);
     const totalQuantity = soldoutItems.reduce((acc, item) => acc + item.quantity, 0);
     const avgPrice = totalQuantity !== 0 ? totalProfit / totalQuantity : 0;
     const lastSoldout = soldoutItems[soldoutItems.length - 1]; // To get the most recent date
 
     return {
       profit: totalProfit,
+      profit_rate: totalExpense !== 0 ? totalProfit / Math.abs(totalExpense) : 0,
       quantity: totalQuantity,
       price: avgPrice,
       date: lastSoldout.created
@@ -104,6 +106,7 @@ export function calcSoldoutData(operations: HoldingOperationItem[]): Types.Soldo
   // Fallback if no SOLDOUT record is found
   return {
     profit: 0,
+    profit_rate: 0,
     quantity: 0,
     price: 0,
     date: new Date()
