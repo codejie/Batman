@@ -16,7 +16,7 @@ RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debia
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz\
     && tar -xvzf ta-lib-0.4.0-src.tar.gz \
     && cd ta-lib/ \
-    && ./configure --prefix=/usr/local \
+    && ./configure --prefix=/usr/local --build=`/bin/arch`-unknown-linux-gnu \
     && make \
     && make install
 
