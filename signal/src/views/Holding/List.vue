@@ -348,13 +348,13 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
       return
     }
 
-    const renderSummaryCell = (value: number) => {
+    const renderSummaryCell = (value: number, withColor = true) => {
       return h(
         'span',
         {
           style: {
             fontWeight: 'bold',
-            color: value >= 0 ? 'red' : 'green'
+            color: withColor ? (value >= 0 ? 'red' : 'green') : undefined
           }
         },
         formatNumberString(value)
@@ -363,7 +363,7 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
 
     if (index === 8) {
       // 市值/占比
-      sums[index] = renderSummaryCell(revenueTotal)
+      sums[index] = renderSummaryCell(revenueTotal, false)
     } else if (index === 9) {
       // 盈亏/占比
       sums[index] = renderSummaryCell(profitTotal)
@@ -416,25 +416,30 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
       >
       <ElDescriptionsItem label="盈亏">
         <ElText tag="b">
-          {{ formatNumberString(funds?.profit) }}
+            <ElText :class="funds?.profit < 0 ? 'green-text' : 'red-text'">
+              {{ formatNumberString(funds?.profit) }}
+            </ElText>
           <ElTooltip v-if="showSoldoutTable" effect="dark" content="清仓盈亏合计" placement="top">
             <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable">
-              (+ {{ formatNumberString(funds?.soldout_profit) }} =
-              {{ formatNumberString((funds?.profit || 0) + (funds?.soldout_profit || 0)) }})
+               [ + {{ formatNumberString(funds?.soldout_profit) }} =
+              {{ formatNumberString((funds?.profit || 0) + (funds?.soldout_profit || 0)) }} ]
             </template>
           </ElTooltip>
         </ElText>
       </ElDescriptionsItem>
       <ElDescriptionsItem label="盈亏率">
-        <ElText tag="b">{{ formatRateString(funds?.profit_rate)}} 
+        <ElText tag="b">
+          <ElText :class="funds?.profit_rate < 0 ? 'green-text' : 'red-text'">
+            {{ formatRateString(funds?.profit_rate)}}
+          </ElText>
         <ElTooltip v-if="showSoldoutTable" effect="dark" content="清仓盈亏率合计" placement="top">
-          <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable">({{
+          <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable"> [ {{
             formatRateString(
               funds?.expense === 0
                 ? 0
                 : ((funds?.profit || 0) + (funds?.soldout_profit || 0)) / -funds?.expense!
             )
-            }})
+            }} ]
           </template>
         </ElTooltip>
       </ElText>
@@ -616,10 +621,10 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
             }}]
           </template>
         </ElTableColumn>
-        <ElTableColumn prop="calc.profit" label="昨差/昨差率%" min-width="90">
+        <ElTableColumn prop="calc.profit" label="涨跌额/涨跌幅%" min-width="90">
           <template #header>
             <ElTooltip effect="dark" content="与前一日价格差/价格差率%" placement="top">
-              <ElText>昨差/昨差率%</ElText>
+              <ElText>涨跌额/涨跌幅%</ElText>
             </ElTooltip>
           </template>
           <template #default="{ row }">

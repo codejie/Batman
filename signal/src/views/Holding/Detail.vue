@@ -279,7 +279,7 @@ function onProfitTableExpandChange(row, expandedRows) {
         <ElTableColumn prop="calc?.price_cur" label="现价/日期" min-width="80">
           <template #default="{ row }">
             {{ formatNumberString(row.calc?.price_cur) }} [{{
-              `${row.calc?.date_cur.substring(5)}`
+              `${row.calc?.date_cur?.substring(5)}`
             }}]
           </template>
         </ElTableColumn>
