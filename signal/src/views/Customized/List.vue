@@ -40,7 +40,7 @@ import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '
 import { apiGetName, apiGetSpotData, TYPE_INDEX, TYPE_STOCK, apiGetItemInfo } from '@/api/data'
 import { ContentWrap } from '@/components/ContentWrap'
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized'
-import { KLineDialog } from '@/components/KLine'
+import { KLineDialog, KLineDialogPro } from '@/components/KLine'
 import { HoldingRecordItem } from '@/api/holding'
 import { useWebSocket, UseWebSocketOptions } from '@vueuse/core'
 import { useUserStoreWithOut } from '@/store/modules/user'
@@ -117,6 +117,7 @@ async function searchItem(key: string, target: 'create') {
 
 const data = ref<Item[]>([])
 const klineDialogVisible = ref<boolean>(false)
+const klineDialogProVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
 const fetchTime = ref<string>()
 const useHistory = ref<boolean>(true)
@@ -252,6 +253,15 @@ function onRecordClick(row: HoldingRecordItem) {
   klineDialogVisible.value = true
 }
 
+function onMinuteClick(row: RecordsItem) {
+  reqParam.value = {
+    code: row.code,
+    name: row.name,
+    type: row.type
+  }
+  klineDialogProVisible.value = true
+}
+
 function onTarget(id: number) {
   updateTargetForm.value.id = id
   updateTargetDialogVisible.value = true
@@ -336,7 +346,7 @@ async function onWebSocketClick() {
             <div><ElText>最新价/目标价/差值</ElText></div>
           </template>
           <template #default="{ row }">
-            <div>
+            <div @click="onMinuteClick(row.record)" class="cursor-pointer">
               <ElText>{{ formatNumberString(row.calc?.最新价) }}</ElText>
               <ElText v-if="row.record.target">
                 / {{ formatNumberString(row.record.target) }}</ElText
@@ -399,32 +409,6 @@ async function onWebSocketClick() {
               ><ElText
                 >{{ formatNumberString(row.calc?.量比) }} /
                 {{ formatNumberString(row.calc?.换手率) }}%</ElText
-              ></div
-            >
-          </template>
-        </ElTableColumn>
-        <ElTableColumn min-width="100">
-          <template #header>
-            <div><ElText>5分钟涨跌/涨速</ElText></div>
-          </template>
-          <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"
-              ><ElText
-                >{{ formatNumberString(row.calc?.涨跌5分钟) }} /
-                {{ formatNumberString(row.calc?.涨速) }}</ElText
-              ></div
-            >
-          </template>
-        </ElTableColumn>
-        <ElTableColumn min-width="120">
-          <template #header>
-            <div><ElText>60日/年初至今涨跌幅</ElText></div>
-          </template>
-          <template #default="{ row }">
-            <div v-if="row.record.type == TYPE_STOCK"
-              ><ElText
-                >{{ formatNumberString(row.calc?.涨跌幅60日) }}% /
-                {{ formatNumberString(row.calc?.年初至今涨跌幅) }}%</ElText
               ></div
             >
           </template>
@@ -500,6 +484,12 @@ async function onWebSocketClick() {
       @update:on-close="klineDialogVisible = false"
       width="60%"
     />
+    <KLineDialogPro
+      :visible="klineDialogProVisible"
+      :req-param="reqParam"
+      @update:on-close="klineDialogProVisible = false"
+      width="60%"
+    />
   </ContentWrap>
 </template>
 <style lang="css" scoped>
@@ -509,5 +499,9 @@ async function onWebSocketClick() {
 
 .red-text {
   color: red;
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

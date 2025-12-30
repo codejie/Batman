@@ -74,6 +74,9 @@ def download_minute_data(codes: List[str], start: str, end: str, period: str = '
       numeric_cols = ['open', 'high', 'low', 'close', 'volume', 'amount']
       df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric)
       
+      # Format time from YYYYMMDDHHMMSSsss to HH:MM:SS
+      df['time'] = df['time'].str[8:10] + ':' + df['time'].str[10:12] + ':' + df['time'].str[12:14]
+      
       results.append(df)
       
     bs.logout()

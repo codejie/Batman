@@ -4,12 +4,15 @@ import { HistoryDataItem } from '@/api/data'
 // import KLineChart2 from './src/KLineChart2.vue'
 // import KLineChart3 from './src/KLineChart3.vue'
 import KLineChart4 from './src/KLineChart4.vue'
+import KLineChartPro from './src/KLineChartPro.vue'
 // import KLinePanel from './src/KLinePanel.vue'
 import KLinePanel2 from './src/KLinePanel2.vue'
+import KLinePanelPro from './src/KLinePanelPro.vue'
 import KLineDialog from './src/KLineDialog.vue'
+import KLineDialogPro from './src/KLineDialogPro.vue'
 
 // export { KLineChart, KLineChart2, KLineChart3, KLineChart4, KLinePanel, KLinePanel2 }
-export { KLineChart4, KLinePanel2, KLineDialog }
+export { KLineChart4, KLineChartPro, KLinePanel2, KLinePanelPro, KLineDialog, KLineDialogPro }
 
 export type ReqParam = {
   type: number

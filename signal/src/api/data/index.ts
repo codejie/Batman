@@ -30,6 +30,15 @@ export const apiGetHistoryData = (
   })
 }
 
+export const apiGetMinuteData = (
+  data: Types.GetMinuteDataRequest
+): Promise<IResponse<Types.GetMinuteDataResult>> => {
+  return request.post({
+    url: '/data/get_minute_data',
+    data
+  })
+}
+
 export const apiGetSpotData = (
   data: Types.GetSpotDataRequest
 ): Promise<IResponse<Types.GetSpotDataResult>> => {

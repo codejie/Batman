@@ -1,4 +1,4 @@
-import asyncio
+# import asyncio
 from typing import Optional
 from fastapi import APIRouter, Depends
 from app.database import data as Data
@@ -118,8 +118,10 @@ class GetMinuteDataRequest(RequestModel):
   period: str = '5'
   adjust: str = 'qfq'
 
+from typing import Any, Optional
+...
 class GetMinuteDataResponse(ResponseModel):
-  result: list[Optional[dict]] = []
+  result: list[Any] = []
 
 @router.post("/get_minute_data", response_model=GetMinuteDataResponse)
 async def get_minute_data_api(request: GetMinuteDataRequest):

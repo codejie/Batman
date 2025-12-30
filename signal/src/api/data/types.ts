@@ -55,6 +55,18 @@ export interface SpotDataItem {
   年初至今涨跌幅?: number
 }
 
+export interface MinuteDataItem {
+  date: string
+  time: string
+  open: number
+  close: number
+  high: number
+  low: number
+  volume: number
+  amount: number
+  adjust: number
+}
+
 export interface GetLatestHistoryDataRequest {
   type: number
   code: string
@@ -100,3 +112,13 @@ export interface ItemInfo {
   name: string
 }
 export type GetItemInfoResult = ItemInfo
+
+export interface GetMinuteDataRequest {
+  type: number
+  codes: string[]
+  start: string
+  end: string
+  period?: string
+  adjust?: string
+}
+export type GetMinuteDataResult = (MinuteDataItem[] | null)[]
