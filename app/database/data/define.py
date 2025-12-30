@@ -144,3 +144,16 @@ class SpotData(BaseModel):
   # class Config:
   #   from_attributes = True
 
+def format_code_with_market(code: str) -> str:
+  """
+  Format stock code to Baostock format: {sh/sz}.{code}
+  """
+  if '.' in code:
+    return code
+  if code.startswith('6'):
+    return f'sh.{code}'
+  elif code.startswith('0') or code.startswith('3'):
+    return f'sz.{code}'
+  elif code.startswith('8') or code.startswith('4'):
+    return f'bj.{code}'
+  return code

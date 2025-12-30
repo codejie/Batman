@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Optional, List
 from pandas import DataFrame
 from sqlalchemy import delete
 from app.database.data import define as Define, utils as Utils
+from app.database.data import index_bao as BaoIndex
 from app.database import dbEngine
 import akshare as ak
 """
@@ -48,6 +49,10 @@ def download_history_data(code: str, start: str, end: str, period: str = 'daily'
     return data
   else:
     return None
+
+def download_minute_data(codes: List[str], start: str, end: str, period: str = 'daily', adjust: str = '3') -> List[Optional[DataFrame]]:
+  formatted_codes = [Define.format_code_with_market(code) for code in codes]
+  return BaoIndex.download_minute_data(formatted_codes, start, end, period, adjust)
   
 def download_spot_data(codes: list[str] = None) -> Optional[DataFrame]:
   # choice of {"沪深重要指数", "上证系列指数", "深证系列指数", "指数成份", "中证系列指数"}

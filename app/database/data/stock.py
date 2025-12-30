@@ -1,13 +1,15 @@
 """
 Stock
 """
-from typing import Optional
+from typing import Optional, List
 from pandas import DataFrame
 import akshare as ak
 from sqlalchemy import delete
 from app.database import dbEngine
 from app.database.data import define as Define
 from app.database.data import utils as Utils
+from app.database.data import stock_bao as BaoStock
+
 
 from app.logger import logger
 
@@ -47,6 +49,11 @@ def download_history_data(code: str, start: str, end: str, period: str = 'daily'
     return data
   else:
     return None
+
+def download_minute_data(codes: List[str], start: str, end: str, period: str = '5', adjust: str = 'qfq') -> List[Optional[DataFrame]]:
+  formatted_codes = [Define.format_code_with_market(code) for code in codes]
+  return BaoStock.download_minute_data(formatted_codes, start, end, period, adjust)
+
 
 # def fetch_history_data(code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq') -> list[Define.HistoryData]:
 #   return Define.fetch_history_data(Define.TYPE_STOCK, code, start, end, period, adjust)

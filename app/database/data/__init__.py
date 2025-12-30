@@ -1,5 +1,6 @@
 from datetime import datetime, date, timedelta
-from typing import Optional
+from typing import Optional, List
+from pandas import DataFrame
 from sqlalchemy import delete, inspect, or_, select, text, update
 from app.database import dbEngine
 import app.database.data.utils as Utils
@@ -145,6 +146,17 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
     return results
   else:
     return []
+
+def download_minute_data(type: int, codes: list[str], start: str, end: str, period: str = '5', adjust: str = 'qfq') -> list[Optional[DataFrame]]:
+  data = []
+  if type == Define.TYPE_STOCK:
+    data = Stock.download_minute_data(codes=codes, start=start, end=end, period=period, adjust=adjust)
+  elif type == Define.TYPE_INDEX:
+    data = Index.download_minute_data(codes=codes, start=start, end=end, period=period, adjust=adjust)
+  else:
+    raise ValueError(f"Unknown type: {type}")
+  return data
+
 
 def fetch_history_data(type: int, code: str, start: str, end: str, period: str = 'daily', adjust: str = 'qfq', limit: int = None) -> list[Define.HistoryData]:
   table_name = make_history_data_table_name(type=type, code=code, period=period, adjust=adjust)

@@ -110,6 +110,39 @@ async def get_history_data_api(request: GetHistoryDataRequest):
   )
   return GetHistoryDataResponse(result=result)
 
+class GetMinuteDataRequest(RequestModel):
+  type: int
+  codes: list[str]
+  start: str
+  end: str
+  period: str = '5'
+  adjust: str = 'qfq'
+
+class GetMinuteDataResponse(ResponseModel):
+  result: list[Optional[dict]] = []
+
+@router.post("/get_minute_data", response_model=GetMinuteDataResponse)
+async def get_minute_data_api(request: GetMinuteDataRequest):
+  data_frames = Data.download_minute_data(
+    type=request.type,
+    codes=request.codes,
+    start=request.start,
+    end=request.end,
+    period=request.period,
+    adjust=request.adjust
+  )
+  
+  # Convert DataFrames to dicts for response
+  result = []
+  for df in data_frames:
+    if df is not None:
+      result.append(df.to_dict(orient='records'))
+    else:
+      result.append(None)
+      
+  return GetMinuteDataResponse(result=result)
+
+
 class GetLatestHistoryDataRequest(RequestModel):
   type: int
   code: str
