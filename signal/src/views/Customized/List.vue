@@ -37,11 +37,10 @@ import {
   ElCheckbox
 } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '@/api/customized'
-import { apiGetName, apiGetSpotData, TYPE_INDEX, TYPE_STOCK, apiGetItemInfo } from '@/api/data'
+import { apiGetSpotData, TYPE_INDEX, TYPE_STOCK } from '@/api/data'
 import { ContentWrap } from '@/components/ContentWrap'
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized'
 import { KLineDialog, KLineDialogPro } from '@/components/KLine'
-import { HoldingRecordItem } from '@/api/holding'
 import { useWebSocket, UseWebSocketOptions } from '@vueuse/core'
 import { useUserStoreWithOut } from '@/store/modules/user'
 import { formatNumberString } from '@/utils/fmtUtil'
@@ -244,7 +243,7 @@ async function onRemove(id: number) {
   }
 }
 
-function onRecordClick(row: HoldingRecordItem) {
+function onRecordClick(row: RecordsItem) {
   reqParam.value = {
     code: row.code,
     name: row.name,
@@ -341,18 +340,24 @@ async function onWebSocketClick() {
             </div>
           </template>
         </ElTableColumn>
-        <ElTableColumn min-width="120">
+        <ElTableColumn min-width="80">
           <template #header>
-            <div><ElText>最新价/目标价/差值</ElText></div>
+            <div><ElText>最新价</ElText></div>
           </template>
           <template #default="{ row }">
             <div @click="onMinuteClick(row.record)" class="cursor-pointer">
               <ElText>{{ formatNumberString(row.calc?.最新价) }}</ElText>
-              <ElText v-if="row.record.target">
-                / {{ formatNumberString(row.record.target) }}</ElText
-              >
+            </div>
+          </template>
+        </ElTableColumn>
+        <ElTableColumn min-width="100">
+          <template #header>
+            <div><ElText>目标价/差值</ElText></div>
+          </template>
+          <template #default="{ row }">
+            <div v-if="row.record.target">
+              <ElText>{{ formatNumberString(row.record.target) }}</ElText>
               <ElText
-                v-if="row.record.target"
                 :class="row.calc?.最新价 - row.record.target >= 0 ? 'red-text' : 'green-text'"
               >
                 / {{ formatNumberString(row.calc?.最新价 - row.record.target) }}</ElText

@@ -92,14 +92,16 @@ function calcMAData(ma: number, data: number[]) {
  * Fetch minute data from API
  */
 async function fetchMinuteData() {
+  console.log(props.reqParam)
   const period = props.reqParam.period || props.initParam.period
   const start = props.reqParam.start || getStartDate(currentRange.value)
-  
+  const end = props.reqParam.end || getEndDate()
+  console.log(period, start, end)
   const ret = await apiGetMinuteData({
     type: props.reqParam.type,
     codes: [props.reqParam.code],
     start: start,
-    end: props.reqParam.end || new Date().toISOString().slice(0, 10),
+    end: end,
     period: period,
     adjust: props.reqParam.adjust || 'qfq'
   })
@@ -214,19 +216,33 @@ async function onRangeChanged() {
 }
 
 /**
- * Utility to calculate start date string
+ * Utility to calculate end date (tomorrow)
+ */
+function getEndDate() {
+  const date = new Date()
+  date.setDate(date.getDate() + 1) // Tomorrow
+  return date.toISOString().slice(0, 10)
+}
+
+/**
+ * Utility to calculate start date string based on range
+ * 1天: today to tomorrow
+ * 3天: 2 days ago (前天) to tomorrow
+ * 5天: 4 days ago (大前天) to tomorrow
  */
 function getStartDate(range: string) {
   const date = new Date()
   switch (range) {
     case '1天':
-      // Today is fine
+      // Today (0 days back)
       break
     case '3天':
-      date.setDate(date.getDate() - 4)
+      // 前天 (2 days ago)
+      date.setDate(date.getDate() - 2)
       break
     case '5天':
-      date.setDate(date.getDate() - 7)
+      // 大前天 (4 days ago)
+      date.setDate(date.getDate() - 4)
       break
   }
   return date.toISOString().slice(0, 10)

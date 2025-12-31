@@ -26,7 +26,7 @@ class NoteItemModel(BaseModel):
   created: Optional[datetime] = None
 
   class Config:
-    orm_mode = True
+    from_attributes = True
 
 def create_note(note: NoteItemModel) -> int:
   tags_json = json.dumps(note.tags)

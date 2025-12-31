@@ -2,7 +2,7 @@
 from typing import Optional
 from fastapi import APIRouter, Depends
 from app.database import data as Data
-from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData, ItemInfo, SpotData
+from app.database.data.define import ADJUST_QFQ, PERIOD_DAILY, TYPE_STOCK, HistoryData, ItemInfo, MinuteData, SpotData
 from app.routers.common import RequestModel, ResponseModel, verify_token, verify_system_token
 
 router: APIRouter = APIRouter(prefix="/data", tags=["Data"], dependencies=[Depends(verify_token)])
@@ -118,10 +118,8 @@ class GetMinuteDataRequest(RequestModel):
   period: str = '5'
   adjust: str = 'qfq'
 
-from typing import Any, Optional
-...
 class GetMinuteDataResponse(ResponseModel):
-  result: list[Any] = []
+  result: list[Optional[list[MinuteData]]] = []
 
 @router.post("/get_minute_data", response_model=GetMinuteDataResponse)
 async def get_minute_data_api(request: GetMinuteDataRequest):
@@ -134,11 +132,13 @@ async def get_minute_data_api(request: GetMinuteDataRequest):
     adjust=request.adjust
   )
   
-  # Convert DataFrames to dicts for response
+  # Convert DataFrames to MinuteData models
   result = []
   for df in data_frames:
     if df is not None:
-      result.append(df.to_dict(orient='records'))
+      # Convert DataFrame to list of MinuteData models
+      minute_data_list = [MinuteData(**record) for record in df.to_dict(orient='records')]
+      result.append(minute_data_list)
     else:
       result.append(None)
       

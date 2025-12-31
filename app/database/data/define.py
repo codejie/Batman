@@ -144,6 +144,23 @@ class SpotData(BaseModel):
   # class Config:
   #   from_attributes = True
 
+"""
+Minute Data Model
+"""
+class MinuteData(BaseModel):
+  date: str
+  time: str
+  open: float
+  close: float
+  high: float
+  low: float
+  volume: float
+  amount: float
+  adjust: float
+
+  # class Config:
+  #   from_attributes = True
+
 def format_code_with_market(code: str) -> str:
   """
   Format stock code to Baostock format: {sh/sz}.{code}
