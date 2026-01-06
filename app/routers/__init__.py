@@ -1,8 +1,8 @@
 from fastapi import APIRouter, FastAPI
 from app.routers import data, data_third, holding, account, funds, sse, system, libs, customized, notes
-from app.routers import services, calc
+from app.routers import services, calc, agent
 
-def register_routers(app: FastAPI) -> list[APIRouter]:
+def register_routers(app: FastAPI):
   app.include_router(libs.router)
   app.include_router(data.router)
   app.include_router(data_third.router)
@@ -15,4 +15,5 @@ def register_routers(app: FastAPI) -> list[APIRouter]:
   app.include_router(sse.router)
   app.include_router(calc.router)
   app.include_router(notes.router)
+  app.include_router(agent.router)
 

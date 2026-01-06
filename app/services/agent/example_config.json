@@ -1,0 +1,55 @@
+{
+    "name": "Stock Analysis Agent",
+    "system_prompt": "You are a professional stock market analyst. Provide detailed analysis on stocks and market trends. Always cite data sources and be transparent about uncertainties.",
+    "model": "deepseek-chat",
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "top_k": 0,
+    "max_tokens": 2000,
+    "tools": [
+        {
+            "name": "get_stock_price",
+            "description": "Get the current price of a stock by its code",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "Stock code (e.g., 600000.SH)"
+                    }
+                },
+                "required": [
+                    "code"
+                ]
+            },
+            "enabled": true
+        },
+        {
+            "name": "get_stock_news",
+            "description": "Get recent news about a stock",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "Stock code"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Number of news items to return",
+                        "default": 5
+                    }
+                },
+                "required": [
+                    "code"
+                ]
+            },
+            "enabled": true
+        }
+    ],
+    "memory": {
+        "max_history": 10,
+        "memory_type": "message_window",
+        "enabled": true
+    }
+}

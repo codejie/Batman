@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from app.routers.common import verify_token
 from app.services.sse_manager import manager, make_sse_task_queue
 from app.services.tasks.calc_sse_task import CalcSseTask
+from app.services.tasks.agent_sse_task import AgentSseTask
 
 # The router
 router = APIRouter(
@@ -16,6 +17,13 @@ async def calc_report(request: Request, uid: int = verify_token()):
     Establishes an SSE connection for calculation reports.
     """
     return StreamingResponse(make_sse_task_queue(request, uid, type=CalcSseTask.TYPE), media_type="text/event-stream")
+
+@router.get("/agent")
+async def agent_chat(request: Request, uid: int = verify_token()):
+    """
+    Establishes an SSE connection for agent chat responses.
+    """
+    return StreamingResponse(make_sse_task_queue(request, uid, type=AgentSseTask.TYPE), media_type="text/event-stream")
 
 # Example of how to use the manager from another part of your app
 # @router.post("/send/{uid}/{type}")

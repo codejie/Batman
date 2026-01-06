@@ -158,7 +158,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           noCache: true,
           hidden: true,
           canTo: true,
-          activeMenu: '/holding/list'          
+          activeMenu: '/holding/list'
         }
       }
     ]
@@ -211,6 +211,14 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
           noCache: true,
           hidden: true,
           canTo: true
+        }
+      },
+      {
+        name: 'Agent',
+        path: 'agent',
+        component: () => import('@/views/Analysis/Agent.vue'),
+        meta: {
+          title: 'AI咨询'
         }
       }
     ]
