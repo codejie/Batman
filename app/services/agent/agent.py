@@ -6,7 +6,7 @@ import json
 from typing import Optional, List, Dict, Any, AsyncGenerator, Tuple
 from dataclasses import dataclass
 from datetime import datetime
-import httpx
+from openai import AsyncOpenAI
 
 from .config import AgentConfig
 from app.logger import logger
@@ -44,6 +44,12 @@ class Agent:
         self.deepseek_api_key = self._get_api_key()
         self.base_url = "https://api.deepseek.com"
         self.model = config.model
+        
+        # Initialize OpenAI client for DeepSeek
+        self.client = AsyncOpenAI(
+            api_key=self.deepseek_api_key,
+            base_url=self.base_url
+        )
         
     def _get_api_key(self) -> str:
         """Get DeepSeek API key from environment."""
@@ -126,12 +132,8 @@ class Agent:
         # Prepare API call
         messages = self._get_messages_for_api()
         
-        headers = {
-            "Authorization": f"Bearer {self.deepseek_api_key}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
+        # Prepare parameters
+        params = {
             "model": self.model,
             "messages": messages,
             "temperature": self.config.temperature,
@@ -141,87 +143,66 @@ class Agent:
         
         # Add thinking if requested
         if use_thinking:
-            # payload["thinking"] = {
-            #     "type": "enabled",
-            #     "budget_tokens": 1024
-            # }
-            payload["extra_body"] = {
+            params["extra_body"] = {
                 "thinking": {
                     "type": "enabled"
                 }
-            }        
+            }
+        
         if self.config.max_tokens:
-            payload["max_tokens"] = self.config.max_tokens
+            params["max_tokens"] = self.config.max_tokens
         
         if self.config.top_k > 0:
-            payload["top_k"] = self.config.top_k
+            params["extra_body"] = params.get("extra_body", {})
+            params["extra_body"]["top_k"] = self.config.top_k
         
         try:
-            async with httpx.AsyncClient(timeout=300.0) as client:
-                async with client.stream(
-                    "POST",
-                    f"{self.base_url}/chat/completions",
-                    headers=headers,
-                    json=payload
-                ) as response:
-                    if response.status_code != 200:
-                        error_text = await response.aread()
-                        raise Exception(f"DeepSeek API error: {response.status_code} - {error_text.decode()}")
-                    
-                    full_content = ""
-                    full_thinking = ""
-                    
-                    async for line in response.aiter_lines():
-                        if line.startswith("data: "):
-                            data_str = line[6:]
-                            if data_str == "[DONE]":
-                                continue
-                            
-                            try:
-                                chunk = json.loads(data_str)
-                                
-                                # Process choices
-                                if "choices" in chunk and len(chunk["choices"]) > 0:
-                                    choice = chunk["choices"][0]
-                                    delta = choice.get("delta", {})
-                                    
-                                    # Handle thinking content
-                                    if "thinking" in delta:
-                                        thinking_text = delta["thinking"]
-                                        full_thinking += thinking_text
-                                        yield {
-                                            "type": "thinking",
-                                            "content": thinking_text
-                                        }
-                                    
-                                    # Handle regular content
-                                    if "content" in delta:
-                                        content_text = delta["content"]
-                                        full_content += content_text
-                                        yield {
-                                            "type": "content",
-                                            "content": content_text
-                                        }
-                                    
-                                    # Check for finish reason
-                                    finish_reason = choice.get("finish_reason")
-                                    if finish_reason:
-                                        yield {
-                                            "type": "finish",
-                                            "reason": finish_reason
-                                        }
-                            
-                            except json.JSONDecodeError:
-                                logger.warning(f"Failed to parse JSON: {data_str}")
-                                continue
-                    
-                    # Add assistant message to history
-                    if full_content:
-                        self.add_message(
-                            "assistant",
-                            full_content,
-                            thinking=full_thinking if full_thinking else None
-                        )
+            full_content = ""
+            full_thinking = ""
+            
+            stream = await self.client.chat.completions.create(**params)
+            
+            async for chunk in stream:
+                if not chunk.choices:
+                    continue
+                
+                delta = chunk.choices[0].delta
+                finish_reason = chunk.choices[0].finish_reason
+                
+                # Handle thinking content
+                # Check for 'thinking' (DeepSeek specific) or 'reasoning_content' (standard)
+                thinking_text = getattr(delta, 'thinking', None) or getattr(delta, 'reasoning_content', None)
+                
+                if thinking_text:
+                    full_thinking += thinking_text
+                    yield {
+                        "type": "thinking",
+                        "content": thinking_text
+                    }
+                
+                # Handle regular content
+                if delta.content:
+                    content_text = delta.content
+                    full_content += content_text
+                    yield {
+                        "type": "content",
+                        "content": content_text
+                    }
+                
+                # Check for finish reason
+                if finish_reason:
+                    yield {
+                        "type": "finish",
+                        "reason": finish_reason
+                    }
+            
+            # Add assistant message to history
+            if full_content:
+                self.add_message(
+                    "assistant",
+                    full_content,
+                    thinking=full_thinking if full_thinking else None
+                )
         
         except Exception as e:
             logger.error(f"Error in chat: {e}")

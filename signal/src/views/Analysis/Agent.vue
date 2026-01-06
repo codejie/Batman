@@ -52,11 +52,16 @@ const sendMessage = async () => {
             const sseMessage = data as SSEMessage
             
             if (sseMessage.type === 'thinking') {
-              chatMessages.value.push({
-                type: 'thinking',
-                content: sseMessage.content || '',
-                timestamp: new Date().toLocaleTimeString()
-              })
+              const lastMessage = chatMessages.value[chatMessages.value.length - 1]
+              if (lastMessage && lastMessage.type === 'thinking') {
+                lastMessage.content += sseMessage.content || ''
+              } else {
+                chatMessages.value.push({
+                  type: 'thinking',
+                  content: sseMessage.content || '',
+                  timestamp: new Date().toLocaleTimeString()
+                })
+              }
             } else if (sseMessage.type === 'content') {
               // Find the last assistant message or create a new one
               const lastMessage = chatMessages.value[chatMessages.value.length - 1]
