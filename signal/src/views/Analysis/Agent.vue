@@ -43,8 +43,7 @@ const sendMessage = async () => {
     }
 
     const res = await apiAgentChat(chatRequest)
-
-    if (res && res.result === 0) {
+    if (res && res.code === 0) {
       // Connect to SSE for streaming response
       eventSource = apiConnectToAgent(
         (data) => {
@@ -83,6 +82,13 @@ const sendMessage = async () => {
                 timestamp: new Date().toLocaleTimeString()
               })
               isLoading.value = false
+            } else if (sseMessage.type === 'chart') {
+              // Handle chart message type if needed
+              chatMessages.value.push({
+                type: 'assistant',
+                content: '[图表数据已接收]',
+                timestamp: new Date().toLocaleTimeString()
+              })
             }
             
             // Scroll to bottom
@@ -104,7 +110,7 @@ const sendMessage = async () => {
         }
       )
     } else {
-      ElMessage.warning(res?.result === 1 ? '任务已在运行中' : '发送失败')
+      ElMessage.warning(res?.code === 1 ? '任务已在运行中' : '发送失败')
       isLoading.value = false
     }
   } catch (error) {
@@ -140,19 +146,8 @@ const getMessageClass = (type: string) => {
 </script>
 
 <template>
-  <ContentWrap title="AI咨询">
+  <ContentWrap>
     <div class="agent-container">
-      <!-- Settings Panel -->
-      <div class="settings-panel">
-        <ElSpace>
-          <span>启用思考：</span>
-          <ElSelect v-model="useThinking" style="width: 100px">
-            <ElOption :label="'否'" :value="false" />
-            <ElOption :label="'是'" :value="true" />
-          </ElSelect>
-        </ElSpace>
-      </div>
-
       <!-- Messages Display -->
       <div class="messages-container" ref="messagesContainerRef">
         <ElEmpty v-if="chatMessages.length === 0" description="暂无消息，开始对话吧" />
@@ -185,6 +180,13 @@ const getMessageClass = (type: string) => {
 
         <div class="button-area">
           <ElSpace>
+            <span class="text-sm">启用思考：</span>
+            <ElSelect v-model="useThinking" style="width: 80px" size="small">
+              <ElOption :label="'否'" :value="false" />
+              <ElOption :label="'是'" :value="true" />
+            </ElSelect>
+          </ElSpace>
+          <ElSpace>
             <ElButton type="primary" :loading="isLoading" @click="sendMessage">
               发送 (Ctrl+Enter)
             </ElButton>
@@ -202,14 +204,8 @@ const getMessageClass = (type: string) => {
 .agent-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 240px);
+  height: calc(100vh - 200px);
   gap: 16px;
-}
-
-.settings-panel {
-  padding: 12px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
 }
 
 .messages-container {
@@ -324,6 +320,7 @@ const getMessageClass = (type: string) => {
 
 .button-area {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

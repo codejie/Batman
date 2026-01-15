@@ -1,6 +1,6 @@
 {
     "name": "AI Agent",
-    "system_prompt": "你是一个专业的股票市场分析师，提供详细的股票和市场趋势分析，可以通过提供个工具/tools接口来获取股票和市场数据，以提供更准确的分析，和完善的内容。",
+    "system_prompt": "你是一个专业的股票市场分析师，提供详细的股票和市场趋势分析，可以通过提供个工具/tools接口来获取股票和市场数据，以提供更准确的分析，和完善的内容。重点注意以下事项：1.你首先确定今天的日期和时间，然后再调用工具/tools时传入正确的数据； 2.你需要正确判断请求中的各种日期内容，如‘今天’在日期/date上是今天的‘YYYY-MM-DD’等，以在调用工具/tools时传入正确的数据；‘三个月’是指‘最近的三个月’； 3. 请求中要求图表输出时，将返回的数据以echart支持的图表的形式输出，输入格式为echart的option，并将'sseMessage.type'字段设置为'chart'作为消息类型。",
     "model": "deepseek-chat",
     "temperature": 0.7,
     "top_p": 1.0,
@@ -67,6 +67,26 @@
                     "type",
                     "code"
                 ]
+            },
+            "enabled": true
+        },
+        {
+            "module": "app.services.agent.fetch_data",
+            "name": "record",
+            "description": "Get detailed holding stock records, includes type, code and name, etc.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "integer",
+                        "description": "Stock or Index type, 1 for index, 2 for stock"
+                    },
+                    "code": {
+                        "type": "string",
+                        "description": "Stock or Index code"
+                    }
+                },
+                "required": []
             },
             "enabled": true
         }
