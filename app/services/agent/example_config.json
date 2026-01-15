@@ -9,6 +9,7 @@
     "tools": [
         {
             "name": "get_stock_price",
+            "module": "app.services.agent.fetch_data",
             "description": "Get the current price of a stock by its code",
             "parameters": {
                 "type": "object",
@@ -26,6 +27,7 @@
         },
         {
             "name": "get_stock_news",
+            "module": "app.services.agent.fetch_data",
             "description": "Get recent news about a stock",
             "parameters": {
                 "type": "object",

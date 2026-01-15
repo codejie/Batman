@@ -24,7 +24,7 @@ def _load_agent_config():
     """Load agent configuration from file (singleton)."""
     global _agent_config
     if _agent_config is None:
-        config_path = os.getenv('AGENT_CONFIG_PATH', 'app/services/agent/example_config.json')
+        config_path = os.getenv('AGENT_CONFIG_PATH', 'app/services/agent/data_agent_config.json')  # Default to 'app/services/agent example_config.json')
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 config_data = json.load(f)

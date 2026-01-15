@@ -13,6 +13,7 @@ class ToolConfig:
     description: str
     parameters: Dict[str, Any] = field(default_factory=dict)
     enabled: bool = True
+    module: Optional[str] = None
 
 
 @dataclass

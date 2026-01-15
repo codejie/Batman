@@ -1,0 +1,36 @@
+{
+    "name": "Helpful Assistant",
+    "system_prompt": "You are a helpful assistant that can access tools. When you use a tool, you must use the following format:\n\nThought: Do I need to use a tool? Yes, I should use the `get_current_weather` tool to find the weather in Beijing.\nTool: `get_current_weather` with arguments `{\"location\": \"Beijing\"}`\n",
+    "model": "deepseek-chat",
+    "temperature": 0.7,
+    "top_p": 1.0,
+    "top_k": 0,
+    "max_tokens": 2000,
+    "tools": [
+        {
+            "module": "app.services.agent.local_tools",
+            "name": "get_current_weather",
+            "description": "Get the current weather in a given location",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "description": "The city and state, e.g. San Francisco, CA"
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": ["celsius", "fahrenheit"]
+                    }
+                },
+                "required": ["location"]
+            },
+            "enabled": true
+        }
+    ],
+    "memory": {
+        "max_history": 10,
+        "memory_type": "message_window",
+        "enabled": true
+    }
+}
