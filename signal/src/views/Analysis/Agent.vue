@@ -174,7 +174,7 @@ const getMessageClass = (type: string) => {
             :rows="3"
             placeholder="请输入你的问题或指令..."
             :disabled="isLoading"
-            @keyup.ctrl.enter="sendMessage"
+            @keyup.enter="sendMessage"
           />
         </div>
 
@@ -188,7 +188,7 @@ const getMessageClass = (type: string) => {
           </ElSpace>
           <ElSpace>
             <ElButton type="primary" :loading="isLoading" @click="sendMessage">
-              发送 (Ctrl+Enter)
+              发送 (Enter)
             </ElButton>
             <ElButton @click="clearMessages" :disabled="isLoading">
               清空消息

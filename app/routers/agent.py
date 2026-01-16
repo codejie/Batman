@@ -8,8 +8,8 @@ from app.routers.common import RequestModel, ResponseModel, verify_token
 from app.services.task_manager import taskManager
 from app.services.tasks.agent_sse_task import AgentSseTask
 from app.services.agent import AgentConfig
+from app.services.agent.config import load_agent_config_from_file
 from app.logger import logger
-import json
 
 router: APIRouter = APIRouter(
     prefix="/agent",
@@ -24,11 +24,9 @@ def _load_agent_config():
     """Load agent configuration from file (singleton)."""
     global _agent_config
     if _agent_config is None:
-        config_path = os.getenv('AGENT_CONFIG_PATH', 'app/services/agent/data_agent_config.json')  # Default to 'app/services/agent example_config.json')
+        config_path = os.getenv('AGENT_CONFIG_PATH', 'app/services/agent/agent_config.yaml')
         try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config_data = json.load(f)
-            _agent_config = AgentConfig.from_dict(config_data)
+            _agent_config = load_agent_config_from_file(config_path)
             logger.info(f"[Agent] Config loaded from {config_path}")
         except Exception as e:
             logger.error(f"[Agent] Failed to load config from {config_path}: {e}")

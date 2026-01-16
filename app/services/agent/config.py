@@ -4,6 +4,7 @@ Agent configuration module for managing prompts, tools, and memory settings.
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional, Dict, Any
 import json
+import yaml
 
 
 @dataclass
@@ -54,6 +55,11 @@ class AgentConfig:
         tools_data = data.pop('tools', [])
         tools = [ToolConfig(**tool) for tool in tools_data]
         
+        # Handle system_prompt being a list (from YAML)
+        system_prompt = data.get('system_prompt')
+        if isinstance(system_prompt, list):
+            data['system_prompt'] = '\n'.join(system_prompt)
+        
         return AgentConfig(
             tools=tools,
             memory=memory,
@@ -62,15 +68,18 @@ class AgentConfig:
 
 
 def load_agent_config_from_file(config_path: str) -> AgentConfig:
-    """Load agent configuration from a JSON file."""
+    """Load agent configuration from a JSON or YAML file."""
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+            if config_path.endswith(('.yaml', '.yml')):
+                data = yaml.safe_load(f)
+            else:
+                data = json.load(f)
         return AgentConfig.from_dict(data)
     except FileNotFoundError:
         raise FileNotFoundError(f"Config file not found: {config_path}")
-    except json.JSONDecodeError:
-        raise ValueError(f"Invalid JSON in config file: {config_path}")
+    except (json.JSONDecodeError, yaml.YAMLError) as e:
+        raise ValueError(f"Invalid config file format in {config_path}: {e}")
 
 
 def save_agent_config_to_file(config: AgentConfig, config_path: str) -> None:
