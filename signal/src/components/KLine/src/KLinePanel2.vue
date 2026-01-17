@@ -85,6 +85,7 @@ function calcMAData(ma: number, data: number[]) {
 }
 
 async function fetchHistoryData() {
+  console.log('fetchHistoryData:', props.reqParam)
   const ret = await apiGetHistoryData({
     type: props.reqParam!.type,
     code: props.reqParam!.code,
@@ -196,23 +197,23 @@ function updateChartOptions(data: HistoryDataItem[]) {
   resetChart()
 }
 
-onMounted(async () => {
+onMounted(() => {
   if (!props.reqParam.start) {
     const date: Date = new Date()
     date.setMonth(date.getMonth() - 6)
     props.reqParam!.start = date.toISOString().slice(0, 10)
-    // initChartOptions()
-    await fetchHistoryData()
-    updateChartOptions(historyData)
   }
 })
 
 watch(
   () => props.reqParam,
   async () => {
-    await fetchHistoryData()
-    updateChartOptions(historyData)
-  }
+    if (props.reqParam && props.reqParam.code) {
+      await fetchHistoryData()
+      updateChartOptions(historyData)
+    }
+  },
+  { immediate: true, deep: true }
 )
 
 async function onCustomizedClick() {
