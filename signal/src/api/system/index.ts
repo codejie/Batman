@@ -5,7 +5,15 @@ import {
   DbImportRequest,
   DbImportResult,
   DbRemoveAllHistoryDataRequest,
-  DbRemoveAllHistoryDataResult
+  DbRemoveAllHistoryDataResult,
+  DataConfigGetRequest,
+  DataConfigGetResult,
+  DataConfigSaveRequest,
+  DataConfigSaveResult,
+  TradeCalendarGetRequest,
+  TradeCalendarGetResult,
+  TradeCalendarSaveRequest,
+  TradeCalendarSaveResult
 } from './types'
 import { PATH_URL } from '@/axios/service'
 
@@ -53,4 +61,28 @@ export const apiDbRemoveAllHistoryData = (
   data: DbRemoveAllHistoryDataRequest
 ): Promise<IResponse<DbRemoveAllHistoryDataResult>> => {
   return request.post({ url: '/data/remove_history_data', data })
+}
+
+export const apiGetTradeCalendar = (
+  data: TradeCalendarGetRequest
+): Promise<IResponse<TradeCalendarGetResult>> => {
+  return request.post({ url: '/system/trade_calendar/get', data })
+}
+
+export const apiSaveTradeCalendar = (
+  data: TradeCalendarSaveRequest
+): Promise<IResponse<TradeCalendarSaveResult>> => {
+  return request.post({ url: '/system/trade_calendar/save', data })
+}
+
+export const apiGetDataConfig = (
+  data: DataConfigGetRequest
+): Promise<IResponse<DataConfigGetResult>> => {
+  return request.post({ url: '/system/data_config/get', data })
+}
+
+export const apiSaveDataConfig = (
+  data: DataConfigSaveRequest
+): Promise<IResponse<DataConfigSaveResult>> => {
+  return request.post({ url: '/system/data_config/save', data })
 }

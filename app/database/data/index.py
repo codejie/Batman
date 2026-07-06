@@ -1,9 +1,158 @@
+import json
+from datetime import datetime, timedelta
 from typing import Optional
 from pandas import DataFrame
+import pandas as pd
+import requests
 from sqlalchemy import delete
 from app.database.data import define as Define, utils as Utils
+from app.database.data import data_source as DataSource
 from app.database import dbEngine
 import akshare as ak
+from app.logger import logger
+
+def _empty_index_history_df() -> DataFrame:
+  return pd.DataFrame(columns=['日期', '开盘', '收盘', '最高', '最低', '成交量', '成交额', '振幅', '涨跌幅', '涨跌额'])
+
+def _index_market_code(symbol: str) -> str:
+  code = symbol[-6:]
+  market = 'sh' if code.startswith('000') else 'sz'
+  return f'{market}{code}'
+
+def _tencent_period(period: str) -> str:
+  return {
+    'daily': 'day',
+    'weekly': 'week',
+    'monthly': 'month'
+  }.get(period, period)
+
+def _format_tencent_date(date_str: str) -> str:
+  if not date_str:
+    return ''
+  if '-' in date_str:
+    return date_str
+  return f'{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}'
+
+def _expand_start_date(start_date: str, period: str) -> str:
+  if not start_date:
+    return ''
+  try:
+    delta_days = 90 if period in ('weekly', 'monthly') else 14
+    start = datetime.strptime(start_date, '%Y%m%d') - timedelta(days=delta_days)
+    return start.strftime('%Y-%m-%d')
+  except ValueError:
+    return _format_tencent_date(start_date)
+
+def _parse_tencent_jsonp(text: str) -> dict:
+  payload = text.strip()
+  if '=' in payload:
+    payload = payload.split('=', 1)[1]
+  payload = payload.strip().rstrip(';')
+  return json.loads(payload)
+
+def _extract_tencent_klines(payload, target: str, period_key: str) -> list:
+  if isinstance(payload, list):
+    return payload
+  if not isinstance(payload, dict):
+    return []
+
+  data = payload.get('data', {})
+  if isinstance(data, list):
+    return data
+  if not isinstance(data, dict):
+    return []
+
+  target_data = data.get(target, {})
+  if isinstance(target_data, list):
+    return target_data
+  if not isinstance(target_data, dict):
+    return []
+
+  value = target_data.get(period_key)
+  if isinstance(value, list):
+    return value
+  return []
+
+def _to_float(value, default: float = 0.0) -> float:
+  try:
+    if value in (None, ''):
+      return default
+    return float(value)
+  except (TypeError, ValueError):
+    return default
+
+def index_zh_a_hist_tx(symbol: str, period: str = "daily", start_date: str = "19700101", end_date: str = "20500101") -> DataFrame:
+  """
+  腾讯财经 A 股指数历史行情接口，入参与返回列对齐 ak.index_zh_a_hist。
+  """
+  target = _index_market_code(symbol)
+  tx_period = _tencent_period(period)
+  end = _format_tencent_date(end_date)
+  count = 640
+  url = 'https://web.ifzq.gtimg.cn/appstock/app/kline/kline'
+  params = {
+    '_var': f'kline_{tx_period}',
+    'param': f'{target},{tx_period},,{end},{count}'
+  }
+  headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Referer': 'https://finance.qq.com/'
+  }
+
+  try:
+    response = requests.get(url, params=params, headers=headers, proxies={'http': None, 'https': None}, timeout=8.0)
+    response.raise_for_status()
+    payload = _parse_tencent_jsonp(response.text)
+    klines = _extract_tencent_klines(payload, target, tx_period)
+    if not klines:
+      return _empty_index_history_df()
+
+    start_filter = _format_tencent_date(start_date)
+    end_filter = _format_tencent_date(end_date)
+    rows = []
+    prev_close = None
+    for item in klines:
+      if len(item) < 6:
+        continue
+      date_str = item[0]
+      open_price = _to_float(item[1])
+      close_price = _to_float(item[2])
+      high_price = _to_float(item[3])
+      low_price = _to_float(item[4])
+      volume = _to_float(item[5])
+      amount = _to_float(item[6] if len(item) > 6 else 0.0) * 10000.0
+
+      if prev_close is None or prev_close == 0:
+        change_val = 0.0
+        change_pct = 0.0
+        amplitude = 0.0
+      else:
+        change_val = close_price - prev_close
+        change_pct = change_val / prev_close * 100
+        amplitude = (high_price - low_price) / prev_close * 100
+
+      prev_close = close_price
+      if date_str < start_filter or date_str > end_filter:
+        continue
+
+      rows.append([
+        date_str,
+        open_price,
+        close_price,
+        high_price,
+        low_price,
+        volume,
+        amount,
+        round(amplitude, 2),
+        round(change_pct, 2),
+        round(change_val, 2)
+      ])
+
+    return pd.DataFrame(rows, columns=_empty_index_history_df().columns)
+  except Exception as e:
+    logger.warning(f"Error downloading Tencent index history data for {symbol}: {e}")
+    return _empty_index_history_df()
+
 """
 Index
 """
@@ -40,7 +189,11 @@ def get_name(code: str) -> Optional[str]:
   return Define.get_name(Define.TYPE_INDEX, code)
 
 def download_history_data(code: str, start: str, end: str, period: str = 'daily') -> Optional[DataFrame]:
-  data = ak.index_zh_a_hist(symbol=code, period=period, start_date=start, end_date=end)
+  data_source = DataSource.get_market_data_source()
+  if data_source == DataSource.DATA_SOURCE_TENCENT:
+    data = index_zh_a_hist_tx(symbol=code, period=period, start_date=start, end_date=end)
+  else:
+    data = ak.index_zh_a_hist(symbol=code, period=period, start_date=start, end_date=end)
 
   if not data.empty:
     # data = data.drop('股票代码', axis=1)

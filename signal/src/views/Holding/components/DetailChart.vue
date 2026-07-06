@@ -2,7 +2,6 @@
 import { HistoryDataItem } from '@/api/data'
 import { ProfitTraceItem } from '@/calc/holding'
 import { Echart } from '@/components/Echart'
-import { EChartsOption } from 'echarts'
 import { ref, watch } from 'vue'
 import * as Calc from '@/calc/data'
 
@@ -40,12 +39,12 @@ const klineData = ref<any[]>()
 const volumeData = ref<any[]>()
 const maData = ref<string[][]>([]) // 5, 10, 30, 60
 
-const priceAvgData = ref<string[]>()
-const revenueData = ref<number[] | string[]>()
-const profitData = ref<number[] | string[]>()
-const holdingData = ref<number[]>()
+const priceAvgData = ref<any[]>()
+const revenueData = ref<any[]>()
+const profitData = ref<any[]>()
+const holdingData = ref<any[]>()
 
-const chartOptionOrigin: EChartsOption = {
+const chartOptionOrigin: any = {
   grid: [
     {
       id: 0,
@@ -264,7 +263,7 @@ const chartOptionOrigin: EChartsOption = {
       yAxisIndex: 1,
       showSymbol: false,
       itemStyle: {
-        color: (item) => {
+        color: (item: any) => {
           if (item.value.length > 2) return item.value[2] > 0 ? upColor : downColor
           else return upColor
         }
@@ -346,7 +345,7 @@ const chartOptionOrigin: EChartsOption = {
         show: true
       },
       itemStyle: {
-        color: (item) => {
+        color: (item: any) => {
           if (item.value.length > 2) return item.value[2] > 0 ? holdingColor1 : holdingColor2
           else return upColor
         }
@@ -359,7 +358,34 @@ const chartOptionOrigin: EChartsOption = {
   ]
 }
 
-const chartOption = ref<EChartsOption>({ ...chartOptionOrigin })
+function cloneChartOption(): any {
+  return {
+    ...chartOptionOrigin,
+    grid: (chartOptionOrigin.grid as any[])?.map((item) => ({ ...item })),
+    xAxis: (chartOptionOrigin.xAxis as any[])?.map((item) => ({ ...item })),
+    yAxis: (chartOptionOrigin.yAxis as any[])?.map((item) => ({ ...item })),
+    axisPointer: {
+      ...(chartOptionOrigin.axisPointer as any),
+      link: (chartOptionOrigin.axisPointer as any)?.link?.map((item) => ({ ...item })),
+      label: { ...(chartOptionOrigin.axisPointer as any)?.label }
+    },
+    tooltip: { ...(chartOptionOrigin.tooltip as any) },
+    series: (chartOptionOrigin.series as any[])?.map((item) => ({
+      ...item,
+      itemStyle: item.itemStyle ? { ...item.itemStyle } : undefined,
+      lineStyle: item.lineStyle ? { ...item.lineStyle } : undefined,
+      markLine: item.markLine
+        ? {
+            ...item.markLine,
+            data: item.markLine.data ? [...item.markLine.data] : []
+          }
+        : undefined,
+      data: []
+    }))
+  }
+}
+
+const chartOption = ref<any>(cloneChartOption())
 
 function makeMASeries() {
   chartOption.value.series?.splice(6)
@@ -379,6 +405,7 @@ function makeMASeries() {
 }
 
 function setKLineData(data: HistoryDataItem[]) {
+  chartOption.value = cloneChartOption()
   xData.value = data.map((item) => item.日期)
   klineData.value = data.map((item) => [item.开盘, item.收盘, item.最低, item.最高])
   volumeData.value = data.map((item) => [item.日期, item.成交量, item.开盘 <= item.收盘 ? 1 : -1])
@@ -421,9 +448,14 @@ watch(
   () => props.historyData,
   (value) => {
     if (value) {
-      // chartOption.value = { ...chartOptionOrigin }
       setKLineData(value)
+      if (props.profitData) {
+        setTraceData(props.profitData)
+      }
     }
+  },
+  {
+    immediate: true
   }
 )
 
@@ -431,11 +463,13 @@ watch(
   () => props.profitData,
   (value) => {
     if (value) {
-      // chartOption.value = { ...chartOptionOrigin }
       if (props.historyData) {
         setTraceData(value)
       }
     }
+  },
+  {
+    immediate: true
   }
 )
 </script>
