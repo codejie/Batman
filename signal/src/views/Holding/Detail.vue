@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ContentDetailWrap } from '@/components/ContentDetailWrap'
-import { computed, onMounted, PropType, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton, ElRow, ElTable, ElTableColumn, ElText } from 'element-plus'
 import {
@@ -46,6 +46,13 @@ const reqParam = ref<any>({})
 async function fetchData(id) {
   // holding
   holdingData.value = await getHoldListData(id)
+  profitTraceData.value = []
+  profitTableData.value = []
+  historyData.value = []
+
+  if (!holdingData.value || holdingData.value.length === 0) {
+    return
+  }
 
   const operationData = holdingData.value[0]?.items ?? []
   if (operationData.length > 0) {
@@ -62,7 +69,7 @@ async function fetchData(id) {
       start: Utils.formatToDate(start),
       end: Utils.formatToDate(end)
     })
-    historyData.value = historyRet.result
+    historyData.value = historyRet.result ?? []
     // trace
     profitTraceData.value = calcProfitTraceData(operationData, historyData.value)
     if (profitTableToggle.value) {
@@ -80,7 +87,7 @@ async function fetchData(id) {
       start: Utils.formatToDate(start),
       end: Utils.formatToDate(end)
     })
-    historyData.value = historyRet.result
+    historyData.value = historyRet.result ?? []
   }
 }
 
@@ -149,7 +156,7 @@ async function onNext() {
   await fetchData(holdingId.value)
 }
 
-function onProfitTableExpandChange(row, expandedRows) {
+function onProfitTableExpandChange(_row, expandedRows) {
   profitTableExpanded.value = expandedRows.length > 0
 }
 </script>
