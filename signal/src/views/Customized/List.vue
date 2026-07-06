@@ -403,7 +403,7 @@ async function onWebSocketClick() {
             >
           </template>
         </ElTableColumn>
-        <ElTableColumn min-width="100">
+        <!-- <ElTableColumn min-width="100">
           <template #header>
             <div><ElText>5分钟涨跌/涨速</ElText></div>
           </template>
@@ -428,7 +428,7 @@ async function onWebSocketClick() {
               ></div
             >
           </template>
-        </ElTableColumn>
+        </ElTableColumn> -->
         <ElTableColumn prop="action" label="操作" min-width="140">
           <template #header>
             <ElText>操作</ElText>
