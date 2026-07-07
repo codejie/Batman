@@ -20,7 +20,6 @@ interface OperationForm {
   expense: number | string
   comment?: string
 }
-
 </script>
 
 <script setup lang="ts">
@@ -63,10 +62,17 @@ import {
   ElDescriptions,
   ElDescriptionsItem,
   ElDivider,
-  ElCheckbox
+  ElCheckbox,
+  ElSelect,
+  ElOption
 } from 'element-plus'
 import { formatToDateTime } from '@/utils/dateUtil'
-import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
+import {
+  TYPE_STOCK,
+  ITEM_TYPE_OPTIONS,
+  getItemRequestType,
+  getItemTypeLabel
+} from '@/api/data/types'
 import { useRouter } from 'vue-router'
 import { calcFundsData, FUNDS_STOCK, FundsData } from '@/calc/funds'
 import { calcHoldingData, calcSoldoutData, HoldingListItem, SoldoutListItem } from '@/calc/holding'
@@ -173,8 +179,8 @@ async function onFunds() {
 }
 
 async function onAdd() {
-  const ret = await apiCreate({
-    type: createForm.value.type == '股票' ? TYPE_STOCK : TYPE_INDEX,
+  await apiCreate({
+    type: getItemRequestType(createForm.value.type),
     code: createForm.value.code
   })
   createDialogVisible.value = false
@@ -236,7 +242,7 @@ async function onAddOperation() {
     return
   }
 
-  const ret = await apiOperationCreate({
+  await apiOperationCreate({
     holding: operationForm.value.holding,
     action: operationForm.value.action,
     quantity: operationForm.value.quantity,
@@ -283,7 +289,6 @@ async function onRemove(id: number) {
 }
 
 async function onDetail(id: number) {
-  const ids = data.value.map((x) => x.record.id)
   // console.log('onDetail', id, ids)
   push({
     path: '/holding/detail',
@@ -308,11 +313,11 @@ function getHoldingKey(row: HoldingListItem): string {
   return row.record.id.toString() // row.holding.id.toString()
 }
 
-function onExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[]) {
+function onExpandChanged(_rows: HoldingListItem, expandedRows: HoldingListItem[]) {
   expandRows.value = expandedRows.map((x) => x.record.id.toString())
 }
 
-function onSoldoutExpandChanged(rows: HoldingListItem, expandedRows: HoldingListItem[]) {
+function onSoldoutExpandChanged(_rows: HoldingListItem, expandedRows: HoldingListItem[]) {
   soldoutExpandRows.value = expandedRows.map((x) => x.record.id.toString())
 }
 
@@ -342,7 +347,7 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
     0
   )
 
-  columns.forEach((column, index) => {
+  columns.forEach((_column, index) => {
     if (index === 0) {
       sums[index] = ''
       return
@@ -361,13 +366,13 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
       )
     }
 
-    if (index === 8) {
+    if (index === 9) {
       // 市值/占比
       sums[index] = renderSummaryCell(revenueTotal, false)
-    } else if (index === 9) {
+    } else if (index === 10) {
       // 盈亏/占比
       sums[index] = renderSummaryCell(profitTotal)
-    } else if (index === 11) {
+    } else if (index === 12) {
       // 昨差/昨差率%
       sums[index] = renderSummaryCell(preProfitDiffTotal)
     } else {
@@ -416,12 +421,12 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
       >
       <ElDescriptionsItem label="盈亏">
         <ElText tag="b">
-            <ElText :class="funds?.profit < 0 ? 'green-text' : 'red-text'">
-              {{ formatNumberString(funds?.profit) }}
-            </ElText>
+          <ElText :class="(funds?.profit ?? 0) < 0 ? 'green-text' : 'red-text'">
+            {{ formatNumberString(funds?.profit) }}
+          </ElText>
           <ElTooltip v-if="showSoldoutTable" effect="dark" content="清仓盈亏合计" placement="top">
             <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable">
-               [ + {{ formatNumberString(funds?.soldout_profit) }} =
+              [ + {{ formatNumberString(funds?.soldout_profit) }} =
               {{ formatNumberString((funds?.profit || 0) + (funds?.soldout_profit || 0)) }} ]
             </template>
           </ElTooltip>
@@ -429,23 +434,28 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
       </ElDescriptionsItem>
       <ElDescriptionsItem label="盈亏率">
         <ElText tag="b">
-          <ElText :class="funds?.profit_rate < 0 ? 'green-text' : 'red-text'">
-            {{ formatRateString(funds?.profit_rate)}}
+          <ElText :class="(funds?.profit_rate ?? 0) < 0 ? 'green-text' : 'red-text'">
+            {{ formatRateString(funds?.profit_rate) }}
           </ElText>
-        <ElTooltip v-if="showSoldoutTable" effect="dark" content="清仓盈亏率合计" placement="top">
-          <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable"> [ {{
-            formatRateString(
-              funds?.expense === 0
-                ? 0
-                : ((funds?.profit || 0) + (funds?.soldout_profit || 0)) / -funds?.expense!
-            )
-            }} ]
-          </template>
-        </ElTooltip>
-      </ElText>
+          <ElTooltip v-if="showSoldoutTable" effect="dark" content="清仓盈亏率合计" placement="top">
+            <template v-if="funds?.soldout_profit !== 0 && showSoldoutTable">
+              [
+              {{
+                formatRateString(
+                  funds?.expense === 0
+                    ? 0
+                    : ((funds?.profit || 0) + (funds?.soldout_profit || 0)) / -funds?.expense!
+                )
+              }}
+              ]
+            </template>
+          </ElTooltip>
+        </ElText>
       </ElDescriptionsItem>
     </ElDescriptions>
-    <ElDivider class="mx-8px" content-position="left"><span style="font-weight: bold;">持股记录</span></ElDivider>
+    <ElDivider class="mx-8px" content-position="left"
+      ><span style="font-weight: bold">持股记录</span></ElDivider
+    >
     <ElRow :gutter="24">
       <ElCol :span="12">
         <ElButton class="my-4" size="small" type="primary" @click="createDialogVisible = true"
@@ -453,7 +463,9 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
         >
       </ElCol>
       <ElCol :span="12">
-        <ElButton class="my-4" size="small" style="float: right" @click="onReload">刷新记录</ElButton>
+        <ElButton class="my-4" size="small" style="float: right" @click="onReload"
+          >刷新记录</ElButton
+        >
         <ElCheckbox
           v-model="useLocale"
           class="my-4"
@@ -546,6 +558,13 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
         </ElTableColumn>
         <!-- <ElTableColumn prop="id" label="ID" width="50" /> -->
         <!-- <ElTableColumn prop="type" label="Type" width="50" /> -->
+        <ElTableColumn label="类型" width="70">
+          <template #default="{ row }">
+            <ElText>{{
+              getItemTypeLabel(row.record.type, row.record.market, row.record.code)
+            }}</ElText>
+          </template>
+        </ElTableColumn>
         <ElTableColumn prop="record.code" label="名称/代码" min-width="80">
           <template #header>
             <ElText>名称/代码</ElText>
@@ -664,7 +683,12 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
               :class="row.calc?.profit > 0 ? 'red-text' : row.calc?.profit < 0 ? 'green-text' : ''"
             >
               {{ formatNumberString(row.calc?.profit) }} /
-              {{ formatRateString2(Math.abs(row.calc?.profit), funds?.profit ? Math.abs(funds?.profit) : undefined) }}
+              {{
+                formatRateString2(
+                  Math.abs(row.calc?.profit),
+                  funds?.profit ? Math.abs(funds?.profit) : undefined
+                )
+              }}
             </div>
           </template>
         </ElTableColumn>
@@ -728,12 +752,14 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
             <ElButton size="small" @click="onRemove(row.record.id)">删除</ElButton>
           </template>
         </ElTableColumn>
-              </ElTable>
-          </ElRow>
-          <ElDivider class="mx-8px" content-position="left" style="margin-top: 36px;">
-            <span style="font-weight: bold;">清仓记录</span>
-            <ElButton class="ml-12px" size="small" @click="showSoldoutTable = !showSoldoutTable">{{ showSoldoutTable ? '隐藏' : '显示' }}</ElButton>
-          </ElDivider>
+      </ElTable>
+    </ElRow>
+    <ElDivider class="mx-8px" content-position="left" style="margin-top: 36px">
+      <span style="font-weight: bold">清仓记录</span>
+      <ElButton class="ml-12px" size="small" @click="showSoldoutTable = !showSoldoutTable">{{
+        showSoldoutTable ? '隐藏' : '显示'
+      }}</ElButton>
+    </ElDivider>
     <ElRow :gutter="24" v-if="showSoldoutTable">
       <ElTable
         :data="soldoutData"
@@ -805,22 +831,31 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
             </div>
           </template>
         </ElTableColumn>
+        <ElTableColumn label="类型" width="70">
+          <template #default="{ row }">
+            <ElText>{{
+              getItemTypeLabel(row.record.type, row.record.market, row.record.code)
+            }}</ElText>
+          </template>
+        </ElTableColumn>
         <ElTableColumn prop="record.code" label="名称/代码" min-width="60">
           <template #header>
             <ElText>名称/代码</ElText>
           </template>
           <template #default="{ row }">
             <div @click="onRecordClick(row.record)">
-              <div><ElText tag="b">{{ row.record.name }}</ElText></div>
-              <div><ElText tag="b">{{ row.record.code }}</ElText></div>
+              <div
+                ><ElText tag="b">{{ row.record.name }}</ElText></div
+              >
+              <div
+                ><ElText tag="b">{{ row.record.code }}</ElText></div
+              >
             </div>
           </template>
         </ElTableColumn>
         <ElTableColumn label="盈亏" min-width="120">
           <template #default="{ row }">
-            <ElText
-              :class="row.calc?.profit >= 0 ? 'red-text' : 'green-text'"
-            >
+            <ElText :class="row.calc?.profit >= 0 ? 'red-text' : 'green-text'">
               {{ formatNumberString(row.calc?.profit) }}
             </ElText>
           </template>
@@ -851,7 +886,8 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
           </template>
         </ElTableColumn>
       </ElTable>
-    </ElRow>    <ElDialog v-model="fundsDialogVisible" :destroy-on-close="true" width="25%">
+    </ElRow>
+    <ElDialog v-model="fundsDialogVisible" :destroy-on-close="true" width="25%">
       <template #header>
         <ElText tag="b">资金数据</ElText>
       </template>
@@ -876,7 +912,9 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
       <template #default>
         <ElForm :model="createForm" label-position="right" label-width="auto">
           <ElFormItem label="类型">
-            <ElInput v-model="createForm.type" :disabled="true" />
+            <ElSelect v-model="createForm.type">
+              <ElOption v-for="item in ITEM_TYPE_OPTIONS" :key="item" :label="item" :value="item" />
+            </ElSelect>
           </ElFormItem>
           <ElFormItem label="代码">
             <ElInput v-model="createForm.code" :maxlength="6" />

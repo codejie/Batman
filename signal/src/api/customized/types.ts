@@ -14,6 +14,7 @@ export type RecordsItem = {
   type: number
   code: string
   name: string
+  market?: number | string
   target: number
   order: number
   comment?: string

@@ -8,6 +8,11 @@ from app.database import TableBase
 
 TYPE_INDEX: int = 1
 TYPE_STOCK: int = 2
+TYPE_FUND: int = 3
+
+FUND_TYPE_OPEN: int = 0
+FUND_TYPE_ETF: int = 1
+FUND_TYPE_LOF: int = 2
 
 PERIOD_DAILY: str = 'daily'
 PERIOD_WEEKLY: str = 'weekly'
@@ -85,6 +90,7 @@ class ItemInfo(BaseModel):
   type: int
   code: str
   name: str
+  market: Optional[int | str] = None
 
 """
 Spot Data Model
@@ -143,4 +149,3 @@ class SpotData(BaseModel):
 
   # class Config:
   #   from_attributes = True
-

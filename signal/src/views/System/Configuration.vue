@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiDownloadList, TYPE_STOCK, TYPE_INDEX } from '@/api/data'
+import { apiDownloadList, TYPE_FUND, TYPE_STOCK, TYPE_INDEX } from '@/api/data'
 import {
   apiDbExport,
   apiDbRemoveAllHistoryData,
@@ -22,7 +22,15 @@ import {
   ElMessage,
   ElMessageBox
 } from 'element-plus'
-import { Calendar, Check, Delete, Download, Refresh, Setting, Upload } from '@element-plus/icons-vue'
+import {
+  Calendar,
+  Check,
+  Delete,
+  Download,
+  Refresh,
+  Setting,
+  Upload
+} from '@element-plus/icons-vue'
 import { computed, ref } from 'vue'
 
 interface CalendarDay {
@@ -298,6 +306,9 @@ async function onTradeCalendarSave() {
           <ElButton type="primary" plain :icon="Refresh" @click="onDownloadList(TYPE_INDEX)">
             指数列表信息
           </ElButton>
+          <ElButton type="primary" plain :icon="Refresh" @click="onDownloadList(TYPE_FUND)">
+            基金列表信息
+          </ElButton>
         </div>
       </section>
 
@@ -363,7 +374,11 @@ async function onTradeCalendarSave() {
       </div>
 
       <div v-loading="tradeCalendarLoading" class="calendar-grid">
-        <section v-for="(days, monthIndex) in tradeCalendarMonths" :key="monthIndex" class="month-panel">
+        <section
+          v-for="(days, monthIndex) in tradeCalendarMonths"
+          :key="monthIndex"
+          class="month-panel"
+        >
           <div class="month-title">{{ monthLabels[monthIndex] }}</div>
           <div class="weekday-grid">
             <span v-for="label in weekdayLabels" :key="label">{{ label }}</span>

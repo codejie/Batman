@@ -11,6 +11,7 @@ import {
   ProfitTraceItem
 } from '@/calc/holding'
 import { apiGetHistoryData, HistoryDataItem } from '@/api/data'
+import { getItemTypeLabel } from '@/api/data/types'
 import * as Utils from '@/utils/dateUtil'
 import DetailChart from './components/DetailChart.vue'
 import { KLineDialog } from '@/components/KLine'
@@ -43,6 +44,32 @@ const profitTableExpanded = ref<boolean>(false)
 const klineDialogVisible = ref<boolean>(false)
 const reqParam = ref<any>({})
 
+function getHoldingCreated(row: HoldingListItem): Date {
+  const operations = row.items ?? []
+  if (operations.length === 0) {
+    return row.record.created
+  }
+
+  return operations.reduce(
+    (earliest, item) =>
+      Utils.dateUtil(item.created).isBefore(Utils.dateUtil(earliest)) ? item.created : earliest,
+    operations[0].created
+  )
+}
+
+function getHoldingUpdated(row: HoldingListItem): Date {
+  const operations = row.items ?? []
+  if (operations.length === 0) {
+    return row.record.updated
+  }
+
+  return operations.reduce(
+    (latest, item) =>
+      Utils.dateUtil(item.created).isAfter(Utils.dateUtil(latest)) ? item.created : latest,
+    operations[0].created
+  )
+}
+
 async function fetchData(id) {
   // holding
   holdingData.value = await getHoldListData(id)
@@ -54,22 +81,19 @@ async function fetchData(id) {
     return
   }
 
+  const record = holdingData.value[0]!.record
   const operationData = holdingData.value[0]?.items ?? []
+  const start = Utils.dateUtil(getHoldingCreated(holdingData.value[0]!))
+  const end = Utils.dateUtil()
+  const historyRet = await apiGetHistoryData({
+    type: record.type,
+    code: record.code,
+    start: Utils.formatToDate(start),
+    end: Utils.formatToDate(end)
+  })
+  historyData.value = historyRet.result ?? []
+
   if (operationData.length > 0) {
-    // history
-    let start = Utils.dateUtil(operationData[0].created)
-    let end = Utils.dateUtil(operationData[operationData.length - 1].created)
-    if (start.diff(end, 'month') < 3) {
-      start = Utils.dateUtil(operationData[0].created).subtract(3, 'month')
-      end = Utils.dateUtil(operationData[operationData.length - 1].created).add(3, 'month')
-    }
-    const historyRet = await apiGetHistoryData({
-      type: holdingData.value[0]!.record.type,
-      code: holdingData.value[0]!.record.code,
-      start: Utils.formatToDate(start),
-      end: Utils.formatToDate(end)
-    })
-    historyData.value = historyRet.result ?? []
     // trace
     profitTraceData.value = calcProfitTraceData(operationData, historyData.value)
     if (profitTableToggle.value) {
@@ -78,16 +102,6 @@ async function fetchData(id) {
       profitTableData.value = calcProfitData(operationData, historyData.value)
     }
     // profitTableData.value = profitTableData.value.reverse()
-  } else {
-    const end = Utils.dateUtil()
-    const start = Utils.dateUtil().subtract(3, 'month')
-    const historyRet = await apiGetHistoryData({
-      type: holdingData.value[0]!.record.type,
-      code: holdingData.value[0]!.record.code,
-      start: Utils.formatToDate(start),
-      end: Utils.formatToDate(end)
-    })
-    historyData.value = historyRet.result ?? []
   }
 }
 
@@ -269,6 +283,13 @@ function onProfitTableExpandChange(_row, expandedRows) {
             </ElTable>
           </div>
         </ElTableColumn>
+        <ElTableColumn label="类型" min-width="60">
+          <template #default="{ row }">
+            <ElText>{{
+              getItemTypeLabel(row.record.type, row.record.market, row.record.code)
+            }}</ElText>
+          </template>
+        </ElTableColumn>
         <ElTableColumn prop="record.code" label="代码" min-width="80">
           <template #default="{ row }">
             <ElText tag="b" @click="onRecordClick(row.record)">{{ row.record.code }}</ElText>
@@ -311,12 +332,12 @@ function onProfitTableExpandChange(_row, expandedRows) {
         </ElTableColumn>
         <ElTableColumn prop="record.created" label="创建时间" min-width="120">
           <template #default="{ row }">
-            {{ Utils.formatToDate(row.record.created) }}
+            {{ Utils.formatToDate(getHoldingCreated(row)) }}
           </template>
         </ElTableColumn>
         <ElTableColumn prop="record.updated" label="更新时间" min-width="120">
           <template #default="{ row }">
-            {{ Utils.formatToDate(row.record.updated) }}
+            {{ Utils.formatToDate(getHoldingUpdated(row)) }}
           </template>
         </ElTableColumn>
       </ElTable>

@@ -6,6 +6,7 @@ import app.database.data.utils as Utils
 import app.database.data.define as Define
 import app.database.data.stock as Stock
 import app.database.data.index as Index
+import app.database.data.fund as Fund
 
 
 def get_name(type: int, code: str) -> Optional[str]:
@@ -17,7 +18,7 @@ def get_item_info(type: int, key: str) -> Optional[Define.ItemInfo]:
   stmt = select(Define.InfoTable).where(Define.InfoTable.type == type).where(or_(Define.InfoTable.name == key, Define.InfoTable.code == key))
   result = dbEngine.select_scalar(stmt)
   if result:
-    return Define.ItemInfo(type=result.type, code=result.code, name=result.name)
+    return Define.ItemInfo(type=result.type, code=result.code, name=result.name, market=result.market)
 
 def get_item_infos(type: int = Define.TYPE_STOCK, code: str = None, key: str = None) -> list[Define.ItemInfo]:
   """Fetches all items from the InfoTable with optional filtering and fuzzy matching."""
@@ -29,7 +30,7 @@ def get_item_infos(type: int = Define.TYPE_STOCK, code: str = None, key: str = N
   if key:
       stmt = stmt.where(Define.InfoTable.name.like(f"%{key}%"))
   results = dbEngine.select_stmt(stmt)
-  return [Define.ItemInfo(type=row[0].type, code=row[0].code, name=row[0].name) for row in results]
+  return [Define.ItemInfo(type=row[0].type, code=row[0].code, name=row[0].name, market=row[0].market) for row in results]
 
 def is_item_exist(type: int, code: str) -> bool:
   stmt = select(Define.InfoTable).where(Define.InfoTable.type == type).where(Define.InfoTable.code == code)
@@ -47,6 +48,8 @@ def download_list(type: int) -> None:
     data = Stock.download_list()
   elif type == Define.TYPE_INDEX:
     data = Index.download_list()
+  elif type == Define.TYPE_FUND:
+    data = Fund.download_list()
   else:
     raise ValueError(f"Unknown type: {type}")
 
@@ -69,7 +72,7 @@ def update_download_records(type: int, code: str, period: str, start: str, end: 
     .where(Define.DownloadRecordsTable.type == type) \
     .where(Define.DownloadRecordsTable.code == code) \
     .where(Define.DownloadRecordsTable.period == period)
-  if type == Define.TYPE_STOCK:
+  if type in (Define.TYPE_STOCK, Define.TYPE_FUND):
     if adjust:
       stmt = stmt.where(Define.DownloadRecordsTable.adjust == adjust)
   result = dbEngine.select_scalar(stmt)
@@ -91,7 +94,7 @@ def check_download_records(type: int, code: str, period: str, start: str, end: s
     .where(Define.DownloadRecordsTable.type == type) \
     .where(Define.DownloadRecordsTable.code == code) \
     .where(Define.DownloadRecordsTable.period == period)
-  if type == Define.TYPE_STOCK:
+  if type in (Define.TYPE_STOCK, Define.TYPE_FUND):
     if adjust:
       stmt = stmt.where(Define.DownloadRecordsTable.adjust == adjust)
   if start:
@@ -106,6 +109,8 @@ def make_history_data_table_name(type: int, code: str, period: str, adjust: str 
     return f"history_stock_{period}_{adjust}_{code}"
   elif type == Define.TYPE_INDEX:
     return f"history_index_{period}_{code}"
+  elif type == Define.TYPE_FUND:
+    return f"history_fund_{period}_{adjust}_{code}" if adjust else f"history_fund_{period}_{code}"
   else:
     raise ValueError(f"Unknown type: {type}")
 
@@ -119,6 +124,8 @@ def download_history_data(type: int, code: str, start: str, end: str, period: st
     data = Stock.download_history_data(code=code, period=period, adjust=adjust, start=Utils.convert_history_date_2(start), end=Utils.convert_history_date_2(end))
   elif type == Define.TYPE_INDEX:
     data = Index.download_history_data(code=code, period=period, start=Utils.convert_history_date_2(start), end=Utils.convert_history_date_2(end))
+  elif type == Define.TYPE_FUND:
+    data = Fund.download_history_data(code=code, period=period, adjust=adjust, start=Utils.convert_history_date_2(start), end=Utils.convert_history_date_2(end))
 
   if data is not None:
     if record_flag != Define.RECORD_FLAG_DISABLED:
@@ -171,7 +178,11 @@ def get_history_data(type: int, code: str, start: str, end: str, period: str = '
   checked = check_download_records(type=type, code=code, period=period, adjust=adjust, start=start, end=end) if record_flag != Define.RECORD_FLAG_DISABLED else None
   if checked is None:
     return download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, record_flag=record_flag)
-  return fetch_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
+  results = fetch_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, limit=limit)
+  latest_workday = Utils.date_to_string_1(Utils.get_latest_workday())
+  if end == latest_workday and (len(results) == 0 or results[-1].日期 < end):
+    return download_history_data(type=type, code=code, start=start, end=end, period=period, adjust=adjust, record_flag=record_flag)
+  return results
 
 def get_latest_history_data(type: int, code: str, period: str, adjust: str, limit: int = None, record_flag: int = Define.RECORD_FLAG_DISABLED) -> Optional[Define.HistoryData] | Optional[list[Define.HistoryData]]:
   # date = datetime.today()
@@ -206,13 +217,15 @@ def remove_all_history_data() -> int:
 get spot data
 """
 def get_spot_data(type: int, codes: list[str] = None) -> list[Define.SpotData]:
-  if codes is None and len(codes) == 0:
+  if codes is not None and len(codes) == 0:
     return []
   
   if type == Define.TYPE_STOCK:
     data = Stock.download_spot_data(codes=codes)
   elif type == Define.TYPE_INDEX:
     data = Index.download_spot_data(codes=codes)
+  elif type == Define.TYPE_FUND:
+    data = Fund.download_spot_data(codes=codes)
   else:
     raise ValueError(f"Unknown type: {type}")
   if data is not None:
@@ -221,7 +234,7 @@ def get_spot_data(type: int, codes: list[str] = None) -> list[Define.SpotData]:
   return []
 
 def get_spot_data_use_history(type: int, codes: list[str] = None) -> list[Define.SpotData]:
-  if codes is None and len(codes) == 0:
+  if codes is None or len(codes) == 0:
     return []
   
   date = Utils.get_latest_workday()
@@ -230,7 +243,8 @@ def get_spot_data_use_history(type: int, codes: list[str] = None) -> list[Define
 
   results: list[Define.SpotData] = []
   for code in codes:
-    ret = get_history_data(type=type, code=code, start=start, end=end, period='daily', adjust='qfq', limit=1, record_flag=Define.RECORD_FLAG_DISABLED)
+    adjust = 'qfq' if type == Define.TYPE_STOCK else None
+    ret = get_history_data(type=type, code=code, start=start, end=end, period='daily', adjust=adjust, limit=1, record_flag=Define.RECORD_FLAG_DISABLED)
     if len(ret) > 0:
       history = ret.pop()
       results.append(Define.SpotData(

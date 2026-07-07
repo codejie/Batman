@@ -49,6 +49,7 @@ export interface HoldingRecordItem {
   type: number
   code: string
   name: string
+  market?: number | string
   flag: number
   quantity: number
   expense: number

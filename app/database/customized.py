@@ -31,6 +31,7 @@ class CustomizedRecord(BaseModel):
   type: int
   code: str
   name: str
+  market: int | str | None = None
   target: Optional[float] = None
   order: int = 0
   comment: Optional[str] = None
@@ -75,7 +76,7 @@ def update_order(uid: int, id: int, order: int = 0) -> int:
   return dbEngine.update_stmt(stmt=stmt)
 
 def records(uid: int, type: int = None, code: str = None) -> list[CustomizedRecord]:
-  stmt = sql_select(CustomizedRecordTable, Data.InfoTable.name.label('name'), func.coalesce(HoldingTable.id, None).label('holding')
+  stmt = sql_select(CustomizedRecordTable, Data.InfoTable.name.label('name'), Data.InfoTable.market.label('market'), func.coalesce(HoldingTable.id, None).label('holding')
                     ).select_from(CustomizedRecordTable
                     ).join(Data.InfoTable, (Data.InfoTable.code == CustomizedRecordTable.code) & (Data.InfoTable.type == CustomizedRecordTable.type), isouter=False
                     ).join(HoldingTable, (HoldingTable.code == CustomizedRecordTable.code) & (HoldingTable.type == CustomizedRecordTable.type) & (HoldingTable.flag == HOLDING_FLAG_ACTIVE), isouter=True
@@ -93,9 +94,10 @@ def records(uid: int, type: int = None, code: str = None) -> list[CustomizedReco
       type=row[0].type,
       code=row[0].code,
       name=row[1],
+      market=row[2],
       target=row[0].target,
       order=row[0].order,
-      holding=row[2],
+      holding=row[3],
       comment=row[0].comment,
       updated=row[0].updated
     ))

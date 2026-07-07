@@ -34,7 +34,7 @@ class CalcAlgorithmItemStockListTable(TableBase):
 
   id = Column(Integer().with_variant(Integer, "sqlite"), primary_key=True)
   cid = Column(Integer, ForeignKey('calc_algorithm_items.id'), nullable=False)
-  type = Column(Integer, nullable=False)  # 2: stock, 1: index
+  type = Column(Integer, nullable=False)  # 2: stock, 1: index, 3: fund
   code = Column(String, nullable=False)
 
 class CalcAlgorithmItemStockListModel(BaseModel):
@@ -43,10 +43,12 @@ class CalcAlgorithmItemStockListModel(BaseModel):
   type: int
   code: str
   name: str | None = None
+  market: int | str | None = None
 
   def model_dump(self, *args, **kwargs):
     data = super().model_dump(*args, **kwargs)
     data.pop('name', None)
+    data.pop('market', None)
     return data
 
 class CalcAlgorithmItemArgumentsTable(TableBase):
@@ -151,7 +153,7 @@ def select_algorithm_item(uid: int, id: int) -> Optional[CalcAlgorithmItemModel]
   return None
 
 def select_algorithm_item_stock_list(cid: int) -> List[CalcAlgorithmItemStockListModel]:
-  stmt = select(CalcAlgorithmItemStockListTable, InfoTable.name).join(
+  stmt = select(CalcAlgorithmItemStockListTable, InfoTable.name, InfoTable.market).join(
       InfoTable, and_(
           CalcAlgorithmItemStockListTable.code == InfoTable.code,
           CalcAlgorithmItemStockListTable.type == InfoTable.type
@@ -163,7 +165,8 @@ def select_algorithm_item_stock_list(cid: int) -> List[CalcAlgorithmItemStockLis
     cid=item[0].cid,
     type=item[0].type,
     code=item[0].code,
-    name=item[1]
+    name=item[1],
+    market=item[2]
   ) for item in results]
   return results
 
