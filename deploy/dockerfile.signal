@@ -1,11 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-# Stage 1: Clone the repository
-FROM alpine/git:v2.49.0 AS clone
-ARG BATMAN_REF=master
-RUN git clone --branch ${BATMAN_REF} --single-branch --depth=1 https://github.com/codejie/Batman.git /batman
-
-# Stage 2: Build the frontend application
+# Stage 1: Build the frontend application
 FROM node:22.16.0-alpine3.22 AS builder
 ARG API_URL="http://localhost:8000"
 ENV PNPM_STORE_DIR=/pnpm/store
@@ -14,17 +9,17 @@ WORKDIR /app
 
 # Install pnpm and dependencies before copying source so dependency layers cache better.
 RUN npm install -g pnpm@9.15.9
-COPY --from=clone /batman/signal/package.json ./
+COPY signal/package.json signal/pnpm-lock.yaml ./
 RUN --mount=type=cache,id=batman-pnpm-store,target=/pnpm/store \
     pnpm config set store-dir ${PNPM_STORE_DIR} \
     && pnpm config set registry https://registry.npmmirror.com \
     && pnpm config set fetch-retries 5 \
     && pnpm config set fetch-timeout 600000 \
-    && pnpm install --no-frozen-lockfile
-COPY --from=clone /batman/signal /app
+    && pnpm install --frozen-lockfile
+COPY signal /app
 RUN NODE_ENV=production VITE_API_BASE_PATH=${API_URL} pnpm run build:pro
 
-# Stage 3: Create the final, lightweight production image
+# Stage 2: Create the final, lightweight production image
 FROM nginx:alpine
 
 # Copy only the compiled assets from the 'builder' stage
