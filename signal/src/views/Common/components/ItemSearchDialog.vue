@@ -3,6 +3,8 @@ interface ViewForm {
   type: string
   title: string
   code: string
+  name: string
+  market?: number | string
 }
 </script>
 
@@ -19,7 +21,12 @@ import {
   ElOption,
   ElMessage
 } from 'element-plus'
-import { apiGetItemInfo, TYPE_INDEX, TYPE_STOCK, apiGetName } from '@/api/data'
+import {
+  apiGetItemInfo,
+  ITEM_TYPE_OPTIONS,
+  getItemRequestType,
+  isMatchedItemType
+} from '@/api/data'
 
 const props = defineProps({
   visible: {
@@ -46,23 +53,32 @@ watch(viewDialogVisible, (val) => {
 const viewForm = ref<ViewForm>({
   type: '股票',
   title: '',
-  code: ''
+  code: '',
+  name: ''
 })
 
 function onSearchChanged() {
   viewForm.value.code = ''
+  viewForm.value.name = ''
+  viewForm.value.market = undefined
 }
 
 async function searchItem(key: string) {
   if (key) {
-    const type = viewForm.value.type == '股票' ? TYPE_STOCK : TYPE_INDEX
+    const type = getItemRequestType(viewForm.value.type)
     const ret = await apiGetItemInfo({
       type: type,
       key: key
     })
     if (ret.result) {
+      if (!isMatchedItemType(viewForm.value.type, ret.result)) {
+        ElMessage.warning('类型不匹配')
+        return
+      }
       viewForm.value.title = `${ret.result.name}/${ret.result.code}`
       viewForm.value.code = ret.result.code
+      viewForm.value.name = ret.result.name
+      viewForm.value.market = ret.result.market
     } else {
       ElMessage.warning('Not Found')
     }
@@ -70,17 +86,13 @@ async function searchItem(key: string) {
 }
 
 async function onConfirm() {
-  const type = viewForm.value.type == '股票' ? TYPE_STOCK : TYPE_INDEX
-  const ret = await apiGetName({
-    type: type,
-    code: viewForm.value.code
-  })
-
-  if (ret.result) {
+  const type = getItemRequestType(viewForm.value.type)
+  if (viewForm.value.name) {
     emit('confirm', {
       code: viewForm.value.code,
-      name: ret.result,
-      type: type
+      name: viewForm.value.name,
+      type: type,
+      market: viewForm.value.market
     })
   } else {
     ElMessage.error('Failed to get name')
@@ -102,8 +114,7 @@ function onCancel() {
       <ElForm :model="viewForm" label-position="right" label-width="auto">
         <ElFormItem label="类型">
           <ElSelect v-model="viewForm.type" @change="onSearchChanged">
-            <ElOption label="股票" value="股票" />
-            <ElOption label="指数" value="指数" />
+            <ElOption v-for="item in ITEM_TYPE_OPTIONS" :key="item" :label="item" :value="item" />
           </ElSelect>
         </ElFormItem>
         <ElFormItem label="名称/代码">

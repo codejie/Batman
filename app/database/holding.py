@@ -46,6 +46,7 @@ class UserHoldingRecord(BaseModel):
   type: int
   code: str
   name: str
+  market: int | str | None = None
   flag: int
   created: datetime.datetime
   updated: datetime.datetime
@@ -150,6 +151,7 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
   #             ).order_by(HoldingTable.updated.desc())
   stmt = select(HoldingTable,
                 Data.InfoTable.name.label('name'),
+                Data.InfoTable.market.label('market'),
                 func.coalesce(
                   func.sum(HoldingOperationTable.quantity),
                   0).label('quantity'),
@@ -158,12 +160,10 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
                   0.0).label('expense')
               ).select_from(HoldingTable
               ).join(Data.InfoTable, and_(Data.InfoTable.code == HoldingTable.code, Data.InfoTable.type == HoldingTable.type), isouter=True
-              ).join(HoldingOperationTable, HoldingOperationTable.holding == HoldingTable.id, isouter=True
+              ).join(HoldingOperationTable, and_(HoldingOperationTable.holding == HoldingTable.id, HoldingOperationTable.action != OPERATION_ACTION_SOLDOUT), isouter=True
               ).filter(HoldingTable.uid == uid
-              ).group_by(HoldingTable.id
+              ).group_by(HoldingTable.id, Data.InfoTable.name, Data.InfoTable.market
               ).order_by(HoldingTable.updated.asc())  
-
-  stmt = stmt.where(HoldingOperationTable.action != OPERATION_ACTION_SOLDOUT)
 
   if id:
     stmt = stmt.where(HoldingTable.id == id)
@@ -182,12 +182,13 @@ def records(uid: int, id: int = None, type: int = None, code: str = None, flag: 
       id=r[0].id,
       type=r[0].type,
       code=r[0].code,
-      name=r[1],
+      name=r[1] or r[0].code,
+      market=r[2],
       flag=r[0].flag,
       created=r[0].created,
       updated=r[0].updated,
-      quantity=r[2],
-      expense=r[3]
+      quantity=r[3],
+      expense=r[4]
     ))
   return ret
 
@@ -206,4 +207,3 @@ def get_holding_summary(holding_id: int) -> (int, float):
       result = results[0]
       return result.quantity, result.expense
   return 0, 0.0
-

@@ -1,8 +1,23 @@
-import { apiOperationList, apiRecord, HoldingRecordItem, HoldingOperationItem, OPERATION_ACTION_SOLDOUT } from '@/api/holding'
+import {
+  apiOperationList,
+  apiRecord,
+  HoldingRecordItem,
+  HoldingOperationItem,
+  OPERATION_ACTION_SOLDOUT
+} from '@/api/holding'
 import { formatDateToYYYYMMDD } from '../comm'
 import * as Types from '@/calc/holding/types'
-import { apiGetLatestHistoryData } from '@/api/data'
-import { HistoryDataItem, RECORD_FLAG_DISABLED, RECORD_FLAG_NORMAL } from '@/api/data/types'
+import { apiGetLatestHistoryData, apiGetSpotData } from '@/api/data'
+import {
+  FUND_TYPE_ETF,
+  FUND_TYPE_LOF,
+  HistoryDataItem,
+  RECORD_FLAG_DISABLED,
+  RECORD_FLAG_NORMAL,
+  SpotDataItem,
+  TYPE_FUND,
+  resolveFundMarket
+} from '@/api/data/types'
 import { dateUtil, formatToDate } from '@/utils/dateUtil'
 
 export * from '@/calc/holding/types'
@@ -41,6 +56,38 @@ function _calcPreProfitRate(profit?: number, pre_profit?: number): number | unde
   return (profit - pre_profit) / Math.abs(pre_profit)
 }
 
+function _isBeforeAshareClose(): boolean {
+  const now = dateUtil()
+  const weekday = now.day()
+  if (weekday === 0 || weekday === 6) return false
+  return now.hour() < 15
+}
+
+function _isExchangeTradedFund(holding: HoldingRecordItem): boolean {
+  if (holding.type !== TYPE_FUND) return false
+  const market = resolveFundMarket(holding.market, holding.code)
+  return market === FUND_TYPE_ETF || market === FUND_TYPE_LOF
+}
+
+async function _getExchangeFundSpotData(
+  holding: HoldingRecordItem,
+  force: boolean = false
+): Promise<SpotDataItem | undefined> {
+  if ((!force && !_isBeforeAshareClose()) || !_isExchangeTradedFund(holding)) return undefined
+
+  try {
+    const ret = await apiGetSpotData({
+      type: holding.type,
+      codes: [holding.code],
+      useHistory: false
+    })
+    const item = ret.result?.find((spot) => spot.代码 === holding.code)
+    return item && item.最新价 > 0 ? item : undefined
+  } catch {
+    return undefined
+  }
+}
+
 export function calcHoldingData(
   holding: HoldingRecordItem,
   use_locale: boolean = true
@@ -51,14 +98,23 @@ export function calcHoldingData(
       code: holding.code,
       limit: 2,
       record_flag: use_locale ? RECORD_FLAG_NORMAL : RECORD_FLAG_DISABLED
-    }).then((ret) => {
+    }).then(async (ret) => {
       const results = ret.result as HistoryDataItem[] | undefined
       if (results && results.length > 0) {
         const latest = results.length > 1 ? results[1] : results[0]
         const pre_latest = results.length > 1 ? results[0] : undefined
 
-        const price = latest.收盘
-        const pre_price = pre_latest ? pre_latest.收盘 : undefined
+        const spotData = await _getExchangeFundSpotData(holding)
+        const today = formatToDate(new Date())
+        const price = spotData?.最新价 ?? latest.收盘
+        const date_cur = spotData ? today : latest.日期
+        const pre_price = spotData
+          ? latest.日期 === today && pre_latest
+            ? pre_latest.收盘
+            : spotData.昨收 || latest.收盘
+          : pre_latest
+            ? pre_latest.收盘
+            : undefined
         const profit = _calcProfit(holding.quantity, holding.expense, price)
         const profit_rate = _calcProfitRate(holding.quantity, holding.expense, price)
         const pre_profit = pre_price
@@ -68,7 +124,7 @@ export function calcHoldingData(
         resolve({
           price_avg: _calcPriceAvg(holding.expense, holding.quantity),
           price_cur: price,
-          date_cur: latest.日期,
+          date_cur: date_cur,
           revenue: _calcRevenue(holding.quantity, price),
           profit: profit,
           profit_rate: profit_rate,
@@ -78,21 +134,46 @@ export function calcHoldingData(
           pre_profit_rate: _calcPreProfitRate(profit, pre_profit)
         })
       } else {
-        resolve(undefined)
+        const spotData = await _getExchangeFundSpotData(holding, true)
+        if (!spotData) {
+          resolve(undefined)
+          return
+        }
+
+        const price = spotData.最新价
+        const pre_price = spotData.昨收 || undefined
+        const profit = _calcProfit(holding.quantity, holding.expense, price)
+        const profit_rate = _calcProfitRate(holding.quantity, holding.expense, price)
+        const pre_profit = pre_price
+          ? _calcProfit(holding.quantity, holding.expense, pre_price)
+          : undefined
+
+        resolve({
+          price_avg: _calcPriceAvg(holding.expense, holding.quantity),
+          price_cur: price,
+          date_cur: formatToDate(new Date()),
+          revenue: _calcRevenue(holding.quantity, price),
+          profit: profit,
+          profit_rate: profit_rate,
+          pre_price: pre_price,
+          pre_price_rate: pre_price ? (price - pre_price) / pre_price : undefined,
+          pre_profit_diff: _calcPreProfitDiff(profit, pre_profit),
+          pre_profit_rate: _calcPreProfitRate(profit, pre_profit)
+        })
       }
     })
   })
 }
 
 export function calcSoldoutData(operations: HoldingOperationItem[]): Types.SoldoutItem {
-  const soldoutItems = operations.filter((item) => item.action === OPERATION_ACTION_SOLDOUT);
+  const soldoutItems = operations.filter((item) => item.action === OPERATION_ACTION_SOLDOUT)
 
   if (soldoutItems.length > 0) {
-    const totalProfit = soldoutItems.reduce((acc, item) => acc + item.expense, 0);
-    const totalExpense = soldoutItems.reduce((acc, item) => acc + item.quantity * item.price, 0);
-    const totalQuantity = soldoutItems.reduce((acc, item) => acc + item.quantity, 0);
-    const avgPrice = totalQuantity !== 0 ? totalProfit / totalQuantity : 0;
-    const lastSoldout = soldoutItems[soldoutItems.length - 1]; // To get the most recent date
+    const totalProfit = soldoutItems.reduce((acc, item) => acc + item.expense, 0)
+    const totalExpense = soldoutItems.reduce((acc, item) => acc + item.quantity * item.price, 0)
+    const totalQuantity = soldoutItems.reduce((acc, item) => acc + item.quantity, 0)
+    const avgPrice = totalQuantity !== 0 ? totalProfit / totalQuantity : 0
+    const lastSoldout = soldoutItems[soldoutItems.length - 1] // To get the most recent date
 
     return {
       profit: totalProfit,
@@ -100,7 +181,7 @@ export function calcSoldoutData(operations: HoldingOperationItem[]): Types.Soldo
       quantity: totalQuantity,
       price: avgPrice,
       date: lastSoldout.created
-    };
+    }
   }
 
   // Fallback if no SOLDOUT record is found
@@ -110,7 +191,7 @@ export function calcSoldoutData(operations: HoldingOperationItem[]): Types.Soldo
     quantity: 0,
     price: 0,
     date: new Date()
-  };
+  }
 }
 
 export async function getHoldListData(
@@ -163,7 +244,7 @@ export function mergeOperationData(
   let amount: number = 0
   for (const item of operationData) {
     if (item.action === OPERATION_ACTION_SOLDOUT) continue // ignore SOLDOUT item.action
-    
+
     const date = formatDateToYYYYMMDD(item.created)
     const index = ret.findIndex((elment) => elment.date === date)
     holding += item.quantity
@@ -208,7 +289,6 @@ export function calcProfitTraceData(
   let prev: Types.OperationMergedDataItem | undefined = undefined
   let is_filled = false
   let pre_profit: number | undefined = undefined
-  let pre_price: number | undefined = undefined
   while (start <= end) {
     const date = formatToDate(start)
     // console.log('date', date)
@@ -237,7 +317,6 @@ export function calcProfitTraceData(
           is_filled
         })
         pre_profit = profit
-        pre_price = price
       }
     }
     start = start.add(1, 'day')
@@ -271,7 +350,6 @@ export function calcProfitData(
   }
 
   const ret: Types.ProfitTraceItem[] = []
-  let pre_price: number | undefined = undefined
   let pre_profit: number | undefined = undefined
   for (const data of traceData) {
     const history = historyData.find((elment) => elment.日期 === data.date)
@@ -290,7 +368,6 @@ export function calcProfitData(
       is_filled: false
     })
 
-    pre_price = price
     pre_profit = profit
   }
 

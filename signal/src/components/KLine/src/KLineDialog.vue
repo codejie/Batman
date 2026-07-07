@@ -2,7 +2,7 @@
 import { PropType, ref, watch } from 'vue'
 import { ElDialog, ElButton, ElLink } from 'element-plus'
 import { ReqParam, KLinePanel2 } from '..'
-import { TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
+import { TYPE_FUND, TYPE_INDEX, TYPE_STOCK } from '@/api/data/types'
 
 const props = defineProps({
   reqParam: {
@@ -57,6 +57,12 @@ function getMarketCode(type: number, code: string): string {
       } else if (code.startsWith('399')) {
         marketCode = `SZ${code}`
       }
+    }
+  } else if (type === TYPE_FUND) {
+    if (code.startsWith('5')) {
+      marketCode = `SH${code}`
+    } else if (code.startsWith('1')) {
+      marketCode = `SZ${code}`
     }
   }
   return marketCode.toUpperCase()

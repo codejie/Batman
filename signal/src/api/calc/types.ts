@@ -16,6 +16,7 @@ export interface StockListItem {
   type: number
   code: string
   name?: string
+  market?: number | string
 }
 
 export interface ArgumentItem {

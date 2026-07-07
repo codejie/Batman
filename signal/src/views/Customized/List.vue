@@ -37,7 +37,17 @@ import {
   ElCheckbox
 } from 'element-plus'
 import { apiCreate, apiRecords, RecordsItem, apiRemove, apiUpdateTarget } from '@/api/customized'
-import { apiGetName, apiGetSpotData, TYPE_INDEX, TYPE_STOCK, apiGetItemInfo } from '@/api/data'
+import {
+  apiGetSpotData,
+  TYPE_FUND,
+  TYPE_INDEX,
+  TYPE_STOCK,
+  apiGetItemInfo,
+  ITEM_TYPE_OPTIONS,
+  getItemRequestType,
+  getItemTypeLabel,
+  isMatchedItemType
+} from '@/api/data'
 import { ContentWrap } from '@/components/ContentWrap'
 import { calcCustomizedData, CustomizedCalcItem } from '@/calc/customized'
 import { KLineDialog } from '@/components/KLine'
@@ -50,21 +60,21 @@ import ItemSearchDialog from '@/views/Common/components/ItemSearchDialog.vue'
 
 const connected = ref<boolean>(false)
 
-function onConnected(ws: WebSocket) {
+function onConnected() {
   connected.value = true
   ElMessage.success('连接成功')
 }
 
-function onDisconnected(ws: WebSocket) {
+function onDisconnected() {
   connected.value = false
   ElMessage.error('连接关闭')
 }
 
-function onError(ws: WebSocket, event: Event) {
+function onError() {
   ElMessage.error('连接异常')
 }
 
-function onMessage(ws: WebSocket, event: MessageEvent) {
+function onMessage(_ws: WebSocket, event: MessageEvent) {
   onWebSocketData(JSON.parse(event.data))
 }
 
@@ -94,19 +104,23 @@ const updateTargetForm = ref<UpdateTargetForm>({
 })
 const itemSearchDialogVisible = ref<boolean>(false)
 
-function onSearchChanged(target: 'create') {
+function onSearchChanged(_target: 'create') {
   const form = createForm.value
   form.code = ''
 }
-async function searchItem(key: string, target: 'create') {
+async function searchItem(key: string, _target: 'create') {
   if (key) {
     const form = createForm.value
-    const type = form.type == '股票' ? TYPE_STOCK : TYPE_INDEX
+    const type = getItemRequestType(form.type)
     const ret = await apiGetItemInfo({
       type: type,
       key: key
     })
     if (ret.result) {
+      if (!isMatchedItemType(form.type, ret.result)) {
+        ElMessage.warning('类型不匹配')
+        return
+      }
       form.title = `${ret.result.name}/${ret.result.code}`
       form.code = ret.result.code
     } else {
@@ -124,10 +138,13 @@ const useHistory = ref<boolean>(true)
 function onWebSocketData(wd: any) {
   const records: RecordsItem[] = data.value.map((item) => item.record)
   data.value = []
+  const stocks = wd.stocks ?? []
+  const indices = wd.indices ?? wd.indexes ?? []
+  const funds = wd.funds ?? []
 
   for (const record of records) {
     if (record.type === TYPE_STOCK) {
-      const stock = wd.stocks.find((s: any) => s.代码 === record.code)
+      const stock = stocks.find((s: any) => s.代码 === record.code)
       if (stock) {
         data.value.push({
           record: record,
@@ -135,11 +152,19 @@ function onWebSocketData(wd: any) {
         })
       }
     } else if (record.type === TYPE_INDEX) {
-      const index = wd.indexes.find((s: any) => s.代码 === record.code)
+      const index = indices.find((s: any) => s.代码 === record.code)
       if (index) {
         data.value.push({
           record: record,
           calc: calcCustomizedData(index)
+        })
+      }
+    } else if (record.type === TYPE_FUND) {
+      const fund = funds.find((s: any) => s.代码 === record.code)
+      if (fund) {
+        data.value.push({
+          record: record,
+          calc: calcCustomizedData(fund)
         })
       }
     }
@@ -201,6 +226,25 @@ async function fetchStockData() {
     }
   }
 
+  const funds = data.value
+    .filter((item) => item.record.type === TYPE_FUND)
+    .map((item) => item.record.code)
+  if (funds.length > 0) {
+    const fundRet = await apiGetSpotData({
+      type: TYPE_FUND,
+      codes: funds,
+      useHistory: useHistory.value
+    })
+    for (const item of fundRet.result) {
+      const dataItem = data.value.find(
+        (i) => i.record.type === TYPE_FUND && i.record.code === item.代码
+      )
+      if (dataItem) {
+        dataItem.calc = calcCustomizedData(item)
+      }
+    }
+  }
+
   const now = new Date()
   fetchTime.value = `${now?.getHours()}:${now.getMinutes()}:${now.getSeconds()}`
 }
@@ -212,7 +256,7 @@ async function fetch() {
 
 async function onAdd() {
   await apiCreate({
-    type: createForm.value.type == '股票' ? TYPE_STOCK : TYPE_INDEX,
+    type: getItemRequestType(createForm.value.type),
     code: createForm.value.code
   })
   createDialogVisible.value = false
@@ -317,6 +361,13 @@ async function onWebSocketClick() {
           </template>
           <template #default="{ row }">
             {{ row.record.holding ? '是' : '否' }}
+          </template>
+        </ElTableColumn>
+        <ElTableColumn label="类型" width="70">
+          <template #default="{ row }">
+            <ElText>{{
+              getItemTypeLabel(row.record.type, row.record.market, row.record.code)
+            }}</ElText>
           </template>
         </ElTableColumn>
         <ElTableColumn prop="record.code" label="名称/代码" min-width="90">
@@ -448,8 +499,7 @@ async function onWebSocketClick() {
         <ElForm :model="createForm" label-position="right" label-width="auto">
           <ElFormItem label="类型">
             <ElSelect v-model="createForm.type">
-              <ElOption label="股票" value="股票" />
-              <ElOption label="指数" value="指数" />
+              <ElOption v-for="item in ITEM_TYPE_OPTIONS" :key="item" :label="item" :value="item" />
             </ElSelect>
           </ElFormItem>
           <ElFormItem label="名称/代码">

@@ -19,7 +19,7 @@ import {
   type ElTree as ElTreeType
 } from 'element-plus'
 import AlgorithmCategory from './components/AlgorithmCategory.vue'
-import { TYPE_STOCK } from '@/api/data'
+import { getItemTypeLabel } from '@/api/data'
 import {
   AlgorithmCategoryDefinitions,
   AlgorithmCategoryOptionType,
@@ -45,7 +45,7 @@ import { apiRecords } from '@/api/customized'
 import ItemSearchDialog from '@/views/Common/components/ItemSearchDialog.vue'
 import { useRefreshStore } from '@/store/modules/refresh'
 
-interface StockListTableItem extends Pick<StockListItem, 'type' | 'code' | 'name'> {
+interface StockListTableItem extends Pick<StockListItem, 'type' | 'code' | 'name' | 'market'> {
   src: number
 }
 
@@ -299,7 +299,12 @@ const handleAddStockClick = () => {
   quickViewDialogVisible.value = true
 }
 
-const onQuickViewConfirm = (item: { code: string; name: string; type: number }) => {
+const onQuickViewConfirm = (item: {
+  code: string
+  name: string
+  type: number
+  market?: number | string
+}) => {
   if (tableData.value.some((i) => i.code === item.code && i.type === item.type)) {
     ElMessage.warning('代码已存在')
     return
@@ -526,7 +531,9 @@ const toggleTreeExpansion = () => {
             <el-table-column type="index" label="序号" width="60" />
             <el-table-column prop="type" label="类型" width="60">
               <template #default="scope">
-                <span>{{ scope.row.type === TYPE_STOCK ? '股票' : '指数' }}</span>
+                <span>{{
+                  getItemTypeLabel(scope.row.type, scope.row.market, scope.row.code)
+                }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="name" label="名称" />
@@ -598,18 +605,14 @@ const toggleTreeExpansion = () => {
                 border-radius: 4px;
               "
             >
-              <el-tree
-                ref="algorithmTreeRef"
-                :data="treeData"
-                :expand-on-click-node="true"
-              >
+              <el-tree ref="algorithmTreeRef" :data="treeData" :expand-on-click-node="true">
                 <template #default="{ node, data }">
-                  <span class="custom-tree-node" style="justify-content: flex-start;">
+                  <span class="custom-tree-node" style="justify-content: flex-start">
                     <el-button
                       v-if="!data.disabled"
                       @click.stop="addAlgorithm(data.value)"
                       size="small"
-                      style="margin-right: 6px;"
+                      style="margin-right: 6px"
                     >
                       添加
                     </el-button>

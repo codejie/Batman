@@ -4,7 +4,7 @@ from typing import Optional
 
 from fastapi.websockets import WebSocketState
 from app.logger import logger
-from app.database.data.define import TYPE_INDEX, TYPE_STOCK, SpotData
+from app.database.data.define import TYPE_FUND, TYPE_INDEX, TYPE_STOCK, SpotData
 from app.services.__mock import generate_random_spot_data
 from app.services.wsclient_manager import WSClientManager
 from app.services.task_manager import Task
@@ -12,10 +12,11 @@ from app.database import data as Data, customized as customizedData
 
 
 class CustomizedSpoData:
-  def __init__(self, index: str, stocks: list[SpotData] = [], indices: list[SpotData] = []):
+  def __init__(self, index: str, stocks: list[SpotData] = None, indices: list[SpotData] = None, funds: list[SpotData] = None):
     self.index: str = index
-    self.stocks: list[SpotData] = stocks
-    self.indices: list[SpotData] = indices
+    self.stocks: list[SpotData] = stocks or []
+    self.indices: list[SpotData] = indices or []
+    self.funds: list[SpotData] = funds or []
 
 class SpotDataFetchTask(Task):
   NAME: str = "spot_data_fetch_task"
@@ -27,6 +28,7 @@ class SpotDataFetchTask(Task):
     self.spot_data: list[CustomizedSpoData] = []
     self.stocks: list[str] = []
     self.indices: list[str] = []
+    self.funds: list[str] = []
     self.uid: dict[int, list[tuple[int, str]]] = {}  # uid: [(type, code)]
     # self.data_events: list[asyncio.Event] = []  # uid: event
     self.data_events: list[asyncio.Event] =[]
@@ -45,6 +47,8 @@ class SpotDataFetchTask(Task):
         self.stocks.append(r.code)
       elif r.type == TYPE_INDEX:
         self.indices.append(r.code)
+      elif r.type == TYPE_FUND:
+        self.funds.append(r.code)
       else:
         raise ValueError(f"Unknown type: {r.type}")
       
@@ -57,7 +61,8 @@ class SpotDataFetchTask(Task):
     self.spot_data.append(CustomizedSpoData(
       index=index,
       stocks = Data.get_spot_data(type=TYPE_STOCK, codes=self.stocks),
-      indices =  Data.get_spot_data(type=TYPE_INDEX, codes=self.indices)
+      indices =  Data.get_spot_data(type=TYPE_INDEX, codes=self.indices),
+      funds = Data.get_spot_data(type=TYPE_FUND, codes=self.funds)
     ))
     
     return self.spot_data[-1]
@@ -70,7 +75,7 @@ class SpotDataFetchTask(Task):
     stocks = [data]
     indices = [] # [SpotData(代码='399001', 名称='深证成指', 最新价=15000.0, 涨跌=100.0, 涨跌幅=0.01)]
     
-    data = CustomizedSpoData(index=index, stocks=stocks, indices=indices)
+    data = CustomizedSpoData(index=index, stocks=stocks, indices=indices, funds=[])
     self.spot_data.append(data)
     return self.spot_data[-1]
 
@@ -83,11 +88,13 @@ class SpotDataFetchTask(Task):
     
     stocks = [d[1] for d in self.uid[uid] if d[0] == TYPE_STOCK]
     indices = [d[1] for d in self.uid[uid] if d[0] == TYPE_INDEX]
+    funds = [d[1] for d in self.uid[uid] if d[0] == TYPE_FUND]
 
     return CustomizedSpoData(
       index=data.index,
       stocks=[d for d in data.stocks if d.代码 in stocks],
-      indices=[d for d in data.indices if d.代码 in indices]
+      indices=[d for d in data.indices if d.代码 in indices],
+      funds=[d for d in data.funds if d.代码 in funds]
     )
   
   def apply_data_event(self) -> asyncio.Event:
@@ -154,7 +161,8 @@ class SpotDataClientManagerTask(Task):
             msg = {
               'index': data.index,
               'stocks': [d.to_dict() for d in data.stocks],
-              'indices': [d.to_dict() for d in data.indices]
+              'indices': [d.to_dict() for d in data.indices],
+              'funds': [d.to_dict() for d in data.funds]
             }
             await client.send_json(msg)
             # await client.send_text('123')

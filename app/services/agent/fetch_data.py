@@ -29,9 +29,10 @@ class LoginResponse(BaseModel):
 class UserHoldingRecord(BaseModel):
     """Model for a user holding record."""
     id: int
-    type: int  # 1: 指数, 2: 股票
+    type: int  # 1: 指数, 2: 股票, 3: 基金
     code: str  # Stock code
     name: str  # Stock name
+    market: Optional[int | str] = None
     flag: int
     created: datetime
     updated: datetime

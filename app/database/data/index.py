@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from typing import Optional
 from zoneinfo import ZoneInfo
 from pandas import DataFrame
@@ -82,7 +82,7 @@ def _to_float(value, default: float = 0.0) -> float:
   except (TypeError, ValueError):
     return default
 
-def _is_before_a_share_close(end_date: str) -> bool:
+def _is_today(end_date: str) -> bool:
   if not end_date:
     return False
   try:
@@ -91,7 +91,7 @@ def _is_before_a_share_close(end_date: str) -> bool:
     return False
 
   now = datetime.now(ZoneInfo('Asia/Shanghai'))
-  return now.date() == target_date and now.time() < time(15, 0)
+  return now.date() == target_date
 
 def _to_tx_amount(fields: list[str]) -> float:
   if len(fields) > 35 and fields[35]:
@@ -113,7 +113,7 @@ def _parse_tx_realtime_quote(text: str) -> list[str]:
 
 def _append_tx_intraday_realtime_quote(rows: list, symbol: str, target: str, end_date: str, start_date: str, prev_close: float, headers: dict) -> None:
   """
-  腾讯指数日 K 在盘中可能不包含当天数据；闭市前用实时行情补一条盘中数据。
+  腾讯指数日 K 可能延迟包含当天数据；当请求今天且日 K 缺当天时，用实时行情补一条当天数据。
   """
   if rows and rows[-1][0] >= end_date:
     return
@@ -235,7 +235,7 @@ def index_zh_a_hist_tx(symbol: str, period: str = "daily", start_date: str = "19
         round(change_val, 2)
       ])
 
-    if tx_period == 'day' and _is_before_a_share_close(end_filter):
+    if tx_period == 'day' and _is_today(end_filter):
       _append_tx_intraday_realtime_quote(rows, symbol, target, end_filter, start_filter, prev_close, headers)
 
     return pd.DataFrame(rows, columns=_empty_index_history_df().columns)

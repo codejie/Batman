@@ -11,6 +11,7 @@ import {
   ProfitTraceItem
 } from '@/calc/holding'
 import { apiGetHistoryData, HistoryDataItem } from '@/api/data'
+import { getItemTypeLabel } from '@/api/data/types'
 import * as Utils from '@/utils/dateUtil'
 import DetailChart from './components/DetailChart.vue'
 import { KLineDialog } from '@/components/KLine'
@@ -281,6 +282,13 @@ function onProfitTableExpandChange(_row, expandedRows) {
               </ElTableColumn>
             </ElTable>
           </div>
+        </ElTableColumn>
+        <ElTableColumn label="类型" min-width="60">
+          <template #default="{ row }">
+            <ElText>{{
+              getItemTypeLabel(row.record.type, row.record.market, row.record.code)
+            }}</ElText>
+          </template>
         </ElTableColumn>
         <ElTableColumn prop="record.code" label="代码" min-width="80">
           <template #default="{ row }">
