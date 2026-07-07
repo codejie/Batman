@@ -2,8 +2,9 @@
 Stock
 """
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from typing import Optional
+from zoneinfo import ZoneInfo
 from pandas import DataFrame
 import pandas as pd
 import akshare as ak
@@ -25,14 +26,14 @@ def _stock_market_code(symbol: str) -> str:
     return f'sh{code}'
   return f'sz{code}'
 
-def _tencent_period(period: str) -> str:
+def _tx_period(period: str) -> str:
   return {
     'daily': 'day',
     'weekly': 'week',
     'monthly': 'month'
   }.get(period, period)
 
-def _format_tencent_date(date_str: str) -> str:
+def _format_tx_date(date_str: str) -> str:
   if not date_str:
     return ''
   if '-' in date_str:
@@ -47,16 +48,16 @@ def _expand_start_date(start_date: str, period: str) -> str:
     start = datetime.strptime(start_date, '%Y%m%d') - timedelta(days=delta_days)
     return start.strftime('%Y-%m-%d')
   except ValueError:
-    return _format_tencent_date(start_date)
+    return _format_tx_date(start_date)
 
-def _parse_tencent_jsonp(text: str) -> dict:
+def _parse_tx_jsonp(text: str) -> dict:
   payload = text.strip()
   if '=' in payload:
     payload = payload.split('=', 1)[1]
   payload = payload.strip().rstrip(';')
   return json.loads(payload)
 
-def _extract_tencent_klines(payload, target: str, data_key: str, period_key: str) -> list:
+def _extract_tx_klines(payload, target: str, data_key: str, period_key: str) -> list:
   if isinstance(payload, list):
     return payload
   if not isinstance(payload, dict):
@@ -89,14 +90,102 @@ def _to_float(value, default: float = 0.0) -> float:
   except (TypeError, ValueError):
     return default
 
+def _is_before_a_share_close(end_date: str) -> bool:
+  if not end_date:
+    return False
+  try:
+    target_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+  except ValueError:
+    return False
+
+  now = datetime.now(ZoneInfo('Asia/Shanghai'))
+  return now.date() == target_date and now.time() < time(15, 0)
+
+def _to_tx_amount(fields: list[str]) -> float:
+  if len(fields) > 35 and fields[35]:
+    parts = fields[35].split('/')
+    if len(parts) >= 3:
+      return _to_float(parts[2])
+  if len(fields) > 57:
+    return _to_float(fields[57]) * 10000.0
+  if len(fields) > 37:
+    return _to_float(fields[37]) * 10000.0
+  return 0.0
+
+def _parse_tx_realtime_quote(text: str) -> list[str]:
+  payload = text.strip()
+  if '=' in payload:
+    payload = payload.split('=', 1)[1]
+  payload = payload.strip().strip(';').strip('"')
+  return payload.split('~') if payload else []
+
+def _append_tx_intraday_realtime_quote(rows: list, symbol: str, target: str, end_date: str, start_date: str, prev_close: float, headers: dict) -> None:
+  """
+  腾讯复权日 K 在盘中通常不包含当天数据；闭市前用实时行情补一条非复权盘中数据。
+  """
+  if rows and rows[-1][0] >= end_date:
+    return
+  if end_date < start_date:
+    return
+  if prev_close is None or prev_close == 0:
+    return
+
+  try:
+    response = requests.get(
+      'https://qt.gtimg.cn/q={target}'.format(target=target),
+      headers=headers,
+      proxies={'http': None, 'https': None},
+      timeout=8.0
+    )
+    response.encoding = 'gbk'
+    response.raise_for_status()
+    fields = _parse_tx_realtime_quote(response.text)
+  except Exception as e:
+    logger.warning(f"Error downloading TX intraday stock history data for {symbol}: {e}")
+    return
+
+  if len(fields) <= 35:
+    return
+  quote_date = fields[30][:8] if len(fields) > 30 else ''
+  if quote_date != end_date.replace('-', ''):
+    return
+
+  open_price = _to_float(fields[5])
+  close_price = _to_float(fields[3])
+  high_price = _to_float(fields[33])
+  low_price = _to_float(fields[34])
+  volume = _to_float(fields[36] if len(fields) > 36 else fields[6])
+  amount = _to_tx_amount(fields)
+  if close_price == 0:
+    return
+
+  change_val = close_price - prev_close
+  change_pct = change_val / prev_close * 100
+  amplitude = (high_price - low_price) / prev_close * 100
+
+  rows.append([
+    end_date,
+    symbol[-6:],
+    open_price,
+    close_price,
+    high_price,
+    low_price,
+    volume,
+    amount,
+    round(amplitude, 2),
+    round(change_pct, 2),
+    round(change_val, 2),
+    0.0
+  ])
+
 def stock_zh_a_hist_tx(symbol: str, period: str = "daily", start_date: str = "19700101", end_date: str = "20500101", adjust: str = "") -> DataFrame:
   """
   腾讯财经 A 股历史行情接口，入参与返回列对齐 ak.stock_zh_a_hist。
   """
   target = _stock_market_code(symbol)
-  tx_period = _tencent_period(period)
+  tx_period = _tx_period(period)
   adjust = adjust or ''
-  end = _format_tencent_date(end_date)
+  end = _format_tx_date(end_date)
   count = 640
 
   if adjust in ('qfq', 'hfq'):
@@ -122,13 +211,13 @@ def stock_zh_a_hist_tx(symbol: str, period: str = "daily", start_date: str = "19
   try:
     response = requests.get(url, params=params, headers=headers, proxies={'http': None, 'https': None}, timeout=8.0)
     response.raise_for_status()
-    payload = _parse_tencent_jsonp(response.text)
-    klines = _extract_tencent_klines(payload, target, data_key, tx_period)
+    payload = _parse_tx_jsonp(response.text)
+    klines = _extract_tx_klines(payload, target, data_key, tx_period)
     if not klines:
       return _empty_stock_history_df()
 
-    start_filter = _format_tencent_date(start_date)
-    end_filter = _format_tencent_date(end_date)
+    start_filter = _format_tx_date(start_date)
+    end_filter = _format_tx_date(end_date)
     rows = []
     prev_close = None
     for item in klines:
@@ -170,9 +259,12 @@ def stock_zh_a_hist_tx(symbol: str, period: str = "daily", start_date: str = "19
         0.0
       ])
 
+    if adjust in ('qfq', 'hfq') and tx_period == 'day' and _is_before_a_share_close(end_filter):
+      _append_tx_intraday_realtime_quote(rows, symbol, target, end_filter, start_filter, prev_close, headers)
+
     return pd.DataFrame(rows, columns=_empty_stock_history_df().columns)
   except Exception as e:
-    logger.warning(f"Error downloading Tencent stock history data for {symbol}: {e}")
+    logger.warning(f"Error downloading TX stock history data for {symbol}: {e}")
     return _empty_stock_history_df()
 
 # def download_list() -> None:

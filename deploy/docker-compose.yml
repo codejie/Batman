@@ -1,0 +1,46 @@
+name: batman
+
+services:
+  app:
+    container_name: batman-app
+    image: codejie/batman:app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ${BATMAN_VOLUME:-.}:/batman/app/db
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/docs', timeout=3)\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    networks:
+      - batman
+
+  signal:
+    container_name: batman-signal
+    image: codejie/batman:signal
+    ports:
+      - "3030:3030"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3030/ >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+    networks:
+      - batman
+
+networks:
+  batman:
+    driver: bridge
