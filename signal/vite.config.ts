@@ -1,4 +1,6 @@
 import { resolve } from 'path'
+import { execSync } from 'child_process'
+import { readFileSync } from 'fs'
 import { loadEnv } from 'vite'
 import type { UserConfig, ConfigEnv } from 'vite'
 import Vue from '@vitejs/plugin-vue'
@@ -21,6 +23,28 @@ function pathResolve(dir: string) {
   return resolve(root, '.', dir)
 }
 
+function getPackageVersion() {
+  try {
+    const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8'))
+    return pkg.version || 'unknown'
+  } catch {
+    return 'unknown'
+  }
+}
+
+function getGitCommit() {
+  const envCommit = process.env.VITE_GIT_COMMIT || process.env.GIT_COMMIT
+  if (envCommit) {
+    return envCommit
+  }
+
+  try {
+    return execSync('git rev-parse --short HEAD', { cwd: root }).toString().trim()
+  } catch {
+    return 'unknown'
+  }
+}
+
 export default ({ command, mode }: ConfigEnv): UserConfig => {
   let env = {} as any
   const isBuild = command === 'build'
@@ -29,8 +53,19 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
   } else {
     env = loadEnv(mode, root)
   }
+  const buildTime =
+    process.env.VITE_BUILD_TIME || process.env.BUILD_TIME || new Date().toISOString()
+  const systemVersion =
+    process.env.VITE_APP_VERSION || process.env.APP_VERSION || getPackageVersion()
+
   return {
     base: env.VITE_BASE_PATH,
+    define: {
+      __SYSTEM_NAME__: JSON.stringify(env.VITE_APP_TITLE || 'Batman-Signal'),
+      __SYSTEM_VERSION__: JSON.stringify(systemVersion),
+      __SYSTEM_GIT_COMMIT__: JSON.stringify(getGitCommit()),
+      __SYSTEM_BUILD_TIME__: JSON.stringify(buildTime)
+    },
     plugins: [
       Vue({
         script: {
@@ -49,7 +84,11 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
                 libraryName: 'element-plus',
                 esModule: true,
                 resolveStyle: (name) => {
-                  if (name === 'click-outside' || name === 'el-auto-resizer' || name === 'auto-resizer') {
+                  if (
+                    name === 'click-outside' ||
+                    name === 'el-auto-resizer' ||
+                    name === 'auto-resizer'
+                  ) {
                     return ''
                   }
                   return `element-plus/es/components/${name.replace(/^el-/, '')}/style/css`
@@ -122,10 +161,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
             echarts: ['echarts', 'echarts-wordcloud']
           }
         },
-        external: [
-          'auto-resizer',
-          'el-auto-resizer',
-        ]
+        external: ['auto-resizer', 'el-auto-resizer']
       },
       cssCodeSplit: !(env.VITE_USE_CSS_SPLIT === 'false'),
       cssTarget: ['chrome31']

@@ -84,4 +84,9 @@ declare global {
     readonly VITE_ICON_PREFIX: string
     readonly VITE_HIDE_GLOBAL_SETTING: string
   }
+
+  declare const __SYSTEM_NAME__: string
+  declare const __SYSTEM_VERSION__: string
+  declare const __SYSTEM_GIT_COMMIT__: string
+  declare const __SYSTEM_BUILD_TIME__: string
 }
