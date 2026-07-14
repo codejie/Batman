@@ -79,14 +79,37 @@ import { calcHoldingData, calcSoldoutData, HoldingListItem, SoldoutListItem } fr
 import { apiGetFunds, apiUpdateFunds } from '@/api/funds'
 import { formatNumberString, formatRateString, formatRateString2 } from '@/utils/fmtUtil'
 import { KLineDialog } from '@/components/KLine'
+import { useStorage } from '@/hooks/web/useStorage'
 
 const { push } = useRouter()
+const { getStorage, setStorage } = useStorage('sessionStorage')
+const { removeStorage: removeLocalStorage } = useStorage('localStorage')
+const HOLDING_USE_LOCALE_KEY = 'holding-use-locale'
+
+function isTradingTime(date = new Date()): boolean {
+  const minutes = date.getHours() * 60 + date.getMinutes()
+  return minutes >= 9 * 60 && minutes <= 15 * 60
+}
+
+function getInitialUseLocale(): boolean {
+  removeLocalStorage(HOLDING_USE_LOCALE_KEY)
+
+  const savedValue = getStorage(HOLDING_USE_LOCALE_KEY)
+
+  if (typeof savedValue === 'boolean') {
+    return savedValue
+  }
+
+  const defaultValue = !isTradingTime()
+  setStorage(HOLDING_USE_LOCALE_KEY, defaultValue)
+  return defaultValue
+}
 
 const fundsDialogVisible = ref<boolean>(false)
 const createDialogVisible = ref<boolean>(false)
 const operationDialogVisible = ref<boolean>(false)
 const klineDialogVisible = ref<boolean>(false)
-const useLocale = ref<boolean>(false)
+const useLocale = ref<boolean>(getInitialUseLocale())
 const reqParam = ref<any>({})
 
 const fundsForm = ref<FundsForm>({
@@ -116,7 +139,7 @@ const funds = ref<FundsData>()
 const expandRows = ref<string[]>([])
 const soldoutData = ref<SoldoutListItem[]>([])
 const soldoutExpandRows = ref<string[]>([])
-const showSoldoutTable = ref<boolean>(true)
+const showSoldoutTable = ref<boolean>(false)
 
 async function fetchData() {
   const holdingData = await apiRecord({ flag: HOLDING_FLAG_ACTIVE })
@@ -209,6 +232,10 @@ function onQuantityBlur() {
     2
   )
 }
+
+watch(useLocale, (newVal) => {
+  setStorage(HOLDING_USE_LOCALE_KEY, newVal)
+})
 
 watch(
   () => operationForm.value.action,
