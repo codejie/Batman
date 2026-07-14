@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 from app.routers.common import verify_token
 from app.services.sse_manager import manager, make_sse_task_queue
@@ -12,14 +12,14 @@ router = APIRouter(
 )
 
 @router.get("/calc_report")
-async def calc_report(request: Request, uid: int = verify_token()):
+async def calc_report(request: Request, uid: int = Depends(verify_token)):
     """
     Establishes an SSE connection for calculation reports.
     """
     return StreamingResponse(make_sse_task_queue(request, uid, type=CalcSseTask.TYPE), media_type="text/event-stream")
 
 @router.get("/agent")
-async def agent_chat(request: Request, uid: int = verify_token()):
+async def agent_chat(request: Request, uid: int = Depends(verify_token)):
     """
     Establishes an SSE connection for agent chat responses.
     """

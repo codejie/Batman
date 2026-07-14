@@ -475,8 +475,9 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
         />
       </ElCol>
     </ElRow>
-    <ElRow :gutter="24">
+    <div class="holding-table-scroll">
       <ElTable
+        class="holding-table"
         :data="data"
         :row-key="getHoldingKey"
         :expand-row-keys="expandRows"
@@ -498,8 +499,9 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
                 >
               </ElRow>
             </div>
-            <div class="mx-24px my-8px">
+            <div class="holding-operation-table-scroll mx-24px my-8px">
               <ElTable
+                class="holding-operation-table"
                 size="small"
                 :data="row.items"
                 stripe
@@ -753,7 +755,7 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
           </template>
         </ElTableColumn>
       </ElTable>
-    </ElRow>
+    </div>
     <ElDivider class="mx-8px" content-position="left" style="margin-top: 36px">
       <span style="font-weight: bold">清仓记录</span>
       <ElButton class="ml-12px" size="small" @click="showSoldoutTable = !showSoldoutTable">{{
@@ -1001,5 +1003,27 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
 
 .red-text {
   color: red;
+}
+
+.holding-table-scroll,
+.holding-operation-table-scroll {
+  overflow-x: auto;
+}
+
+.holding-table :deep(.el-table__cell),
+.holding-table :deep(.cell),
+.holding-operation-table :deep(.el-table__cell),
+.holding-operation-table :deep(.cell) {
+  white-space: nowrap;
+}
+
+.holding-table {
+  width: 100%;
+  min-width: 1370px;
+}
+
+.holding-operation-table {
+  width: 100%;
+  min-width: 680px;
 }
 </style>

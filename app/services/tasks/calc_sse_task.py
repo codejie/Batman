@@ -134,7 +134,7 @@ class CalcSseTask(Task):
 
         history_data = db_data.get_history_data(stock.type, stock.code, start=start_date, end=end_date)
         history_data = list_to_df(history_data)
-        if history_data is None and history_data.empty:
+        if history_data is None or history_data.empty:
           logger.warning(f"[CalcTask {self.cid}] No history data for {stock.code}, skipping.")
           await self._send_action(action="log",  message=f"[CalcTask {self.cid}] No history data for {stock.code}, skipping.")
           continue
