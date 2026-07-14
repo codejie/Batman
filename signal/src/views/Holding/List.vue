@@ -487,6 +487,7 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
         :default-sort="{ prop: 'record.created', order: 'descending' }"
         show-summary
         :summary-method="getHoldingSummary"
+        show-overflow-tooltip
       >
         <ElTableColumn type="index" width="40" />
         <ElTableColumn type="expand">
@@ -507,6 +508,7 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
                 stripe
                 :border="true"
                 :default-sort="{ prop: 'created', order: 'descending' }"
+                show-overflow-tooltip
               >
                 <ElTableColumn type="index" width="40" />
                 <ElTableColumn label="操作" prop="action" width="80">
@@ -771,6 +773,7 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
         stripe
         :border="true"
         :default-sort="{ prop: 'record.updated', order: 'descending' }"
+        show-overflow-tooltip
       >
         <ElTableColumn type="index" width="40" />
         <ElTableColumn type="expand">
@@ -787,6 +790,7 @@ const getHoldingSummary = (param: { columns: any[]; data: HoldingListItem[] }) =
                 stripe
                 :border="true"
                 :default-sort="{ prop: 'created', order: 'descending' }"
+                show-overflow-tooltip
               >
                 <ElTableColumn type="index" width="40" />
                 <ElTableColumn label="操作" prop="action" width="80">
