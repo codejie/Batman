@@ -1,12 +1,11 @@
 # syntax=docker/dockerfile:1.7
 
-# Stage 1: Clone the repository
-FROM alpine/git:v2.49.0 AS clone
-ARG BATMAN_REF=master
-RUN git clone --branch ${BATMAN_REF} --single-branch --depth=1 https://github.com/codejie/Batman.git /batman
-
-# Stage 2: Build dependencies using the full python image for better compatibility
+# Stage 1: Build dependencies using the full python image for better compatibility
 FROM python:3.12 AS builder
+ENV PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/ \
+    PIP_TRUSTED_HOST=mirrors.aliyun.com \
+    PIP_DEFAULT_TIMEOUT=600 \
+    PIP_RETRIES=10
 
 # Change to a faster mirror and install build-time OS dependencies
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources \
@@ -24,12 +23,13 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz\
     && make install
 
 # Create a virtual environment and install Python packages
-COPY --from=clone /batman/app/requirements_docker.txt /app/requirements_docker.txt
+COPY app/requirements_docker.txt /app/requirements_docker.txt
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir -r /app/requirements_docker.txt
+RUN --mount=type=cache,id=batman-pip-cache,target=/root/.cache/pip \
+    pip install -r /app/requirements_docker.txt
 
-# Stage 3: Create the final, lightweight production image using the slim version
+# Stage 2: Create the final, lightweight production image using the slim version
 FROM python:3.12-slim
 
 # Change to a faster mirror and install only runtime OS dependencies
@@ -43,7 +43,7 @@ COPY --from=builder /usr/local/lib/libta_lib* /usr/local/lib/
 COPY --from=builder /opt/venv /opt/venv
 
 # Copy only the backend application code, not the entire repo
-COPY --from=clone /batman/app /batman/app
+COPY app /batman/app
 
 # Set the PATH to use the virtual environment and define runtime variables
 ENV PATH="/opt/venv/bin:$PATH"

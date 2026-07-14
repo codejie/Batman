@@ -108,7 +108,7 @@ def select_operation(uid: int, holding: int = None) -> list[HoldingOperationTabl
   return dbEngine.select_stmt(stmt)
 
 def update_holding_flag(uid: int, id: int, flag: int) -> int:
-  return dbEngine.update_stmt(update(HoldingTable).where(HoldingTable.id == id and HoldingTable.uid == uid).values({
+  return dbEngine.update_stmt(update(HoldingTable).where(HoldingTable.id == id, HoldingTable.uid == uid).values({
     'flag': flag, 'updated': func.now()
   }))
 
@@ -128,9 +128,9 @@ def create(uid: int, type: int, code: str, action: int, quantity: int, price: fl
   else:
     id = records[0].id
     if records[0].flag == HOLDING_FLAG_REMOVED:
-      dbEngine.update_stmt(update(HoldingTable).where(HoldingTable.id == id).values([
-        {'flag': HOLDING_FLAG_ACTIVE, 'updated': func.now()}
-      ]))
+      dbEngine.update_stmt(update(HoldingTable).where(HoldingTable.id == id).values({
+        'flag': HOLDING_FLAG_ACTIVE, 'updated': func.now()
+      }))
   dbEngine.insert_instance(HoldingOperationTable(holding=id, action=action, quantity=quantity, price=price, expense=expense, comment=comment))
   return id
 

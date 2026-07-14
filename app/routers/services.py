@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket
+from fastapi import APIRouter, Depends, WebSocket
 from app.routers.common import verify_token
 from app.services.task_spot_data import spotDataClientManagerTask
 
@@ -11,7 +11,7 @@ spot data websocket
 
 
 @router.websocket('/ws/spot_data')
-async def ws_spot_data(websocket: WebSocket, uid=verify_token()):
+async def ws_spot_data(websocket: WebSocket, uid: int = Depends(verify_token)):
   await spotDataClientManagerTask.on_connect(websocket, uid)
   # try:
   #   while True:

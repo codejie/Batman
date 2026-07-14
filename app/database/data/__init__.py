@@ -77,7 +77,11 @@ def update_download_records(type: int, code: str, period: str, start: str, end: 
       stmt = stmt.where(Define.DownloadRecordsTable.adjust == adjust)
   result = dbEngine.select_scalar(stmt)
   if result:
-    stmt = update(Define.DownloadRecordsTable).where(Define.DownloadRecordsTable.code == result.code and Define.DownloadRecordsTable.type == result.type).values(
+    stmt = update(Define.DownloadRecordsTable).where(
+      Define.DownloadRecordsTable.code == result.code,
+      Define.DownloadRecordsTable.type == result.type,
+      Define.DownloadRecordsTable.period == result.period
+    ).values(
       start=start,
       end=end
     )
